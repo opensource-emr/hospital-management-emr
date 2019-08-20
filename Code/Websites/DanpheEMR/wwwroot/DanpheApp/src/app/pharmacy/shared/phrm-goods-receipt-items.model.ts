@@ -1,0 +1,131 @@
+import {
+    NgForm,
+    FormGroup,
+    FormControl,
+    Validators,
+    FormBuilder,
+    ReactiveFormsModule
+} from '@angular/forms'
+import * as moment from 'moment/moment';
+
+export class PHRMGoodsReceiptItemsModel {
+
+    public GoodReceiptItemId: number = 0;
+    public GoodReceiptId: number = 0;
+    public CompanyName: string = null;
+    public CategoryName: string = null;
+    public SupplierName: string = null;
+    public ItemId: number = 0;
+    public ItemName: string = null;
+    public BatchNo: string = "";
+    //public ExpiryDate: Date = null;
+    public ExpiryDate: string = "";
+    //public ManufactureDate: string = "";
+    public ReceivedQuantity: number = 0;
+    public FreeQuantity: number = 0;
+    public RejectedQuantity: number = 0;
+    public UOMName: string = null;
+    public SellingPrice: number = 0;
+    public GRItemPrice: number = 0;
+    public FreeGoodsAmount: number = 0;
+    public SubTotal: number = 0;
+    public VATPercentage: number = 0;
+    public CCCharge: number = 0;
+    public DiscountPercentage: number = 0;
+    public TotalAmount: number = 0;
+    public CreatedBy: number = 0;
+    public CreatedOn: Date = null;
+    public MRP: number = 0;
+    public AvailableQuantity: number = 0;
+    ///
+    public PendingQuantity: number = 0;
+    public modQuantity: number = 0;
+    public curtQuantity: number = 0;
+    public QtyDiffCount: number = 0;
+    public StkManageInOut: string = "";
+    public GoodReceiptItemValidator: FormGroup = null;
+    public SelectedItem: any;
+    public CounterId: number = 0;
+    //for local use only
+    public Margin: number = 0;
+    VATAmount: any;
+    DiscountAmount: any;
+
+    constructor() {
+
+        var _formBuilder = new FormBuilder();
+        this.GoodReceiptItemValidator = _formBuilder.group({
+            'ItemName': ['', Validators.compose([Validators.required])],
+            'ReceivedQuantity': ['', Validators.compose([Validators.required, this.positiveValueRequired])],
+            //'ManufactureDate': ['', Validators.compose([Validators.required, this.pastDateValidator])],
+            'ExpiryDate': ['', Validators.compose([Validators.required, this.dateValidator])],
+            'FreeQuantity': ['', Validators.compose([Validators.required])],
+            'GRItemPrice': ['', Validators.compose([Validators.required,this.positiveValueRequired])],
+            'MRP': ['', Validators.compose([Validators.required])], 
+            'BatchNo': ['', Validators.compose([Validators.required])],
+            'Margin': ['', Validators.compose([Validators.required])]
+        });
+    }
+
+    
+    public IsDirty(fieldName): boolean {
+        if (fieldName == undefined)
+            return this.GoodReceiptItemValidator.dirty;
+        else
+            return this.GoodReceiptItemValidator.controls[fieldName].dirty;
+    }
+
+
+    public IsValid():boolean{if(this.GoodReceiptItemValidator.valid){return true;}else{return false;}} public IsValidCheck(fieldName, validator): boolean {
+        if (fieldName == undefined) {
+            return this.GoodReceiptItemValidator.valid;
+        }
+        else
+            return !(this.GoodReceiptItemValidator.hasError(validator, fieldName));
+    }
+    positiveValueRequired(control: FormControl): { [key: string]: boolean } {
+        if (control.value) {
+            if (control.value <0)
+            return { 'wrongValue': true };
+        }
+        //else {
+        //    return { 'wrongValue': true };
+        //}
+    }
+    dateValidator(control: FormControl): { [key: string]: boolean } {
+        //get current date, month and time
+        var currDate = moment().format('YYYY-MM-DD');
+        //if positive then selected date is of future else it of the past || selected year can't be of future
+        if (control.value) {
+            if ((moment(control.value).diff(currDate) < 0)
+                || (moment(control.value).diff(currDate, 'years') > 10)) //can make appointent upto 10 year from today only.
+                return { 'wrongDate': true };
+        }
+        else
+            return { 'wrongDate': true };
+    }
+
+    pastDateValidator(control: FormControl): { [key: string]: boolean } {
+
+        //get current date, month and time
+        var currDate = moment().format('YYYY-MM-DD');
+        //if positive then selected date is  of the past else selected date is of Future || selected year can't be of future
+        if (control.value) {
+            if ((moment(control.value).diff(currDate) > 0)
+                || (moment(control.value).diff(currDate, 'years') > 1))
+                return { 'wrongDate': true };
+        }
+        else
+            return { 'wrongDate': true };
+    }
+
+    validExpireDate(control: any): boolean {
+        var expDate = moment(control);
+        //var currDate = moment();
+        var daysDiff = moment(expDate).diff(moment(), 'days');
+        if ((control && daysDiff > 180) || daysDiff < 0 || isNaN(daysDiff)) {
+            return true;
+        } else { return false; }
+    }
+
+}

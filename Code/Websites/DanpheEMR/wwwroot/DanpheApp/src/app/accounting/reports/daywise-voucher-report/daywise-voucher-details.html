@@ -1,0 +1,475 @@
+<style>
+    th {
+        text-align: center;
+    }
+</style>
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="viewTxn && !isSaleVoucher">
+    <div class="portlet-body form" style="background-color:white">
+        <!--Model Box Body Start-->
+        <div class="form-body">
+            <div class="col-md-12" id="sf" style="margin-left: 90px;">
+                <div class="col-md-8 col-sm-12 col-xs-12 modelbox-div">
+                    <div class="row" style="overflow-y:auto">
+                        <div id="printpageTransactionView">
+                            <customer-header [header-title]="transaction.VoucherType + '('+transaction.FiscalYear+')'"></customer-header>
+                            <div class="col-md-12 col-xs-12">
+                                <hr style="border:1px solid black;margin-top: 0px;margin-bottom: 5px;" />
+                                <a style="float:right;  margin-top:-50px;margin-right:30px" class="btn btn-danger hidden-print" (click)="Close()" title="Cancel">X</a>
+                                <div class="col-md-12" id="excelTransactionView">
+                                    <div class="col-md-12 patient-hdr-label">
+                                        <table style="width:100%;" align="center">
+                                            <tr>
+                                              <td>
+                                                <b>Voucher No:</b>&nbsp;{{dayvoucherNumber}}
+                                              </td>
+                                                <td style="text-align:center;">
+                                                    <!--<b>Voucher Head:</b>&nbsp;{{transaction.VoucherHead}}-->
+                                                </td>
+                                                <td style="text-align:center;float:right;padding-right:10px;">
+                                                    <b>Transaction Date:</b>
+                                                    <span style="float:right">
+                                                        &nbsp;   {{transaction.TransactionDate | nepaliDate:'format':'YYYY-MM-DD'}}
+                                                    </span><br />
+                                                    <span style="float:right">
+                                                        &nbsp;   {{transaction.TransactionDate | DanpheDateTime:'format':'YYYY-MM-DD'}} AD
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <br />
+                                    <div class="col-md-12" style="overflow-y:auto">
+                                        <table class="table_data" style="width:100%;" border="1">
+                                            <tr>
+                                                <th>
+                                                    Main Ledger
+                                                </th>
+                                                <th>
+                                                    Sub Ledger
+                                                </th>
+                                                <th>
+                                                    Description
+                                                </th>
+                                                <th>
+                                                    Debit
+                                                </th>
+                                                <th>
+                                                    Credit
+                                                </th>
+                                            </tr>
+                                            <tr *ngFor="let txnItm of transaction.TransactionItems">
+                                                <td>
+                                                    {{txnItm.LedgerGroupName}}<br />
+                                                </td>
+                                                <td>
+                                                    {{txnItm.LedgerName}}
+                                                    <span *ngFor="let det of txnItm.Details" style="font-size:12px;color:green;padding-left:50px;font-style:italic;">
+                                                        <br />
+                                                        <span>{{det.Name}}</span>
+                                                        <span>
+                                                            <span *ngIf="det.Dr > 0">
+                                                                Dr: {{det.Dr | Currency}}
+                                                            </span>
+                                                            <span *ngIf="det.Cr > 0">
+                                                                Cr: {{det.Cr | Currency}}
+                                                            </span>
+                                                        </span>
+                                                    </span>
+                                                </td>
+                                                <td>
+
+                                                    <!--{{txnItm.Remarks}}-->
+                                                </td>
+                                                <td>
+                                                    <p *ngIf="txnItm.DrCr">{{txnItm.Amount | Currency}}</p>
+                                                </td>
+                                                <td>
+                                                    <p *ngIf="!txnItm.DrCr">{{txnItm.Amount | Currency}}</p>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th colspan="3">
+                                                    <b style="float:right;"> Total &nbsp;&nbsp; </b>
+                                                </th>
+                                                <th>
+                                                    {{drTotal | Currency}}
+                                                </th>
+                                                <th>
+                                                    {{crTotal | Currency}}
+                                                </th>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <div>
+                                        <b> In Words :</b>&nbsp; {{crTotal | Currency | NumberInWords | CapitalFirstLetter}} <span *ngIf="crTotal !=0">Only</span>
+                                    </div>
+                                    <div>
+                                        <b>Narration:</b>&nbsp;{{transaction.Remarks}}
+                                    </div>
+                                    <div class="col-md-12" style="padding-top:50px;">
+                                        <table style="width:100%;border:0;text-align:center;">
+                                            <tr>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <br />
+                                                    <b style="border-top:1px solid black; padding:0px 10px;"> Prepared By</b>
+                                                </td>
+                                                <td>
+                                                    <br />
+                                                    <b style="border-top:1px solid black; padding:0px 10px;"> Checked By</b>
+                                                </td>
+                                                <td>
+                                                    <br />
+                                                    <b style="border-top:1px solid black; padding:0px 10px;"> Approved By</b>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                                <br />
+                                <br />
+                                <div class="col-md-12" style="padding-bottom: 15px;">
+                                    <div class="form-actions">
+                                        <button class="btn btn-primary hidden-print" (click)="Print()" value="Print" title="print page">Print<i class="glyphicon glyphicon-print" style="margin-left:10px;"></i></button>
+                                        <button class="btn btn-primary hidden-print" (click)="ExportToExcel('excelTransactionView')" value="" title="export to excel">Export<i class="fa fa-file-excel-o" style="margin-left:10px;"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--</form>-->
+        <!--Model Box Body End-->
+    </div>
+</div>
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="viewTxn && isSaleVoucher">
+    <div class="portlet-body form" style="background-color:white">
+        <!--Model Box Body Start-->
+        <div class="form-body">
+            <div class="col-md-12" id="sf" style="margin-left: 90px;">
+                <div class="col-md-8 col-sm-12 col-xs-12 modelbox-div">
+                    <div class="row" style="overflow-y:auto">
+                        <div id="printpageTransactionView">
+                            <customer-header [header-title]="transaction.VoucherType + '('+transaction.FiscalYear+')'"></customer-header>
+                            <div class="col-md-12 col-xs-12">
+                                <hr style="border:1px solid black;margin-top: 0px;margin-bottom: 5px;" />
+                                <a style="float:right;  margin-top:-50px;margin-right:30px" class="btn btn-danger hidden-print" (click)="Close()" title="Cancel">X</a>
+                                <div class="col-md-12" id="excelTransactionView">
+                                    <div class="col-md-12 patient-hdr-label">
+                                        <table style="width:100%;" align="center">
+                                            <tr>
+                                              <td>
+                                                <b>Voucher No:</b>&nbsp;{{dayvoucherNumber}}
+                                              </td>
+                                                <td style="text-align:center;">
+                                                    <!--<b>Voucher Head:</b>&nbsp;{{transaction.VoucherHead}}-->
+                                                </td>
+                                                <td style="text-align:center;float:right;padding-right:10px;">
+                                                    <b>Transaction Date:</b>
+                                                    <span style="float:right">
+                                                        &nbsp;   {{transaction.TransactionDate | nepaliDate:'format':'YYYY-MM-DD'}}
+                                                    </span><br />
+                                                    <span style="float:right">
+                                                        &nbsp;   {{transaction.TransactionDate | DanpheDateTime:'format':'YYYY-MM-DD'}} AD
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <br />
+                                    <div class="col-md-12" style="overflow-y:auto">
+                                        <table class="table_data" style="width:100%;" border="1">
+                                            <tr>
+                                                <th>
+                                                    Main Ledger
+                                                </th>
+                                                <th>
+                                                    Sub Ledger
+                                                </th>
+                                                <th>
+                                                    Description
+                                                </th>
+                                                <th>
+                                                    Debit
+                                                </th>
+                                                <th>
+                                                    Credit
+                                                </th>
+                                            </tr>
+                                            <tr *ngFor="let txnItm of transaction.TransactionItems">
+                                                <td>
+                                                    {{txnItm.LedgerGroupName}}<br />
+                                                </td>
+                                                <td *ngIf="txnItm.Name == 'ACA_CASH_IN_HAND_CASH'">
+                                                    {{txnItm.LedgerName}}
+                                                    <span *ngFor="let row of userCashCollection" style="font-size:12px;color:green;padding-left:50px;font-style:italic;">
+                                                        <span style="width:30%;"><br />{{row.UserName}} : {{row.Total | Currency}}</span>
+                                                    </span>
+                                                </td>
+                                                <td *ngIf="txnItm.Name != 'ACA_CASH_IN_HAND_CASH'">
+                                                    {{txnItm.LedgerName}}
+                                                    <span *ngFor="let det of txnItm.Details" style="font-size:12px;color:green;padding-left:50px;font-style:italic;">
+                                                        <br />
+                                                        <span>{{det.Name}}</span>
+                                                        <span>
+                                                            <span *ngIf="det.Dr > 0">
+                                                                Dr: {{det.Dr | Currency}}
+                                                            </span>
+                                                            <span *ngIf="det.Cr > 0">
+                                                                Cr: {{det.Cr | Currency}}
+                                                            </span>
+                                                        </span>
+                                                    </span>
+                                                </td>
+                                                <td>
+
+                                                    <!--{{txnItm.Remarks}}-->
+                                                </td>
+                                                <td>
+                                                    <p *ngIf="txnItm.DrCr">{{txnItm.Amount | Currency}}</p>
+                                                </td>
+                                                <td>
+                                                    <p *ngIf="!txnItm.DrCr">{{txnItm.Amount | Currency}}</p>
+                                                </td>
+                                            </tr>
+                                            <tr *ngFor="let txnItm of returntransaction.TransactionItems">
+                                                <td>
+                                                    {{txnItm.LedgerGroupName}}
+                                                    <br />
+                                                </td>
+                                                <td>
+                                                    {{txnItm.LedgerName}}
+                                                    <span *ngFor="let det of txnItm.Details" style="font-size:12px;color:green;padding-left:50px;font-style:italic;">
+                                                        <br />
+                                                        <span>{{det.Name}}</span>
+                                                        <span>
+                                                            <span *ngIf="det.Dr > 0">
+                                                                Dr: {{det.Dr | Currency}}
+                                                            </span>
+                                                            <span *ngIf="det.Cr > 0">
+                                                                Cr: {{det.Cr | Currency}}
+                                                            </span>
+                                                        </span>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <!--{{txnItm.Remarks}}-->
+                                                </td>
+                                                <td>
+                                                    <p *ngIf="txnItm.DrCr">{{txnItm.Amount | Currency}}</p>
+                                                </td>
+                                                <td>
+                                                    <p *ngIf="!txnItm.DrCr">{{txnItm.Amount | Currency}}</p>
+                                                </td>
+                                            </tr>
+                                            <tr *ngFor="let txnItm of deposittransaction.TransactionItems">
+                                                <td>
+                                                    {{txnItm.LedgerGroupName}}
+                                                    <br />
+                                                </td>
+                                                <td>
+                                                    {{txnItm.LedgerName}}
+                                                    <span *ngFor="let det of txnItm.Details" style="font-size:12px;color:green;padding-left:50px;font-style:italic;">
+                                                        <br />
+                                                        <span>{{det.Name}}</span>
+                                                        <span>
+                                                            <span *ngIf="det.Dr > 0">
+                                                                Dr: {{det.Dr | Currency}}
+                                                            </span>
+                                                            <span *ngIf="det.Cr > 0">
+                                                                Cr: {{det.Cr | Currency}}
+                                                            </span>
+                                                        </span>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <!--{{txnItm.Remarks}}-->
+                                                </td>
+                                                <td>
+                                                    <p *ngIf="txnItm.DrCr">{{txnItm.Amount | Currency}}</p>
+                                                </td>
+                                                <td>
+                                                    <p *ngIf="!txnItm.DrCr">{{txnItm.Amount | Currency}}</p>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th colspan="3">
+                                                    <b style="float:right;">Total &nbsp;&nbsp; </b>
+                                                </th>
+                                                <th>
+                                                    {{totaldr | Currency}}
+                                                </th>
+                                                <th>
+                                                    {{totalcr | Currency}}
+                                                </th>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="5">&nbsp;</td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="3">
+                                                    <span style="float:right;">Sales SubTotal &nbsp;&nbsp; </span>
+                                                </td>
+                                                <td colspan="2">
+                                                    {{drTotal | Currency}}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="3">
+                                                    <span style="float:right;">Less Trade Discount Total &nbsp;&nbsp; </span>
+                                                </td>
+                                                <td colspan="2">
+                                                    {{tradeAmount | Currency}}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="3">
+                                                    <span style="float:right;"> Return Sales &nbsp;&nbsp; </span>
+                                                </td>
+                                                <td colspan="2">
+                                                    {{returnAmount | Currency}}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="3">
+                                                    <span style="float:right;"> Return Discount &nbsp;&nbsp; </span>
+                                                </td>
+                                                <td colspan="2">
+                                                    {{returnDiscount | Currency}}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="3">
+                                                    <b style="float:right;"> Net Sales &nbsp;&nbsp; </b>
+                                                </td>
+                                                <td colspan="2">
+                                                    <b>{{salesTotalAmount | Currency}}</b>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="3">
+                                                    <span style="float:right;">Less Receivables &nbsp;&nbsp; </span>
+                                                </td>
+                                                <td colspan="2">
+                                                    {{receivableAmount | Currency}}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="3">
+                                                    <span style="float:right;">Collection From receivables &nbsp;&nbsp; </span>
+                                                </td>
+                                                <td colspan="2">
+                                                    {{paymentamount | Currency}}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="3">
+                                                    <span style="float:right;">Add Advance Received &nbsp;&nbsp; </span>
+                                                </td>
+                                                <td colspan="2">
+                                                    {{depositcr | Currency}}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="3">
+                                                    <span style="float:right;">Less Advance Settled &nbsp;&nbsp; </span>
+                                                </td>
+                                                <td colspan="2">
+                                                    {{depositdr | Currency}}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th colspan="3">
+                                                    <b style="float:right;">Cash Collection Total &nbsp;&nbsp; </b>
+                                                </th>
+                                                <th colspan="2">
+                                                    {{totalAmount | Currency}}
+                                                </th>
+                                            </tr>
+                                            <!--<tr>
+                                                <td colspan="5">&nbsp;</td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="5">
+                                                    <table border="1" style="width:100%;" class="table_data">
+                                                        <tr>
+                                                            <th style="width:30%; text-align:center;" rowspan="2">User Name</th>
+                                                            <th style="width:20%; text-align:center;" colspan="2">Sales Amount</th>
+                                                            <th style="width:20%; text-align:center;" colspan="2">Returned Amount</th>
+                                                            <th style="width:20%; text-align:center;" rowspan="2">Total</th>
+                                                        </tr>
+                                                        <tr>
+                                                            <th style="width:10%; text-align:center;">Dr</th>
+                                                            <th style="width:10%; text-align:center;">Cr</th>
+                                                            <th style="width:10%; text-align:center;">Dr</th>
+                                                            <th style="width:10%; text-align:center;">Cr</th>
+                                                        </tr>
+                                                        <tr *ngFor="let row of userCashCollection">
+                                                            <td style="width:30%;">{{row.UserName}}</td>
+                                                            <td style="width:10%; text-align:right;">{{row.SalesDr | Currency}}</td>
+                                                            <td style="width:10%; text-align:right;">{{row.SalesCr | Currency}}</td>
+                                                            <td style="width:10%; text-align:right;">{{row.DepositDr | Currency}}</td>
+                                                            <td style="width:10%; text-align:right;">{{row.DepositCr | Currency}}</td>
+                                                            <td style="width:20%; text-align:right;">{{row.Total | Currency}}</td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>-->
+                                        </table>
+                                    </div>
+                                    <div>
+                                        <b> In Words :</b>&nbsp; {{totalAmount | Currency | NumberInWords | CapitalFirstLetter}} <span *ngIf="totalAmount !=0">Only</span>
+                                    </div>
+                                    <div>
+                                        <b>Narration:</b>&nbsp;{{transaction.Remarks}}
+                                    </div>
+                                    <div class="col-md-12" style="padding-top:50px;">
+                                        <table style="width:100%;border:0;text-align:center;">
+                                            <tr>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <br />
+                                                    <b style="border-top:1px solid black; padding:0px 10px;"> Prepared By</b>
+                                                </td>
+                                                <td>
+                                                    <br />
+                                                    <b style="border-top:1px solid black; padding:0px 10px;"> Checked By</b>
+                                                </td>
+                                                <td>
+                                                    <br />
+                                                    <b style="border-top:1px solid black; padding:0px 10px;"> Approved By</b>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                                <br />
+                                <br />
+                                <div class="col-md-12" style="padding-bottom: 15px;">
+                                    <div class="form-actions">
+                                        <button class="btn btn-primary hidden-print" (click)="Print()" value="Print" title="print page">Print<i class="glyphicon glyphicon-print" style="margin-left:10px;"></i></button>
+                                        <button class="btn btn-primary hidden-print" (click)="ExportToExcel('excelTransactionView')" value="" title="export to excel">Export<i class="fa fa-file-excel-o" style="margin-left:10px;"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--</form>-->
+        <!--Model Box Body End-->
+    </div>
+</div>

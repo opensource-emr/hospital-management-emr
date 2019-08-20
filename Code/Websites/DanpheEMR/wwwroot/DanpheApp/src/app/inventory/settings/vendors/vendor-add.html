@@ -1,0 +1,161 @@
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showAddPage">
+  <div class="portlet-body form" style="background-color:white">
+    <div class="col-md-12">
+      <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+      </div>
+      <div class="col-md-5 col-sm-12 col-xs-12 modelbox-div" style="margin-right:24px">
+        <div class="col-md-12">
+          <div class="caption" style="color:blue;">
+            <h3>
+              <span *ngIf="!update">Add Vendor</span>
+              <span *ngIf="update">Update Vendor</span>
+            </h3>
+          </div>
+          <a style="float:right;  margin-top:-32px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+          <hr />
+        </div>
+        <form [formGroup]="CurrentVendor.VendorsValidator" class="form-horizontal">
+          <div class="form-body">
+            <div class="col-md-12 col-xs-12" style="margin-right: 24px;">
+              <div class="form-group">
+                <label class="control-label col-md-5">Vendor Name<b class="color-red">*</b><b style="float:right;">:</b></label>
+                <div class="col-md-7">
+                  <textarea class="form-control" maxlength="200" [(ngModel)]="CurrentVendor.VendorName"
+                            formControlName="VendorName" id="VendorName" placeholder="Vendor Name"></textarea>
+                  <span class="color-red font-sm" [hidden]="CurrentVendor.IsValidCheck('VendorName','required') || !(CurrentVendor.IsDirty('VendorName'))">Vendor Name is required</span>
+                  <span class="color-red font-sm" *ngIf="CurrentVendor.IsDirty('VendorName')" [hidden]="CurrentVendor.IsValidCheck('VendorName','maxlength')"> Length is not proper</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Vendor Code<b style="float:right;">:</b></label>
+                <div class="col-md-7">
+                  <input class="form-control" maxlength="200" [(ngModel)]="CurrentVendor.VendorCode"
+                         [ngModelOptions]="{standalone: true}" placeholder="Vendor Code" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Contact Person<b style="float:right;">:</b></label>
+                <div class="col-md-7">
+                  <input class="form-control" maxlength="200" [(ngModel)]="CurrentVendor.ContactPerson"
+                         [ngModelOptions]="{standalone: true}" placeholder="Contact Person" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">ContactAddress<b class="color-red">*</b><b style="float:right;">:</b></label>
+                <div class="col-md-7">
+                  <input class="form-control" maxlength="30" type="text"
+                         [(ngModel)]="CurrentVendor.ContactAddress"
+                         formControlName="ContactAddress"
+                         id="ContactAddress"
+                         placeholder="ContactAddress" />
+                  <span class="color-red font-sm" [hidden]="CurrentVendor.IsValidCheck('ContactAddress','required') || !(CurrentVendor.IsDirty('ContactAddress'))">ContactAddress is required</span>
+                  <span class="color-red font-sm" *ngIf="CurrentVendor.IsDirty('ContactAddress')" [hidden]="CurrentVendor.IsValidCheck('ContactAddress','maxlength')"> Length is not proper</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Contact Number<b class="color-red">*</b><b style="float:right;">:</b></label>
+                <div class="col-md-7">
+                  <input class="form-control" maxlength="30" type="text"
+                         [(ngModel)]="CurrentVendor.ContactNo"
+                         formControlName="ContactNo"
+                         id="ContactNo"
+                         placeholder="Contact Number" />
+                  <span class="color-red font-sm" [hidden]="CurrentVendor.IsValidCheck('ContactNo','required') || !(CurrentVendor.IsDirty('ContactNo'))">ContactNo is required</span>
+                  <span class="color-red font-sm" *ngIf="CurrentVendor.IsDirty('ContactNo')" [hidden]="CurrentVendor.IsValidCheck('ContactNo','pattern')">ContactNo is not proper</span>
+                  <span class="color-red font-sm" *ngIf="CurrentVendor.IsDirty('ContactNo')" [hidden]="CurrentVendor.IsValidCheck('ContactNo','maxlength')"> Must be Under 10 digits</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Email<b style="float:right;">:</b></label>
+                <div class="col-md-7">
+                  <input class="form-control" maxlength="100" type="text"
+                         [(ngModel)]="CurrentVendor.Email"
+                         formControlName="Email"
+                         id="Email"
+                         placeholder="Email Address" />
+                  <span class="color-red font-sm" *ngIf="CurrentVendor.IsDirty('Email')" [hidden]="CurrentVendor.IsValidCheck('Email','pattern')">Email is not proper</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Pan No<b style="float:right;">:</b></label>
+                <div class="col-md-7">
+                  <input type="number" [(ngModel)]="CurrentVendor.PanNo" placeholder="Pan No" [ngModelOptions]="{standalone: true}" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Credit Period (days)<b style="float:right;">:</b></label>
+                <div class="col-md-7">
+                  <input type="number" [(ngModel)]="CurrentVendor.CreditPeriod" placeholder="Credit Period" formControlName="CreditPeriod" />
+                  <span class="color-red font-sm" *ngIf="CurrentVendor.IsDirty('CreditPeriod')" [hidden]="CurrentVendor.IsValidCheck('CreditPeriod','pattern')">Credit is must be integer.</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Tds(%)<b style="float:right;">:</b></label>
+                <div class="col-md-7">
+                  <input type="number" [(ngModel)]="CurrentVendor.Tds" placeholder="Tds(%)" [ngModelOptions]="{standalone: true}" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Currency Code<b class="color-red">*</b><b style="float:right;">:</b></label>
+                <div class="col-md-7">
+                  <select id="ddlCurrency" class="form-control" [(ngModel)]="CurrentVendor.DefaultCurrencyId" formControlName="DefaultCurrencyId">
+                    <option *ngFor="let div of GetCurrencyCodeList" value="{{div.CurrencyID}}">{{div.CurrencyCode}}</option>
+                  </select>
+                  <a *ngIf="!CurrentVendor.DefaultCurrencyId" class="fa fa-question" (click)="AddCurrencyCodePopUp()" title="Click to add to Currency Code"></a>
+                  <span class="color-red font-sm" [hidden]="CurrentVendor.IsValidCheck('DefaultCurrencyId','required') || !(CurrentVendor.IsDirty('DefaultCurrencyId'))">Please Enter Currency Type</span>
+                  <!--<span class="color-red font-sm" *ngIf="!CurrentVendor.IsValidCheck('DefaultCurrencyId')" >Currency Type is required</span>-->
+                  <!--<span class="error-msg" *ngIf="CurrentVendor.IsDirty('DefaultCurrencyId')" [hidden]="CurrentVendor.IsValidCheck('DefaultCurrencyId','required')"> DefaultCurrencyId is required</span>-->
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">GovtRegDate<b style="float:right;">:</b></label>
+                <div class="col-md-7">
+                  <!--<input type="text" autocomplete="off" class="nepali-date-cal" />-->
+                  <input type="date" id="english-date" [(ngModel)]="CurrentVendor.GovtRegDate" placeholder="GovtRegDate" [ngModelOptions]="{standalone: true}" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Is Active <b style="float:right;">:</b> </label>
+                <div class="col-md-7">
+                  <div class="input-group">
+                    <div class="icheck-inline">
+                      <label class="mt-checkbox mt-checkbox-outline">
+                        <input id="isActive"
+                               type="checkbox"
+                               [(ngModel)]="CurrentVendor.IsActive"
+                               [ngModelOptions]="{standalone: true}" />
+                        <span></span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Is TDS Applicable <b style="float:right;">:</b> </label>
+                <div class="col-md-7">
+                  <div class="input-group">
+                    <div class="icheck-inline">
+                      <label class="mt-checkbox mt-checkbox-outline">
+                        <input id="IsTDSApplicable"
+                               type="checkbox"
+                               [(ngModel)]="CurrentVendor.IsTDSApplicable"
+                               [ngModelOptions]="{standalone: true}" />
+                        <span></span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-actions">
+                <input type="button" class="btn btn-primary" *ngIf="!update" (click)="AddVendor()" value="Add Vendor" />
+                <input type="button" class="btn btn-primary" *ngIf="update" (click)="Update()" value="Update" />
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<currency-add *ngIf="showAddCurrencyCodePopUp" [showAddPage]="showAddCurrencyCodePopUp"
+              (callback-add)="OnNewCurrencyCodeAdded($event)"></currency-add>

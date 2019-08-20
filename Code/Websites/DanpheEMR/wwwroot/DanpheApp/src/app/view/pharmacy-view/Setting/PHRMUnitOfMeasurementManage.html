@@ -1,0 +1,80 @@
+﻿<input type="button" class="btn btn-primary" (click)="AddUnitOfMeasurement()" value="Add UnitOfMesurement" />
+<div class="row">
+    <div class="col-md-12 col-xs-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="unitofmeasurementGridColumns" [grid-data]="unitofmeasurementList" (grid-actions)="UnitOfMeasurementGridActions($event)">
+        </danphe-grid>
+    </div>
+</div>
+<!--Model Box Starting Here-->
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showUnitOfMeasurementAddPage">
+    <div class="portlet-body form" style="background-color:white">
+        <!--Model Box Body Start-->
+        <form [formGroup]="CurrentUnitOfMeasurement.UnitOfMeasurementValidator" class="form-horizontal">
+            <div class="form-body">
+                <div class="col-md-12">
+                    <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+                    </div>
+                    <div class="col-md-8 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+                        <div class="col-md-12">
+                            <div class="caption" style="color:blue; margin-top:10px;">
+                                <span *ngIf="!update">Add Unit of Measurement</span>
+                                <span *ngIf="update">Update Unit of Measurement</span>
+                            </div>
+                            <a style="float:right;  margin-top:-13px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                            <hr />
+                        </div>
+                        <br />
+                        <div class="col-md-12">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Unit of measurement<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                                    <div class="col-md-8">
+                                        <input class="form-control" type="text" maxlength="50"
+                                               [(ngModel)]="CurrentUnitOfMeasurement.UOMName"
+                                               formControlName="UOMName"
+                                               value=""
+                                               placeholder="Enter unit of measurement" />
+                                        <span class="color-red font-sm" [hidden]="CurrentUnitOfMeasurement.IsValidCheck('UOMName','required') || !(CurrentUnitOfMeasurement.IsDirty('UOMName'))">Unit of measurement is required</span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Description<b style="float:right;">:</b></label>
+                                    <div class="col-md-8">
+                                        <input class="form-control" type="text" maxlength="100"
+                                               [(ngModel)]="CurrentUnitOfMeasurement.Description" [ngModelOptions]="{standalone: true}"
+                                               value=""
+                                               placeholder="Enter Description" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">IsActive<b style="float:right;">:</b></label>
+                                    <div class="col-md-8">
+                                        <div class="input-group">
+                                            <div class="icheck-inline">
+                                                <label class="mt-checkbox mt-checkbox-outline">
+                                                    <input name="IsActive" type="checkbox" value="IsActive"
+                                                           [(ngModel)]="CurrentUnitOfMeasurement.IsActive" [ngModelOptions]="{standalone: true}">
+                                                    <span></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12" style="padding-bottom: 18px;">
+                            <div class="form-actions">
+                                <input type="button" class="btn btn-primary" *ngIf="!update" (click)="Add()" value="Add" />
+                                <input type="button" class="btn btn-primary" *ngIf="update" (click)="Update()" value="Update" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+                    </div>
+                </div>
+            </div>
+        </form>
+        <!--</form>-->
+        <!--Model Box Body End-->
+    </div>
+</div>

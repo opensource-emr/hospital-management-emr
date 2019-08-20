@@ -1,0 +1,332 @@
+﻿<style>
+
+
+    .srchTbx {
+        width: 100%;
+    }
+
+        /*below is to show search icon on searchbox*/
+        .srchTbx:after {
+            content: "\e003";
+            display: block;
+            position: absolute;
+            right: 5px;
+            bottom: 50%;
+            font-family: 'Glyphicons Halflings';
+            z-index: 11;
+            width: 20px;
+            height: 20px;
+            margin-bottom: -10px;
+        }
+
+
+
+    .mt-checkbox, .mt-radio {
+        padding-left: 22px !important;
+        margin-bottom: 8px;
+        font-size: 12px !important;
+    }
+
+        .mt-checkbox > span, .mt-radio > span {
+            height: 14px !important;
+            width: 14px !important;
+        }
+
+            .mt-checkbox > span:after, .mt-radio > span:after {
+                left: 50%;
+                top: 50%;
+                width: 5px;
+                height: 10px;
+                margin-top: -5px;
+                margin-left: -2.5px;
+            }
+
+    .font-12 tbody tr td {
+        font-size: 13px !important;
+    }
+
+    .item-type-head {
+        font-weight: 700;
+        font-size: 14px;
+        padding: 0px 0px 10px;
+        text-decoration: underline;
+    }
+
+    .item-type-name {
+        display: inline-block;
+        padding-bottom: 9px;
+    }
+
+        .item-type-name i.fa-close, .item-type-name i.fa-star, .med-itm i.fa-close, .med-itm i.fa-star {
+            cursor: pointer;
+        }
+
+
+    .med-itm {
+        padding-bottom: 9px;
+    }
+</style>
+<div class="col-md-12" style="padding-left: 0px;">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="col-md-12 ord-new-items" *ngIf="selOrdItems != null && selOrdItems.length>0" style="margin-top:5px;border: none;box-shadow: 1px 1px 8px #a3a5a9;">
+
+                <div>
+                    <div style="font-weight: bold;border-bottom: 0.5px solid #d2c7c7;margin-left: -15px;padding: 5px 12px 13px 12px;margin-right: -16px;color: green;">
+                        <span>Selected Orders</span>
+                        <button class="btn btn-danger btn-sm right" style="border-radius: 9px !important;margin-left:10px;"
+                                (click)="CancelAll()">
+                            Cancel
+                        </button>
+                        <button class="btn blue btn-sm right" style="border-radius: 9px !important;" (click)="ProceedAll()">
+                            Proceed
+                        </button>
+
+                    </div>
+                    <div class="row" style="font-size: 12px;">
+                        <div class="col-md-12 ord-new-items" style="padding: 3px 8px;">
+                            <div class="item-type-head">
+                                Lab
+                            </div>
+
+                            <div class="item-type-name" *ngFor="let itm of selOrdItems;">
+                                <span *ngIf="itm.PreferenceType == 'Lab'" style="background-color: #f0f1f3;padding: 3px;">
+                                    <i class="fa fa-close" style="font-size: 18px;color: #c12616;"
+                                       (click)="RemoveOrderItem(itm)" title="Remove this item"></i>
+                                    {{itm.ItemName}}
+                                    <i *ngIf="itm.IsPreference" title="favourite" class="fa fa-star" style="color: #599acd;font-size: 16px;"
+                                       (click)="RemoveFromPreference_New(itm)"></i>
+                                    <i *ngIf="!itm.IsPreference" title="Add to Favourite" class="fa fa-star-o" style="font-size: 16px;"
+                                       (click)="AddToPreference_New(itm)"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row" style="font-size: 12px;">
+                        <div class="col-md-12 ord-new-items" style="padding: 3px 8px;">
+                            <div class="item-type-head">
+                                Medication
+                            </div>
+
+                            <div class="med-itm" *ngFor="let itm of selOrdItems;">
+                                <span *ngIf="itm.PreferenceType == 'Medication'" style="background-color: #f0f1f3;padding: 3px;">
+                                    <i class="fa fa-close" style="font-size: 18px;color: #c12616;"
+                                       (click)="RemoveOrderItem(itm)" title="Remove this item"></i>
+                                    <span>{{itm.ItemName}}</span> <span>{{itm.Dosage}}</span> <span> {{itm.FreqInWords}}</span>
+                                    <i *ngIf="itm.IsPreference" title="favourite" class="fa fa-star" style="color: #599acd;font-size: 16px;"
+                                       (click)="RemoveFromPreference_New(itm)"></i>
+                                    <i *ngIf="!itm.IsPreference" title="Add to Favourite" class="fa fa-star-o" style="font-size: 16px;"
+                                       (click)="AddToPreference_New(itm)"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row" style="font-size: 12px;">
+                        <div class="col-md-12 ord-new-items" style="padding: 3px 8px;">
+                            <div class="item-type-head">
+                                Imaging
+                            </div>
+
+                            <div class="item-type-name" *ngFor="let itm of selOrdItems;">
+                                <span *ngIf="itm.PreferenceType == 'Imaging'" style="background-color: #f0f1f3;padding: 3px;">
+                                    <i class="fa fa-close" style="font-size: 18px;color: #c12616;"
+                                       (click)="RemoveOrderItem(itm)" title="Remove this item"></i>
+                                    {{itm.ItemName}}
+                                    <i *ngIf="itm.IsPreference" title="favourite" class="fa fa-star" style="color: #599acd;font-size: 16px;"
+                                       (click)="RemoveFromPreference_New(itm)"></i>
+                                    <i *ngIf="!itm.IsPreference" title="Add to Favourite" class="fa fa-star-o" style="font-size: 16px;"
+                                       (click)="AddToPreference_New(itm)"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row" style="font-size: 12px;">
+                        <div class="col-md-12 ord-new-items" style="padding: 3px 8px;">
+                            <div class="item-type-head">
+                                Others
+                            </div>
+
+                            <div class="item-type-name" *ngFor="let itm of selOrdItems;">
+                                <span *ngIf="itm.PreferenceType == 'Others'" style="background-color: #f0f1f3;padding: 3px;">
+                                    <i class="fa fa-close" style="font-size: 18px;color: #c12616;"
+                                       (click)="RemoveOrderItem(itm)" title="Remove this item"></i>
+                                    {{itm.ItemName}}
+                                    <i *ngIf="itm.IsPreference" title="favourite" class="fa fa-star" style="color: #599acd;font-size: 16px;"
+                                       (click)="RemoveFromPreference_New(itm)"></i>
+                                    <i *ngIf="!itm.IsPreference" title="Add to Favourite" class="fa fa-star-o" style="font-size: 16px;"
+                                       (click)="AddToPreference_New(itm)"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+
+            </div>
+            <div class="col-md-12" style="margin-top:10px;border: none;box-shadow: 1px 1px 8px #a3a5a9;padding: 0px;">
+                <div style="font-weight: bold;border-bottom: 0.5px solid #d2c7c7;padding: 4px;color: green;">
+                    Active Orders
+                </div>
+                <div *ngIf="currPat != null" style="max-height: 400px;overflow-y: auto;">
+                    <table class="table table-striped table-hover font-12">
+                        <tr style="font-style: italic;">
+                            <td>
+                                Type
+                            </td>
+                            <td>
+                                Name
+                            </td>
+                            <td>
+                                status
+                            </td>
+                        </tr>
+                        <tr *ngFor="let res of currPat.LabRequisitions">
+                            <td>
+                                LAB
+                            </td>
+                            <td>{{res.LabTestName}}  on <span>{{res.OrderDateTime | DanpheDateTime:'datename':'DD.MM.YYYY HH:mm'}}</span></td>
+                            <td>
+                                <a style="text-decoration:underline;font-weight:bold;cursor:pointer;" *ngIf="res.OrderStatus=='final'" (click)="ViewLabReport(res.RequisitionId)">View</a>
+                                <span *ngIf="res.OrderStatus!='final'">{{res.OrderStatus}}</span>
+                            </td>
+                        </tr>
+                        <tr *ngFor="let med of currPat.MedicationPrescriptions">
+                            <td>Medication</td>
+                            <td>
+                                <b>{{med.MedicationName}}</b>&nbsp;&nbsp;{{med.Frequency}}&nbsp;times a day
+                                &nbsp;&nbsp;&nbsp;&nbsp;Start Date-  {{med.CreatedOn | DanpheDateTime:'datename':'DD.MM.YYYY'}}
+                            </td>
+                            <td>
+                                active
+                            </td>
+
+                        </tr>
+                        <tr *ngFor="let req of currPat.ImagingItemRequisitions">
+                            <td>{{req.ImagingTypeName}}</td>
+                            <td>{{req.ImagingItemName}} &nbsp;&nbsp;{{req.ImagingDate | DanpheDateTime:'datename':'DD.MM.YYYY HH:mm'}}</td>
+                            <td>
+                                {{req.OrderStatus}}
+                            </td>
+
+                        </tr>
+                        <tr *ngFor="let otherOdr of otherActiveRequests">
+                                <td>Others</td>
+                                <td>{{otherOdr.ItemName}} &nbsp;&nbsp;{{otherOdr.CreatedOn | DanpheDateTime:'datename':'DD.MM.YYYY HH:mm'}}</td>
+                                <td>
+                                    {{otherOdr.BillStatus}}
+                                </td>    
+                            </tr>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+        <div class="col-md-6" style="padding-left: 0px;box-shadow: 1px 1px 8px #a3a5a9;margin-top: 5px;padding-right: 0px;">
+            <div class="col-md-12" style="font-weight: bold;border-bottom: 0.5px solid #d2c7c7;padding: 4px;color: green;">
+                New Orders
+            </div>
+            <div class="col-md-12" style="margin-top:10px;">
+                <div class="col-md-3" style="padding: 0px;">
+                    <select class="form-control" [(ngModel)]="selItemType" style="width:90%;" (ngModelChange)="ItemsTypeOnChange()">
+                        <option value="All">----------</option>
+                        <option value="Lab">Labs</option>
+                        <option value="Imaging">Imaging</option>
+                        <option value="Medication">Medication</option>
+                        <option value="Others">Others</option>
+                    </select>
+
+                </div>
+                <div class="col-md-9">
+                    <div class="input-group srchTbx">
+                        <input danphe-auto-complete class="form-control round-input" aria-label="search"
+                               [(ngModel)]="selOrdItem"
+                               [source]="ordItemsFiltered"
+                               [list-formatter]="orderItemsListFormatter"
+                               placeholder="search order items"
+                               display-property-name="ItemName"
+                               max-num-list="20"
+                               match-formatted="false"
+                               (valueChanged)="OrderItemValueChanged()"
+                               onClick="this.select();" />
+
+                    </div>
+
+
+
+                </div>
+
+            </div>
+
+            <div class="col-md-12" style="margin-top:10px;padding: 0px;">
+                <div class="portlet box blue-hoki" style="margin-bottom: 0px;border: none;">
+                    <div class="portlet-title cstm-portlet-title">
+                        <div class="caption">
+                            My Favourites
+                        </div>
+                        <div class="tools" style="padding:3px 0px 0px 13px;">
+                            <a class="fullscreen" data-original-title="" href="javascript:;" title="Full Screen"> </a>
+                        </div>
+                        <div class="actions" style="color: black;">
+                            <select style="font-size: 13px;">
+                                <option value="My Favourites" selected>My Favourites</option>
+                                <option value="Order Sets">Order Sets</option>
+                            </select>
+                        </div>
+
+                    </div>
+                    <div class="portlet-body" style="max-height:400px;overflow-y: auto;">
+                        <div *ngFor="let grp of empPreferenceGroups">
+                            <div class="row" style="padding-left: 10px;font-weight: bold;">
+                                {{grp.GroupName}}
+                            </div>
+                            <div class="row">
+                                <div *ngFor="let itm of grp.Items" class="col-md-6">
+                                    <label class="mt-checkbox mt-checkbox-outline col-md-10" (change)="PreferenceChkOnChange(itm)">
+                                        <input type="checkbox" [(ngModel)]="itm.IsSelected" name="itm.ItemId" style="color:red;font-size:12px;" />
+                                        {{itm.ItemName}}
+                                        <span></span>
+                                    </label>
+                                    <label class="col-md-2">
+                                        <i title="Remove from Favourite" class="fa fa-star" style="color: #599acd;font-size: 16px;"
+                                           (click)="RemoveFromPreference_New(itm)"></i>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+
+
+
+        </div>
+    </div>
+
+    <div class="row" style="margin-top: 25px;">
+        <div class="col-md-12">
+            <a class="btn btn-primary" (click)="printMedications()">Print Medication</a>
+        </div>
+    </div>
+</div>
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showLabReport">
+    <div class="portlet-body form">
+        <div class="modelbox-div" style="margin-left:15%;margin-right:15%;margin-top:2%">
+            <div style="margin-left:0px;margin-right:-105px">
+                <i class="btn btn-danger" style="float: right;margin-right:115px;" (click)="CloseLabReport()">X</i>
+                <danphe-lab-results [requisitionIdList]="labRequisitionIdList"
+                                    [showReport]="showLabReport"
+                                    [showHeader]="false"
+                                    [showSignatories]="false"
+                                    [enableEdit]="false"></danphe-lab-results>
+            </div>
+        </div>
+    </div>
+</div>
+

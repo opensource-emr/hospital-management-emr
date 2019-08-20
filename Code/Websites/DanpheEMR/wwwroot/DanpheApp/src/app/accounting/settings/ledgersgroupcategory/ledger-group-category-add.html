@@ -1,0 +1,111 @@
+﻿
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showAddPage">
+
+    <div class="portlet-body form" style="background-color:white">
+        <div class="form-body">
+            <div class="col-md-12">
+                <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+                </div>
+                <div class="col-md-8 col-sm-10 col-xs-10 modelbox-div" style="margin-right: 24px;">
+                    <div class="col-md-12">
+                        <div class="caption" style="color:blue;">
+                            <h3>
+                                <span>Create Ledger Group Category</span>
+                            </h3>
+                        </div>
+                        <a style="float:right;  margin-top:-32px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                        <hr />
+                    </div>
+                    <div class="col-md-12">
+                        <div class="col-md-8 form-horizontal" style="margin-right: 24px;">
+
+                            <form [formGroup]="CurrentLedgerGroupCategory.LedgerGroupCategoryValidator">
+                                <div class="form-group">
+                                    <label class="control-label col-md-5">Ledger Group Category Name<b class="color-red">*</b><b style="float:right;">:</b></label>
+                                    <div class="col-md-7">
+                                        <input class="form-control" maxlength="30" type="text"
+                                               [(ngModel)]="CurrentLedgerGroupCategory.LedgerGroupCategoryName"
+                                               id="LedgerGroupCategoryName"
+                                               placeholder="LedgerGroupCategoryName" formControlName="LedgerGroupCategoryName" />
+                                        <span class="color-red font-sm" [hidden]="CurrentLedgerGroupCategory.IsValidCheck('LedgerGroupCategoryName','required') || !(CurrentLedgerGroupCategory.IsDirty('LedgerGroupCategoryName'))">Ledger Group Category Name is required</span>
+                                    </div>
+                                </div>
+                            </form>
+                            <form [formGroup]="CurrentLedgerGroupCategory.LedgerGroupCategoryValidator">
+                                <div class="form-group">
+                                    <label class="control-label col-md-5">Chart of Account Name <b class="color-red">*</b><b style="float:right;">:</b> </label>
+                                    <div class="col-md-7">
+                                        <select class="form-control" style="float:left"
+                                                [(ngModel)]="CurrentLedgerGroupCategory.ChartOfAccountId"
+                                                formControlName="ChartOfAccountId">
+                                            <option *ngFor="let chAcc of chartOfAccounts" value="{{chAcc.ChartOfAccountId}}">{{chAcc.ChartOfAccountName}}</option>
+                                        </select>
+                                        <span class="color-red font-sm" [hidden]="CurrentLedgerGroupCategory.IsValidCheck('ChartOfAccountId','required') || !(CurrentLedgerGroupCategory.IsDirty('ChartOfAccountId'))">Chart Of AccountName is required</span>
+                                    </div>
+                                </div>
+                            </form>
+                            <div class="form-group">
+                                <label class="control-label col-md-5">Description <b style="float:right;">:</b> </label>
+                                <div class="col-md-7">
+                                    <input class="form-control" type="text"
+                                           [(ngModel)]="CurrentLedgerGroupCategory.Description"
+                                           id="Description"
+                                           placeholder="Enter Description" />
+
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-5">Is Debit <b style="float:right;">:</b> </label>
+                                <div class="col-md-7">
+                                    <div class="input-group">
+                                        <div class="icheck-inline">
+                                            <label class="mt-checkbox mt-checkbox-outline">
+                                                <input id="isDebit"
+                                                       type="checkbox"
+                                                       [(ngModel)]="CurrentLedgerGroupCategory.IsDebit" />
+                                                <span></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-5">Is Active <b style="float:right;">:</b> </label>
+                                <div class="col-md-7">
+                                    <div class="input-group">
+                                        <div class="icheck-inline">
+                                            <label class="mt-checkbox mt-checkbox-outline">
+                                                <input id="isActive"
+                                                       type="checkbox"
+                                                       [(ngModel)]="CurrentLedgerGroupCategory.IsActive" />
+                                                <span></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <input type="button" class="btn btn-primary" (click)="SubmitLedgerGrpCategory()" value="Add Ledger Group Category" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+

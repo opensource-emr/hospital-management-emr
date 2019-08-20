@@ -1,0 +1,81 @@
+﻿
+<div class="row" id="medicinePrintpage">
+
+
+    <div class="med-prescrip" style="width: 600px; margin: 0 auto; padding: 15px;">
+        <div class="med-prescrip-header">
+           <table style="width: 100%;">
+                <tr>
+                    <td>PAN Number: 500066416</td>
+                    <td>PAN Number: 500066416</td>
+                    <td>PAN Number: 500066416</td>
+                </tr>
+            </table>
+          
+            <div class="hospital-info">
+                <h3 style="text-align:center; margin-bottom: 5px;font-size: 18px; font-weight: 700;">Hospital For Advanced Medicine and Surgery</h3>
+                <p>Mandikhatar, Kathmandu, Nepal</p>
+                <p>Ph No: 01-6224747/4377404</p>
+            </div>
+
+        </div>
+        <div class="patient-inf" style="padding: 15px 0px;">
+            <div>
+                <table style="width: 100%;">
+                    <tr>
+                        <td>Name: {{currPat.ShortName}}</td>
+                        <td style="float: right;">Hospital Number: {{currPat.PatientCode}}</td>
+                    </tr>
+                    <tr>
+                        <td>Address: {{currPat.Address}}, {{currPat.CountrySubDivisionName}}</td>  
+                        <td style="float: right;">Age/Sex: {{currPat.DateOfBirth | DanpheDateTime:'age' }} / {{currPat.Gender}}</td>
+                    </tr>
+                    <tr>
+                        <td>Contact Number: {{currPat.PhoneNumber}}</td>
+                    </tr>
+                </table>              
+            </div>
+
+
+        </div>
+        <div class="med-prescrip-list" style="min-height: 300px;position: relative;z-index: 2;padding-bottom: 15px;">
+            <table style="width: 100%;">
+                <tr>
+                    <th>S.N.</th>
+                    <th>Medicine</th>
+                    <th>Dose</th>
+                    <th>Frequency</th>
+                    <th>Duration</th>
+                </tr>
+                <tr *ngFor="let medicine of currPat.MedicationPrescriptions; let i=index;">
+                    <td>{{i+1}}</td>
+                    <td>{{medicine.MedicationName}}</td>
+                    <td>{{medicine.Dose}}</td>
+                    <td>{{medicine.Frequency}}</td>
+                    <td>{{medicine.Duration}}</td>
+                </tr>
+
+            </table>
+        </div>
+
+        <div class="med-prescrip-footer" style="margin-top: 50px;">
+            <div class="row">
+                <div class="col-md-3">
+                    <p style="font-size: 14px; font-weight: 700; border-top: 2px solid #000; padding-top: 8px;display:inline-block; ">Doctor Signature</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="water-mark">
+            <p style="font-size: 100px;color: #867c7c;">R<sub>x</sub></p>
+        </div>
+
+    </div>
+
+</div>
+
+<div class="row">
+    <div style="width: 600px; margin: 0 auto; padding: 15px;margin-top: 15px;">
+        <a class="btn btn-primary" (click)="print()">Print</a>
+    </div>
+</div>

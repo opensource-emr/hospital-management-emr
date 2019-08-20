@@ -1,0 +1,11 @@
+﻿
+<add-new-report-template *ngIf="showAddNewPage" [showTemplateAddPage]="showAddNewPage" [rptTemplate]="selectedTemplate" (callback-Add)="CallBackNewAdded($event)" [update]="update"></add-new-report-template>
+
+<div class="row">
+    <div class="col-lg-12 col-sm-12">
+        <a class="btn blue bordered " name="name" (click)="AddNewLabTemplate()">
+            <span class="glyphicon glyphicon-plus"></span>Add New Lab Template</a>
+            <danphe-grid [grid-colDefaults]="reportTemplateGridCol" [grid-data]="reportTemplateList" (grid-actions)="EditAction($event)">
+            </danphe-grid>
+    </div>
+</div>

@@ -1,0 +1,63 @@
+<div class="popup-static portlet box portlet-fullscreen">
+  <div class="portlet-body form">
+    <div class="danphe-followup-visit">
+      <h4 style="text-align: center;font-weight: bold;">
+        Followup Visit  <i class="btn btn-danger" style="float: right" (click)="Close()">X</i><br>
+      </h4>
+
+      <table class="table table-striped table-bordered table-hover">
+        <tr>
+          <td>
+            Hospital No: <b> {{parentVisit.PatientCode}} </b>
+          </td>
+          <td>
+            Patient Name: <b> {{parentVisit.ShortName}}</b>
+          </td>
+          <td>
+            Age Sex: <b>{{parentVisit.DateOfBirth  | DanpheDateTime:'age'}}/{{parentVisit.Gender | slice:0:1}}</b>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            Last Visit Date: <b>{{parentVisit.VisitDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</b>
+          </td>
+          <td>
+            Department : <b> {{parentVisit.DepartmentName}}</b>
+          </td>
+          <td>
+            Doctor :  <b>{{parentVisit.ProviderName}}</b>
+          </td>
+
+        </tr>
+      </table>
+      <div class="col-md-12" *ngIf="changeProvider">
+        <visit-info [visit]="newVisitForChangeDoctor"></visit-info>
+        <visit-billing-info [billing-transaction]="newBillTxn"></visit-billing-info>
+      </div>
+
+      <div style="text-align:center;">
+        <button style="border-radius: 7px !important;border: 1px solid #3598dc;" type="button" class="btn blue" (click)="FollowUp()" [disabled]="loading">
+          Add Followup Visit
+        </button>
+      </div>
+     
+      <div  *ngIf="!changeProvider" style="padding-top:10px;padding-bottom:10px;">
+        <span>
+          Note : Followup will be created for
+          <span *ngIf="parentVisit.ProviderName">
+            <span style="font-weight:bold;text-decoration:underline;">
+              {{parentVisit.ProviderName}}
+            </span>
+            of
+          </span>
+          <span style="font-weight:bold;text-decoration:underline;">{{parentVisit.DepartmentName}}  Department</span>
+        </span>
+        <a (click)="ChangeDepartmentOrDoctor()" title="click to change followup Department/Doctor."
+           class="btn btn-danger btn-sm" style="float:right;">
+          Change Department/Doctor ?
+        </a>
+      </div>
+    </div>
+  
+  </div>
+</div>

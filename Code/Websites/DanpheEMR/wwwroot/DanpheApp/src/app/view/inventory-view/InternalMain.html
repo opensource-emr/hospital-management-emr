@@ -1,0 +1,14 @@
+
+<div class="row">
+  
+    <ul class="nav nav-tabs" *ngIf="validRoutes != undefined">
+        <li *ngFor="let route of validRoutes">
+            <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'a-tab-active'">{{route.DisplayName}}<i class="{{route.Css}}"></i></a>
+        </li>
+        <li><a [routerLink]="'WriteOffItemsList'" [routerLinkActive]="'a-tab-active'">Write Off Items List</a></li>
+
+    </ul>
+</div>
+<router-outlet>
+
+</router-outlet>

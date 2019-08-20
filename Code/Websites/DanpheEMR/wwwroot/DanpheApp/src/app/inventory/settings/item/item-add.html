@@ -1,0 +1,182 @@
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showAddPage">
+  <div class="portlet-body form" style="background-color:white">
+    <div class="col-md-12">
+      <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+      </div>
+      <div class="col-md-7 col-sm-12 col-xs-12 modelbox-div" style="margin-right:24px">
+        <div class="col-md-12">
+          <div class="caption" style="color:blue;">
+            <h3>
+              <span *ngIf="!update">Add Item</span>
+              <span *ngIf="update">Update Item</span>
+            </h3>
+          </div>
+          <a style="float:right;  margin-top:-32px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+          <hr />
+        </div>
+        <form [formGroup]="CurrentItem.ItemValidator">
+          <div class="form-body">
+            <div class="row">
+              <div class="col-md-12 col-xs-12" style="margin-right: 24px;">
+                <div class="col-md-12">
+
+                  <div class="form-group col-md-6">
+                    <label class="control-label">Item Category<b style="float:right;">:</b></label>
+                    <select id="ddlItemCategory" class="form-control" [(ngModel)]="CurrentItem.ItemCategoryId" [ngModelOptions]="{standalone: true}" (ngModelChange)="filterSubCategory()">
+                      <option *ngFor="let div of GetItemCategoryList" value="{{div.ItemCategoryId}}">{{div.ItemCategoryName}}</option>
+                    </select>
+                    <!--<span class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('ItemCategoryId','required') || !(CurrentItem.IsDirty('ItemCategoryId'))">Item CategoryId is required</span>-->
+                    <a *ngIf="!CurrentItem.ItemCategoryId" class="fa fa-question" (click)="AddCategoryPopUp()" title="Click to add to Category"></a>
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label class="control-label">Item Sub Category<b style="float:right;">:</b></label>
+                    <select id="ddlItemCategory" class="form-control" [(ngModel)]="CurrentItem.SubCategoryId" [ngModelOptions]="{standalone: true}" (ngModelChange)="AssignAccountHeadandItemCode()">
+                      <option *ngFor="let div of filteredSubCategoryList" value="{{div.SubCategoryId}}">{{div.SubCategoryName}}</option>
+                    </select>
+                    <a *ngIf="!CurrentItem.SubCategoryId" class="fa fa-question" (click)="AddSubCategoryPopUp()" title="Click to add to Sub Category"></a>
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label class="control-label">Item Name<b class="color-red">*</b><b style="float:right;">:</b></label>
+                    <input class="form-control" maxlength="200" [(ngModel)]="CurrentItem.ItemName"
+                           formControlName="ItemName" id="ItemName" placeholder="ItemName" />
+                    <span class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('ItemName','required') || !(CurrentItem.IsDirty('ItemName'))">Item Name is required</span>
+                    <span class="color-red font-sm" *ngIf="CurrentItem.IsDirty('ItemName')" [hidden]="CurrentItem.IsValidCheck('ItemName','maxlength')"> Length is not proper</span>
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label class="control-label">Item Code<b style="float:right;">:</b></label>
+                    <input disabled class="form-control" maxlength="200" [(ngModel)]="CurrentItem.Code"
+                           [ngModelOptions]="{standalone: true}" stand id="Code" placeholder="Code" pattern="[A-Z]*" />
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <div class="form-group col-md-6">
+                    <label class="control-label">Item Company:</label>
+                    <select class="form-control" [(ngModel)]="CurrentItem.CompanyId" [ngModelOptions]="{standalone: true}">
+                      <option *ngFor="let co of GetCompanyList" value="{{co.CompanyId}}">{{co.CompanyName}}</option>
+                    </select>
+                    <a *ngIf="!CurrentItem.CompanyId" class="fa fa-question" (click)="AddCompanyPopUp()" title="Click to add to Company"></a>
+                  </div>
+
+                  <div class="form-group col-md-6">
+                    <label class="control-label">Description<b style="float:right;">:</b></label>
+                    <input class="form-control" maxlength="200" type="text"
+                           [(ngModel)]="CurrentItem.Description"
+                           [ngModelOptions]="{standalone: true}"
+                           id="Description"
+                           placeholder="Description" />
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <div class="form-group col-md-6">
+                    <label class="control-label">MinStock Quantity<b class="color-red">*</b><b style="float:right;">:</b></label>
+                    <input class="form-control" maxlength="30" type="text"
+                           [(ngModel)]="CurrentItem.MinStockQuantity"
+                           formControlName="MinStockQuantity"
+                           id="MinStockQuantity"
+                           placeholder="MinStock Quantity" />
+                    <span class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('MinStockQuantity','required') || !(CurrentItem.IsDirty('MinStockQuantity'))">MinStockQuantity  is required</span>
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label class="control-label">ReOrderQuantity<b class="color-red">*</b><b style="float:right;">:</b></label>
+                    <input class="form-control" maxlength="30" type="text"
+                           [(ngModel)]="CurrentItem.ReOrderQuantity"
+                           formControlName="ReOrderQuantity"
+                           id="ReOrderQuantity"
+                           placeholder="ReOrder Quantity" />
+                    <span class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('ReOrderQuantity','required') || !(CurrentItem.IsDirty('ReOrderQuantity'))">ReOrderQuantity  is required</span>
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <div class="form-group col-md-6">
+                    <label class="control-label">StandardRate<b style="float:right;">:</b></label>
+                    <input class="form-control" maxlength="30" type="text"
+                           [(ngModel)]="CurrentItem.StandardRate"
+                           [ngModelOptions]="{standalone: true}"
+                           id="StandardRate"
+                           placeholder="Standard Rate" />
+                    <!--<span class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('StandardRate','required') || !(CurrentItem.IsDirty('StandardRate'))">Standard Rate is required</span>-->
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label class="control-label">VAT<b style="float:right;">:</b></label>
+                    <input class="form-control" maxlength="30" type="text" id="VAT"
+                           [(ngModel)]="CurrentItem.VAT" [ngModelOptions]="{standalone: true}" placeholder="VAT" />
+                    <!--<span class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('VAT','required') || !(CurrentItem.IsDirty('VAT'))">VAT is required</span>-->
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <div class="form-group col-md-6">
+                    <label class="control-label">UnitQuantity<b style="float:right;">:</b></label>
+                    <input class="form-control" maxlength="30" type="text"
+                           [(ngModel)]="CurrentItem.UnitQuantity"
+                           id="UnitQuantity"
+                           placeholder="Unit Quantity" [ngModelOptions]="{standalone: true}" />
+                  </div>
+
+                  <div class="form-group col-md-6">
+                    <label class="control-label ">Unit of Measurement<b style="float:right;">:</b></label>
+                    <select id="ddlUnitOfMeasurement" class="form-control" [(ngModel)]="CurrentItem.UnitOfMeasurementId" [ngModelOptions]="{standalone: true}">
+                      <option *ngFor="let div of GetUnitOfMeasurementList" value="{{div.UOMId}}">{{div.UOMName}}</option>
+                    </select>
+                    <!--<span class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('UnitOfMeasurementId','required') || !(CurrentItem.IsDirty('UnitOfMeasurementId'))">Unit Of MeasurementId is required</span>-->
+                    <a *ngIf="!CurrentItem.UnitOfMeasurementId" class="fa fa-question" (click)="AddUnitOfMeasurementPopUp()" title="Click to add to Unit of Measurement"></a>
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <div class="form-group col-md-6">
+                    <label class="control-label">Account Head<b class="color-red">*</b><b style="float:right;">:</b></label>
+                    <select disabled id="ddlAccountHead" class="form-control" [(ngModel)]="CurrentItem.AccountHeadId" formControlName="AccountHeadId">
+                      <option *ngFor="let div of GetAccountHeadList" value="{{div.AccountHeadId}}">{{div.AccountHeadName}}</option>
+                    </select>
+                    <span class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('AccountHeadId','required') || !(CurrentItem.IsDirty('AccountHeadId'))">Account Head is required</span>
+                    <a *ngIf="!CurrentItem.AccountHeadId" class="fa fa-question" (click)="AddAccountHeadPopUp()" title="Click to add to Account Head"></a>
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label class="control-label ">Packaging Type<b style="float:right;">:</b></label>
+                    <select id="ddlPackagingType" class="form-control" [(ngModel)]="CurrentItem.PackagingTypeId" [ngModelOptions]="{standalone: true}">
+                      <option *ngFor="let div of GetPackagingTypeList" value="{{div.PackagingTypeId}}">{{div.PackagingTypeName}}</option>
+                    </select>
+                    <!--<span class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('PackagingTypeId','required') || !(CurrentItem.IsDirty('PackagingTypeId'))">Packaging TypeId is required</span>-->
+                    <a *ngIf="!CurrentItem.PackagingTypeId" class="fa fa-question" (click)="AddPackagingTypePopUp()" title="Click to add to Packaging Type"></a>
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <div class="form-group col-md-6">
+                    <label class="control-label">Is Active <b style="float:right;">:</b> </label>
+                    <div class="input-group">
+                      <div class="icheck-inline">
+                        <label class="mt-checkbox mt-checkbox-outline">
+                          <input id="isActive"
+                                 type="checkbox"
+                                 [(ngModel)]="CurrentItem.IsActive"
+                                 [ngModelOptions]="{standalone: true}" />
+                          <span></span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-actions col-md-12">
+                  <input type="button" class="btn btn-primary" *ngIf="!update" (click)="AddItem()" value="Add Item" />
+                  <input type="button" class="btn btn-primary" *ngIf="update" (click)="Update()" value="Update" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<company-add *ngIf="showAddCompanyPopUp" [showAddPage]="showAddCompanyPopUp"
+             (callback-add)="OnNewCompanyAdded($event)"></company-add>
+<itemcategory-add *ngIf="showAddCategoryPopUp" [showAddPage]="showAddCategoryPopUp"
+                  (callback-add)="OnNewCategoryAdded($event)"></itemcategory-add>
+<accounthead-add *ngIf="showAddAccountHeadPopUp" [showAddPage]="showAddAccountHeadPopUp"
+                 (callback-add)="OnNewAccountHeadAdded($event)"></accounthead-add>
+<packagingtype-add *ngIf="showAddPackagingTypePopUp" [showAddPage]="showAddPackagingTypePopUp"
+                   (callback-add)="OnNewPackagingTypeAdded($event)"></packagingtype-add>
+<unitofmeasurement-add *ngIf="showAddUnitOfMeasurementPopUp" [showAddPage]="showAddUnitOfMeasurementPopUp"
+                       (callback-add)="OnNewUnitOfMeasurementAdded($event)"></unitofmeasurement-add>
+<itemsubcategory-add *ngIf="showAddSubCategoryPopUp" [showAddPage]="showAddSubCategoryPopUp"
+                  (callback-add)="OnNewSubCategoryAdded($event)"></itemsubcategory-add>

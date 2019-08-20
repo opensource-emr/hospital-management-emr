@@ -1,0 +1,94 @@
+﻿<!--@*@using System;
+    @using System.Collections.Generic;
+    @using System.Linq;
+    @using System.Text;
+    @using DanpheEMR.ServerModel;
+    @using DanpheEMR.DalLayer;
+    @using DanpheEMR.Core.Caching;*@
+
+
+@*@{
+        string connString = ViewData["ConnectionString"].ToString();
+        BillingDbContext billingDbContext = new BillingDbContext(ViewData["ConnectionString"].ToString());
+        //var ServiceDepartment = billingDbContext.ServiceDepartment.ToList<ServiceDepartmentModel>();
+        var allEmployee = billingDbContext.Employee.ToList<EmployeeModel>();
+
+        MasterDbContext masterDbContext = new MasterDbContext(connString);
+        var alldepartment = masterDbContext.Departments.ToList<DepartmentModel>();
+        var doctorList = (from e in allEmployee
+                         join d in alldepartment
+                          on e.DepartmentId equals d.DepartmentId
+                          where d.IsAppointmentApplicable == true
+                          select e).ToList();
+
+        //var billitemprice = billingDbContext.BillItemPrice.ToList<BillItemPrice>();
+    }*@-->
+<section id="AddUserSection">
+
+    <form [formGroup]="CurrentUser.UserProfileValidator" style="background-color:#E6E6FA; width: 50%">
+        <div>
+            <h4 style="color:#532c7b;">Add User's</h4>
+        </div>
+        <div class="add-user-content">
+            <table class="tableContent" style="height: 100%;">
+                <tr>
+                    <td align="left"> Employee Name  <b class="color-red">*</b> :-</td>
+                    <td>
+                    <select [(ngModel)]="CurrentUser.EmployeeId" (ngModelChange)="GenerateEmailList()"
+                            formControlName="EmployeeId" style="width:180px; height:40px;" class="pat-input" type="text">
+                        <option value="0">select</option>
+                        <!--@*@foreach (var emp in doctorList)
+                        {
+                            <option value="@emp.EmployeeId">@emp.FullName</option>
+                        }*@-->
+                    </select>
+                    <div style="color:red" [hidden]="CurrentUser.IsValidCheck('EmployeeId','required') || !(CurrentUser.IsDirty('EmployeeId'))">Employee Name  is required</div>
+                </td>
+            </tr>
+            <tr>
+                <td align="left"> User Name <b class="color-red">*</b>:-</td>
+                <td>
+                    <input class="pat-input" style="width:180px; height:40px;"
+                           [(ngModel)]="CurrentUser.UserName"
+                           formControlName="UserName"
+                           type="text" id="UserName" value="" placeholder="User Name" /><br />
+                    <div style="color:red" [hidden]="CurrentUser.IsValidCheck('UserName','required') || !(CurrentUser.IsDirty('UserName'))">User Name is Required </div>
+
+                    <div style="color:red" *ngIf="CurrentUser.IsDirty('UserName')" [hidden]="CurrentUser.IsValidCheck('UserName','maxlength')"> Length is not proper</div>
+
+                </td>
+            </tr>
+            <tr>
+                <td align="left"> PassWord <b class="color-red">*</b>  :-</td>
+                <td>
+                    <input class="pat-input" [(ngModel)]="CurrentUser.password"
+                           formControlName="password" style="width:180px; height:40px;"
+                           type="password" id="password" value="" placeholder="Password is Required" /><br />
+                    <div style="color:red" [hidden]="CurrentUser.IsValidCheck('password','required') || !(CurrentUser.IsDirty('password'))">Password is required</div>
+                    <div style="color:red" *ngIf="CurrentUser.IsDirty('password')" [hidden]="CurrentUser.IsValidCheck('password','maxlength')"> Length is not proper</div>
+
+                </td>
+            </tr>
+            <tr>
+                <td align="left"> Confirm PassWord <b class="color-red">*</b>  :-</td>
+                <td>
+                    <input class="pat-input" [(ngModel)]="CurrentUser.repeat"
+                           formControlName="repeat" style="width:180px; height:40px;"
+                           type="password" id="repeat" value="" name="repeat" placeholder="confirm Password is Required" /><br />
+                    <div style="color:red" [hidden]="CurrentUser.IsValidCheck('repeat','required') || !(CurrentUser.IsDirty('repeat'))">Confirm Password is required</div>
+                </td>
+            </tr>
+            <tr>
+                <td align="left"> </td>
+                <td>
+                    <input type="button" style="width:80px; height:35px;" (click)="AddUser()" value="Add User" />
+                    &nbsp;&nbsp;&nbsp;&nbsp;
+                    <input type="button" style="width:80px; height:35px;" (click)="Clear()" value="Cancel" />
+                </td>
+            </tr>
+        </table>
+    </div>
+
+</form>
+</section>
+

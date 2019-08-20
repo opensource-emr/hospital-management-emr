@@ -1,0 +1,48 @@
+﻿
+<div class="row">
+    <div class="col-lg-4 col-md-3 col-sm-6 col-xs-12">
+        <a class="dashboard-stat dashboard-stat-v2 blue">
+            <div class="visual">
+                <i class="fa fa-bed"></i>
+            </div>
+            <div class="details">
+                <div class="number">
+                    <span data-counter="counterup">{{stats.Total}}</span>
+                </div>
+                <div class="desc"> Total No. of Beds </div>
+            </div>
+        </a>
+
+    </div>
+    <div class="col-lg-4 col-md-3 col-sm-6 col-xs-12">
+        <a class="dashboard-stat dashboard-stat-v2 green-haze">
+            <div class="visual">
+                <i class="fa fa-bed"></i>
+            </div>
+            <div class="details">
+                <div class="number">
+                    <span data-counter="counterup" data-value="12,5">{{stats.Available}}</span>
+                </div>
+                <div class="desc"> Available No. of Beds </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-lg-4 col-md-3 col-sm-6 col-xs-12">
+        <a class="dashboard-stat dashboard-stat-v2 red">
+            <div class="visual">
+                <i class="fa fa-bed"></i>
+            </div>
+            <div class="details">
+                <div class="number">
+                    <span data-counter="counterup" data-value="12,5">{{stats.Occupied}}</span>
+                </div>
+                <div class="desc"> Occupied No. of Beds </div>
+            </div>
+        </a>
+    </div>
+</div>
+<div class="clearfix"></div>
+<div class="col-lg-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="bedinfoGridColumns" [grid-data]="bedinfo">
+    </danphe-grid>
+</div>

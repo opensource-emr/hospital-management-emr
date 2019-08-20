@@ -1,0 +1,163 @@
+﻿<!-- @*@using System;
+@using System.Collections.Generic;
+@using System.Linq;
+@using System.Text;*@ -->
+
+<style>
+    .bg-on {
+        background-color: rgb(220, 252, 220);
+        padding-right: 0px !important;
+    }
+
+    .bg-off {
+        background-color: none;
+        padding-right: 0px !important;
+    }
+
+    .icheck-inline > label:first-child {
+        margin-left: 14px !important;
+    }
+
+    .mt-checkbox.mt-checkbox-outline > input:focus ~ span, .mt-checkbox.mt-checkbox-outline > span, .mt-checkbox.mt-checkbox-outline:hover > input:not([disabled]) ~ span {
+        border: 1px solid #33c0cd !important;
+    }
+
+    .activealpha {
+        background: transparent;
+        color: #006687;
+    }
+</style>
+
+<!-- @*there was row class as well but Anish Removed it*@ -->
+<div class="row">
+    <div class="col-md-12">
+        <!-- @*sud: 7June'18--commented for testing.*@ -->
+        <!-- @*<label class="mt-checkbox mt-checkbox-outline" style="float: left;">
+                <input type="checkbox" [(ngModel)]="ordServ.showAllMedications" value="" />
+                <span></span>
+                Show All
+            </label>*@ -->
+        <!-- @*<div *ngIf="ordServ.medicationList && ordServ.showAllMedications == true" style="float: left; width: auto; margin-left: 25px;"></div>*@ -->
+        <div *ngIf="ordServ.medicationList" style="width: 100%;float:left;">
+            <div *ngIf="!searchByGeneric" style="float: left; width: auto;">
+                <input class="searchtbx"
+                       danphe-auto-complete
+                       [(ngModel)]="selMed"
+                       [source]="ordServ.medicationList"
+                       [list-formatter]="myListFormatter"
+                       placeholder="Medicine"
+                       path-to-data="Results"
+                       display-property-name="MedicineName"
+                       value-property-name=null
+                       min-chars="2"
+                       onClick="this.select();"
+                       (valueChanged)="SelectTestFromSearchBox(selMed)"
+                       max-num-list="10" />
+            </div>
+
+            <div *ngIf="searchByGeneric" style="float: left; width: auto;">
+                <input class="searchtbx"
+                       danphe-auto-complete
+                       [(ngModel)]="selGenericMed"
+                       [source]="genericMedList"
+                       placeholder="genric name"
+                       display-property-name="GenericName"
+                       value-property-name=null
+                       [list-formatter]="GenericListFormatter"
+                       (valueChanged)="ShowItemsByGeneric()"
+                       onClick="this.select();"
+                       max-num-list="10" />
+            </div>
+
+            <label class="mt-checkbox mt-checkbox-outline" style="float: left;margin-left:15px;">
+                <input type="checkbox" [(ngModel)]="searchByGeneric" value="" (change)="SearchByGenericChkOnChange()" />
+                <span></span>
+                Search By Generic
+            </label>
+
+        </div>
+        <div *ngIf="itemsInGeneric && searchByGeneric">
+            <p style="color:blue;text-decoration:underline;">Brands Available</p>
+            <div>
+                <div class="input-group">
+                    <div class="icheck-inline">
+                        <label *ngFor="let med of itemsInGeneric;let i=index;" class="mt-checkbox mt-checkbox-outline table-condensed table-bordered table-hover" title="{{med.MedicineName}}">
+                            <input type="checkbox" name="med.MedicineName" [(ngModel)]="med.IsSelected" (ngModelChange)="AddMedication(med)" />
+                            <span></span>{{med.MedicineName }}
+                            <br />
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+
+<!-- @*this is for preference only*@ -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue-hoki">
+            <div class="portlet-title">
+                <h5 style="font-weight: bold;">
+                    My Favourites
+                    <label class="mt-checkbox mt-checkbox-outline pull-right" style="line-height: 20px;padding-left: 25px;">
+                        <input type="checkbox" [(ngModel)]="selectAllPreference" value="" (change)="SelectAllPreference()" /><span style="background: #fff;margin-top: -2px;display: inline-block;"></span> Select All
+                    </label>
+                </h5>
+            </div>
+
+            <div class="portlet-body">
+                <div class="input-group">
+                    <div class="icheck-inline">
+                        <label *ngFor="let med of ordServ.medicationPreference;let i=index;" [ngClass]="med.IsSelected ? 'bg-on' : 'bg-off'" class="mt-checkbox mt-checkbox-outline table-condensed table-bordered table-hover" title="{{med.MedicineName}}">
+                            <input type="checkbox" name="med.MedicineName" [(ngModel)]="med.IsSelected" (ngModelChange)="AddMedication(med)" />
+                            <span></span>{{med.MedicineName | slice:0:12}}
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<div class="row" *ngIf="ordServ.medicationList && ordServ.showAllMedications == true">
+    <div class="col-md-12">
+        <div class="portlet box blue-hoki">
+            <div class="portlet-title">
+                <h5 style="text-decoration: underline;font-weight: bold;padding-left: 15px;">
+                    All Medications:
+                </h5>
+            </div>
+
+            <div class="portlet-body" style="padding-top: 0px;">
+                <div class="row">
+                    <div class="dict-indxholder" id="allAlphaHolder" style="padding: 8px 15px;background: #e4e2e2;">
+                        <a *ngFor="let medicationtest of medicationHash; let i = index;" id="{{medicationtest.Key}}" [ngClass]="i==0 ? 'alphabets activealpha':'alphabets' " (click)="alphabetClick($event,medicationtest.Key)">{{medicationtest.Key}}</a>
+                    </div>
+
+                    <div class="input-group" style="padding-top: 15px;">
+                        <div id="allMedicationTests" class="icheck-inline" style="height: 420px; overflow-y: scroll;" (scroll)="scrollHandler()">
+                            <div *ngFor="let medicationtest of medicationHash;let i=index;" id="target{{medicationtest.Key}}" class="label-holdr">
+                                <label *ngFor="let med of medicationtest.Values;let i=index;" [ngClass]="med.IsSelected ? 'bg-on' : 'bg-off'" title="{{med.MedicineName}}"
+                                       class="mt-checkbox mt-checkbox-outline table-condensed table-bordered table-hover">
+                                    <input type="checkbox" name="med.Itemid" [(ngModel)]="med.IsSelected" (ngModelChange)="AddMedication(med)">
+                                    <span></span>{{med.MedicineName}}
+                                </label>
+                            </div>
+                            <!-- @*<label *ngFor="let med of ordServ.medicationList;let i=index;" [ngClass]="med.IsSelected ? 'bg-on' : 'bg-off'" title="{{med.MedicineName}}"
+                                         class="col-md-2 mt-checkbox mt-checkbox-outline table-condensed table-bordered table-hover">
+                                    <input type="checkbox" name="med.Itemid" [(ngModel)]="med.IsSelected" (ngModelChange)="AddMedication(med)">
+                                    <span></span>{{med.MedicineName |slice:0:12}}
+                                </label>*@ -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

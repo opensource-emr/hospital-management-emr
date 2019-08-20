@@ -1,0 +1,22 @@
+
+<div class="row">
+
+  <div class="col-lg-12 col-sm-12">
+    <!-- sud:11Aug'19here we have to show either of two grids: one with server side search, another with date filter-->
+
+    <danphe-grid *ngIf="!enableDateFilter" [grid-colDefaults]="editDoctorGridColumns" [grid-data]="editDoctorModels" (grid-actions)="EditDoctorGridActions($event)"
+                 [show-ServerSideSearch]="true" [api-type]="patGirdDataApi" [show-print-button]="false" >
+    </danphe-grid>
+
+    <danphe-grid *ngIf="enableDateFilter" [grid-colDefaults]="editDoctorGridColumns" [grid-data]="editDoctorModels" (grid-actions)="EditDoctorGridActions($event)"
+                 [show-ServerSideSearch]="false" [show-CustomDate]="true" [rangeType]="dateRange" [date-range-options]="'1W,1M,3M'"
+                 [show-print-button]="false" (onDateChange)="SearchItemByDate($event)">
+    </danphe-grid>
+
+  </div>
+
+  <danphe-edit-doctor [showEditDoctorPage]="showEditDoctorPage"
+                      [editDoctor]="currentEditDocotorModel"
+                      (update-provider)="UpdateDoctor($event)">
+  </danphe-edit-doctor>
+</div>

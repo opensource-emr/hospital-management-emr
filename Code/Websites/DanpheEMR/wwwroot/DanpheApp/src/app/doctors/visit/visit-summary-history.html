@@ -1,0 +1,50 @@
+
+<div class="row" *ngIf="visitList !=null && visitList.length > 0 &&!showSummaryViewEdit">
+    <div class="table-responsive" style="overflow-y: auto;height: 127px;">
+        <table class="table table-bordered">
+            <tr>
+                <th>
+                    Date
+                </th>
+                <th>
+                    Visit Code
+                </th>
+                <th>
+                    Status
+                </th>
+                <th>
+                    Action
+                </th>
+            </tr>
+            <tr *ngFor="let vis of visitList;">
+                <td style="padding:0px">
+                    {{vis.VisitDateTime | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}
+                </td>
+                <td>{{vis.PatientVisitCode}}</td>
+                <td style="padding:0px">
+                    <i *ngIf="!vis.IsSignedVisitSummary">saved</i>
+                    <i *ngIf="vis.IsSignedVisitSummary">submitted</i>
+                </td>
+                <td style="padding:0px">
+                    <button *ngIf="vis.IsSignedVisitSummary" class="btn btn-xs blue" (click)="ShowEditViewSummary(vis,'view')">View</button>
+                    <button *ngIf="!vis.IsSignedVisitSummary" class="btn btn-xs blue" (click)="ShowEditViewSummary(vis,'fill')">View/Edit</button>
+                </td>
+            </tr>
+
+        </table>
+    </div>
+
+</div>
+
+<div class="row" *ngIf="visitList==null || visitList.length==0 && !showSummaryViewEdit">
+    No Record Found:
+</div>
+<div *ngIf="showSummaryViewEdit">
+    <button class="btn btn-primary" (click)="CloseEditViewSummary()"><i class="fa fa-backward"></i>&nbsp;&nbsp;&nbsp;Back</button>
+    <visit-summary-create [isEditViewMode]="showSummaryViewEdit"
+                          [visitId]="selVisitId"></visit-summary-create>
+</div>
+
+
+
+

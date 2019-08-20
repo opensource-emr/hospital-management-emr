@@ -1,0 +1,105 @@
+
+
+<div class="row" *ngIf="showOpdSticker">
+  <div id="OPDsticker" *ngIf="OpdStickerDetails !=null" style="width: 400px;height: 250px;border: 1px dotted black;padding: 10px;">
+    <div id="opdprintpage" style="width:370px; height:180px;margin:0px;display:block;font-family:sans-serif;">
+      <div style="width:100%;">
+        <div>
+          <div style="font-size:14px;">
+            <span>
+              Date: {{OpdStickerDetails.VisitDate}}&nbsp;&nbsp;({{localDateTime}})
+            </span>
+            <span style="float:right;padding-right: 5px;">
+              Time: {{OpdStickerDetails.VisitTime}}
+            </span>
+          </div>
+          <div>
+            <div style="display:inline-block;width: 15%;vertical-align: top;">
+              Name&nbsp;:&nbsp;
+            </div>
+            <div style="font-size:16px;display:inline-block;font-weight:bold;text-transform:uppercase">
+              <div style="display:inline-block;">
+                {{OpdStickerDetails.PatientName}} &nbsp;&nbsp;&nbsp;
+              </div>
+              <div style="display:inline-block;font-style:italic;font-size:15px;">
+                {{OpdStickerDetails.DateOfBrith | DanpheDateTime:'age'}}/{{OpdStickerDetails.Gender | slice:0:1}}
+              </div>
+            </div>
+          </div>
+          <div>
+            <span style="display:inline-block;">
+              Hospital No. : {{OpdStickerDetails.PatientCode}}
+            </span>
+            <span style="float:right;font-size:14px;padding-right: 5px;">
+              Contact : {{OpdStickerDetails.PhoneNumber}}
+            </span>
+          </div>
+          <div *ngIf="isInsuranceBilling">
+            <div>
+              IMIS Code&nbsp;:&nbsp;{{IMISCode}}
+            </div>
+            <div>
+              Claim Code&nbsp;:&nbsp;{{SelectedVisitDetails.ClaimCode}}
+            </div>
+          </div>
+          <div>
+            <div>
+              Address&nbsp;:&nbsp;{{OpdStickerDetails.Address}} , {{OpdStickerDetails.District}}
+            </div>
+          </div>
+        </div>
+        <hr style="border:0.5px solid black;margin:0px;" />
+      </div>
+      <div style="width:100%;font-size:14px; margin-top:2px">
+        <b style="text-transform:uppercase">
+
+          <span class="left" *ngIf=" OpdStickerDetails.DoctorName =='Prof. Dr. Padam Raj Pant'||OpdStickerDetails.DoctorName =='Dr. Sunita Pun'||OpdStickerDetails.DoctorName =='Dr. Atit Poudel'">
+            Prof. Dr.Padam Raj Pant and Team
+          </span>
+          <span class="left" *ngIf=" OpdStickerDetails.DoctorName !='Prof. Dr. Padam Raj Pant'&&OpdStickerDetails.DoctorName !='Dr. Sunita Pun'&&OpdStickerDetails.DoctorName !='Dr. Atit Poudel'">
+            {{OpdStickerDetails.DoctorName}}
+          </span>
+
+        </b>
+      </div>
+      <div style="width:80%;display:inline-block; margin-top:5px">
+        <div style="font-size:14px;text-transform:capitalize ">
+          Department : <b>{{OpdStickerDetails.DepartmentName}}</b>
+          <span style="padding-left:12px;">Room No : {{OpdStickerDetails.RoomNo}} </span>
+        </div>
+        <div style="padding-top: 8px;padding-left: 3px;font-size: 15px;">
+          <span *ngIf="OpdStickerDetails.AppointmentType=='New' && !isInsuranceBilling"> (Valid Upto {{maxFollowUpDays}} days for same {{doctorOrDepartment}})</span>
+        </div>
+
+        <div *ngIf="EnableShowTicketPrice && OpdStickerDetails.OpdTicketCharge>0" style="padding-top: 8px;padding-left: 3px;font-size: 12px;font-weight: bold;">
+          <span> Ticket Charge: Rs. {{OpdStickerDetails.OpdTicketCharge}}</span>
+        </div>
+
+        <div style="padding-top: 13px;font-size:13px;">
+          <span style="text-transform:uppercase;font-weight:bold;">
+            {{OpdStickerDetails.AppointmentType}}
+          </span>
+          <span style="float:right;padding-right: 20px;">
+            User&nbsp;: {{OpdStickerDetails.User}}
+          </span>
+        </div>
+      </div>
+      <div style="width:15%;display:inline-block;vertical-align: top; float:right; margin:8px 15px 0 0">
+        <qr-code *ngIf="showQrCode" [value]="patientQRCodeInfo" [size]="75"></qr-code>
+      </div>
+    </div>
+  </div>
+  <p style="text-align:center;width: 400px;">
+    <button *ngIf="!showServerPrintBtn" class="btn blue" (click)="printStickerClient()">
+      Print Sticker
+      <i class="glyphicon glyphicon-print"></i>
+    </button>
+    <button *ngIf="showServerPrintBtn" class="btn blue" (click)="printStickerServer()" [disabled]="loading">
+      Print Sticker
+      <i class="glyphicon glyphicon-print"></i>
+    </button>
+  </p>
+  <p *ngIf="showLoading" style="text-align:center;width:400px;">
+    please wait while printing is in progress...
+  </p>
+</div>

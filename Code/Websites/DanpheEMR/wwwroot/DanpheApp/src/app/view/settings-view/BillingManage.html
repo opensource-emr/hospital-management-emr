@@ -1,0 +1,17 @@
+
+<div class="row">
+    <ul class="nav nav-tabs">
+        <li>  <a [ngClass]="{'a-tab-active': showItemList==true}" (click)="updateView(0)">Manage Billing Items</a></li>
+        <li>  <a [ngClass]="{'a-tab-active': showPackageList==true}" (click)="updateView(1)">Manage Billing Packages</a></li>
+        <li>  <a [ngClass]="{'a-tab-active': showOrganizationList==true}" (click)="updateView(2)">Manage Credit Organization</a></li>
+        <li>  <a [ngClass]="{'a-tab-active': showMembershipList==true}" (click)="updateView(3)">Manage Membership</a></li>
+    </ul>
+</div>
+
+<div class="col-md-12">
+    <billingItem-list *ngIf="showItemList"></billingItem-list>
+    <billingPackage-list *ngIf="showPackageList"></billingPackage-list>
+    <credit-organization-list *ngIf="showOrganizationList"></credit-organization-list>
+    <membership-list *ngIf="showMembershipList"></membership-list>
+</div>
+

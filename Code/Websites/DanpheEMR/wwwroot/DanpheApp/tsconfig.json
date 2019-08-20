@@ -1,0 +1,32 @@
+{
+
+  "compilerOptions": {
+    "baseUrl": "./",
+    "outDir": "./dist/out-tsc",
+    "sourceMap": true,
+    "declaration": false,
+    "module": "es2015",
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": false,
+    "target": "es5",
+    "typeRoots": [ "node_modules/@types" ],
+    "lib": [ "es2018", "dom" ],
+    "strict": false,
+    "paths": {
+      "*": [ "./typings/*" ],
+      "htmlDocx": [
+        "./typings/modules/htmldocx/htmldocx.d.ts"
+      ]
+    }
+  },
+  "compileOnSave": false,
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "src/**/*.spec.ts"
+  ]
+}

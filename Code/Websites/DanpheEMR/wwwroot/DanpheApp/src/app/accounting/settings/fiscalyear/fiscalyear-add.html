@@ -1,0 +1,79 @@
+﻿<div class="popup-static portlet box portlet-fullscreen" *ngIf="showAddPage">
+    <div class="portlet-body form" style="background-color:white">
+        <form [formGroup]="currentFiscalYear.FiscalYearValidator" class="form-horizontal">
+            <div class="form-body">
+                <div class="col-md-12">
+                    <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+                    </div>
+                    <div class="col-md-8 col-sm-10 col-xs-10 modelbox-div" style="margin-right: 24px;">
+                        <div class="col-md-12">
+                            <div class="caption" style="color:blue;">
+                                <h3>
+                                    <span>Create Fiscal Year</span>
+                                </h3>
+                            </div>
+                            <a style="float:right;  margin-top:-32px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                            <hr />
+                        </div>
+                        <div class="col-md-12">
+                            <div class="col-md-8" style="margin-right: 24px;">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Fiscal Year Name<b style="float:right;">:</b></label>
+                                    <div class="col-md-8">
+                                        <input class="form-control" type="text" [(ngModel)]="currentFiscalYear.FiscalYearName" disabled
+                                               formControlName="FiscalYearName" placeholder="Fiscal Year Name" />
+                                        <span class="color-red font-sm" [hidden]="currentFiscalYear.IsValidCheck('FiscalYearName','required') || !(currentFiscalYear.IsDirty('FiscalYearName'))">Fiscal Year Name is required</span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 left" style="padding-top: 1px;">Start Year<b style="float:right;">:</b></label>
+                                    <div class="col-md-8">
+                                        <danphe-date-picker [(ngModel)]="currentFiscalYear.StartDate" (ngModelChange)="selectProperFiscalYearName()"
+                                                            formControlName="StartDate" ngDefaultControl [CalendarTypes]="calType">
+                                        </danphe-date-picker>
+                                        <span class="color-red font-sm" [hidden]="currentFiscalYear.IsValidCheck('StartDate','required') || !(currentFiscalYear.IsDirty('StartDate'))">Start Date is required</span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 left" style="padding-top: 1px;">End Year<b style="float:right;">:</b></label>
+                                    <div class="col-md-8">
+                                        <danphe-date-picker [(ngModel)]="currentFiscalYear.EndDate" (ngModelChange)="selectProperFiscalYearName()" formControlName="EndDate"
+                                                            ngDefaultControl [CalendarTypes]="calType">
+                                        </danphe-date-picker>
+                                        <span class="color-red font-sm" [hidden]="currentFiscalYear.IsValidCheck('EndDate','required') || !(currentFiscalYear.IsDirty('EndDate'))">End Date is required</span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Discription<b style="float:right;">:</b></label>
+                                    <div class="col-md-8">
+                                        <textarea class="form-control" type="text" [(ngModel)]="currentFiscalYear.Description"
+                                                  [ngModelOptions]="{standalone: true}" placeholder="Enter Description">
+                                       </textarea>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Is Active ? <b style="float:right;">:</b> </label>
+                                    <div class="col-md-8">
+                                        <div class="input-group">
+                                            <div class="icheck-inline">
+                                                <label class="mt-checkbox mt-checkbox-outline">
+                                                    <input name="IsActive" type="checkbox" value="" [(ngModel)]="currentFiscalYear.IsActive" [ngModelOptions]="{standalone: true}">
+                                                    <span></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-actions">
+                                    <input type="button" class="btn btn-primary" (click)="AddFiscalYear()" value="Add Ledger" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

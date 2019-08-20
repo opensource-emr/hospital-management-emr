@@ -1,0 +1,12 @@
+﻿<danphe-grid [grid-colDefaults]="nurIPDGridColumnSettings" [grid-data]="ipdList" (grid-actions)="NurIPDListGridActions($event)"
+             [show-ServerSideSearch]="true"
+             [api-type]="patGirdDataApi">
+</danphe-grid>
+<div class="row">
+    <div *ngIf="showDocumentsDetails">
+        <patient-upload-files [isShowUploadMode]="isShowUploadMode"
+                              [isShowListMode]="isShowListMode"
+                              [patientId]="patientId">
+        </patient-upload-files>
+    </div>
+</div>

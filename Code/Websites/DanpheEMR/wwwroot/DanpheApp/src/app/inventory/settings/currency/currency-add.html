@@ -1,0 +1,68 @@
+﻿<div class="popup-static portlet box portlet-fullscreen" *ngIf="showAddPage">
+    <div class="portlet-body form" style="background-color:white">
+        <div class="col-md-12">
+            <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+            </div>
+            <div class="col-md-5 col-sm-12 col-xs-12 modelbox-div" style="margin-right:24px">
+                <div class="col-md-12">
+                    <div class="caption" style="color:blue;">
+                        <h3>
+                            <span *ngIf="!update">Add Currency</span>
+                            <span *ngIf="update">Update Currency</span>
+                        </h3>
+                    </div>
+                    <a style="float:right;  margin-top:-32px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                    <hr />
+                </div>
+                <form [formGroup]="CurrentCurrency.CurrencyValidator" class="form-horizontal">
+                    <div class="form-body">
+                        <div class="col-md-12 col-xs-12" style="margin-right: 24px;">
+                            <div class="form-group">
+                                <label class="control-label col-md-5">Currency Code<b class="color-red">*</b><b style="float:right;">:</b></label>
+                                <div class="col-md-7">
+                                    <input class="form-control" maxlength="30" type="text"
+                                           [(ngModel)]="CurrentCurrency.CurrencyCode"
+                                           formControlName="CurrencyCode"
+                                           id="CurrencyCode"
+                                           placeholder="CurrencyCode" />
+                                    <span class="color-red font-sm" [hidden]="CurrentCurrency.IsValidCheck('CurrencyCode','required') || !(CurrentCurrency.IsDirty('CurrencyCode'))">CurrencyCode is required</span>
+                                    <span class="color-red font-sm" *ngIf="CurrentCurrency.IsDirty('CurrencyCode')" [hidden]="CurrentCurrency.IsValidCheck('CurrencyCode','maxlength')"> Length is not proper</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-5">Description<b style="float:right;">:</b></label>
+                                <div class="col-md-7">
+                                    <input class="form-control" maxlength="200" type="text"
+                                           [(ngModel)]="CurrentCurrency.Description"
+                                           [ngModelOptions]="{standalone: true}"
+                                           id="Description"
+                                           placeholder="Description" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-5">Is Active <b style="float:right;">:</b> </label>
+                                <div class="col-md-7">
+                                    <div class="input-group">
+                                        <div class="icheck-inline">
+                                            <label class="mt-checkbox mt-checkbox-outline">
+                                                <input id="isActive"
+                                                       type="checkbox"
+                                                       [(ngModel)]="CurrentCurrency.IsActive"
+                                                       [ngModelOptions]="{standalone: true}" />
+                                                <span></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <input type="button" class="btn btn-primary" *ngIf="!update" (click)="AddCurrency()" value="Add Currency" />
+                                <input type="button" class="btn btn-primary" *ngIf="update" (click)="Update()" value="Update" />
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

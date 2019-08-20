@@ -1,0 +1,17 @@
+﻿
+<table class="table table-striped table-hover" style="width: 100%;border-bottom: 1px solid;" *ngIf="dischargeBill.BillItemSummary">
+    <thead>
+        <tr>
+            <th>S.N.</th>
+            <th>Service Particular(s)</th>
+            <th style="text-align: right;">Amount</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr *ngFor="let row of dischargeBill.BillItemSummary; let i=index">
+            <td style="text-align:left">{{i+1}}</td>
+            <td style="text-align:left">{{row.ItemGroupName}}</td>
+            <td style="text-align: right;">{{row.SubTotal}}</td>
+        </tr>
+    </tbody>
+</table>

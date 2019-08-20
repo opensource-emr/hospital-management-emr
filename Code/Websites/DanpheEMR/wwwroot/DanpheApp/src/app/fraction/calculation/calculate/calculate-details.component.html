@@ -1,0 +1,137 @@
+﻿
+<style>
+    body {
+        cursor: default;
+        font-size: 14px;
+        line-height: 21px;
+        font-family: "Segoe UI","Helvetica",Garuda,Arial,sans-serif;
+        color: #666;
+        padding: 14px;
+    }
+
+    .box {
+        width: 100%;
+        float: left;
+        margin-right: 25px;
+    }
+
+    .title {
+        display: block;
+        padding: 14px 0 35px 0;
+        font-size: 20px;
+        font-weight: 100;
+        margin-bottom: 10px;
+        border-bottom: 2px solid;
+    }
+
+    ul {
+        color: #666;
+        list-style: square;
+        padding: 0;
+        margin-left: 20px;
+        font-size: 12px;
+    }
+
+
+    .child {
+        color: #F5876E;
+    }
+
+    .child div:first-child{
+        text-align: center;
+    }
+    
+    .grand-child div:first-child{
+        text-align: right;
+    }
+
+
+    .parent {
+        color: #61A8DC;
+    }
+
+    .grand-child {
+        color: #8EBD40;
+    }
+
+    .purple {
+        color: #988CC3;
+    }
+
+    .gold {
+        color: #D8C86E;
+    }
+</style>
+
+<div class="well">
+    <div class="row">
+        <div class="col-md-4">
+            Patient Name: <b>   {{ billingTransactionItem.FullName }}</b>
+        </div>
+        <div class="col-md-4">
+            Item Name: <b>      {{ billingTransactionItem.ItemName }}</b>
+        </div>
+        <div class="col-md-3">
+            Department: <b> {{billingTransactionItem.ServiceDepartmentName}}</b>
+        </div>
+        <br />
+        <div class="col-md-4">
+            Total Amount: <b> Rs. {{ billingTransactionItem.TotalAmount }}</b>
+
+        </div>
+        <div class="col-md-4">
+            Hospital Percent: <b> {{ fractionPercent.HospitalPercent }}% (Rs. {{ hospitalAmount }})</b>
+        </div>
+        <div class="col-md-4">
+            Doctor Percent: <b> {{ fractionPercent.DoctorPercent }}% (Rs. {{ doctorAmount }})</b>
+        </div>
+
+    </div>
+    </div>
+<div class="box parent">
+    <div class="title">
+       <div class="col-md-3">Doctor</div>
+       <div class="col-md-3">Role</div>
+       <div class="col-md-2">Initial %</div>
+       <div class="col-md-2">Final %</div>
+       <div class="col-md-2">Final Amount</div>
+    </div>
+    <div class="row list" *ngFor="let frac of calculationDetails">
+        <div [ngClass]="frac.Hierarchy == 1 ? 'parent' : frac.Hierarchy == 2 ? 'child' : 'grand-child'">
+            <div class="col-md-3">{{ frac.IsParentId }}  {{ frac.DoctorName }}</div>
+            <div class="col-md-3">{{ frac.Designation }}</div>
+            <div class="col-md-2">{{ frac.InitialPercent }}</div>
+            <div class="col-md-2">{{ frac.FinalPercent }}</div>
+            <div class="col-md-2">{{ frac.FinalAmount }}</div>
+        </div>
+    </div>
+</div>
+
+
+<!--<div id="printpage" class="row printStyle print-border">
+    <div style="text-align:center;">
+        <div class="row well">
+            <div class="col-md-3">Doctor</div>
+            <div class="col-md-3">Role</div>
+            <div class="col-md-2">Inital %</div>
+            <div class="col-md-2">Final %</div>
+            <div class="col-md-2">Final Amount</div>
+        </div>
+        <div class="row" *ngFor="let frac of calculationDetails">
+            <div class="col-md-3">{{ frac.DoctorName }}</div>
+            <div class="col-md-3">{{ frac.Designation }}</div>
+            <div class="col-md-2">{{ frac.InitialPercent }}</div>
+            <div class="col-md-2">{{ frac.FinalPercent }}</div>
+            <div class="col-md-2">{{ frac.FinalAmount }}</div>
+        </div>
+
+    </div>
+</div>
+<div class="row center-style">
+    <div class="col-md-12 col-xs-12 ">
+        <a (click)="print()" class="btn btn-default">
+            Print
+            <i class="glyphicon glyphicon-print"></i>
+        </a><span> </span><span> </span>
+    </div>
+</div>-->

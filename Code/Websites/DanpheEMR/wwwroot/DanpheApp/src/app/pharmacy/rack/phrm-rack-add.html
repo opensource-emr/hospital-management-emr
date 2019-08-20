@@ -1,0 +1,56 @@
+﻿<div class="popup-static portlet box portlet-fullscreen" *ngIf="showAddPage && CurrentRack && CurrentRack.RackValidator">
+    <div class="portlet-body form" style="background-color:white">
+        <form [formGroup]="CurrentRack.RackValidator" class="form-horizontal">
+            <div class="form-body">
+                <div class="col-md-12">
+                    <div class="col-md-3 hidden-xs hidden-sm" style="margin-right:24px;">
+                    </div>
+                    <div class="col-md-6 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+                        <div class="col-md-12">
+                            <div class="caption" style="color:blue;">
+                                <h3>
+                                    <span>{{ !CurrentRack.RackId ? 'Add Rack' : 'Update ' + CurrentRack.Name}}</span>
+                                </h3>
+                            </div>
+                            <a style="float:right;  margin-top:-32px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                            <hr />
+                        </div>
+                        <div class="col-md-12">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="control-label col-md-5">Rack Name:<b style="float:right;">:</b></label>
+                                    <div class="col-md-7">
+                                        <input class="form-control" maxlength="30"
+                                               [(ngModel)]="CurrentRack.Name"
+                                               formControlName="Name"
+                                               type="text" id="RackName" value="" placeholder="Rack Name" /><br />
+                                        <span style="color:red" *ngIf="CurrentRack.IsDirty('Name')" [hidden]="CurrentRack.IsValidCheck('Name','required, unique')"> Rack Name is required.</span>
+                                    </div>
+                                </div>
+                                <div class="form-group" *ngIf="!CurrentRack.RackId || CurrentRack.ParentId != 0">
+                                    <label class="control-label col-md-5">Parent Rack:<b style="float:right;">:</b></label>
+                                    <div class="col-md-7">
+                                        <select class="form-control" [(ngModel)]="CurrentRack.ParentId" [ngModelOptions]="{standalone: true}" placeholder="-- Select Parent Rack --">
+                                            <option *ngFor="let parentRack of ParentRackList" value="{{parentRack.RackId}}">{{ parentRack.Name  }}</option>
+                                        </select><br />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-5">Description:<b style="float:right;">:</b></label>
+                                    <div class="col-md-7">
+                                        <textarea class="form-control" [(ngModel)]="CurrentRack.Description" [ngModelOptions]="{standalone: true}"></textarea>
+                                    </div>
+                                </div>
+                                <div class="form-actions">
+                                    <input type="button" class="btn btn-primary" *ngIf="!CurrentRack.RackId " (click)="AddRack()" value="Add Rack" />
+                                    <input type="button" class="btn btn-primary" *ngIf="CurrentRack.RackId " (click)="UpdateRack()" value="Update" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+

@@ -1,0 +1,44 @@
+<div class="popup-static portlet box portlet-fullscreen">
+  <div class="portlet-body form">
+
+    <div class="danphe-refer-visit">
+      <i class="btn btn-danger" style="float: right" (click)="Close()">X</i>
+      <br />
+      <table class="table table-striped table-bordered table-hover">
+        <tr>
+          <th sortable-header><b>{{selectedVisit.Patient.FirstName}} {{selectedVisit.Patient.LastName}} ({{selectedVisit.Patient.PatientCode}})</b></th>
+        </tr>
+      </table>
+      <table class="table table-striped table-bordered table-hover">
+        <tr>
+          <th sortable-header><b>Department</b></th>
+          <th sortable-header><b>Doctor</b></th>
+        </tr>
+        <tr>
+          <td>
+            <select [(ngModel)]="departmentId"
+                    (ngModelChange)="FilterDoctorList()">
+              <option value="0">--All--</option>
+              <option *ngFor="let dep of departmentList" value="{{dep.DepartmentId}}">{{dep.DepartmentName}}</option>
+            </select>
+          </td>
+          <td>
+
+
+            <input danphe-auto-complete
+                   [(ngModel)]="selectedDoctor"
+                   [list-formatter]="DocListFormatter"
+                   [source]="filteredDocList"
+                   placeholder="enter text"
+                   display-property-name="ProviderName"
+                   value-property-name=null
+                   max-num-list="10"
+                   (focusout)="AssignSelectedDoctor()"
+                   onClick="this.select();" />
+          </td>
+        </tr>
+      </table>
+      <button type="button" class="btn btn-danger" (click)="AddReferralVisit()" [disabled]="loading">Refer</button>
+    </div>
+  </div>
+</div>

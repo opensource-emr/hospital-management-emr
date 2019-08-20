@@ -1,0 +1,117 @@
+<style>
+  .closeBtn {
+    float: right;
+    padding-right: 5px;
+    padding: 3px 3px 3px 5px;
+    cursor: pointer;
+  }
+</style>
+
+<div class="popup-static portlet box portlet-fullscreen">
+  <div class="portlet-body form" style="padding-top: 20px !important;">
+    <div class="modelbox-div modelbox-custm col-md-11" style="margin-left: 2%;border-radius:0px !important;padding: 0px 0px 10px;font-size: 16px;width: 96%;">
+      <button class="btn-danger closeBtn" (click)="CloseItemEdit($event)">
+        <i class="fa fa-close"></i>Close
+      </button>
+      <div class="col-md-12" *ngIf="itemToEdit" style="padding: 0px;padding-left: 10px;" id="editPanel">
+        <table class="table-striped table-hover" style="width:100%;margin-top: 12px;">
+          <thead style="background-color: #d0d9d0;">
+            <tr>
+              <th style="padding-left:5px;">
+                Date
+              </th>
+              <th style="width: 25%;">
+                ItemName
+              </th>
+              <th style="width: 11%;">
+                Price
+              </th>
+              <th style="width: 5%;">
+                Qty.
+              </th>
+              <th style="width: 10%;">
+                Subtotal
+              </th>
+              <th style="width: 10%;" *ngIf="!itemToEdit_Input.IsInsurance">
+                Disc. %
+              </th>
+              <th style="width: 10%;" *ngIf="!itemToEdit_Input.IsInsurance">
+                Disc. Amt.
+              </th>
+              <th style="width: 12%;">
+                Total Amount
+              </th>
+              <th>
+
+              </th>
+            </tr>
+
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding-left:5px;">
+                {{itemToEdit.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}
+              </td>
+              <td style="padding-right: 10px;max-width:200px;">
+                {{itemToEdit.ItemName}}
+              </td>
+              <td>
+                <input type="number" [(ngModel)]="itemToEdit.Price" style="width:100px;" (ngModelChange)="OnPriceChanged()" min="0" />
+              </td>
+              <td>
+                <input type="number" [(ngModel)]="itemToEdit.Quantity" style="width:50px;" (ngModelChange)="OnQtyChanged()" min="0" />
+              </td>
+              <td>
+                {{itemToEdit.SubTotal}}
+              </td>
+              <td *ngIf="!itemToEdit_Input.IsInsurance">
+                <input type="number" [(ngModel)]="itemToEdit.DiscountPercent" style="width:100px;" (ngModelChange)="OnDiscPercentChanged()" min="0"
+                       [attr.disabled]="!discountApplicable == true ? true : null" />
+              </td>
+              <td *ngIf="!itemToEdit_Input.IsInsurance">
+                {{itemToEdit.DiscountAmount}}
+              </td>
+              <td style="font-weight: bold;color: green;">
+                {{itemToEdit.TotalAmount}}
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+      <div class="col-md-12" style="padding-top:20px;">
+        <div class="col-md-2">
+          Assigned to Doctor:
+        </div>
+        <div class="col-md-3" *ngIf="doctorList && doctorList.length>0">
+          <input class="form-control cstm-form-control" danphe-auto-complete
+                 [(ngModel)]="selectedAssignedToDr"
+                 [source]="docDDLSource"
+                 [list-formatter]="AssignedToDocListFormatter"
+                 placeholder="Enter Name"
+                 display-property-name="FullName"
+                 value-property-name=null
+                 match-formatted="true"
+                 (focusout)="AssignSelectedDoctor()"
+                 onClick="this.select();"
+                 max-num-list="10" />
+        </div>
+        <div class="col-md-5">
+          <span style="line-height:2;float: left;font-weight:bold;">Remarks:</span>
+          <textarea style="width:82%;" rows="1" [(ngModel)]="cancelRemarks"></textarea> <br />
+        </div>
+      </div>
+
+      <div class="col-md-12" style="padding-top:20px;text-align: center;">
+        <button class="btn blue" (click)="SaveItem()" title="Save Changes">
+          <i class="fa fa-save" style="cursor:pointer;"></i>
+          Save
+        </button>
+        <button class="btn red" (click)="CancelBillItem()" title="Cancel This Item" style="margin-left: 20px;background-color: red;">
+          <i class="fa fa-trash" style="cursor:pointer;"></i>
+          Cancel Item
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,59 @@
+﻿<div class="popup-static portlet box portlet-fullscreen" *ngIf="showAddPage">
+    <div class="portlet-body form" style="background-color:white">
+        <form [formGroup]="dataFromGrid.FractionPercentValidator" class="form-horizontal">
+            <div class="form-body">
+                <div class="col-md-12">
+                    <div class="col-md-3 hidden-xs hidden-sm" style="margin-right:24px;">
+                    </div>
+                    <div class="col-md-6 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+                        <div class="col-md-12">
+                            <div class="caption" style="color:blue;">
+                                <h3>
+                                    <span>{{ !dataFromGrid.PercentSettingId ? 'Add Fraction Percent' : 'Update Fraction Percent'}}</span>
+                                </h3>
+                            </div>
+                            <a style="float:right;  margin-top:-32px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                            <hr />
+                        </div>
+                        <div class="col-md-12">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="control-label col-md-5">Hospital Percent:<b class="color-red">*</b><b style="float:right;">:</b></label>
+                                    <div class="col-md-7">
+                                        <input class="form-control" maxlength="30"
+                                               [(ngModel)]="dataFromGrid.HospitalPercent"
+                                               formControlName="HospitalPercent"
+                                               type="number" value="" placeholder="Hospital Percent" min="1" max="99" br />
+                                        <span style="color:red" *ngIf="dataFromGrid.IsDirty('HospitalPercent')" [hidden]="dataFromGrid.IsValid('HospitalPercent','required')"> Hospital Percent is required.</span>
+                                        <div class="color-red font-sm" *ngIf="dataFromGrid.IsDirty('HospitalPercent')" [hidden]="dataFromGrid.IsValid('HospitalPercent','invalidPercent')">Enter valid number.</div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-5">Doctor Percent:<b class="color-red">*</b><b style="float:right;">:</b></label>
+                                    <div class="col-md-7">
+                                        <input class="form-control" maxlength="30"
+                                               formControlName="DoctorPercent"
+                                               [(ngModel)]="dataFromGrid.DoctorPercent"
+                                               type="number" value="" placeholder="Doctor Percent" min="1" max="99" /><br />
+                                        <span style="color:red" *ngIf="dataFromGrid.IsDirty('DoctorPercent')" [hidden]="dataFromGrid.IsValid('DoctorPercent','required')"> Doctor Percent is required.</span>
+                                        <div class="color-red font-sm" *ngIf="dataFromGrid.IsDirty('DoctorPercent')" [hidden]="dataFromGrid.IsValid('DoctorPercent','invalidPercent')">Enter valid number.</div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-5">Description:<b style="float:right;">:</b></label>
+                                    <div class="col-md-7">
+                                        <textarea class="form-control" [(ngModel)]="dataFromGrid.Description" [ngModelOptions]="{standalone: true}"></textarea>
+                                    </div>
+                                </div>
+                                <div class="form-actions">
+                                    <input type="button" class="btn btn-primary" [disabled]="loading" (click)="AddFractionPercent()" value="Save" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+

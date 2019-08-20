@@ -1,0 +1,57 @@
+
+<div class="row">
+    <form [formGroup]="currentDoctorFraction.FractionDateValidator" class="form-horizontal">
+    <div class="form-body">
+        <div class="col-md-12">
+            <div class="caption">
+
+                <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
+                <span class="caption-subject font-red-sunglo bold uppercase">Fraction&nbsp; Report&nbsp; By Doctor</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-5 col-xs-12">
+        <div class="form-group">
+            <label class="control-label col-md-5">From Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
+            <div class="col-md-7">
+                
+                <danphe-date-picker [(ngModel)]="currentDoctorFraction.FromDate" ngDefaultControl [CalendarTypes]="'en,np'" formControlName="FromDate">
+                </danphe-date-picker>
+                <span class="color-red font-sm" *ngIf="currentDoctorFraction.IsDirty('FromDate')" [hidden]="currentDoctorFraction.IsValidCheck('FromDate','wrongDate')"> Enter Valid Date</span>
+            </div>
+        </div>
+
+    </div>
+    <div class="col-md-5 col-xs-12">
+        <div class="form-group">
+            <label class="control-label col-md-4">To Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
+            <div class="col-md-8">
+
+                <danphe-date-picker [(ngModel)]="currentDoctorFraction.ToDate" ngDefaultControl [CalendarTypes]="'en,np'" formControlName="ToDate">
+                </danphe-date-picker>
+
+                <span class="color-red font-sm" *ngIf="currentDoctorFraction.IsDirty('ToDate')" [hidden]="currentDoctorFraction.IsValidCheck('ToDate','wrongDate')"> Enter Valid date</span>
+
+            </div>
+        </div>
+
+    </div>
+    <div class="col-md-2 col-xs-12">
+            <div class="form-group">
+                <button class="btn blue" type="button" (click)="Load()" [disabled]="!(currentDoctorFraction.IsValid())">
+                    <i class="fa fa-search"></i>
+                    Show Report    
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="row">
+<div class="col-lg-12 col-sm-12" *ngIf="fractionReportByDoctorList.length>0">
+    <danphe-grid [grid-colDefaults]="FractionReportGridColumns"
+                 [grid-data]="fractionReportByDoctorList"
+                 [grid-exportOptions]="gridExportOptions" [grid-showExport]="true"
+                 >
+    </danphe-grid>
+</div>
+</div>

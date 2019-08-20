@@ -1,0 +1,29 @@
+﻿
+<div class="row">
+    <div class="col-lg-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="patientGridColumns" [grid-data]="patients" (grid-actions)="AdmissionGridActions($event)"
+        [show-ServerSideSearch]="true"
+        [api-type]="patGirdDataApi">
+        </danphe-grid>
+    </div>
+</div>
+
+<!-- <div class="popup-static portlet box portlet-fullscreen" *ngIf="showProvisionalWarning">
+    <div class="portlet-body form">
+        <div class="modelbox-div" style="margin-left:30%;margin-right:25%;margin-top:2%">
+            <div class="row">
+                <div class="col-md-12" style="margin-top:15px;text-align:center">
+                    <h4><b style="color:#bd8111">Alert!</b></h4>
+                    <p><b style="color:#bd8111;font-size:18px">Please clear provisional items before proceeding for admission.</b></p>
+                    <hr />
+                </div>
+                <br />
+                <div class="col-md-12" style="padding-bottom: 18px;text-align:center">
+                    <button type="button" class="btn btn-danger" (click)="CloseWarningPopUp()">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> -->

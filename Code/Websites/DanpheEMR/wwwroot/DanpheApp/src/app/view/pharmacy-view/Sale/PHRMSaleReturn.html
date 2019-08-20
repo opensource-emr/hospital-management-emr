@@ -1,0 +1,252 @@
+﻿<style>
+    .control-label {
+        font-size: 13px;
+    }
+
+    div.col-md-7 {
+        padding: 0px;
+    }
+
+    div.col-md-5 {
+        padding: 0px;
+    }
+
+    div.col-md-4 {
+        padding: 0px;
+    }
+
+    div.col-md-3 {
+        padding: 0px;
+    }
+
+    .mt-checkbox {
+        font-size: 13px;
+    }
+
+    div.col-xs-12 {
+        padding-left: 7px;
+        margin-left: 0px;
+        margin-right: 0px;
+    }
+
+    div.col-md-12 {
+        padding-left: 7px;
+        margin-left: 0px;
+        margin-right: 0px;
+    }
+    /*This class for background border red */
+    .bg-on {
+        font-weight: bold;
+        border: solid 1px red;
+    }
+    /*This class for */
+    .bg-off {
+        font-weight: bold;
+    }
+
+    .hidden {
+        visibility: hidden;
+    }
+
+    .unhidden {
+        visibility: visible;
+    }
+
+    .form-control {
+        padding: 0px;
+        text-align: center;
+        font-size: 13px;
+    }
+
+    .table-tr-style {
+        background-color: rgb(0, 102, 136);
+        color: rgb(255, 255, 255);
+    }
+
+    .no-margin {
+        margin: 0px;
+    }
+
+    .no-padding {
+        padding: 0px;
+    }
+
+    .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+        padding: 2px !important; /*for table td padding */
+    }
+</style>
+
+<!--@*Start:- Return from customer*@-->
+<div class="row">
+    <form>
+        <div class="col-md-6 col-xs-12">
+            <div class="form-group">
+                <div class="col-md-12">
+                    <div class="col-md-5">
+                        <b>Fiscal Year: </b>
+                        <select [(ngModel)]="selFiscYrId" [ngModelOptions]="{standalone: true}" style="height: 28px;">
+                            <option *ngFor="let fisc of allFiscalYrs;" value="{{fisc.FiscalYearId}}">{{fisc.FiscalYearFormatted}}</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">                  
+                         <input type="number" name="invoiceId" id="invoiceId"
+                           placeholder="enter invoice id" value=""
+                           [(ngModel)]="invoiceId"
+                           [ngModelOptions]="{standalone:true}"
+                           min="1" class="form-control" style="height: 30px;"/>
+                    </div>
+                    <div class="col-md-3">
+                        <button value="Search Invoice"
+                            (click)="SearchInvoice(selFiscYrId)" class="form-control btn btn-success">
+                        <span class="glyphicon glyphicon-search"></span> Search
+                        <span style="margin-left:50px;" *ngIf="invoiceHeader.IsReturn">
+                            <b style="color:red;">This is already returned </b>
+                        </span>
+                    </button>
+                    </div>
+                </div>
+              
+            </div>
+        </div>
+    </form>
+</div>
+<div class="row" *ngIf="showReturnInvoicePage">
+   <!-- @**ngIf="showReturnInvoicePage"*@-->
+    <div class="col-md-10 col-xs-12 table-responsive">
+        <table class="table table-striped table-hover" style="background-color:initial;margin-top:3px">
+            <tr>
+                <td>Invoice Id:</td>
+                <td><b>{{invoiceHeader.InvoiceId}}</b></td>
+                <td>Date:</td>
+                <td><b>{{invoiceHeader.InvoiceDate}}</b></td>
+                <td> Patient Name:</td>
+                <td><b>{{invoiceHeader.PatientName}}</b></td>
+            </tr>
+            <tr>
+                <td>Patient Type:</td>
+                <td><b>{{invoiceHeader.PatientType}}</b></td>
+            </tr>
+            <tr>
+                <td>Bill Amount: </td>
+                <td><b>{{invoiceHeader.InvoiceTotalMoney}}</b></td>
+            </tr>
+        </table>
+    </div>
+</div>
+<div class="row" *ngIf="showReturnInvoicePage">
+    <div class="col-md-12">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover" style="background-color:initial;margin-top:3px">
+                <thead>
+                    <tr>
+                        <th><b>Drug/Medicine Name</b></th>
+                        <th><b>Batch No</b></th>
+                        <th><b>Sale Qty</b></th>
+                        <th><b>Free Qty</b></th>
+                        <th><b> Returned Qty</b></th>
+                        <th><b>MRP</b></th>
+                        <th><b>Price</b></th>
+                        <th><b>Dis%</b></th>
+                        <th><b>SubTotal</b></th>
+                        <th><b>VAT%</b></th>
+                        <th><b>Total</b></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let row of saleReturnModelList; let i = index">
+                        <td>
+                            <input style="width:200px ; " [(ngModel)]="row.ItemName" disabled
+                                   type="text" value="" />
+                        </td>
+                        <td>
+                            <input style="width:200px ; " [(ngModel)]="row.BatchNo" disabled [ngModelOptions]="{standalone: true}"
+                                   type="text" value="" />
+                        </td>
+                        <td>
+                            <input style="width:80px ; " [(ngModel)]="row.Quantity" disabled
+                                   [ngModelOptions]="{standalone: true}" min="0" type="number" value="" />
+                        </td>
+                        <td>
+                            <input style="width:80px ; " [(ngModel)]="row.FreeQty" disabled
+                                   [ngModelOptions]="{standalone: true}" min="0" type="number" value="" />
+                        </td>
+
+                        <td>
+                            <form [formGroup]="row.InvoiceItemsReturnValidator">
+
+                                <input style="width:80px ; " [(ngModel)]="row.Quantity" disabled
+                                       formControlName="Quantity"
+                                       min="0" type="number" value="" />
+                            </form>
+                            <span class="color-red font-sm" *ngIf="row.IsDirty('Quantity')" [hidden]="row.IsValidCheck('Quantity','invalidNumber')">Valid quantity required</span>
+
+                        </td>
+                        <td>
+                            <input style="width:100px ; " [(ngModel)]="row.MRP" disabled (ngModelChange)="AllCalculation()"
+                                   [ngModelOptions]="{standalone: true}" type="text" value="" />
+                        </td>
+                        <td>
+                            <input style="width:100px ; " [(ngModel)]="row.Price" disabled (ngModelChange)="AllCalculation()"
+                                   [ngModelOptions]="{standalone: true}" type="text" value="" />
+                        </td>
+                        <td>
+                            <input style="width:80px ; " [(ngModel)]="row.DiscountPercentage" disabled
+                                   [ngModelOptions]="{standalone: true}" type="text" value="" />
+                        </td>
+                        <td>
+                            <input style="width:120px ; " [(ngModel)]="row.SubTotal" disabled
+                                   [ngModelOptions]="{standalone: true}" type="number" value="" />
+                        </td>
+                        <td>
+                            <input style="width:80px ; " [(ngModel)]="row.VATPercentage" disabled
+                                   [ngModelOptions]="{standalone: true}" type="number" value="" />
+                        </td>
+                        <td>
+                            <input style="width:120px ; " [(ngModel)]="row.TotalAmount" disabled
+                                   [ngModelOptions]="{standalone: true}" type="number" value="" />
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
+            <table class="col-sm-offset-4 col-sm-5 ">
+                <tr>
+                    <td class="col-sm-offset-8 col-sm-2"> </td>
+                    <td>Return Amount</td>
+                    <td><input [(ngModel)]="returnAmount" disabled style="width: 200px;" 
+                               [ngModelOptions]="{standalone: true}" class="form-control"
+                               name="returnAmount" type="number"></td>
+                </tr>
+                <tr>
+                    <td class="col-sm-offset-8 col-sm-2"> </td>
+                    <td>Remark <span style="color:red; text-align:right;">*</span></td>
+                    <td>
+                        <form [formGroup]="saleReturn.InvoiceItemsReturnValidator">
+                            <textarea [(ngModel)]="saleReturn.Remark" formControlName="Remark" style="width:200px" name="Remark" type="text"></textarea>
+                            <div style="color:red" *ngIf="saleReturn.IsDirty('Remark')" [hidden]="saleReturn.IsValidCheck('Remark','required')">Remark is required</div>
+                   </form>
+                    </td>
+                </tr>
+                <tr class="dot">
+                    <td colspan="3" class="text-capitalize">In Words : <b>{{returnAmount | NumberInWords}} </b>Only. <br /><br /></td>
+                </tr>
+                <tr>
+                    <td class="col-sm-offset-8 col-sm-2"> </td>
+                    <td></td>
+                    <td>
+                        <input type="button" *ngIf="!invoiceHeader.IsReturn" class="btn btn-success" [disabled]="loading" value="Return" (click)="SaveReturnFromCustomer()" />
+                        <span></span>
+                        <input type="button" class="btn btn-danger" [disabled]="loading" (click)="Cancel()" value="Cancel">
+                        <button class="btn purple" [disabled]="loading" (click)="CreateCopyForResale()">
+                            <i class="fa fa-copy"></i>
+                            Copy Items for Resale
+                        </button>                        
+                        <span class="color-red font-sm blink" style="padding-right:2px;">{{textMessage}}</span>
+                        <span></span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+<!--@*End:- Return from customer*@-->

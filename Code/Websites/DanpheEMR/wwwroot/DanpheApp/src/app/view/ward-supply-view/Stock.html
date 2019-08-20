@@ -1,0 +1,309 @@
+<div class=" row">
+    <div class="col-md-12">
+        <div class="col-md-4 col-xs-12" *ngIf="showPharmacyStock">
+
+            <label class="control-label">Select Ward:</label>
+
+            <select [(ngModel)]="WardId" id="wardId" style="width:250px;height:30px;" (change)="onChange()">
+                <option value="all">ALL</option>
+                <option *ngFor="let v of wardList" value="{{v.WardId}}">{{v.WardName}}</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+
+<div class="row" *ngIf="showPharmacyStock">
+    <div class="col-lg-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="stockDetailsGridColumns"
+                     [grid-data]="pharmacyStockDetailsList"
+                     [grid-exportOptions]="gridExportOptions" [grid-showExport]="true"
+                     (grid-actions)="StockDetailsGridAction($event)">
+        </danphe-grid>
+    </div>
+</div>
+
+
+<!--Model Box Starting Here-->
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showStockTransfer">
+    <div class="portlet-body form">
+        <!--Model Box Body Start-->
+        <div class="form-body">
+            <div class="col-md-12 modelbox-div" style="width: 95%;left: 3%;right:5%; padding-bottom: 10px;">
+               
+                <br />
+                <table class="table table-striped table-bordered table-hover">
+                    <tr>
+                        <th sortable-header><b>{{selectedItem.ItemName}}({{selectedItem.StockId}})</b></th>
+                    </tr>
+                </table>
+                <div class="col-lg-4 col-sm-12">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover table-condensed" id="exportTable" style="background-color:initial;margin-top:10px">
+                            <tbody>
+                                <tr>
+                                    <td style="font-weight:bold;">
+                                        Item Name
+                                    </td>
+                                    <td>
+                                        {{selectedItem.ItemName}}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight:bold;">
+                                        Batch No
+                                    </td>
+                                    <td>
+                                        {{selectedItem.BatchNo}}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight:bold;">
+                                        Expiry Date
+                                    </td>
+                                    <td>
+                                        {{selectedItem.ExpiryDate | date}}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight:bold;">
+                                        MRP
+                                    </td>
+                                    <td>
+                                        {{selectedItem.MRP}}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="col-lg-8 col-sm-12">
+                    <div class="col-md-12 col-xs-12 col-sm-12" style="margin-bottom:5px !important;">
+                        <div class="form-group">
+                            <label class="control-label col-md-4">
+                                Current Ward
+                                <b style="float:right;">:</b>
+                            </label>
+                            <div class="col-md-8">
+                                <input [(ngModel)]="selectedItem.WardName" typeof="number" disabled
+                                       class="form-control"
+                                       name="Quantity" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12 col-xs-12 col-sm-12" style="margin-bottom:5px !important;">
+                        <div class="form-group">
+                            <label class="control-label col-md-4">
+                                Current Quantity
+                                <b style="float:right;">:</b>
+                            </label>
+                            <div class="col-md-8">
+                                <input [(ngModel)]="selectedItem.Quantity" typeof="number" disabled
+                                       class="form-control"
+                                       name="Quantity" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12 col-xs-12 col-sm-12" style="margin-bottom:5px !important;">
+                        <div class="form-group">
+                            <label class="control-label col-md-4">
+                                Destination Ward
+                                <b style="float:right;">:</b>
+                            </label>
+                            <div class="col-md-8">
+                                <select class="form-control" [(ngModel)]="selectedItem.newWardId" style="width:100%;height:30px;">
+                                    <option *ngFor="let v of availableWardList" value="{{v.WardId}}">{{v.WardName}}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12 col-xs-12 col-sm-12" style="margin-bottom:5px !important;">
+                        <div class="form-group">
+                            <label class="control-label col-md-4">
+                                Modifying Quantity
+                                <b class="color-red">  *</b><b style="float:right;">:</b>
+                            </label>
+                            <div class="col-md-8">
+                                <form [formGroup]="selectedItem.StockManageValidator">
+                                    <input [(ngModel)]="selectedItem.DispachedQuantity"
+                                           formControlName="DispachedQuantity" class="form-control"
+                                           name="DispachedQuantity" type="number" />
+                                    <div style="color:red" *ngIf="selectedItem.IsDirty('DispachedQuantity')"
+                                         [hidden]="selectedItem.IsValid('DispachedQuantity','invalidNumber')">quantity is required</div>
+                                    <div style="color:red" *ngIf="selectedItem.AvailableQuantity < selectedItem.DispachedQuantity">cant out more quantity than current qty</div>
+
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12 col-xs-12 col-sm-12" style="margin-bottom:5px !important;">
+                        <div class="form-group">
+                            <label class="control-label col-md-4">
+                                Remarks
+                                <b class="color-red">  *</b><b style="float:right;">:</b>
+                            </label>
+                            <div class="col-md-8">
+                                <form [formGroup]="selectedItem.StockManageValidator">
+                                    <textarea [(ngModel)]="selectedItem.Remarks"
+                                              formControlName="Remark" class="form-control"
+                                              name="Remark" type="text"></textarea>
+                                    <div style="color:red" *ngIf="selectedItem.IsDirty('Remark')"
+                                         [hidden]="selectedItem.IsValid('Remark','required')">remark is required</div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12 col-xs-12 col-sm-12" style="margin-bottom:5px !important;">
+                        <div class="form-group">
+                            <div class="control-label col-md-4">
+                            </div>
+                            <div class="" style="margin:10px 5px; float:right;">
+                                    <input type="button" class="btn btn-danger" value="Cancel" (click)="Close()" [disabled]="loading" />
+                            </div>
+                            <div class="" style="margin-top:10px; float:right;">
+                                <input type="button" class="btn btn-success" value="Transfer Stock" (click)="WardStockTransfer()" [disabled]="loading" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    <!--Model Box Body End-->
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showStockBreakage">
+            <div class="portlet-body form">
+                <!--Model Box Body Start-->
+                <div class="form-body">
+                    <div class="col-md-12 modelbox-div" style="width: 95%;left: 3%;right:5%; padding-bottom: 10px;">
+                       
+                        <br />
+                        <table class="table table-striped table-bordered table-hover">
+                            <tr>
+                                <th sortable-header><b>Breakage Items</b></th>
+                            </tr>
+                        </table>
+                        <div class="col-lg-4 col-sm-12">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover table-condensed" id="exportTable" style="background-color:initial;margin-top:10px">
+                                    <tbody>
+                                        <tr>
+                                            <td style="font-weight:bold;">
+                                                Item Name
+                                            </td>
+                                            <td>
+                                                {{selectedItem.ItemName}}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="font-weight:bold;">
+                                                Batch No
+                                            </td>
+                                            <td>
+                                                {{selectedItem.BatchNo}}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="font-weight:bold;">
+                                                Expiry Date
+                                            </td>
+                                            <td>
+                                                {{selectedItem.ExpiryDate | date}}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="font-weight:bold;">
+                                                MRP
+                                            </td>
+                                            <td>
+                                                {{selectedItem.MRP}}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="col-lg-8 col-sm-12">
+                            <div class="col-md-12 col-xs-12 col-sm-12" style="margin-bottom:5px !important;">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Current Ward
+                                        <b style="float:right;">:</b>
+                                    </label>
+                                    <div class="col-md-8">
+                                        <input [(ngModel)]="selectedItem.WardName" typeof="number" disabled
+                                               class="form-control"
+                                               name="Quantity" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12 col-xs-12 col-sm-12" style="margin-bottom:5px !important;">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Current Quantity
+                                        <b style="float:right;">:</b>
+                                    </label>
+                                    <div class="col-md-8">
+                                        <input [(ngModel)]="selectedItem.Quantity" typeof="number" disabled
+                                               class="form-control"
+                                               name="Quantity" />
+                                    </div>
+                                </div>
+                            </div>
+                           
+                            <div class="col-md-12 col-xs-12 col-sm-12" style="margin-bottom:5px !important;">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Breakage Quantity
+                                        <b class="color-red">  *</b><b style="float:right;">:</b>
+                                    </label>
+                                    <div class="col-md-8">
+                                        <form [formGroup]="selectedItem.StockManageValidator">
+                                            <input [(ngModel)]="selectedItem.DispachedQuantity"
+                                                   formControlName="DispachedQuantity" class="form-control"
+                                                   name="DispachedQuantity" type="number" />
+                                            <div style="color:red" *ngIf="selectedItem.IsDirty('DispachedQuantity')"
+                                                 [hidden]="selectedItem.IsValid('DispachedQuantity','invalidNumber')">quantity is required</div>
+                                            <div style="color:red" *ngIf="selectedItem.AvailableQuantity < selectedItem.DispachedQuantity">cant out more quantity than current qty</div>
+    
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12 col-xs-12 col-sm-12" style="margin-bottom:5px !important;">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Remarks
+                                        <b class="color-red">  *</b><b style="float:right;">:</b>
+                                    </label>
+                                    <div class="col-md-8">
+                                        <form [formGroup]="selectedItem.StockManageValidator">
+                                            <textarea [(ngModel)]="selectedItem.Remarks"
+                                                      formControlName="Remark" class="form-control"
+                                                      name="Remark" type="text"></textarea>
+                                            <div style="color:red" *ngIf="selectedItem.IsDirty('Remark')"
+                                                 [hidden]="selectedItem.IsValid('Remark','required')">remark is required</div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12 col-xs-12 col-sm-12" style="margin-bottom:5px !important;">
+                                <div class="form-group">
+                                    <div class="control-label col-md-4">
+                                    </div>
+                                    <div class="" style="margin:10px 5px; float:right;">
+                                        <input type="button" class="btn btn-danger" value="Cancel" (click)="Close()" [disabled]="loading" />
+                                    </div>
+                                    <div class="" style="margin-top:10px; float:right;">
+                                        <input type="button" class="btn btn-success" value="Save" (click)="WardStockBreakage()" [disabled]="loading" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+</div>
+
+
+

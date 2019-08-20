@@ -1,0 +1,16 @@
+th {
+  background-color: #0DB0DD;
+  color: white;
+}
+
+h {
+  color: Black;
+  text-align: center;
+}
+
+#blue {
+  background-color: #0db0dd;
+  color: white;
+  padding: 5px;
+  margin: 5px
+}

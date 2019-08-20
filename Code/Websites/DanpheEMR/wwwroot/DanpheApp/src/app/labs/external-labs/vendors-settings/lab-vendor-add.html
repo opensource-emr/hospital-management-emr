@@ -1,0 +1,162 @@
+<div class="popup-static portlet box portlet-fullscreen">
+  <div class="portlet-body form">
+    <div class="col-md-8 col-md-offset-2">
+      <div class="modelbox-div">
+        <div class="modelbox-header">
+          <h4 class="margin-0-vr">
+            <strong>
+              <ng-container *ngIf="actionName == 'add'">Add Lab External Vendor</ng-container>
+              <ng-container *ngIf="actionName == 'edit'">Edit Lab External Vendor</ng-container>
+            </strong>
+          </h4>
+        </div>
+        <div class="modelbox-body">
+
+          <div class="row managetxt">
+
+            <div class="col-md-6">
+              <div class="row margin-15-bt">
+                <div class="col-md-5"><label for="vendorName">Vendor Name</label></div>
+                <div class="col-md-7"><input id="vendorName" class="form-control" type="text" placeholder="Vendor Name" [(ngModel)]="newVendor.VendorName"></div>
+              </div>
+              <div class="row margin-15-bt">
+                <div class="col-md-5"><label for="contactAdd">Contact Address </label> </div>
+                <div class="col-md-7"> 
+                  <textarea id="contactAdd" class="form-control" placeholder="Contact Address" [(ngModel)]="newVendor.ContactAddress">
+                    </textarea>
+                </div>
+              </div>
+              <div class="row margin-15-bt">
+                <div class="col-md-5"><label for="email">Email</label></div>
+                <div class="col-md-7"><input id="email" class="form-control" type="text" placeholder="Email" [(ngModel)]="newVendor.Email"></div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="row margin-15-bt">
+                <div class="col-md-5"><label for="vendorCode">Vendor Code</label></div>
+                <div class="col-md-7"><input id="vendorCode" class="form-control" type="text" placeholder="Vendor Code" [(ngModel)]="newVendor.VendorCode"></div>
+              </div>
+              <div class="row margin-15-bt">
+                <div class="col-md-5"><label for="contactNum">Contact Number</label></div>
+                <div class="col-md-7"><input id="contactNum" class="form-control" type="text" placeholder="Contact Number" [(ngModel)]="newVendor.ContactNo"></div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="row margin-20-bt">
+            <div class="checkbox">
+              <div class="col-md-4">
+                <label for="isExternal">
+                  <input id="isExternal" type="checkbox" [(ngModel)]="newVendor.IsExternal">Is External
+                </label>
+              </div>
+              <div class="col-md-4">
+                <label for="isActive">
+                  <input id="isActive" type="checkbox" [(ngModel)]="newVendor.IsActive">Is Active
+                </label>
+              </div>
+              <div class="col-md-4">
+                <label for="isDefault"><input id="isDefault" type="checkbox" [(ngModel)]="newVendor.IsDefault">Is Default</label>
+              </div>
+            </div>           
+          </div>
+
+        </div>
+
+        <div class="modelbox-footer">
+          <div class="all-buttons text-right">
+            <button type="button" class="btn btn-primary btn-sm margin-7-hr" (click)="ValidateAndAddUpdateVendor()">
+              <ng-container *ngIf="actionName == 'add'">Add</ng-container>
+              <ng-container *ngIf="actionName == 'edit'">Update</ng-container>
+            </button>
+            <button type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="OnClose()">Close</button>
+          </div>
+        </div>
+
+        <div class="close-modelbox">
+          <button class="btn btn-danger" (click)="OnClose()">X</button>
+        </div>
+
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!--<div class="modelbox-div" style="width: 60%; margin: 0 auto; padding: 15px;">
+
+  <button class="btn btn-danger" style="float:right;margin-top: -10px" (click)="OnClose()"><i class="fa fa-close"></i></button>
+  <h4 style="font-weight: 700;text-align: center;">Add/Edit Lab External Vendor</h4>
+  <table class="table table-responsive">
+    <tr>
+      <td>
+        Vendor Name
+      </td>
+      <td>
+
+      </td>
+      <td>
+        Vendor Code
+      </td>
+      <td>
+        <input type="text" [(ngModel)]="newVendor.VendorCode">
+      </td>
+    </tr>
+    <tr>
+      <td>
+        Contact Address
+      </td>
+      <td>
+        <textarea [(ngModel)]="newVendor.ContactAddress">
+                    </textarea>
+      </td>
+      <td>
+        Contact Number
+      </td>
+      <td>
+        <input type="text" [(ngModel)]="newVendor.ContactNo">
+      </td>
+    </tr>
+    <tr>
+      <td>
+        Email
+      </td>
+      <td>
+        <input type="text" [(ngModel)]="newVendor.Email">
+      </td>
+
+    </tr>
+    <tr>
+      <td>
+        Is External
+      </td>
+      <td>
+        <input type="checkbox" [(ngModel)]="newVendor.IsExternal">
+      </td>
+
+    </tr>
+    <tr>
+      <td>
+    <label for="isDefault">Is Default</label> <input id="isDefault" type="checkbox" [(ngModel)]="newVendor.IsDefault">
+       
+      </td>
+      <td>
+
+      </td>
+
+    </tr>
+    <tr>
+      <td>
+
+      </td>
+      <td>
+
+      </td>
+    </tr>
+  </table>
+  <button class="btn blue" (click)="ValidateAndAddUpdateVendor()">Save Vendor </button>
+</div>-->

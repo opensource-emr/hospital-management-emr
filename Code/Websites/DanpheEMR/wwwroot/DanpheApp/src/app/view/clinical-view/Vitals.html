@@ -1,0 +1,230 @@
+
+<style>
+
+    table.table-striped tbody tr td:first-child {
+        color: #006687;
+    }
+
+    .btn-danger .fa {
+        display: inline-block;
+        padding-top: 5px;
+    }
+
+    .btn-success .fa {
+        display: inline-block;
+        padding-top: 5px;
+    }
+
+    .dont-show {
+        display: none;
+    }
+</style>
+
+
+<div class="row">
+    <div class="col-lg-12 col-sm-12 col-md-12">
+        <div class="form-horizontal">
+            <div class="form-body">
+                <div id="vitalsSection">
+                    <div class="col-md-12">
+                        <div class="row">
+
+                            <div class="col-md-7 col-xs-12">
+                                <div class="row">
+                                    <div class="portlet cstm-portlet portlet-with-collapse">
+                                        <div class="portlet-title cstm-pt-title">
+                                            <div class="cstm-portlet-caption">
+                                                Vitals List
+                                            </div>
+                                            <div class="cstm-action">
+                                                <a class="cstm-add" (click)="AddVitalBox()">
+                                                    <i class="fa fa-plus-circle"></i> Add New Vital
+                                                </a>
+                                            </div>
+                                        </div>
+
+                                        <div class="cstm-portlet-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered table-striped table-condensed flip-content" style="margin-bottom: 0px;">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>Recorded On</td>
+                                                            <td *ngFor="let vitals of vitalsList"><strong>{{vitals.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</strong></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Height</td>
+                                                            <td *ngFor="let vitals of vitalsList">
+                                                                <div *ngIf="vitals.HeightUnit!='inch'">{{vitals.Height |HasValue: vitals.HeightUnit}}</div>
+                                                                <div *ngIf="vitals.HeightUnit=='inch'">{{vitals.Height}}</div>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Weight</td>
+                                                            <td *ngFor="let vitals of vitalsList">{{vitals.Weight | HasValue: vitals.WeightUnit}}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>BMI</td>
+                                                            <td *ngFor="let vitals of vitalsList">{{vitals.BMI}}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Temperature</td>
+                                                            <td *ngFor="let vitals of vitalsList">{{vitals.Temperature | HasValue: vitals.TemperatureUnit}}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Pulse</td>
+                                                            <td *ngFor="let vitals of vitalsList">{{vitals.Pulse | HasValue:'/min'}}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Blood Pressure</td>
+                                                            <td *ngFor="let vitals of vitalsList">{{vitals.BPSystolic | HasValue:'/'}}{{vitals.BPDiastolic}}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Respiratory Rate</td>
+                                                            <td *ngFor="let vitals of vitalsList">{{vitals.RespiratoryRatePerMin | HasValue:'/min'}}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>SpO2</td>
+                                                            <td *ngFor="let vitals of vitalsList">{{vitals.SpO2 | HasValue:'percent'}}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>O<sub>2</sub> Deliver Method</td>
+                                                            <td *ngFor="let vitals of vitalsList">{{vitals.OxygenDeliveryMethod}}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Body Pain Data</td>
+                                                            <td *ngFor="let painList of painDataList">
+                                                                <div *ngFor="let pnlist of painList">
+                                                                    <span>{{pnlist.BodyPart}}-{{pnlist.PainScale}} </span>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+
+                                                        <tr>
+                                                            <td>Action</td>
+                                                            <td *ngFor="let vitals of vitalsList;let i = index">
+                                                                <a (click)="Edit(vitals,i)" style="padding: 0;margin-right: 15px;" class="bs-glyphicon-class btn yello"><span class="glyphicon glyphicon-edit"></span>Edit</a>
+                                                                <a (click)="Print(vitals,i)" class="bs-glyphicon-class btn yello" style="padding: 0;"><i class="fa fa-print"></i>Print</a>
+                                                            </td>
+                                                        </tr>
+
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-5 col-xs-12" style="padding-right: 0px;">
+                                <vitals-add [showVitalAddBox]="showVitalAddBox" [selectedVitals]="selectedVitals"
+                                            (callback-add)="CallBackAdd($event)"></vitals-add>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+
+
+               <!-- @*Print Format for HAMS Hostipal*@-->
+                <!--@*<div class="col-md-12">
+                        <div class="row" id="vitalsPrintpage">
+                        </div>
+                    </div>*@-->
+
+               <!-- @*Print Format for May Metro*@-->
+                <div class="col-md-12">
+                    <div class="row" id="vitalsPrintpage">
+
+                        <div *ngIf="hospitalName == 'mayametro'" class="note-holder {{hospitalhospitalName}}" style="width: 100%;margin-top: 200px;">
+                            <div style="width: 20%;padding: 0px 15px;float: left;border-right: 1px solid;min-height: 275px;">
+                                <h3 style="margin-top: 0; font-weight: 700;">VITALS</h3>
+                                <div style="padding-top: 15px;">
+                                    <p>BP</p>
+                                    <p>Pulse</p>
+                                    <p>Ht........... cm</p>
+                                    <p>Wt........... kg</p>
+                                    <p>Temp</p>
+                                    <p>R/R</p>
+                                    <p>SPO<sub>2</sub></p>
+                                    <p>Pain</p>
+                                    <p>Allergy, if any</p>
+                                </div>
+                                <h3 style="font-weight: 700;">Investigations</h3>
+                            </div>
+
+                            <div style="width: 80%;padding: 0px 15px;float: right;">
+                                <div style="width: 100%;">
+                                    <p style="display: inline-block;padding: 0px 20px;"><span style="font-weight: 700;">Hospital No:</span> {{patientService.globalPatient.PatientCode}}</p>
+                                    <p style="display: inline-block;padding: 0px 20px;"><span style="font-weight: 700;">Patient Name:</span> {{patientService.globalPatient.ShortName}}</p>
+                                    <p style="display: inline-block;padding: 0px 20px;"><span style="font-weight: 700;">Age/Sex:</span> {{patientService.globalPatient.Age}} / {{patientService.globalPatient.Gender}}</p>
+                                </div>
+
+                                <div style="width: 100%;">
+                                    <p style="display: inline-block;padding: 0px 20px;"><span style="font-weight: 700;">Address:</span> {{patientService.globalPatient.Address}}</p>
+                                    <p style="display: inline-block;padding: 0px 20px;"><span style="font-weight: 700;">Contact Number:</span> {{patientService.globalPatient.PhoneNumber}}</p>
+                                </div>
+
+                                <div style="width: 100%;">
+                                    <p style="display: inline-block;padding: 0px 20px;"><span style="font-weight: 700;">Referred By:</span> {{visitService.globalVisit.ProviderName}}</p>
+                                    <p style="display: inline-block;padding: 0px 20px;"><span style="font-weight: 700;">Date:</span> {{date}}</p>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div *ngIf="hospitalName == 'hams'" class="note-holder dont-show {{hospitalName}}" style="width: 100%; float: left; margin-top: 120px;">
+                            <style>
+                                .first-row div span, .sec-row div span {
+                                    visibility: hidden;
+                                }
+                            </style>
+
+                            <div style="width: 100%;float: left;padding: 0px 15px;min-height: 400px;">
+                                <div class="first-row" style="width: 100%;float: left;">
+                                    <p style="float: right;padding: 0; margin: 0;"><span style="visibility: hidden;">Date:</span> {{date}}</p>
+                                    <p style="float: left;margin-top: 26px;margin-bottom: 7px;">HIS No: {{patientService.globalPatient.PatientCode}}</p>
+                                </div>
+
+                                <div class="first-row" style="width: 100%;float: left;">
+                                    <div style="width: 52%;float: left;"><span>Patient Name:</span>{{patientService.globalPatient.ShortName}}</div>
+                                    <div style="width: 13%;float: left;"><span>Age.......:</span>{{patientService.globalPatient.Age}}</div>
+                                    <div style="width: 13%;float: left;"><span>Sex.......</span>{{patientService.globalPatient.Gender}}</div>
+                                    <div style="width: 11%;float: left;"><span>Ht.......</span>{{vitals.Height}}cm</div>
+                                    <div style="width: 11%;float: left;"><span>Wt.....</span>{{vitals.Weight}}kg</div>
+                                </div>
+
+                                <div class="sec-row" style="width: 100%;float: left; margin-top: 20px;">
+                                    <div style="width: 22%;float: left;"><span>Pulse............:</span>&nbsp;{{vitals.Pulse}}</div>
+                                    <div style="width: 22%;float: left;"><span>B/P.:</span>{{vitals.BPSystolic}}<span style="visibility: inherit !important;">/</span>{{vitals.BPDiastolic}}</div>
+                                    <div style="width: 20%;float: left;"><span>Temp......:</span>{{vitals.Temperature}} {{vitals.TemperatureUnit}}  </div>
+                                    <div style="width: 18%;float: left;"><span>Resp. rate.....:</span>{{vitals.RespiratoryRatePerMin}} </div>
+                                   <!-- @* | HasValue:'percent'*@-->
+                                    <div style="width: 18%;float: left;"><span>SPO2..:</span> {{vitals.SpO2}} <span style="visibility: inherit !important;">%</span> </div>
+                                </div>
+
+                                <div class="sec-row" style="width: 100%;float: left; margin-top: 20px;">
+                                    <div style="width: 50%;float: left;"><span>Allergies(If Any):....</span></div>
+                                    <div style="width: 50%;float: left;">
+                                        <div style="float: left;"><span>Doctor's Name(Provider):</span></div>
+                                        <div style="display: inline-block;">
+                                            <div>
+                                                <span style="visibility: visible !important; display: block;" *ngFor="let docName of doctorsPanel"><b>{{docName}}</b></span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

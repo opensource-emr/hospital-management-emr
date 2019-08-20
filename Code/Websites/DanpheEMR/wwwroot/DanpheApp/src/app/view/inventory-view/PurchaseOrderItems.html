@@ -1,0 +1,174 @@
+<style>
+  .fa-question {
+    top: 10px;
+  }
+</style>
+<div class="row">
+  <div class="col-md-12">
+    <div class="caption">
+      <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
+      <span class="caption-subject font-blue-sharp bold uppercase">Add Purchase Order</span>
+    </div>
+  </div>
+</div>
+<div class="row" style="padding-top:10px">
+  <form [formGroup]="currentPO.PurchaseOrderValidator" class="form-horizontal">
+    <div class="col-md-4">
+      <div class="form-group">
+        <label class="control-label col-md-2 col-sm-2">Vendor<b>:</b></label>
+        <div class="col-md-6 col-sm-8">
+          <select class="form-control" style="float:left" [(ngModel)]="currentPO.VendorId" formControlName="VendorId" (ngModelChange)="GetVendorDetails(currentPO.VendorId)">
+            <option value="null">-- Select Vendor --</option>
+            <option *ngFor="let vendor of VendorList" value="{{vendor.VendorId}}">{{vendor.VendorName}}</option>
+          </select>
+          <span style="color:red" *ngIf="currentPO.IsDirty('VendorId')" [hidden]="currentPO.IsValidCheck('VendorId','required')"> Vendor is required</span>
+        </div>
+        <a *ngIf="!currentPO.VendorId" class="fa fa-question col-md-1" (click)="AddSupplierPopUp()" title="Unable to find Supplier? Click to add to Master"></a>
+      </div>
+      <span *ngIf="ShowVendorDetails== true" style="font-size:small;">Vendor ContactNo: <b>{{SelectedVendor.ContactNo}}</b></span> &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;
+      <span *ngIf="ShowVendorDetails== true" style="font-size:small;">Vendor Address: <b>{{SelectedVendor.ContactAddress}}</b></span>
+    </div>
+  </form>
+  <div class="form-group col-md-6" style="display:flex">
+    <label class="control-label"><b>PO Date: </b></label>
+    <div class="pull-right col-md-8">
+      <danphe-date-picker [(ngModel)]="currentPO.PoDate" ngDefaultControl [CalendarTypes]="'np'">
+      </danphe-date-picker>
+      <br />
+    </div>
+  </div>
+  <div class="right" style="padding-right:25px" *ngIf="ShowVendorDetails== true">
+    <input type="button" class="btn btn-primary" (click)="LoadRequisitionOrder()" value="Load Requisition Order" />
+  </div>
+
+</div>
+<div class="row">
+  <div class="col-md-12">
+    <div class="table-responsive">
+      <table class="table table-striped table-hover" style="background-color:initial;margin-top:10px">
+        <thead>
+          <tr>
+            <th></th>
+            <th><b>ItemName</b></th>
+            <th></th>
+            <th><b>Quantity</b></th>
+            <th><b>Standard Rate</b></th>
+            <th><b>VAT %</b></th>
+            <th><b>TotalAmount </b></th>
+            <th><b>Delivery Days</b></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of currentPO.PurchaseOrderItems; let i = index">
+            <td style="width:50px"><a (click)="DeleteRow(i)"><i class="btn btn-danger fa">X</i></a></td>
+            <td style="width:170px">
+              <form [formGroup]="row.PurchaseOrderItemValidator">
+                <input danphe-auto-complete class="form-control "
+                       [(ngModel)]="row.SelectedItem"
+                       [source]="ItemList"
+                       [list-formatter]="myListFormatter"
+                       placeholder="Item Name"
+                       display-property-name="ItemName"
+                       value-property-name=null
+                       (valueChanged)="SelectItemFromSearchBox(row.SelectedItem,i)"
+                       max-num-list="10"
+                       formControlName="ItemId"
+                       onclick="this.select();"
+                       no-match-found-text="click ? to add new item" />
+                <div style="color:red" *ngIf="row.IsDirty('ItemId')" [hidden]="row.IsValidCheck('ItemId','required')"> Item is required</div>
+              </form>
+            </td>
+            <td style="vertical-align:middle;width:20px">
+              <a *ngIf="!row.SelectedItem || !row.SelectedItem.ItemId" class="fa fa-question" (click)="AddItemPopUp(i)" title="Unable to find item ? Click to add to Master"></a>
+            </td>
+            <td style="width:80px">
+              <form [formGroup]="row.PurchaseOrderItemValidator">
+                <input [(ngModel)]="row.Quantity" class="form-control" min="0" [disabled]="disableTextBox" formControlName="Quantity" (ngModelChange)="CalculationForPOItem()" name="quantity" type="number">
+                <div style="color:red" *ngIf="row.IsDirty('Quantity')" [hidden]="row.IsValidCheck('Quantity','required') && row.IsValidCheck('Quantity','positivenum')"> invalid quantity</div>
+              </form>
+            </td>
+            <td style="width:150px;">
+              <form [formGroup]="row.PurchaseOrderItemValidator">
+                <input [(ngModel)]="row.StandardRate" class="form-control" formControlName="StandardRate" (ngModelChange)="CalculationForPOItem()" name="price" type="number">
+                <div style="color:red" *ngIf="row.IsDirty('StandardRate')" [hidden]="row.IsValidCheck('StandardRate','required') && row.IsValidCheck('StandardRate','positivenum')"> Invalid</div>
+              </form>
+            </td>
+            <td style="width:80px;">
+              <form [formGroup]="row.PurchaseOrderItemValidator">
+                <input [(ngModel)]="row.VatPercentage" class="form-control" formControlName="VatPercentage" (ngModelChange)="CalculationForPOItem()" max="100" name="discountpercent" type="number">
+                <div style="color:red" *ngIf="row.IsDirty('VatPercentage')" [hidden]="row.IsValidCheck('VatPercentage','required')"> Invalid</div>
+              </form>
+            </td>
+            <td style="width:110px;"><input [(ngModel)]="row.TotalAmount" disabled class="form-control" name="total" type="number"></td>
+            <td style="width:100px;"><input [(ngModel)]="row.DeliveryDays" class="form-control" type="number"></td>
+            <td style="width:20px"><a (click)="AddRowRequest()"><i class="glyphicon glyphicon-plus btn btn-success"></i></a></td>
+          </tr>
+        </tbody>
+      </table>
+      <table class="col-sm-offset-4 col-sm-5 ">
+        <tr>
+          <td class="col-sm-offset-6 col-sm-3"></td>
+          <td> SubTotal: </td>
+          <td><input class="form-control" [(ngModel)]="currentPO.SubTotal" disabled id="subtotal" name="subtotal" type="number"></td>
+        </tr>
+        <tr class="form-group">
+          <td class="col-sm-offset-8 col-sm-2"></td>
+          <td>VAT</td>
+          <td> <input [(ngModel)]="currentPO.VAT" disabled class="form-control" name="DiscountPercent" type="number"></td>
+        </tr>
+        <tr class="form-group">
+          <td class="col-sm-offset-8 col-sm-2"></td>
+          <td>Total Amount: </td>
+          <td><input [(ngModel)]="currentPO.TotalAmount" disabled class="form-control" name="TotalAmount" type="number"></td>
+        </tr>
+        <tr class="form-group">
+          <td class="col-sm-offset-8 col-sm-2"> </td>
+          <td>Remarks: </td>
+          <td><input [(ngModel)]="currentPO.PORemark" class="form-control" name="Remarks" type="text"></td>
+        </tr>
+        <tr class="dot">
+          <td colspan="3" class="text-capitalize">In Words : <b>{{currentPO.TotalAmount | NumberInWords}} </b>Only. <br /><br /></td>
+        </tr>
+        <tr></tr>
+      </table>
+    </div>
+  </div>
+  <div>
+    <p style="float: left;">Select Terms & Conditions:</p>
+    <select style="float:left; margin-left: 15px; height: 30px" [(ngModel)]="currentPO.TermsConditions">
+      <option value="null">-- Select Terms --</option>
+      <option *ngFor="let terms of TermsList" title="{{ terms.Text }}" value="{{ terms.Text }}">{{ terms.ShortName }}</option>
+    </select>
+    <!-- NBB- :20 Apr : Temp- Fixing prod build error
+         Code added into Changeset 3717
+         AddTermsPopUp variable used but not in respective component
+         so, please fix this and then remove this commment as soon as possible
+         now commenting code for fixing
+         -->
+    <a class="fa fa-question col-md-1" (click)="AddTermsPopUp()" title="Unable to find Terms? Click to add to Terms and Conditions"></a>
+  </div>
+
+
+  <div class="col-sm-offset-5 col-sm-5">
+    <input *ngIf="EditPO" type="button" class="btn btn-warning" (click)="UpdatePurchaseOrder()" value="Request" />
+    <span></span>
+    <input *ngIf="!EditPO" type="button" class="btn btn-success" (click)="AddPurchaseOrder()" value="Request" />
+    <span></span>
+    <input type="button" class="btn btn-danger" (click)="Cancel()" value="Cancel">
+    <span></span>
+  </div>
+</div>
+<item-add *ngIf="showAddItemPopUp" [showAddPage]="showAddItemPopUp"
+          (callback-add)="OnNewItemAdded($event)"></item-add>
+
+<!-- NBB- :20 Apr : Temp- Fixing prod build error
+Code added into Changeset 3717
+showAddVendorPopUp, showAddTermsPopUp variable used but not in respective component
+so, please fix this and then remove this commment as soon as possible
+now commenting code for fixing
+-->
+<vendor-add *ngIf="showAddVendorPopUp" [showAddPage]="showAddVendorPopUp"
+            (callback-add)="OnNewSupplierAdded($event)"></vendor-add>
+<terms-add *ngIf="showAddTermsPopUp" [showAddPage]="showAddTermsPopUp"
+           (callback-add)="OnNewTermsAdded($event)"></terms-add>

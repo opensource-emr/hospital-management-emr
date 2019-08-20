@@ -1,0 +1,295 @@
+﻿@using System;
+@using System.Collections.Generic;
+@using System.Linq;
+@using System.Text;
+@using DanpheEMR.Security;
+
+@{
+    List<DanpheRoute> validRoutes = (List<DanpheRoute>)ViewData["validroutes"];
+    RbacUser currUser = (RbacUser)ViewData["currentuser"];
+    validRoutes = validRoutes.Where(r => r.DefaultShow != false && r.IsActive == true).ToList();
+}
+
+<style>
+    .nav-schedule {
+        background-image: url('/themes/theme-default/images/nav/schedule.PNG');
+    }
+
+    .left-nav-active, .page-sidebar .page-sidebar-menu > li > a:hover {
+        background-color: #36c6d3 !important;
+        color: white !important;
+    }
+
+    .help-about {
+        color: #fdefef !important;
+        font-size: 19px !important;
+    }
+
+    .page-sidebar .page-sidebar-menu ul.sub-menu {
+        margin: 0px;
+    }
+
+
+
+    span.ad-sign:after {
+        position: absolute;
+        display: inline-block;
+        content: '\2013';
+        right: 5px;
+        top: 11px;
+        text-align: center;
+        background: #536c7d;
+        z-index: 22;
+        width: 24px;
+        height: 24px;
+        line-height: 20px;
+        font-weight: bold;
+        color: #fff;
+        font-size: 20px;
+        transition: transform .25s linear;
+        -webkit-transition: -webkit-transform .25s linear;
+    }
+
+    span.ad-sign.collapsed:after {
+        line-height: 24px !important;
+        content: '+';
+        -webkit-transform: rotate(90deg);
+        transform: rotate(90deg);
+    }
+
+    span.ad-sign:after {
+        -webkit-transform: rotate(180deg);
+        transform: rotate(180deg);
+    }
+
+    .page-sidebar-menu-closed span.ad-sign {
+        display: none;
+    }
+
+    ul.page-sidebar-menu > li {
+        position: relative;
+    }
+
+    .page-sidebar .page-sidebar-menu > li > a {
+        border-top: 2px solid #3d4957 !important;
+    }
+
+    .page-sidebar .page-sidebar-menu > li > a {
+        background: #006687;
+        color: navajowhite;
+    }
+
+    .page-sidebar .page-sidebar-menu > li > a, .page-sidebar-closed.page-sidebar-fixed .page-sidebar:hover .page-sidebar-menu > li > a {
+        padding: 7px 15px 7px 8px;
+    }
+
+</style>
+
+<body class="page-header-fixed page-sidebar-closed-hide-logo page-content-white">
+    <div class="page-wrapper">
+        <!-- BEGIN HEADER -->
+        <div *ngIf="navService.showTopNav" class="page-header navbar navbar-fixed-top" style="box-shadow: 0px 0px 2px #45484c;">
+            <!-- BEGIN HEADER INNER -->
+            <div class="page-header-inner ">
+                <!-- BEGIN LOGO -->
+                <div class="page-logo">
+                    <a href="#">
+
+                        <img src="~/themes/theme-default/images/hospitals-logo/hospital-logo-landingpage.png" alt="logo" class="logo-default" style="width:155px;height:36px;margin-top:8px" title="Go to DanpheEMR-Home" />
+                    </a>
+                    <div class="menu-toggler sidebar-toggler">
+                        <span></span>
+                    </div>
+                </div>
+                <div style="display: inline-block;color:#f3e2e2;padding-left: 66px;font-size: 16px;">
+                    <b>
+                        {{PatService.globalPatient.ShortName}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <span *ngIf="PatService.globalPatient.PatientCode != null">
+                            Hospital No : {{PatService.globalPatient.PatientCode}}
+                        </span>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    </b>
+
+                    <b>
+                        <span *ngIf="PatService.globalPatient.DateOfBirth != null">
+                            Age/Sex :  {{PatService.globalPatient.DateOfBirth | DanpheDateTime:'age' }}
+                        </span>
+                        <span *ngIf="PatService.globalPatient.DateOfBirth != null"> / {{PatService.globalPatient.Gender}} </span>
+                    </b>
+                    @*<span *ngIf="PatService.globalPatient.EMPI != null">{{pageParameters.EmpiLabel}}: <b>{{PatService.globalPatient.EMPI }}</b></span>*@
+
+                    @*<span *ngIf="PatService.globalPatient.DateOfBirth != null">
+                            DOB:-<b>{{PatService.globalPatient.DateOfBirth | DanpheDateTime:'format':'YYYY-MM-DD' }}</b>
+                        </span>*@
+                </div>
+                <!-- END LOGO -->
+                <!-- BEGIN RESPONSIVE MENU TOGGLER -->
+                <a href="javascript:;" class="menu-toggler responsive-toggler" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span></span>
+                </a>
+                <!-- END RESPONSIVE MENU TOGGLER -->
+                <!-- BEGIN TOP NAVIGATION MENU -->
+                <div class="top-menu">
+
+                    <ul class="nav navbar-nav pull-right">
+                        <li title="My notifications">
+                            <notification-icon>
+
+                            </notification-icon>
+                        </li>
+
+                        <!-- BEGIN NOTIFICATION DROPDOWN -->
+                        <!-- DOC: Apply "dropdown-dark" class after "dropdown-extended" to change the dropdown styte -->
+                        <!-- DOC: Apply "dropdown-hoverable" class after below "dropdown" and remove data-toggle="dropdown" data-hover="dropdown" data-close-others="true" attributes to enable hover dropdown mode -->
+                        <!-- DOC: Remove "dropdown-hoverable" and add data-toggle="dropdown" data-hover="dropdown" data-close-others="true" attributes to the below A element with dropdown-toggle class -->
+                        <!-- END NOTIFICATION DROPDOWN -->
+                        <!-- BEGIN USER LOGIN DROPDOWN -->
+                        <!-- DOC: Apply "dropdown-dark" class after below "dropdown-extended" to change the dropdown styte -->
+                        <li class="dropdown dropdown-user">
+                            <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown" data-close-others="true">
+                                <img alt="" class="img-circle" *ngIf="currentUsr.Profile.ImageLocation!=''" src="{{currentUsr.Profile.ImageLocation}}" />
+                                <span class="username username-hide-on-mobile" style="color: white;font-weight: bold;"> @currUser.UserName </span>
+                                <i class="fa fa-angle-down"></i>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-default">
+                                <li>
+                                    <a routerLink="Employee/ProfileMain">
+                                        <i class="icon-user"></i> My Profile
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a href="@Url.Action("Logout","Account")" type="submit">
+                                        <i class="icon-key"></i> Log Out
+                                    </a>
+
+                                </li>
+                            </ul>
+                        </li>
+                        <!-- END USER LOGIN DROPDOWN -->
+
+                        <li class="dropdown tooltip">
+                            @*sud:24Dec-to display application's current version information on tooltip*@
+                            <span *ngIf="coreService.appVersionNum" class="tooltiptext ttptextdown" style="width: 150px;margin-left: -75px;text-align: left;">
+                                <i class="fa fa-info"></i>
+                                {{coreService.appVersionNum}}
+                            </span>
+                            <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown" data-close-others="true">
+                                <i class="fa fa-question-circle help-about"></i>
+                                <i class="fa fa-angle-down"></i>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-default">
+                                <li>
+                                    <a (click)="DownloadUserManual()">
+                                        <i class="fa fa-download"></i>Download user manual
+                                    </a>
+                                </li>
+                              
+
+                            </ul>
+                        </li>
+
+                    </ul>
+                </div>
+                <!-- END TOP NAVIGATION MENU -->
+            </div>
+            <!-- END HEADER INNER -->
+        </div>
+        <!-- END HEADER -->
+        <!-- BEGIN HEADER & CONTENT DIVIDER -->
+        <div class="clearfix"> </div>
+        <!-- END HEADER & CONTENT DIVIDER -->
+        <!-- BEGIN CONTAINER -->
+        <div [ngClass]="navService.showTopNav ? 'page-container':'' ">
+
+            <!-- BEGIN SIDEBAR -->
+            <div *ngIf="navService.showSideNav" class="page-sidebar-wrapper">
+                <!-- BEGIN SIDEBAR -->
+                <!-- DOC: Set data-auto-scroll="false" to disable the sidebar from auto scrolling/focusing -->
+                <!-- DOC: Change data-auto-speed="200" to adjust the sub menu slide up/down speed -->
+                <div class="page-sidebar navbar-collapse collapse">
+                    <!-- BEGIN SIDEBAR MENU -->
+                    <!-- DOC: Apply "page-sidebar-menu-light" class right after "page-sidebar-menu" to enable light sidebar menu style(without borders) -->
+                    <!-- DOC: Apply "page-sidebar-menu-hover-submenu" class right after "page-sidebar-menu" to enable hoverable(hover vs accordion) sub menu mode -->
+                    <!-- DOC: Apply "page-sidebar-menu-closed" class right after "page-sidebar-menu" to collapse("page-sidebar-closed" class must be applied to the body element) the sidebar sub menu mode -->
+                    <!-- DOC: Set data-auto-scroll="false" to disable the sidebar from auto scrolling/focusing -->
+                    <!-- DOC: Set data-keep-expand="true" to keep the submenues expanded -->
+                    <!-- DOC: Set data-auto-speed="200" to adjust the sub menu slide up/down speed -->
+                    <ul class="menu-content out page-sidebar-menu" style="padding-top: 0px">
+                        <!-- DOC: To remove the sidebar toggler from the sidebar you just need to completely remove the below "sidebar-toggler-wrapper" LI element -->
+                        <!-- BEGIN SIDEBAR TOGGLER BUTTON -->
+                        @*
+                            <li class="sidebar-toggler-wrapper hide">
+                                <div class="sidebar-toggler">
+                                    <span></span>
+                                </div>
+                            </li>*@
+
+                        <!-- END SIDEBAR TOGGLER BUTTON -->
+                        @foreach (var route in validRoutes)
+                        {
+
+                            <li>
+                                <a [routerLink]="'@route.UrlFullPath'" class="nav-link nav-toggle" [routerLinkActive]="'left-nav-active'">
+                                    <img src="/themes/theme-default/images/nav/@route.Css" style="height: 25px;width: 30px;" />
+                                    <span class="title"><b>@route.DisplayName</b></span>
+                                    <span class="selected"></span>
+                                    @*<span class="arrow open"></span>*@
+                                </a>
+
+
+
+                                @*show plus button only when there are child routes to be displayed*@
+
+                                @if (route.ChildRoutes != null && route.ChildRoutes.Where(r => r.DefaultShow == true).Count() > 0)
+                                {<span data-toggle="collapse" data-target="#@route.DisplayName.Replace(" ","")" class="collapsed ad-sign"></span>
+                                    <ul class="sub-menu collapse" id="@route.DisplayName.Replace(" ","")">
+                                        @foreach (var childroute in route.ChildRoutes)
+                                        {
+                                            @if (childroute != null && !string.IsNullOrEmpty(childroute.DisplayName) && childroute.DefaultShow != false)
+                                            {
+                                                <li class="nav-item">
+                                                    <a [routerLink]="'@childroute.UrlFullPath'" class="nav-link" [routerLinkActive]="'left-nav-active'">
+                                                        <i class="icon-bulb"></i>
+                                                        <span class="title">@childroute.DisplayName</span>
+                                                        <span class="badge badge-success"></span>
+                                                    </a>
+                                                </li>
+                                            }
+                                        }
+                                    </ul>
+                                }
+
+                            </li>
+
+                        }
+
+                    </ul>
+
+                    <!-- END SIDEBAR MENU -->
+                    <!-- END SIDEBAR MENU -->
+                </div>
+                <!-- END SIDEBAR -->
+            </div>
+            <!-- END SIDEBAR -->
+            <!-- BEGIN CONTENT -->
+            <div class="page-content-wrapper">
+
+                <!-- BEGIN CONTENT BODY -->
+                <danphe-loading [loading]="loading"></danphe-loading>
+                <danphe-msgbox></danphe-msgbox>
+                <div [ngClass]="navService.showSideNav ? 'page-content':'cstm-pg-content' ">
+                    <div class="row" style="margin-left:0px !important; margin-right:0px !important;">
+                        <router-outlet (activate)="onActivate($event)"></router-outlet>
+                    </div>
+                    <!-- END CONTENT BODY -->
+                </div>
+            </div>
+            <!-- END CONTENT -->
+
+        </div>
+        <!-- END CONTAINER -->
+        <!-- BEGIN FOOTER -->
+        <!-- END FOOTER -->
+    </div>
+</body>

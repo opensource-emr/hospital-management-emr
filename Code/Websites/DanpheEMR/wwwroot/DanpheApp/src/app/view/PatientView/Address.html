@@ -1,0 +1,125 @@
+﻿
+<div class="col-md-12">
+    <form [formGroup]="currentAddress.AddressValidator" class="form-horizontal">
+        <div class="form-body">
+            <div class="col-md-5">
+                <div class="row">
+                    <div class="form-group">
+                        <label class="control-label col-md-4">Address Type<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                        <div class="col-md-8">
+                            <select class="form-control" required [(ngModel)]="currentAddress.AddressType" formControlName="AddressType">
+                                <option value="Temporary">Temporary</option>
+                                <option value="Permanent">Permanent</option>
+                            </select>
+                            <span class="color-red" *ngIf="currentAddress.IsDirty('AddressType')" [hidden]="currentAddress.IsValidCheck('AddressType','required')"> Address Type is required</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-4">Street 1<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                        <div class="col-md-8">
+                            <input class="form-control" type="text" formControlName="Street1" [(ngModel)]="currentAddress.Street1"
+                                   required value="" placeholder="street 1" />
+                            <span class="color-red" *ngIf="currentAddress.IsDirty('Street1')" [hidden]="currentAddress.IsValidCheck('Street1','required')">
+                                Street1 is required
+                            </span>
+                            <span class="color-red" *ngIf="currentAddress.IsDirty('Street1')" [hidden]="currentAddress.IsValidCheck('Street1','maxlength')">
+                                Street1 must be less than 30 characters
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-4">Street 2<b style="float:right;">:</b></label>
+                        <div class="col-md-8">
+                            <input class="form-control" type="text" value="" [(ngModel)]="currentAddress.Street2" [ngModelOptions]="{standalone: true}" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-4">Birth Country<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                        <div class="col-md-8">
+
+                            <select id="ddlCountry" class="form-control" [(ngModel)]="currentAddress.CountryId" formControlName="CountryId" (ngModelChange)="GetCountrySubDivision(currentAddress)">
+                              <option *ngFor="let Country of Countries" value="{{Country.CountryId}}">{{Country.CountryName}}</option>
+                            </select>
+                            <span class="color-red" *ngIf="currentAddress.IsDirty('CountryId')" [hidden]="currentAddress.IsValidCheck('CountryId','required')"> Country is required</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-4">District/State<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                        <div class="col-md-8">
+                            <select id="ddlCountrySubDivision" class="form-control" [(ngModel)]="currentAddress.CountrySubDivisionId" formControlName="CountrySubDivisionId">
+                                <option *ngFor="let div of CountrySubDivisionList" value="{{div.CountrySubDivisionId}}" [disabled]="disableTextBox">{{div.CountrySubDivisionName}}</option>
+                            </select>
+                            <span class="color-red" *ngIf="currentAddress.IsDirty('CountrySubDivisionId')" [hidden]="currentAddress.IsValidCheck('CountrySubDivisionId','required')"> District/State is required</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-4">City<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                        <div class="col-md-8">
+                            <input class="form-control" type="text" value="" [(ngModel)]="currentAddress.City" formControlName="City" />
+                            <span class="color-red" *ngIf="currentAddress.IsDirty('City')" [hidden]="currentAddress.IsValidCheck('City','required')"> City is required</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-4">Zip Code<b style="float:right;">:</b></label>
+                        <div class="col-md-8">
+                            <input class="form-control" type="text" value="" [(ngModel)]="currentAddress.ZipCode" [ngModelOptions]="{standalone: true}" />
+
+                        </div>
+                    </div>
+
+                </div>
+                <div class="row">
+                    <input type="button" class="btn blue" name="name" *ngIf="!editbutton" value="Add Address" (click)="AddAddress()" />
+                    <input type="button" class="btn blue" *ngIf="editbutton" value="Update" (click)="Update()" />
+                </div>
+            </div>
+            <div class="col-md-1">
+                
+            </div>
+        </div>
+    </form>
+    <div class="col-md-6 col-sm-12">
+        <div *ngFor="let address of currentPatient.Addresses">
+            <div class="portlet blue-hoki box">
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-cogs"></i>{{address.AddressType}} Address
+                    </div>
+                    <div class="actions">
+                        <a href="javascript:;" class="btn btn-default btn-sm" data-toggle="modal" data-target="#myModal" (click)="Edit(address)">
+                            <i class="fa fa-pencil"></i> Edit
+                        </a>
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <div class="row static-info">
+                        <div class="col-md-5 name"> Street 1: </div>
+                        <div class="col-md-7 value"> {{address.Street1}} </div>
+                    </div>
+                    <div class="row static-info">
+                        <div class="col-md-5 name"> Street 2: </div>
+                        <div class="col-md-7 value">{{address.Street2}}</div>
+                    </div>
+                    <div class="row static-info">
+                        <div class="col-md-5 name"> Country: </div>
+                        <div class="col-md-7 value"> {{address.CountryName}} </div>
+                    </div>
+                    <div class="row static-info">
+                        <div class="col-md-5 name"> District/State: </div>
+                        <div class="col-md-7 value"> {{address.CountrySubDivisionName}}</div>
+                    </div>
+                    <div class="row static-info">
+                        <div class="col-md-5 name"> City: </div>
+                        <div class="col-md-7 value"> {{address.City}}</div>
+                    </div>
+                    <div class="row static-info">
+                        <div class="col-md-5 name"> Zip Code: </div>
+                        <div class="col-md-7 value"> {{address.ZipCode}} </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+

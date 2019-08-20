@@ -1,0 +1,118 @@
+﻿<div class="popup-static portlet box portlet-fullscreen" *ngIf="showAddPage">
+    <div class="portlet-body form" style="background-color:white">
+        <form [formGroup]="CurrentDepartment.DepartmentValidator" class="form-horizontal">
+            <div class="form-body">
+                <div class="col-md-12">
+                    <div class="col-md-3 hidden-xs hidden-sm" style="margin-right:24px;">
+                    </div>
+                    <div class="col-md-6 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+                        <div class="col-md-12">
+                            <div class="caption" style="color:blue;">
+                                <h3>
+                                    <span *ngIf="!update">Add Department</span>
+                                    <span *ngIf="update">Update Department</span>
+                                </h3>
+                            </div>
+                            <a style="float:right;  margin-top:-32px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                            <hr />
+                        </div>
+                        <div class="col-md-12">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="control-label col-md-5">Department Code<b style="float:right;">:</b></label>
+                                    <div class="col-md-7">
+                                        <input class="form-control" maxlength="30"
+                                               [(ngModel)]="CurrentDepartment.DepartmentCode"
+                                               formControlName="DepartmentCode"
+                                               type="text" id="DepartmentCode" value="" placeholder="Department Code" /><br />
+                                        <span style="color:red" [hidden]="CurrentDepartment.IsValidCheck('DepartmentCode','pattern') || !(CurrentDepartment.IsDirty('DepartmentCode'))">Department Code Is Capital Alphabets Letters Only </span>
+                                        <span style="color:red" *ngIf="CurrentDepartment.IsDirty('DepartmentCode')" [hidden]="CurrentDepartment.IsValidCheck('DepartmentCode','maxlength')"> Length is not proper</span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-5">Department Name<b class="color-red">*</b><b style="float:right;">:</b></label>
+                                    <div class="col-md-7">
+                                        <input class="form-control" maxlength="30" type="text"
+                                               [(ngModel)]="CurrentDepartment.DepartmentName"
+                                               formControlName="DepartmentName"
+                                               id="DepartmentName"
+                                               placeholder="Department Name" />
+                                        <span class="color-red font-sm" [hidden]="CurrentDepartment.IsValidCheck('DepartmentName','required') || !(CurrentDepartment.IsDirty('DepartmentName'))">Department Name is required</span>
+                                        <span class="color-red font-sm" *ngIf="CurrentDepartment.IsDirty('DepartmentName')" [hidden]="CurrentDepartment.IsValidCheck('DepartmentName','maxlength')"> Length is not proper</span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-5">Parent Department Name<b style="float:right;">:</b></label>
+                                    <div class="col-md-7">
+                                        <select class="form-control" [(ngModel)]="CurrentDepartment.ParentDepartmentId"
+                                                [ngModelOptions]="{standalone: true}">
+                                            <option *ngFor="let dept of deptList"
+                                                    value="{{dept.DepartmentId}}">
+                                                {{dept.DepartmentName}}
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-5">Department Description<b style="float:right;">:</b></label>
+                                    <div class="col-md-7">
+                                        <textarea class="form-control"
+                                                  [(ngModel)]="CurrentDepartment.Description"
+                                                  [ngModelOptions]="{standalone: true}"
+                                                  type="text" id="Description" value=""
+                                                  placeholder="Department Description"></textarea>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-5">Department Head<b style="float:right;">:</b></label>
+                                    <div class="col-md-7">
+                                        <input class="form-control" [(ngModel)]="CurrentDepartment.DepartmentHead"
+                                               [ngModelOptions]="{standalone: true}"
+                                               type="number" value=""
+                                               placeholder="Department Head" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-5">Is Active <b style="float:right;">:</b> </label>
+                                    <div class="col-md-7">
+                                        <div class="input-group">
+                                            <div class="icheck-inline">
+                                                <label class="mt-checkbox mt-checkbox-outline">
+                                                    <input id="isActive"
+                                                           type="checkbox"
+                                                           [(ngModel)]="CurrentDepartment.IsActive"
+                                                           [ngModelOptions]="{standalone: true}" />
+                                                    <span></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-5">Is Appointment Applicable<b style="float:right;">:</b> </label>
+                                    <div class="col-md-7">
+                                        <div class="input-group">
+                                            <div class="icheck-inline">
+                                                <label class="mt-checkbox mt-checkbox-outline">
+                                                    <input id="isAppointmentApplicable"
+                                                           type="checkbox"
+                                                           [(ngModel)]="CurrentDepartment.IsAppointmentApplicable"
+                                                           [ngModelOptions]="{standalone: true}" />
+                                                    <span></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-actions">
+                                    <input type="button" class="btn btn-primary" *ngIf="!update" (click)="AddDepartment()" value="Add Department" />
+                                    <input type="button" class="btn btn-primary" *ngIf="update" (click)="Update()" value="Update" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

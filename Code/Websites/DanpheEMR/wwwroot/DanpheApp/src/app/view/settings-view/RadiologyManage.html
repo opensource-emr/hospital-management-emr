@@ -1,0 +1,13 @@
+﻿
+<div class="row">
+    <ul class="nav nav-tabs">
+        <li>  <a [ngClass]="{'a-tab-active': showImgTypeList==true}" (click)="updateView(0)">Manage Imaging Type</a></li>
+        <li>  <a [ngClass]="{'a-tab-active': showImgItemList==true}" (click)="updateView(1)">Manage Imaging Item</a></li>
+        <li>  <a [ngClass]="{'a-tab-active': showRADReportTemplateList==true}" (click)="updateView(2)">Manage Radiology Template</a></li>
+    </ul>
+</div>
+<div class="col-md-12">
+    <img-type-list *ngIf="showImgTypeList"></img-type-list>
+    <img-item-list *ngIf="showImgItemList"></img-item-list>
+    <rad-report-remplate *ngIf="showRADReportTemplateList"></rad-report-remplate>
+</div>

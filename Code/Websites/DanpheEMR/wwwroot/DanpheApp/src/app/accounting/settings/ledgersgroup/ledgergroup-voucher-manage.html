@@ -1,0 +1,70 @@
+﻿<h2> </h2>
+
+<style>
+    .bg-on {
+        background-color: cadetblue;
+    }
+
+    .bg-off {
+        background-color: none;
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="caption">
+            <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
+            <span class="caption-subject font-blue bold uppercase">Vouchers Manage Page</span>
+        </div>
+
+        <input type="button" class="btn btn-primary" (click)="Submit()" value="Submit" />
+        <input type="button" class="btn btn-primary" (click)="BackToList()" value="Back" />
+        <div style="width:100%;">
+            <table style="width:100%;" border="1">
+                <tr>
+                    <td style="width:60%;">
+                        <div>
+                            <table style="width:100%;">
+                                <tr *ngFor="let voc of mappedLedgerGroup;let i=index;">
+                                    <td>
+                                        <div class="input-group">
+                                            <div class="icheck-inline">
+                                                <label class="mt-checkbox mt-checkbox-outline">
+                                                    <input type="checkbox" name="voc.VoucherId" [(ngModel)]="voc.isMapped" (ngModelChange)="SelectDeselectVoucher(i)"
+                                                           style="font-size:10px;" /> <span></span> {{voc.voucherName}}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group">
+                                            <div class="icheck-inline">
+                                                <label class="mt-checkbox mt-checkbox-outline">
+                                                    <input type="checkbox" name="voc.flagDebit" (ngModelChange)="cbCheckedChanged('debit',i)"
+                                                           [(ngModel)]="voc.flagDebit" style="font-size:10px;" /> <span></span> IsDebit
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group">
+                                            <div class="icheck-inline">
+                                                <label class="mt-checkbox mt-checkbox-outline">
+                                                    <input type="checkbox" name="voc.flagCredit" (ngModelChange)="cbCheckedChanged('credit',i)" [(ngModel)]="voc.flagCredit" style="font-size:10px;" />  <span></span> IsCredit
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+    </div>
+
+</div>
+
+

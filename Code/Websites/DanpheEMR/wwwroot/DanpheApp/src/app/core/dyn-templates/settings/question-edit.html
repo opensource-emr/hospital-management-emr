@@ -1,0 +1,92 @@
+<div class="popup-static portlet box portlet-fullscreen"  *ngIf="dynTemplateServ.ShowEditQtn">
+    <div class="popup portlet box" style="margin-left:20%;width:60%;top:10%;">
+        <div class="portlet-title">
+            <div class="caption">
+                <span>Edit Question: <i style="font-style: italic;color:green!important;">{{this.qtnToUpdate.Text}}</i></span>
+            </div>
+            <div class="tools">
+                <i class="remove btn btn-danger" (click)="CancelUpdate()">x</i>
+            </div>
+        </div>
+        <div class="portlet-body form" style="background-color:white">
+            <div style="padding-left: 10px;padding-top:10px;">
+                <div>
+                    Question Text:
+                    <textarea style="width: 60%;height: 55px;" [(ngModel)]="qtnToUpdate.Text"></textarea>
+                </div>
+                <div style="padding-bottom: 13px;padding-top: 5px;">
+                    <b>Type of Answer(s):</b>
+                    <select [(ngModel)]="qtnToUpdate.Type" (change)="QuestionTypeOnChange()">
+                        <option value="radio">
+                            radio buttons
+                        </option>
+                        <option value="checkbox">
+                            Checkboxes
+                        </option>
+                        <option value="dropdown">
+                            Dropdown List
+                        </option>
+                        <option value="text">
+                            text box
+                        </option>
+
+                        <option value="label">
+                            Label
+                        </option>
+                    </select>
+                    <button class="btn btn-sm blue right" (click)="UpdateQuestion()">Update Question</button>
+                </div>
+                <div *ngIf="qtnToUpdate.Type == 'radio' || qtnToUpdate.Type == 'checkbox' || qtnToUpdate.Type == 'dropdown'">
+                    <p>
+                        <b>Add Options:</b>
+                    </p>
+                    <div style="width:55%;">
+                        <table class="table table-striped table-hover" style="background-color:initial;margin-top:10px">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>
+                                        Values
+                                    </th>
+                                    <th style="width: 80px;font-size: 12px;">
+                                        Show Child Qtn.
+                                    </th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let ans of qtnToUpdate.Options; let i = index">
+                                    <td>
+                                        <button class="btn fa fa-plus btn btn-xs btn-success" (click)="AddNewAnswer(i)" title="add one more"></button>
+
+                                    </td>
+                                    <td>
+                                        <input [disabled]="ans.EntityState=='deleted'" type="text" [(ngModel)]="ans.Text" style="width:200px;"
+                                               (ngModelChange)="OnAnswerTextChange(ans)" />
+                                    </td>
+                                    <td>
+                                        <input type="checkbox" [checked]="ans.ShowChildOnSelect" (change)="ans.ShowChildOnSelect = !ans.ShowChildOnSelect" />
+                                    </td>
+                                    <td>
+                                        <button class="fa fa-remove btn btn-danger btn-xs" *ngIf="qtnToUpdate.Options.length>1"
+                                            [disabled]="ans.IsActive==false" (click)="DeleteAnswer(i)" title="delete this option"></button>
+                                        <button class="fa fa-rotate-left btn btn-xs" *ngIf="ans.EntityState=='deleted' || ans.IsActive==false"
+                                           (click)="UndoDeleteAnswer(i)" title="undo delete"></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <br />
+                <br />
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+

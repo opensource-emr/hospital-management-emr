@@ -1,0 +1,114 @@
+﻿
+<h3></h3>
+<table>
+
+    <tr>
+        <td>
+            Note Type:-
+        </td>
+        <td>
+            <select name="" [(ngModel)]="CurrentNote.NoteType">
+                <option value="Progress Notes">Progress Notes</option>
+                <option value="Consult">Consult</option>
+                <option value="Procedure Notes">Procedure Notes</option>
+                <option value="OutPatient Notes">OutPatient Notes</option>
+                
+            </select><br />
+
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Objective Note:-
+        </td>
+        <td>
+            <input type="text" name="" [(ngModel)]="CurrentNote.ObjectiveNote" />
+            <br />
+        </td>
+
+    </tr>
+    <tr>
+        <td>
+            Subjective Note:-
+        </td>
+
+        <td>
+            <input type="text" name="name" value="" [(ngModel)]="CurrentNote.SubjectiveNote" />
+            <br />
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Assessment Note:-
+        </td>
+        <td>
+            <input type="text" name="" [(ngModel)]="CurrentNote.AssessmentNote">
+            <br />
+        </td>
+
+    </tr>
+    <tr>
+        <td>
+            Plan Note:-
+        </td>
+
+        <td>
+            <input type="text" name="name" value="" [(ngModel)]="CurrentNote.PlanNote" />
+            <br />
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Recorded On:-
+        <td>
+            <input type="date" name="" [(ngModel)]="CurrentNote.RecordedOnDate">
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Addendum:-
+        </td>
+        <td>
+            <input type="text" name="" [(ngModel)]="CurrentNote.Addendum">
+            <br />
+        </td>
+
+    </tr>
+  
+    <tr>
+        <td>Orders:-</td>
+        <td>
+            <input type="text" name="" [(ngModel)]="CurrentNote.Orders">
+            <br />
+        </td>
+    </tr>
+   </table>
+<input type="button" name="name" value="Add Notes" (click)="AddNotes()" />
+<br />
+<br />
+<br />
+<table border="1">
+    <tr>
+        <th>Note Type</th>
+        <th>Objective Note</th>
+        <th>Subjective Note </th>
+        <th>Assessment Note</th>
+        <th>Plan Note</th>
+        <th>Recorded On</th>
+        <th>Addendum </th>
+        <th>Assessment Note</th>
+        <th>Orders</th>
+    </tr>
+    <tr *ngFor="let add of notes">
+        <td>{{add.NoteType}}</td>
+        <td>{{add.ObjectiveNote}}</td>
+        <td>{{add.SubjectiveNote}}</td>
+        <td>{{add.AssessmentNote}}</td>
+        <td>{{add.PlanNote}}</td>
+        <td>{{add.RecordedOnDate}}</td>
+        <td>{{add.Addendum}}</td>
+        <td>{{add.AssessmentNote}}</td>
+        <td>{{add.Orders}}</td>
+
+    </tr>
+</table>

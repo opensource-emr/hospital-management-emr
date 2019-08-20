@@ -1,0 +1,434 @@
+    <style>
+    .p-category .span2 {
+        min-width: 20.5%;
+    }
+
+    .padder-v {
+        border: 1px solid #ddd;
+        margin: 10px 10px 0px 0px;
+        background-color: #fff;
+        padding-top: 15px;
+        padding-bottom: 15px;
+    }
+
+    .b-r {
+        border-right: 1px solid #cfcfcf;
+    }
+
+    .b-light {
+        border-color: #e4e4e4;
+    }
+
+        .b-light i.text-white {
+            color: #fff;
+        }
+
+    .rpt-link-container {
+        width: 200px;
+        height: 70px;
+        background-color: white;
+    }
+
+        .rpt-link-container:hover {
+            background-color: skyblue;
+            cursor: pointer;
+        }
+</style>
+
+<div style="margin-top: 50px;">
+    <div class="row">
+        <!--@*<ul class="nav nav-tabs" *ngIf="validRoutes != undefined">
+                <li *ngFor="let route of validRoutes">
+                    <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'a-tab-active'">{{route.DisplayName}}<i class="{{route.Css}}"></i></a>
+                </li>
+            </ul>*@-->
+        <div class="col-md-12">
+            <div class="col-md-4">
+                <a routerLink="PurchaseOrderReport">
+                    <div class="span2 padder-v b-r b-light rpt-link-container">
+                        <span class="fa-stack fa-2x pull-left m-r-sm">
+                            <i class="fa fa-circle fa-stack-2x text-info"></i>
+                            <i class="fa fa-money"></i>
+                        </span>
+                        <span>
+                            <i style="font-weight:bold;font-size:14px">Purchase Order </i>
+                            <i>Report</i>
+                        </span>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a routerLink="ItemWiseStockReport">
+                    <div class="span2 padder-v b-r b-light rpt-link-container">
+                        <span class="fa-stack fa-2x pull-left m-r-sm">
+                            <i class="fa fa-circle fa-stack-2x text-info"></i>
+                            <i class="fa fa-money"></i>
+                        </span>
+                        <span>
+                            <i style="font-weight:bold;font-size:14px">Dispensary/Store Stock </i>
+                            <i>Report</i>
+                        </span>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a routerLink="SupplierInfoReport">
+                    <div class="span2 padder-v b-r b-light rpt-link-container">
+                        <span class="fa-stack fa-2x pull-left m-r-sm">
+                            <i class="fa fa-circle fa-stack-2x text-info"></i>
+                            <i class="fa fa-money"></i>
+                        </span>
+                        <span>
+                            <i style="font-weight:bold;font-size:14px">Supplier Information  </i>
+                            <i>Report</i>
+                        </span>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="col-md-4">
+                <a routerLink="LedgerCreditInOutPatientReport">
+                    <div class="span2 padder-v b-r b-light rpt-link-container">
+                        <span class="fa-stack fa-2x pull-left m-r-sm">
+                            <i class="fa fa-circle fa-stack-2x text-info"></i>
+                            <i class="fa fa-money"></i>
+                        </span>
+                        <span>
+                            <i style="font-weight:bold;font-size:14px">Credit Details In/Out Patient  </i>
+                            <i>Report</i>
+                        </span>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-4">
+                <a routerLink="StockItemsReport">
+                    <div class="span2 padder-v b-r b-light rpt-link-container">
+                        <span class="fa-stack fa-2x pull-left m-r-sm">
+                            <i class="fa fa-circle fa-stack-2x text-info"></i>
+                            <i class="fa fa-money"></i>
+                        </span>
+                        <span>
+                            <i style="font-weight:bold;font-size:14px">Stock Items </i>
+                            <i>Report</i>
+                        </span>
+                    </div>
+                </a>
+            </div>
+            <!-- <div class="col-md-4">
+                <a routerLink="SupplierStockSummaryReport">
+                    <div class="span2 padder-v b-r b-light rpt-link-container">
+                        <span class="fa-stack fa-2x pull-left m-r-sm">
+                            <i class="fa fa-circle fa-stack-2x text-info"></i>
+                            <i class="fa fa-money"></i>
+                        </span>
+                        <span>
+                            <i style="font-weight:bold;font-size:14px">Supplier Stock Summary </i>
+                            <i>Report</i>
+                        </span>
+                    </div>
+                </a>
+            </div> -->
+            <div class="col-md-4">
+                <a routerLink="ReturnToSupplierReport">
+                    <div class="span2 padder-v b-r b-light rpt-link-container">
+                        <span class="fa-stack fa-2x pull-left m-r-sm">
+                            <i class="fa fa-circle fa-stack-2x text-info"></i>
+                            <i class="fa fa-money"></i>
+                        </span>
+                        <span>
+                            <i style="font-weight:bold;font-size:14px">Return To Supplier</i>
+                            <i>Report</i>
+                        </span>
+                    </div>
+                </a>
+            </div>
+
+        </div>
+        <div class="col-md-12">
+          <!--<div class="col-md-4">
+            <a routerLink="StockMovementReport">
+                <div class="span2 padder-v b-r b-light rpt-link-container">
+                    <span class="fa-stack fa-2x pull-left m-r-sm">
+                        <i class="fa fa-circle fa-stack-2x text-info"></i>
+                        <i class="fa fa-money"></i>
+                    </span>
+                    <span>
+                        <i style="font-weight:bold;font-size:14px">Stock Movement </i>
+                        <i>Report</i>
+                    </span>
+                </div>
+            </a>
+          </div>-->
+          <div class="col-md-4">
+             <a routerLink="DrugCategoryWiseReport">
+                 <div class="span2 padder-v b-r b-light rpt-link-container">
+                     <span class="fa-stack fa-2x pull-left m-r-sm">
+                         <i class="fa fa-circle fa-stack-2x text-info"></i>
+                         <i class="fa fa-money"></i>
+                     </span>
+                     <span>
+                         <i style="font-weight:bold;font-size:14px">Drug CategoryWise </i>
+                         <i>Report</i>
+                     </span>
+                 </div>
+             </a>
+           </div>
+
+          <div class="col-md-4">
+            <a routerLink="BatchStockReport">
+              <div class="span2 padder-v b-r b-light rpt-link-container">
+                <span class="fa-stack fa-2x pull-left m-r-sm">
+                  <i class="fa fa-circle fa-stack-2x text-info"></i>
+                  <i class="fa fa-money"></i>
+                </span>
+                <span>
+                  <i style="font-weight:bold;font-size:14px">Batch Stock </i>
+                  <i>Report</i>
+                </span>
+              </div>
+            </a>
+          </div>
+
+          <div class="col-md-4">
+            <a routerLink="SupplierStockReport">
+              <div class="span2 padder-v b-r b-light rpt-link-container">
+                <span class="fa-stack fa-2x pull-left m-r-sm">
+                  <i class="fa fa-circle fa-stack-2x text-info"></i>
+                  <i class="fa fa-money"></i>
+                </span>
+                <span>
+                  <i style="font-weight:bold;font-size:14px">Supplier Stock </i>
+                  <i>Report</i>
+                </span>
+              </div>
+            </a>
+          </div>
+        </div>
+
+        <div class="col-md-12">
+
+            <!-- <div class="col-md-4">
+                <a routerLink="EndingStockSummary">
+                    <div class="span2 padder-v b-r b-light rpt-link-container">
+                        <span class="fa-stack fa-2x pull-left m-r-sm">
+                            <i class="fa fa-circle fa-stack-2x text-info"></i>
+                            <i class="fa fa-money"></i>
+                        </span>
+                        <span>
+                            <i style="font-weight:bold;font-size:14px">Ending Stock Summary </i>
+                            <i>Report</i>
+                        </span>
+                    </div>
+                </a>
+            </div> -->
+            <div class="col-md-4">
+                <a routerLink="BillingReport">
+                    <div class="span2 padder-v b-r b-light rpt-link-container">
+                        <span class="fa-stack fa-2x pull-left m-r-sm">
+                            <i class="fa fa-circle fa-stack-2x text-info"></i>
+                            <i class="fa fa-money"></i>
+                        </span>
+                        <span>
+                            <i style="font-weight:bold;font-size:14px">Invoice Billing  </i>
+                            <i>Report</i>
+                        </span>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a routerLink="DailyStockSummaryReport">
+                    <div class="span2 padder-v b-r b-light rpt-link-container">
+                        <span class="fa-stack fa-2x pull-left m-r-sm">
+                            <i class="fa fa-circle fa-stack-2x text-info"></i>
+                            <i class="fa fa-money"></i>
+                        </span>
+                        <span>
+                            <i style="font-weight:bold;font-size:14px">Opening and Ending Stock Summary </i>
+                            <i>Report</i>
+                        </span>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a routerLink="ExpiryReport">
+                    <div class="span2 padder-v b-r b-light rpt-link-container">
+                        <span class="fa-stack fa-2x pull-left m-r-sm">
+                            <i class="fa fa-circle fa-stack-2x text-info"></i>
+                            <i class="fa fa-money"></i>
+                        </span>
+                        <span>
+                            <i style="font-weight:bold;font-size:14px">Expiry Report </i>
+                            <i>Report</i>
+                        </span>
+                    </div>
+                </a>
+            </div>
+            <!-- @*This report is not created yet, hence removed for now--sud:15Mar'19'*@ -->
+            <!-- <div class="col-md-4">
+                <a routerLink="SlowStockReport">
+                    <div class="span2 padder-v b-r b-light rpt-link-container">
+                        <span class="fa-stack fa-2x pull-left m-r-sm">
+                            <i class="fa fa-circle fa-stack-2x text-info"></i>
+                            <i class="fa fa-money"></i>
+                        </span>
+                        <span>
+                            <i style="font-weight:bold;font-size:14px">Slow/Fast moving Report </i>
+                            <i>Report</i>
+                        </span>
+                    </div>
+                </a>
+            </div> -->
+            <div class="col-md-4">
+                <a routerLink="PHRMMinStock">
+                    <div class="span2 padder-v b-r b-light rpt-link-container">
+                        <span class="fa-stack fa-2x pull-left m-r-sm">
+                            <i class="fa fa-circle fa-stack-2x text-info"></i>
+                            <i class="fa fa-money"></i>
+                        </span>
+                        <span>
+                            <i style="font-weight:bold;font-size:14px">Minimun Stock Report </i>
+                            <i>Report</i>
+                        </span>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a routerLink="ABCVEDStock">
+                    <div class="span2 padder-v b-r b-light rpt-link-container">
+                        <span class="fa-stack fa-2x pull-left m-r-sm">
+                            <i class="fa fa-circle fa-stack-2x text-info"></i>
+                            <i class="fa fa-money"></i>
+                        </span>
+                        <span>
+                            <i style="font-weight:bold;font-size:14px">ABC/VED Stock Report </i>
+                            <i>Report</i>
+                        </span>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a routerLink="PHRMDailySalesSummary">
+                    <div class="span2 padder-v b-r b-light rpt-link-container">
+                        <span class="fa-stack fa-2x pull-left m-r-sm">
+                            <i class="fa fa-circle fa-stack-2x text-info"></i>
+                            <i class="fa fa-money"></i>
+                        </span>
+                        <span>
+                            <i style="font-weight:bold;font-size:14px">Daily Sales Report </i>
+                            <i>Report</i>
+                        </span>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-4">
+                <a routerLink="UserwiseCollectionReport">
+                    <div class="span2 padder-v b-r b-light rpt-link-container">
+                        <span class="fa-stack fa-2x pull-left m-r-sm">
+                            <i class="fa fa-circle fa-stack-2x text-info"></i>
+                            <i class="fa fa-money"></i>
+                        </span>
+                        <span>
+                            <i style="font-weight:bold;font-size:14px">User Collection </i>
+                            <i>Report</i>
+                        </span>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-4">
+                <a routerLink="CounterwiseCollectionReport">
+                    <div class="span2 padder-v b-r b-light rpt-link-container">
+                        <span class="fa-stack fa-2x pull-left m-r-sm">
+                            <i class="fa fa-circle fa-stack-2x text-info"></i>
+                            <i class="fa fa-money"></i>
+                        </span>
+                        <span>
+                            <i style="font-weight:bold;font-size:14px">Counter Collection </i>
+                            
+                        </span>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-4">
+                <a routerLink="SaleReturnReport">
+                    <div class="span2 padder-v b-r b-light rpt-link-container">
+                        <span class="fa-stack fa-2x pull-left m-r-sm">
+                            <i class="fa fa-circle fa-stack-2x text-info"></i>
+                            <i class="fa fa-money"></i>
+                        </span>
+                        <span>
+                            <i style="font-weight:bold;font-size:14px"> Invoice Sale Return Report </i>
+                            
+                        </span>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-4">
+                <a routerLink="BreakageItemReport">
+                    <div class="span2 padder-v b-r b-light rpt-link-container">
+                        <span class="fa-stack fa-2x pull-left m-r-sm">
+                            <i class="fa fa-circle fa-stack-2x text-info"></i>
+                            <i class="fa fa-money"></i>
+                        </span>
+                        <span>
+                            <i style="font-weight:bold;font-size:14px"> Breakage Item Report </i>
+                           
+                        </span>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-4">
+                <a routerLink="GoodsReceiptProductReport">
+                    <div class="span2 padder-v b-r b-light rpt-link-container">
+                        <span class="fa-stack fa-2x pull-left m-r-sm">
+                            <i class="fa fa-circle fa-stack-2x text-info"></i>
+                            <i class="fa fa-money"></i>
+                        </span>
+                        <span>
+                            <i style="font-weight:bold;font-size:14px"> Goods Receipt Product Report</i>
+
+                        </span>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a routerLink="StockManageDetailReport">
+                    <div class="span2 padder-v b-r b-light rpt-link-container">
+                        <span class="fa-stack fa-2x pull-left m-r-sm">
+                            <i class="fa fa-circle fa-stack-2x text-info"></i>
+                            <i class="fa fa-money"></i>
+                        </span>
+                        <span>
+                            <i style="font-weight:bold;font-size:14px"> Stock Manage Detail Report </i>
+
+                        </span>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+              <a routerLink="DepositBalanceReport">
+                <div class="span2 padder-v b-r b-light rpt-link-container">
+                  <span class="fa-stack fa-2x pull-left m-r-sm">
+                    <i class="fa fa-circle fa-stack-2x text-info"></i>
+                    <i class="fa fa-money"></i>
+                  </span>
+                  <span>
+                    <i style="font-weight:bold;font-size:14px"> Deposit Balance Report </i>
+
+                  </span>
+                </div>
+              </a>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+<router-outlet>
+</router-outlet>

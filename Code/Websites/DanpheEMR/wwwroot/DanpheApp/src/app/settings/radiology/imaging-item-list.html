@@ -1,0 +1,20 @@
+﻿
+<!--<div class="caption">
+    <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
+    <span class="caption-subject font-blue bold uppercase">Manage Imaging Item</span>
+</div>
+<br />-->
+
+<input type="button" class="btn btn-primary"  (click)="AddImgItem()" value="Add Item" />
+<img-item-add [showAddPage]="showAddPage"
+              [selectedImgItem]="selectedImgItem"
+              (callback-add)="CallBackAdd($event)"></img-item-add>
+
+<div *ngIf="showImgItemList" class="row">
+    <div class="col-md-12 col-xs-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="imgItemGridColumns" [grid-data]="imgItemList" (grid-actions)="ImgItemGridActions($event)">
+        </danphe-grid>
+    </div>
+</div>
+
+

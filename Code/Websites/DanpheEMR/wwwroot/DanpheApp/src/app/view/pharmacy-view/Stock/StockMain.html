@@ -1,0 +1,20 @@
+﻿<div class="row">
+    <ul class="nav nav-tabs" *ngIf="validRoutes != undefined">
+        <li *ngFor="let route of validRoutes">
+            <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'a-tab-active'">{{route.DisplayName}}<i class="{{route.Css}}"></i></a>
+        </li>
+    </ul>
+
+    <!--@*this is hardcoded tab we have to replace with Db*@-->
+    <ul class="nav nav-tabs">
+        <li><a routerLink="StockDetails" [routerLinkActive]="'a-tab-active'">Stock Details List</a></li>
+        <li>
+            <a  routerLink="WriteOffItems" [routerLinkActive]="'a-tab-active'">
+                <span class="glyphicon glyphicon-trash"> </span>&nbsp; Breakage Item
+            </a>
+        </li>
+        <li><a routerLink="WriteOffItemsList" [routerLinkActive]="'a-tab-active'">Breakage List</a></li>
+    </ul>
+</div>
+<router-outlet>
+</router-outlet>

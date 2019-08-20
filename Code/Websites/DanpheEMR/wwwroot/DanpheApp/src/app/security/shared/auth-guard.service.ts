@@ -1,0 +1,26 @@
+import { Injectable }  from '@angular/core';
+import { CanActivate, Router, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
+import { User } from './user.model';
+import { SecurityService } from './security.service';
+@Injectable()
+export class AuthGuardService implements CanActivate{
+  	
+  public loggedInUser: User = new User();
+  constructor( public _router: Router,public securityServ:SecurityService) {
+  }
+  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
+      // state.url return current routing url like '/Billing/Transaction'.
+        let url: string = state.url;        
+        this.loggedInUser = this.securityServ.GetLoggedInUser();
+        if(this.loggedInUser.UserName!=null)
+        {
+            if(this.securityServ.checkIsAuthorizedURL(url)){
+                return true;
+            }else{
+                this._router.navigate(['/UnAuthorized']);// We are navigating unauthorized user.
+                return false;  
+            }       
+        }    
+       
+    }  
+} 

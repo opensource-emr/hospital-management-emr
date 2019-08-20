@@ -1,0 +1,75 @@
+﻿
+<div class="row">
+
+    <div class="col-md-12 col-sm-12">
+        <div style="border: 1px solid #96969a;margin-top: 8px;border-radius: 10px !important;padding: 10px 0px;padding-left: 10px;width: 56%;">
+            <table style="background-color:initial;">
+                <tbody>
+                    <tr style="width:100%;">
+                        <td style="width:19%;">
+                            <b>Fiscal Year: </b>
+                            <select [(ngModel)]="selFiscYrId">
+                                <option *ngFor="let fisc of allFiscalYrs;" value="{{fisc.FiscalYearId}}">{{fisc.FiscalYearFormatted}}</option>
+
+                            </select>
+                        </td>
+                        <td style="width:27%;"><b>Invoice Number</b>: <input [(ngModel)]="selReceiptNo" placeholder="Receipt No." name="TransactionId" type="number" style="width:100px"></td>
+                        <td style="width:19%;"><i class="btn purple " (click)="GetInvoiceByReceiptNo(selReceiptNo)" style="width:80px">Search  <i class="fa fa-search"></i></i></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="row" *ngIf="displayReciept">
+    <div class="col-md-8">
+        <h4 style="font-weight:bold;color:#006687;text-decoration:underline;text-align:center;">Invoice Details</h4>
+        <billing-receipt *ngIf="billingReceipt !=null  && showNormalReceipt" [receipt]="billingReceipt" [showPrintBtn]="showPrintBtn">
+        </billing-receipt>
+        <discharge-bill-main *ngIf="showIPReceipt"
+        style="text-align:center"
+        [receipt]="billingReceipt"
+        [ipVisitId]="invoiceDetails.Transaction.PatientVisitId"
+        [patientId]="invoiceDetails.Patient.PatientId"
+        [billingTxnId]="invoiceDetails.Transaction.BillingTransactionId"
+        [billStatus]=invoiceDetails.Transaction.BillStatus></discharge-bill-main>
+        <div *ngIf="showReturnPanel">
+            <div *ngIf="!isMaxDischargeHours">
+                <div>
+                    <b>Return this invoice</b> : <input type="checkbox" style="width: 18px;height: 18px;" [(ngModel)]="showReturnBtn" (click)="ShowReturnChkOnClick()" /><br />
+                </div>
+                <div *ngIf="showReturnBtn">
+                    <b>  Remarks</b> :<b style="color:red;">*</b>
+                    <textarea [(ngModel)]="returnRemarks" placeholder="Return Remarks"
+                              style="width:200px"></textarea>
+                    <button class="btn btn-primary" (click)="ReturnCurrentReciept()"  [disabled]="loading">Return </button>
+                </div>
+            </div>
+            <div *ngIf="isMaxDischargeHours" style="margin-left:130px;margin-right:123px">
+                <div class="clear"></div>
+                <hr />
+                <p style="text-align:center">
+                    Bill couldn't be returned after <b>{{maxValidDischargeHrs}} Hrs</b> of discharge.<br />
+                    Discharged Date: <b>{{this.invoiceDetails.VisitInfo.LastDischargedDate | DanpheDateTime:'format':'YYYY-MM-DD HH:mm A'}}</b>
+                </p>
+                <hr />
+            </div>
+        </div>
+        <div>
+            <button class="btn purple" style="width:180px;margin-top:-70px;margin-left:495px;z-index:5;position:relative" *ngIf="isReturnSuccessfull && showNormalReceipt" (click)="CreateCopyOfCurrentReceipt()">
+                Create Copy Of Items
+                <i class="fa fa-copy"></i>
+            </button>
+            <button class="btn purple" style="width:180px;margin-top:-95px;margin-left:530px;z-index:5;position:relative" *ngIf="isReturnSuccessfull && showIPReceipt" (click)="CreateCopyOfCurrentReceipt()">
+                Create Copy Of Items
+                <i class="fa fa-copy"></i>
+            </button>
+        </div>
+        
+    </div>
+ 
+</div>
+
+
+
+

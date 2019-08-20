@@ -1,0 +1,133 @@
+﻿
+<div>
+    <form [formGroup]="PastMedical.PastMedicalValidator" class="form-horizontal">
+        <div class="form-body">
+            <div id="PastMedical">
+                <div class="col-md-12">
+                    <div class="row">
+                        <div class="col-md-4 col-xs-12" style="margin-right: 24px;">
+                            <div class="form-group">
+                                <label class="control-label col-md-4">Search Problem<b style="float:right;">:</b></label>
+                                <div class="col-md-8">
+                                    <input danphe-auto-complete class="form-control"
+                                           [(ngModel)]="icd10Selected"
+                                           formControlName="ICD10Code"
+                                           [source]="ICD10List"
+                                           [list-formatter]="ICDListFormatter"
+                                           placeholder="ICD10"
+                                           (valueChanged)="AssignSelectedICD()"
+                                           display-property-name="ICD10Description"
+                                           value-property-name=null
+                                           min-chars="2"
+                                           onClick="this.select();"
+                                           max-num-list="10" />
+                                    <span class="error-msg"
+                                          *ngIf="PastMedical.IsDirty('ICD10Code')"
+                                          [hidden]="PastMedical.IsValidCheck('ICD10Code','required')">Select ICD10 Code</span>
+
+                                </div>
+                            </div>                           
+                            <div class="form-group">
+                                <label class="control-label col-md-4">Current Status<b style="float:right;">:</b></label>
+                                <div class="col-md-8">
+                                    <input type="text" class="form-control" maxlength="200"
+                                           [ngModelOptions]="{standalone: true}"
+                                           [(ngModel)]="PastMedical.CurrentStatus" />
+                                </div>
+                            </div>                           
+                            <div class="form-group">
+                                <label class="control-label col-md-4">OnSet Date<b style="float:right;">:</b></label>
+                                <div class="col-md-8">
+                                    <input type="date" class="form-control"
+                                           formControlName="OnSetDate"
+                                           [(ngModel)]="PastMedical.OnSetDate" />
+
+                                    <span class="error-msg"
+                                          *ngIf="PastMedical.IsDirty('OnSetDate')"
+                                          [hidden]="PastMedical.IsValidCheck('OnSetDate','wrongDate')">Enter Valid Date</span>
+
+                                </div>
+                            </div>                           
+                            <div class="form-group">
+                                <label class="control-label col-md-4">Resolved Date<b class="color-red">*</b><b style="float:right;">:</b></label>
+                                <div class="col-md-8">
+                                    <input type="date" class="form-control"
+                                           formControlName="ResolvedDate"
+                                           [(ngModel)]="PastMedical.ResolvedDate" />
+                                    <span class="error-msg"
+                                          *ngIf="PastMedical.IsDirty('ResolvedDate')&&PastMedical.OnSetDate!=null"
+                                          [hidden]="PastMedical.IsValidResolvedDate()">
+                                        Resolved date cannot be before OnSet date.
+                                    </span>
+
+                                    <span class="error-msg"
+                                          *ngIf="PastMedical.IsDirty('ResolvedDate')"
+                                          [hidden]="PastMedical.IsValidCheck('ResolvedDate','wrongDate')">
+                                        Enter Valid Date
+                                    </span>
+                                </div>
+                            </div>
+                           
+                            <div class="form-group">
+                                <label class="control-label col-md-4">Note<b style="float:right;">:</b></label>
+                                <div class="col-md-8">
+                                    <input type="text" class="form-control" maxlength="200"
+                                           formControlName="Note"
+                                           [(ngModel)]="PastMedical.Note" />
+                                    <span class="error-msg"
+                                          *ngIf="PastMedical.IsDirty('Note')"
+                                          [hidden]="PastMedical.IsValidCheck('Note','wrongDate')">Note should not exceed 200 characters.</span>
+                                </div>
+                            </div>
+                           
+                        </div>
+
+                        <div class="col-md-7 col-xs-12">
+                            <div class="caption">
+                                <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
+                                <span class="caption-subject font-blue-sharp bold uppercase">Past Medical Problems List</span>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped table-condensed flip-content">
+                                    <thead class="flip-content">
+                                        <tr>
+                                            <th>ICD10 Description </th>
+                                            <th>ICD10 Code</th>
+                                            <th>Current Status</th>
+                                            <th>Onset Date</th>
+                                            <th>Resolved Date</th>
+                                            <th>Note</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let add of pastMedicals;let i=index">
+                                            <td>{{add.ICD10Description}}</td>
+                                            <td>{{add.ICD10Code}}</td>
+                                            <td>{{add.CurrentStatus}}</td>
+                                            <td>{{add.OnSetDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                                            <td>{{add.ResolvedDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                                            <td>{{add.Note}}</td>
+                                            <td><a style="cursor:pointer" (click)="SetAsActive(add)">Set as Active</a></td>
+
+                                            <td>                                            
+                                                <a (click)="Edit(add,i)" class="bs-glyphicon-class btn yello"><span class="glyphicon glyphicon-edit"></span>Edit</a>
+                                            </td>
+                                        </tr>                                                                           
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <input type="button"  class="btn btn-primary" style="margin-left:10px;"  [disabled]="!(PastMedical.IsValid())" *ngIf="!updateButton" name="name" value="Add Problem" (click)="AddPastMedical()" />
+                        <input type="button"  class="btn btn-primary" style="margin-left:10px;"  *ngIf="updateButton" value="Update" (click)="Update()" />
+  </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+</div>
+
+
+

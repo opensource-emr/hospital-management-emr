@@ -1,0 +1,2594 @@
+﻿body {
+    background-color: transparent;
+}
+
+
+/*Taken from custom.css file*/
+/* here you can put your own css to customize and override the theme */
+.page-container-bg-solid .page-content {
+    background: #fff;
+}
+
+.page-content-white .page-content .page-bar {
+    border-bottom: 1px solid #e7ecf1;
+    background: linear-gradient(to bottom, #36c6d3 0%,#32bdca 50%,#22929c 100%);
+}
+
+.page-container-bg-solid .page-bar, .page-content-white .page-bar {
+    /*background-color: #e7ecf1;*/
+    position: relative;
+    padding: 0 20px;
+    margin: -26px -20px 0;
+}
+
+.page-bar .page-breadcrumb {
+    padding: 0px !important;
+}
+
+    .page-bar .page-breadcrumb > li {
+        padding: 8px 6px;
+        color: #fff;
+        border-right: 1px solid #9cd3d8;
+        cursor: pointer;
+    }
+
+.page-content-white .page-bar .page-breadcrumb > li > a, .page-container-bg-solid .page-bar .page-breadcrumb > li > a {
+    display: inline-block;
+    padding: 5px;
+    color: #fff;
+    text-shadow: 2px 1px 2px rgb(105, 103, 103);
+}
+/* this is original  
+    .page-content-white .page-bar .page-breadcrumb > li:hover a { */
+
+.page-content-white .page-bar .page-breadcrumb > li:hover > a {
+    color: #e8e8ef !important;
+    background: linear-gradient(to bottom, #006687 0%,#035671 50%,#034256 100%);
+    border-radius: 4px !important;
+}
+
+.page-content-white .page-bar .page-breadcrumb > li a:hover, .page-content-white .page-bar .page-breadcrumb > li a:focus {
+    text-decoration: none;
+}
+
+.page-bar .page-breadcrumb > li > a {
+    font-size: 14px;
+}
+
+.mt-checkbox, .mt-radio {
+    padding-left: 30px !important;
+}
+
+    .mt-radio > span:hover {
+        border: 1px solid blue !important;
+    }
+
+    .mt-checkbox > span:hover {
+        border: 1px solid blue !important;
+    }
+
+input[type=text]:focus, input[type=number]:focus, input[type=tel]:focus, select:focus {
+    border: 2px solid #43c1b5 !important;
+    /*border: 1.5px solid #727780 !important;*/
+}
+
+/*to show blue colored tick inside the checkbox.*/
+.mt-checkbox > span:after {
+    left: 6px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid blue;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+/*all labels will be left aligned*/
+.form-horizontal .control-label {
+    text-align: left;
+}
+
+/*placeholder color, need to check for firefox and other browser.*/
+::-webkit-input-placeholder { /* WebKit, Blink, Edge */
+    /*color: #43c1b5 !important;*/
+    color: #89b7d6 !important;
+    /*opacity: 1;*/
+}
+
+.page-header.navbar {
+    height: 52px;
+    background-color: #006687;
+}
+
+.page-content-wrapper .page-content {
+    padding-top: 28px;
+}
+
+.page-sidebar .page-sidebar-menu > li.open > a, .page-sidebar .page-sidebar-menu > li:hover > a, .page-sidebar-closed.page-sidebar-fixed .page-sidebar:hover .page-sidebar-menu > li.open > a,
+.page-sidebar-closed.page-sidebar-fixed .page-sidebar:hover .page-sidebar-menu > li:hover > a {
+    background: #006687;
+    color: navajowhite;
+}
+
+/*add-box shadow*/
+.left-nav-active {
+    background-color: #083d30 !important;
+    color: white !important;
+    box-shadow: 4px 3px 10px grey;
+}
+
+/*removed outer border from gridview..:sudarshan-28june2017*/
+/*.ag-fresh .ag-root {
+    border: 1px solid #808080;
+}*/
+
+/*For active links inside  <ul class="nav nav-tabs"> set as !important else bootstrap will overwrite this class.*/
+.a-tab-active {
+    border-bottom: 4px solid #36c6d3 !important;
+    font-weight: bold;
+}
+/*Overwriting border-red of component.css since it was setting only border-color and not the thickness. Used in validations mostly..*/
+.border-red {
+    border: 1px solid red;
+}
+
+/* for billing receipt print */
+.hr, p {
+    margin: 8px 0;
+}
+
+/*For table input type style */
+.table-input {
+    border: solid 1px #c2cad8;
+}
+
+/*This class only for pop-up shows with heading and Vertical scroling*/
+.popup {
+    overflow-y: scroll;
+    z-index: 1030;
+    position: fixed;
+    width: auto;
+    transition: 0.3s;
+    height: 400px;
+    top: 20%;
+    border: solid 1px rgb(50,197,210);
+    background-color: white;
+}
+/*This is static background popup class*/
+.popup-static {
+    overflow-y: auto;
+    background-color: rgba(0, 0, 0, 0.5) !important;
+}
+    /*This class apply background color on  portlet body under popup-static */
+    .popup-static > .portlet-body {
+        background-color: rgba(47, 84, 124, 0) !important;
+    }
+
+
+/*this is to slidedown popupbox at the time of loading:
+        Note: Pls check if we're applying custom margins on this class somewhere.
+        It'll overwrite otherwise
+    */
+@keyframes slideDown {
+    from {
+        margin-top: -200px;
+    }
+
+    to {
+        margin-top: 20px;
+    }
+}
+
+/*This class apply on div for model box static background*/
+.modelbox-div {
+    position: relative;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    -webkit-box-shadow: 0 5px 15px rgba(0,0,0,.5);
+    box-shadow: 0 5px 15px rgba(0,0,0,.5);
+    border: 1px solid rgba(0,0,0,.2);
+    border-radius: 6px !important;
+    background-color: white;
+    animation-name: slideDown !important;
+    animation-duration: 0.6s !important;
+}
+
+.modelbox-header {
+    padding: 10px 35px 10px 15px;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.modelbox-body {
+    padding: 10px 15px;
+}
+
+.modelbox-footer {
+    padding: 10px 15px;
+    border-top: 1px solid #e5e5e5;
+}
+
+.close-modelbox {
+    display: inline-block;
+    position: absolute;
+    right: -1px;
+    top: -1px;
+}
+
+    .close-modelbox button {
+        display: inline-block;
+        border-top-right-radius: 6px !important;
+    }
+/*for lab-report print*/
+.popup-print {
+    height: 100%;
+    z-index: 9999;
+    top: 1%;
+    left: 5%;
+}
+/*Change Portlet Title background color for Model Box*/
+.popup .portlet-title {
+    background-color: rgb(50,197,210) !important;
+}
+/*Model box caption color white and bold*/
+.caption {
+    font-weight: bold;
+    color: white;
+    line-height: 2;
+}
+
+/*on hover of dashboard link inside various modules.*/
+.fa-home:hover {
+    color: blue;
+    font-weight: bold;
+}
+
+.logo-default:hover {
+    background-color: #333;
+}
+
+.section-header-new {
+    background-color: lightgray;
+    width: 50%;
+    font-weight: bold;
+    height: 25px;
+    padding-left: 1em;
+    width: 50%;
+    font-size: 15px;
+}
+/*This class for show Validation error message style*/
+.error-msg {
+    color: red;
+    font-size: 13px;
+}
+
+.hide-main {
+    /* overflow: scroll; */
+    height: auto !important;
+    /* border: 1px solid rgb(204, 204, 204); */
+    /* margin: 10px;*/
+    width: auto !important;
+    cursor: pointer !important;
+    position: relative !important;
+}
+
+.hide-cover {
+    position: absolute !important;
+    height: 100% !important;
+    width: 100% !important;
+    z-index: 1 !important;
+    background-color: #73d1ea !important;
+    opacity: 0.3 !important;
+}
+/* Blink for Webkit and others
+(Chrome, Safari, Firefox, IE, ...)
+*/
+
+@-webkit-keyframes blinker {
+    from {
+        opacity: 1.0;
+    }
+
+    to {
+        opacity: 0.0;
+    }
+}
+
+.blink {
+    text-decoration: blink;
+    border-color: red;
+    -webkit-animation-name: blinker;
+    -webkit-animation-duration: 0.6s;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-timing-function: ease-in-out;
+    -webkit-animation-direction: alternate;
+}
+
+/*this class for vertical line left */
+.vertical-line-left {
+    border-left: 1px solid #808080 !important;
+}
+/*this class for vertical line right*/
+.vertical-line-right {
+    border-right: 1px solid #808080 !important;
+}
+
+.portlet.portlet-fullscreen {
+    z-index: 9999 !important;
+}
+
+.page-sidebar .page-sidebar-menu .sub-menu li:not(:last-child) {
+    border-bottom: 1px solid #414b58;
+}
+
+.doctor-sdbar ul.doctor-sidebar-list > li > a, .doctor-sdbar ul.doctor-sidebar-list > li:last-child > a {
+    padding: 2px 0px;
+    background: #fff;
+    font-weight: 700;
+    border: 1px solid #006687 !important;
+    border-radius: 28px !important;
+}
+
+.doctor-sdbar ul.doctor-sidebar-list > li {
+    text-align: center;
+    padding: 4px 12px;
+}
+
+.doctor-sdbar ul.doctor-sidebar-list li a {
+    color: #006687;
+}
+
+    .doctor-sdbar ul.doctor-sidebar-list li a:hover {
+        background: #006687;
+        color: #ffffff;
+    }
+
+.doctor-sdbar ul.doctor-sidebar-list li .cstm-sidenav-active {
+    color: #fff !important;
+    background: #006687 !important;
+}
+
+h1.pat-name-hd {
+    float: left;
+    margin: 5px 0px 0px 0px;
+    font-size: 16px;
+    color: #60f55f;
+    font-weight: 700;
+}
+
+.pat-info-top p, .pat-info-bottom p {
+    float: left;
+    margin: 0;
+    color: #fff;
+    font-size: 14px;
+}
+
+.pat-info-top p {
+    line-height: 18px;
+    padding-top: 8px;
+}
+
+.pat-info-bottom p {
+    line-height: 16px;
+}
+
+.inout-pat {
+    color: #60f55f;
+    text-transform: uppercase;
+}
+
+p.main-hdp {
+    padding: 8px 0px;
+    margin: 0;
+}
+
+a.btn-back:hover {
+    text-decoration: none;
+}
+
+.btn-back {
+    line-height: 1;
+    display: inline-block;
+    color: #006687;
+    padding: 5px 10px;
+    background: #fde11a;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+    .btn-back i.fa {
+        display: inline-block;
+        padding-right: 5px;
+    }
+
+    .btn-back:hover a {
+        text-decoration: none;
+        color: #2d3a69;
+    }
+
+.portlet-title.cstm-portlet-title {
+    min-height: inherit;
+    padding: 5px 10px !important;
+}
+
+    .portlet-title.cstm-portlet-title > .caption {
+        font-size: 16px;
+        line-height: 24px;
+        padding: 0 !important;
+    }
+
+    .portlet-title.cstm-portlet-title .actions {
+        padding: 0 !important;
+    }
+
+        .portlet-title.cstm-portlet-title .actions .btn.btn-sm.btn-default {
+            padding: 2px 9px;
+        }
+
+.cstm-pt-title {
+    background: #f1f1f1;
+    padding: 5px 10px !important;
+    margin-bottom: 0 !important;
+    min-height: inherit !important;
+}
+
+.cstm-portlet-caption {
+    display: inline-block;
+    /*float: left;*/
+    padding-top: 4px;
+    font-weight: bold;
+    color: #006687;
+}
+
+.cstm-action {
+    display: inline-block;
+    float: right;
+    font-weight: 700;
+    background: #374150;
+    border: 1px solid #acb9ca;
+}
+
+    .cstm-action a.cstm-add {
+        color: #bbc7d4;
+        display: inline-block;
+        padding: 1px 8px;
+        text-decoration: none;
+        font-weight: normal;
+    }
+
+h3.cstm-add-heading {
+    padding-bottom: 7px;
+    color: #fff;
+    text-align: center;
+    font-weight: 700;
+    border-bottom: 1px solid #bbb8b8;
+    margin: 10px 0px;
+}
+
+/*CSS for ToolTip*/
+.tooltip {
+    position: relative;
+    display: inline-block;
+    opacity: 1;
+}
+
+    .tooltip i.fa {
+        font-size: 16px;
+    }
+
+    .tooltip .tooltiptext {
+        visibility: hidden;
+        display: inline-block;
+        width: 140px;
+        padding: 5px 10px;
+        background-color: #555;
+        color: #fff;
+        text-align: center;
+        border-radius: 6px;
+        padding: 5px 0;
+        position: absolute;
+        z-index: 1;
+        left: 50%;
+        margin-left: -70px;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+        }
+
+        .tooltip .tooltiptext.ttptextup {
+            bottom: 125%;
+        }
+
+        .tooltip .tooltiptext.ttptextdown {
+            top: 125%;
+        }
+
+        .tooltip .tooltiptext.ttptextup:after {
+            top: 100%;
+            border-color: #555 transparent transparent transparent;
+        }
+
+        .tooltip .tooltiptext.ttptextdown:after {
+            bottom: 100%;
+            border-color: transparent transparent #555 transparent;
+        }
+
+    .tooltip:hover .tooltiptext {
+        visibility: visible;
+        opacity: 1;
+    }
+
+.portlet-with-collapse {
+    -webkit-box-shadow: 0px 0px 2px #aaaaab;
+    -moz-box-shadow: 0px 0px 2px #aaaaab;
+    box-shadow: 0px 0px 2px #aaaaab;
+}
+
+.prob-entry label.control-label {
+    color: #fff;
+}
+
+.prob-entry {
+    position: relative;
+}
+
+.cstm-close {
+    position: absolute;
+    position: absolute;
+    right: 0;
+    top: 0;
+    background: #f72424;
+    padding: 5px;
+}
+
+    .cstm-close a {
+        padding-top: 5px;
+        color: #fff;
+    }
+
+        .cstm-close a i.fa {
+            font-size: 18px;
+        }
+
+.cstm-form-group {
+    margin: 0px 0px 5px 0px !important;
+    display: table;
+    content: "";
+    width: 100%;
+}
+
+.cstm-control-label {
+    margin-bottom: 0px;
+}
+
+.cstm-form-control {
+    padding: 0;
+    height: 25px;
+}
+
+.white {
+    color: #fff;
+}
+
+.add-row-btn {
+    padding: 2px 3px 0px;
+}
+
+.red {
+    background: #ec2222;
+    border-color: #ec2222;
+}
+
+.add-row-btn i.fa {
+    font-size: 18px;
+}
+
+span.white {
+    background: #fff !important;
+}
+
+.quick-add-vital .prob-entry {
+    float: left;
+}
+
+.quick-add-vital {
+    left: 31%;
+}
+
+    .quick-add-vital .cstm-form-group {
+        width: 100%;
+        float: left;
+    }
+
+.popp-upp {
+    float: left;
+    position: absolute;
+    background: #2d2d2d78;
+}
+
+/*CSS form Doctor Notes Page*/
+table.info-table tr td {
+    line-height: 2.5;
+    font-weight: 700;
+}
+
+.vital-info ul li {
+    display: inline-block;
+    width: 32%;
+    line-height: 2;
+}
+
+.label-name {
+    float: left;
+    margin-right: 15px;
+}
+
+.txt-box-holder {
+    width: 40%;
+    float: left;
+    margin-right: 5px;
+}
+
+.unit-holder {
+    float: left;
+}
+/*CSS form Doctor Notes Page Ends*/
+
+/*Added by Anish On 7 May 18*/
+@media only screen and (max-width: 768px) {
+    .pat-info-top p, .pat-info-bottom p {
+        padding-left: 15px;
+    }
+}
+
+@media only screen and (max-width: 991px) {
+    .doctor-sdbar {
+        min-height: initial;
+    }
+}
+
+@media only screen and (min-width: 992px) {
+    .page-sidebar.doctor-sdbar {
+        width: 185px !important;
+        min-height: 800px;
+        background: #f1f1f1;
+        /*-webkit-box-shadow: 1px -5px 5px #afb8bb !important;
+        -moz-box-shadow: 1px -5px 5px #afb8bb !important;
+        box-shadow: 1px -5px 5px #afb8bb !important;*/
+    }
+
+    .doctor-sdbar ul.doctor-sidebar-list {
+        margin-top: 18px;
+    }
+
+    .page-container.doc-pagecontainer {
+        background: url('images/doctor-dashboard-bg.png') repeat-y 0 0;
+    }
+
+    .page-container {
+        background: url('images/dashboard-bg.png') repeat-y 0 0;
+    }
+
+    .page-content.doc-pagecontent {
+        margin-left: 185px !important;
+    }
+
+    .page-sidebar-closed .page-container {
+        background: none !important;
+    }
+
+    .page-sidebar-closed .page-sidebar .page-sidebar-menu.page-sidebar-menu-closed > li:hover > .sub-menu {
+        background: #364150;
+        height: auto !important;
+    }
+
+    .page-header.navbar .menu-toggler > span {
+        height: 2px;
+        background: #fff;
+        visibility: hidden;
+    }
+
+        .page-header.navbar .menu-toggler > span:before, .page-header.navbar .menu-toggler > span:after {
+            background: #fff !important;
+            height: 2px;
+            top: 3px;
+            -moz-transition: all 0.7s;
+            -webkit-transition: all 0.7s;
+            transition: all 0.7s;
+            visibility: visible;
+        }
+
+        .page-header.navbar .menu-toggler > span:before {
+            -moz-transform: rotate(410deg);
+            -webkit-transform: rotate(410deg);
+            transform: rotate(410deg);
+        }
+
+        .page-header.navbar .menu-toggler > span:after {
+            -moz-transform: rotate(-410deg);
+            -webkit-transform: rotate(-410deg);
+            transform: rotate(-410deg);
+        }
+
+    .page-sidebar-closed.page-sidebar-closed-hide-logo .page-header.navbar .menu-toggler.sidebar-toggler > span {
+        visibility: visible;
+    }
+
+        .page-sidebar-closed.page-sidebar-closed-hide-logo .page-header.navbar .menu-toggler.sidebar-toggler > span:before, .page-sidebar-closed.page-sidebar-closed-hide-logo .page-header.navbar .menu-toggler.sidebar-toggler > span:after {
+            -moz-transform: rotate(0deg);
+            -webkit-transform: rotate(0deg);
+            transform: rotate(0deg);
+            background: #fff;
+        }
+
+        .page-sidebar-closed.page-sidebar-closed-hide-logo .page-header.navbar .menu-toggler.sidebar-toggler > span:before {
+            top: 6px;
+        }
+
+        .page-sidebar-closed.page-sidebar-closed-hide-logo .page-header.navbar .menu-toggler.sidebar-toggler > span:after {
+            top: -6px;
+        }
+}
+/*custom.css ends*/
+
+
+div:not(.gen-sticker-wrapper) {
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+}
+
+.page-sidebar .page-sidebar-menu > li > a, .page-sidebar-closed.page-sidebar-fixed .page-sidebar:hover .page-sidebar-menu > li > a {
+    font-size: 13px;
+}
+
+.page-header.navbar .page-logo {
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.page-bar {
+    position: fixed;
+}
+
+.page-sidebar .page-sidebar-menu .sub-menu li > a {
+    padding-left: 15px;
+    font-size: 13px;
+}
+
+@media print {
+    div.receipt {
+        page-break-after: always;
+        page-break-inside: avoid;
+    }
+
+    html, body {
+        height: auto;
+    }
+
+    #pharma-pat-info, table#phrm-bill-table, table#pharma-bill-sum {
+        font-size: 12px !important;
+    }
+
+    table {
+        width: 100%;
+    }
+
+    #pharma-pat-info {
+        padding-top: 72px !important;
+    }
+
+    #invoice-head {
+        /*margin-right: 50px;*/
+    }
+
+    /*.bill-patinfo, tr, td {
+        font-size: 12px !important;
+    }*/
+
+
+    .noPrint {
+        display: none;
+        visibility: hidden;
+    }
+
+    html, body {
+        height: auto;
+    }
+
+    .billing-head {
+        position: absolute;
+        bottom: 11px;
+        left: 112px;
+    }
+
+    .bill-head-div {
+        position: relative;
+    }
+
+    .dischargebill-header {
+        position: relative !important;
+        left: 20% !important;
+    }
+
+    .discharge-breakup {
+        page-break-inside: avoid;
+    }
+}
+
+
+
+tr.border_bottom td {
+    border-bottom: 1pt solid black;
+    text-transform: lowercase;
+}
+
+
+.link {
+    text-transform: lowercase;
+}
+
+    .link:first-letter {
+        text-transform: uppercase;
+    }
+
+
+.receipt .bill-itms table {
+    border: solid #000 !important;
+    border-width: 1px 0 0 1px !important;
+}
+
+.report-container p, #patient-name {
+    font-weight: normal !important;
+    font-size: 14px !important;
+}
+
+
+
+.left-nav-div {
+    height: 70px;
+    width: 7em;
+    margin-top: 3px;
+    background-repeat: no-repeat;
+    background-size: 46px;
+    background-position-x: center;
+    border-radius: 1em;
+    box-shadow: 0px 5px 5px #365b84;
+    padding-top: 47px;
+    color: white;
+    font-family: "Times New Roman";
+    font-size: 12px;
+    text-align: center;
+}
+
+    .left-nav-div:hover {
+        background-color: #89ACCC;
+    }
+
+.left-nav-a-active div {
+    background-color: #89ACCC;
+}
+
+.link1-active {
+}
+
+.link2 {
+    /*border-radius: .5em .5em .5em .5em;*/
+    /*color: white;
+    cursor: pointer;
+    display: block;
+    font-size: 1em;
+    height: 2.5em;
+    line-height: 2.5em;
+    margin-right: .25em;
+    text-align: center;
+    box-shadow: 0 4px #847070;
+    background-color: #7AA1C8;
+    border-color: #ff6c60;
+    width: 180px;*/
+}
+
+.link2-active {
+    /*color: #532c7b;
+    font-weight: bold;
+    padding: 0 1.5em;
+    box-shadow: 0 4px #7AA1C8;
+    background-color: #C0D5F0;
+    border-color: #ff6c60;*/
+    font-weight: bold;
+    color: blue;
+}
+
+.link3 {
+    /*border-radius: 1em 1em 1em 1em;
+    color: white;
+    cursor: pointer;
+    display: block;
+    font-size: 1em;
+    height: 2.5em;
+    line-height: 2.5em;
+    text-align: center;
+    box-shadow: 2px 2px 2px 2px #847070;
+    background-color: #7AA1C8;
+    border-color: #ff6c60;
+    width: 150px;*/
+}
+
+
+
+.link3-active {
+    /*color: #532c7b;
+    cursor: pointer;
+    height: 2.5em;
+    line-height: 2.5em;
+    box-shadow: 0 4px #7AA1C8;
+    background-color: #C0D5F0;
+    border-color: #ff6c60;
+    width: 150px;
+    font-weight: bold;*/
+    font-weight: bold;
+    color: #e8e8ef !important;
+    background: linear-gradient(to bottom, #006687 0%,#035671 50%,#034256 100%);
+    border-radius: 4px !important;
+}
+
+.page-breadcrumb li a.link3-active {
+}
+
+.link3-active:active, .link3-active:focus {
+    text-decoration: none;
+}
+
+.link4 {
+    /*border-radius: 1em 1em 1em 1em;*/
+    /*color: white;
+    cursor: pointer;
+    display: block;
+    font-size: 1em;
+    height: 2em;
+    line-height: 2em;
+    text-align: center;
+    box-shadow: 2px 2px 2px 2px #847070;
+    background-color: #7AA1C8;
+    border-color: #ff6c60;
+    width: 150px;*/
+}
+
+
+
+.link4-active {
+    /*color: #532c7b;
+    cursor: pointer;
+    height: 2em;
+    line-height: 2em;
+    box-shadow: 0 4px #7AA1C8;
+    background-color: #C0D5F0;
+    border-color: #ff6c60;
+    width: 150px;
+    font-weight: bold;*/
+    font-weight: bold;
+    color: blue;
+}
+
+
+.patient-main-content {
+    background-color: rgb(192, 213, 240);
+    width: 760px;
+}
+
+    .patient-main-content text {
+        width: 200px;
+    }
+
+/*this is in main-vertical navigation.*/
+
+
+.tableContent td {
+    padding-bottom: 10px;
+    text-align: left;
+    padding-left: 6px;
+}
+
+.TableMargin td:hover {
+    background-color: #ddd;
+}
+
+.TableMargin td:focus {
+    background-color: #ccc;
+}
+
+
+.d-icon {
+    background-repeat: no-repeat;
+    background-position-x: center;
+    background-position-y: center;
+    background-size: 20px;
+    display: inline-block;
+    height: 20px;
+    width: 20px;
+    cursor: pointer;
+    margin-right: 5px;
+}
+
+    .d-icon:hover {
+        border: 1px solid blue;
+    }
+
+.icon-user {
+    background-image: url('images/user_.png');
+    background-size: 26px;
+}
+
+
+.icon-medication {
+    background-image: url('images/pharmacy.png');
+}
+
+.icon-note {
+    background-image: url('images/complaint.png');
+}
+
+.icon-lab {
+    background-image: url('images/lab.png');
+}
+
+.icon-imaging {
+    background-image: url('images/xray.png');
+}
+
+
+.btn-shadow.btn-default {
+    box-shadow: 0 4px #9c9c9c;
+}
+
+.btn-shadow.btn-primary {
+    box-shadow: 0 4px #29b392;
+}
+
+.btn-shadow.btn-success {
+    box-shadow: 0 4px #61a642;
+}
+
+.btn-shadow.btn-info {
+    box-shadow: 0 4px #1caadc;
+}
+
+.btn-shadow.btn-warning {
+    box-shadow: 0 4px #cab03f;
+}
+
+.btn-shadow.btn-danger {
+    box-shadow: 0 4px #d1595a;
+}
+
+/*start: for angular-grid*/
+.grid-action {
+    font-weight: bold;
+    cursor: pointer;
+    margin-left: 4px;
+    border: 2px solid #3598dc;
+    padding-left: 4px;
+    /*border-radius: 7px;*/
+    background-color: #3598dc;
+    color: white;
+    padding-right: 4px;
+}
+
+.grid-action-edit {
+    background-color: #c49f47;
+    border-color: #c49f47;
+}
+
+
+
+.grid-action:hover {
+    background-color: white;
+    color: #306DA6;
+}
+
+.grid-action-edit:hover {
+    background-color: white;
+    color: #306DA6;
+}
+
+
+/*end: for angular-grid*/
+
+
+
+/*Start: For billing- last updated: 18Jan2017-DineshP*/
+
+.BillCreditHdr {
+    background-color: #7a98bf !important;
+    font-family: roboto;
+    /*text-transform: uppercase;*/
+    color: #fff !important;
+    font-weight: 400;
+    font-size: 17px;
+}
+
+.BillingForm {
+    background-color: #757584 !important;
+    font-family: roboto;
+    text-transform: uppercase;
+    color: #fff !important;
+    font-weight: 400;
+    font-size: 17px;
+}
+
+
+.BillingTender {
+    border: 1px solid rgb(204, 204, 204);
+    padding: 5px;
+    overflow: hidden;
+    background: rgb(204, 204, 204);
+    border-radius: 5px;
+    float: right;
+    color: black;
+}
+/*for receipt*/
+.receipt {
+    max-width: 550px;
+    padding: 0px 10px 10px 10px;
+    border: 1px dotted black;
+    margin: 0 auto;
+    overflow: hidden;
+    font-size: 15px;
+    position: relative;
+    z-index: 2;
+}
+/*To display RETURNED watermark behind Receipt--sud: 13may'18*/
+.receipt-watermark:after {
+    content: 'RETURNED';
+    position: absolute;
+    display: block;
+    font-size: 550%;
+    line-height: 3;
+    transform: rotate(-45deg);
+    left: 50%;
+    top: 50%;
+    margin-left: -250px;
+    margin-top: -100px;
+    opacity: 0.3;
+    z-index: -1;
+    width: 500px;
+    height: 200px;
+}
+
+.msgbox {
+}
+
+.left {
+    float: left;
+}
+
+.right {
+    float: right;
+}
+
+.clear {
+    clear: both;
+}
+
+.receipt-table {
+    margin-top: 8px;
+}
+
+.print-par {
+    width: 200px;
+}
+
+.print-qty {
+    width: 60px;
+}
+
+.print-rate {
+    width: 70px;
+}
+
+.print-amt {
+    width: 70px;
+}
+
+.print-sn {
+    width: 30px;
+}
+
+.text-right {
+    text-align: right !important;
+}
+
+.dot-bot {
+    border-bottom: 1px dashed #333 !important;
+}
+
+tr.padding-b10 td {
+    padding-bottom: 10px !important;
+}
+
+.dot td {
+    padding: 2px;
+}
+
+.note td {
+    padding: 4px 0;
+}
+/*End: For billing- last updated: 18Jan2017-DineshP*/
+
+
+.color-red {
+    color: red;
+}
+
+.txt-centre {
+    text-align: center;
+}
+
+.danphe-print-report {
+    opacity: 0.9;
+    background: white;
+    z-index: 10;
+    top: 90px;
+    left: 100px;
+    position: relative;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    transition: 0.3s;
+    width: 90%;
+    height: 80%;
+    padding: 2px 15px 15px;
+}
+
+
+/*CSS for Danphe Messgae Notificatin Box(Toast Notification) Starts*/
+.danphe-msgbox {
+    /*z-index set to 10061, since max(z-index) in our all styles = 10060 (for popup-box) this should come at the top-no matter what.*/
+    z-index: 10070;
+    bottom: 20px;
+    right: 30px;
+    position: fixed;
+    background: #167e88;
+    -webkit-box-shadow: 2px 2px 7px 2px rgba(0, 0, 0, 0.6);
+    -moz-box-shadow: 2px 2px 7px 2px rgba(0, 0, 0, 0.6);
+    box-shadow: 2px 2px 7px 2px rgba(0, 0, 0, 0.6);
+    /*0px 0px 12px -2px rgba(0,0,0,0.75)*/
+    transition: 0.3s;
+    width: 32%;
+    border-radius: 0px;
+    border-radius: 5px !important;
+    color: #fff;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+    -webkit-align-items: center;
+    align-items: center;
+}
+
+i.fa.msg-error, i.fa.msg-failed, i.fa.msg-success, i.msg-default, i.msg-notice {
+    color: #f3f3f3;
+    font-size: 32px;
+    padding: 6px;
+}
+
+.flex-15 {
+    flex: 0 0 15%;
+    width: 100%;
+}
+
+.flex-85 {
+    flex: 0 0 85%;
+    width: 100%;
+}
+
+.main-message {
+    font-size: 12px;
+    margin-bottom: 5px;
+    margin-top: 5px;
+    max-height: 300px;
+    overflow: hidden;
+}
+
+.msg-status {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.close-btn {
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+}
+
+a.close-btn i.fa {
+    display: inline-block;
+    font-size: 28px;
+    color: #2d2d2d;
+    background: #fff;
+    border-radius: 8px;
+}
+
+.msg-box-close {
+    position: absolute;
+    right: -4px;
+    top: 0;
+}
+
+.msgbox-error, .msgbox-failed {
+    background: #ed143d;
+}
+
+.msgbox-warning {
+    background: #c15313;
+}
+
+.msgbox-success {
+    background: #2baf2b;
+}
+
+.msgbox-notice-message {
+    background: #116587;
+}
+
+.danphe-msgbox.h3 {
+    font: bold;
+    color: red;
+}
+
+.danphe-msgbox:hover {
+    /*box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);*/
+}
+/*CSS for Danphe Messgae Notificatin Box(Toast Notification) Ends*/
+
+.imaging-report-view {
+    background: white;
+    z-index: 1030;
+    position: fixed;
+    width: 90%;
+    left: 6%;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    transition: 0.3s;
+    padding: 0px 10px 50px 10px;
+    height: 550px;
+    overflow-y: scroll;
+    top: 1%;
+}
+
+    .imaging-report-view:hover {
+        box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+    }
+
+.img-resize {
+    max-height: 600px;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    transition: 0.3s;
+    border: outset;
+}
+
+.report-content-table {
+    width: 100%;
+}
+
+.report-image-table {
+    margin: 0 auto 0 auto;
+}
+
+
+.icon-X-RAY {
+    background-image: url('images/xray.png');
+    background-repeat: no-repeat;
+    background-position-x: center;
+    background-position-y: center;
+    background-size: 25px;
+}
+
+    .icon-X-RAY:hover {
+        background-color: blue;
+    }
+
+.SCAN {
+    background-image: url('images/ctscan.gif');
+    background-repeat: no-repeat;
+    background-position-x: center;
+    background-position-y: center;
+    background-size: 25px;
+}
+
+    .SCAN :hover {
+        background-color: blue;
+    }
+
+.icon-MRI {
+    background-image: url('images/mri.gif');
+    background-repeat: no-repeat;
+    background-position-x: center;
+    background-position-y: center;
+    background-size: 25px;
+}
+
+    .icon-MRI:hover {
+        background-color: blue;
+    }
+
+
+.icon-ULTRASOUND {
+    background-image: url('images/usg.png');
+    background-repeat: no-repeat;
+    background-position-x: center;
+    background-position-y: center;
+    background-size: 25px;
+}
+
+    .icon-ULTRASOUND:hover {
+        background-color: blue;
+    }
+
+.user-profile {
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    transition: 0.3s;
+    width: 50%;
+    border-radius: 20px;
+    background-color: white;
+}
+
+    .user-profile:hover {
+        box-shadow: 0 20px 40px 0 rgba(0,0,0,0.2);
+    }
+
+.user-profile-container {
+    padding: 2px 16px;
+}
+
+.file-upload {
+    border: 1px solid #ccc;
+    display: inline-block;
+    padding: 6px 12px;
+    cursor: pointer;
+}
+
+
+/*start--Added by sudarshan: 24Mar2017--for dashboard*/
+.section-header {
+    background-color: rgb(48, 109, 166);
+    width: 100%;
+    color: white;
+    font-weight: bold;
+    height: 28px;
+    vertical-align: middle;
+    padding-top: 5px;
+    padding-left: 20px;
+    font-family: monospace;
+    font-size: 15px;
+    margin-top: 5px;
+}
+
+.section-header-2 {
+    width: 50%;
+    font-weight: bold;
+    color: white;
+    background-color: #7AA1C8;
+    height: 25px;
+    padding-left: 1em;
+    width: 50%;
+    font-size: 15px;
+}
+/*end--Added by sudarshan: 24Mar2017--for dashboard*/
+
+/*start--Added by sudarshan: 25Mar2017--for LeftNavigation, Orders*/
+
+.pin-up {
+    background-image: url('images/pin-up-off.png');
+    background-repeat: no-repeat;
+    background-size: 13px;
+    float: right;
+    cursor: pointer;
+}
+
+    .pin-up:hover {
+        background-image: url('images/pin-up-on.png');
+    }
+
+.pin-side {
+    background-image: url('images/pin-side-on.png');
+    background-repeat: no-repeat;
+    background-size: 20px;
+    cursor: pointer;
+}
+
+
+/*sudarshan 28Mar'17: below 2 clases overwrites default css of ng2-autocomplete. Pls don't change it if you don't know the impact of the change. */
+.ng2-auto-complete ng2-auto-complete {
+    /*text-align: center !important;*/
+    border-radius: 1em !important;
+}
+
+    .ng2-auto-complete ng2-auto-complete input {
+        outline: none;
+        /*border: 0;*/
+        padding: 2px;
+        box-sizing: border-box;
+        background-clip: content-box;
+        border-radius: 1em;
+        text-align: center;
+    }
+
+.searchtbx {
+    border-radius: 1em;
+    border: 1px solid black;
+    width: 30em;
+    text-align: center;
+    height: 32px;
+    padding-left: 10px;
+    background-image: url('images/search.png');
+    background-repeat: no-repeat;
+    background-position-x: right;
+    background-size: 20px;
+    background-position: 331px;
+    text-transform: capitalize;
+    margin-left: -4px;
+}
+
+/*end--Added by sudarshan: 24Mar2017--for TESTING*/
+
+.danphe-refer-visit {
+    background: white;
+    z-index: 12;
+    top: 20%;
+    left: 30%;
+    position: fixed;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    transition: 0.3s;
+    width: 40%;
+    padding: 2px 15px 15px;
+}
+
+    .danphe-refer-visit.h3 {
+        font: bold;
+        color: red;
+    }
+
+
+    .danphe-refer-visit:hover {
+        box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+    }
+
+
+/*Start: Sud-24Jun'19--for followup visit*/
+.danphe-followup-visit {
+    background: white;
+    z-index: 12;
+    margin-top: 1%;
+    margin-left: 2%;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    transition: 0.3s;
+    width: 94%;
+    padding: 2px 15px 15px;
+}
+
+    .danphe-followup-visit.h3 {
+        font: bold;
+        color: red;
+    }
+
+
+    .danphe-followup-visit:hover {
+        box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+    }
+
+/*Start: Sud-24Jun'19--for followup visit*/
+
+
+/*start: 9april: css update for new design: sudarshan/dinesh/ram */
+
+.pat-input {
+    height: 30px;
+    border: none;
+    padding-left: 5px;
+    width: 184px;
+    font-size: 12px;
+}
+/*end: 9april: css update for new design: sudarshan/dinesh/ram */
+
+/*start: 3may: css update for footer design: hari */
+
+#footer {
+    position: absolute;
+    bottom: -1%;
+    color: darkblue;
+    animation: mymove 5s infinite;
+    animation-duration: 20s;
+}
+
+@keyframes mymove {
+    from {
+        left: 0%;
+    }
+
+    to {
+        left: 75%;
+    }
+}
+/*end: 3may: css update for footer design: hari */
+
+/*start: settings*/
+.pop-up-add {
+    background: white;
+    z-index: 1030;
+    position: fixed;
+    width: 40%;
+    left: 20%;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    transition: 0.3s;
+    padding: 0px 10px 50px 10px;
+    height: 400px;
+    top: 20%;
+}
+
+.pop-up-emp-add {
+    background: white;
+    z-index: 1030;
+    position: fixed;
+    width: 70%;
+    left: 20%;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    transition: 0.3s;
+    padding: 0px 10px 50px 10px;
+    height: 400px;
+    top: 10%;
+}
+/*end: settings*/
+
+.no-margin {
+    margin: 0px;
+}
+
+.customer-logo {
+    width: 100px;
+    height: 120px;
+}
+/*Customer heading*/
+.customer-heading {
+    color: red;
+    font-weight: bold;
+    margin: 0px;
+}
+
+.nopadding-nomargin {
+    padding: 0px;
+    margin: 0px;
+}
+
+.opd-sticker {
+    /*opacity: 0.5;*/
+    background: white;
+    z-index: 10;
+    top: 20%;
+    left: 40%;
+    position: fixed;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    transition: 0.3s;
+    width: 40%;
+    padding: 2px 15px 15px;
+}
+
+.patient-overview-heading {
+    width: 500px;
+}
+
+
+/*START- danphe-multiselect-dropdown style*/
+/*padding change is important*/
+.danaphe-multiselect-style {
+    color: #ccc !important;
+}
+
+    .danaphe-multiselect-style .c-token {
+        background: #38d574 !important;
+    }
+
+    .danaphe-multiselect-style .pure-checkbox label::before {
+        border-color: #38d574 !important;
+    }
+
+    .danaphe-multiselect-style .pure-checkbox input[type="checkbox"]:checked + label[_ngcontent-c1]:before {
+        background: #38d574 !important;
+    }
+
+    .danaphe-multiselect-style .selected-list[_ngcontent-c5] .c-btn[_ngcontent-c5] {
+        width: 100%;
+        box-shadow: 0px 1px 5px #959595;
+        padding: 7px !important; /*change padding of multiselects*/
+        cursor: pointer;
+        display: flex;
+    }
+/*END- danphe-multiselect-dropdown style*/
+
+/*added: sud-12May*/
+.zoomcheckbox {
+    zoom: 1.5 !important;
+}
+
+@keyframes bilRemarkAnimation {
+    from {
+        background-color: white;
+        color: #f18872;
+    }
+
+    to {
+        background-color: #f18872;
+        color: white;
+    }
+}
+
+.blinkRemarks {
+    background-color: #36c6d3;
+    animation-name: bilRemarkAnimation;
+    animation-duration: 1s;
+    animation-iteration-count: 3;
+}
+
+
+@keyframes blinkAmountsFrame {
+    from {
+        text-shadow: 2px 2px;
+        color: red;
+    }
+
+    to {
+        text-shadow: none;
+    }
+}
+
+@keyframes blinkAmountsFrameNormal {
+    from {
+        text-shadow: 2px 2px;
+        color: darkgreen;
+    }
+
+    to {
+        text-shadow: none;
+    }
+}
+
+
+.blinkAmount {
+    font-weight: bold;
+    color: #5e4e4d;
+    font-size: 17px;
+    padding-top: 15px;
+    animation-name: blinkAmountsFrame;
+    animation-duration: 1s;
+    animation-iteration-count: infinite;
+}
+
+.receipt .bill-summ {
+    width: 100%;
+}
+
+.receipt .bil-summ tr {
+    border: 1px solid;
+}
+
+.receipt .bil-summ {
+    border-collapse: collapse;
+}
+
+    .receipt .bil-summ tr td {
+        border: 1px solid;
+    }
+
+
+        .receipt .bil-summ tr td:last-child {
+            text-align: left;
+            padding-left: 5px;
+        }
+
+        .receipt .bil-summ tr td:first-child {
+            text-align: right;
+            /*border-right: 1px solid;*/
+            padding-right: 7px;
+        }
+
+
+
+.receipt .bill-itms {
+    text-align: left;
+    width: 100%;
+    border: 1px solid;
+}
+
+    .receipt .bill-itms thead {
+        font-weight: bold;
+        border-bottom: 1px solid;
+    }
+
+    .receipt .bill-itms td:first-child {
+        padding-left: 7px;
+    }
+
+    .receipt .bill-itms td:last-child {
+        padding-right: 5px;
+    }
+
+.receipt .bill-summ-div {
+    padding: 0px;
+    border-top: 0px;
+    border-bottom: 1px solid;
+    border-right: 1px solid;
+    border-left: 1px solid;
+}
+
+/*Start: Custom CSS form Accordion by ANish*/
+.clp {
+    color: #006687;
+    background: #e7ecf1;
+    padding: 7px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    margin: 0px 0px 5px;
+}
+
+.clp-cntnt {
+    padding: 0px 7px;
+}
+
+.clp-hd:after {
+    content: "";
+    position: relative;
+    top: 1px;
+    display: inline-block;
+    font-family: 'Glyphicons Halflings';
+    font-style: normal;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    /*-moz-osx-font-smoothing: grayscale;*/
+    float: right;
+    transition: transform .25s linear;
+    -webkit-transition: -webkit-transform .25s linear;
+}
+
+.clp-hd[aria-expanded="true"] {
+    background-color: #eee;
+}
+
+    .clp-hd[aria-expanded="true"]:after {
+        content: "\2212";
+        -webkit-transform: rotate(180deg);
+        transform: rotate(180deg);
+    }
+
+.clp-hd:after {
+    content: "\002b";
+    -webkit-transform: rotate(90deg);
+    transform: rotate(90deg);
+}
+/*END: Custom CSS form Accordion by ANish*/
+
+/* CSS form Dictionary Label */
+.label-holdr {
+    padding: 10px 0px;
+}
+
+    .label-holdr:not(:last-child) {
+        border-bottom: 1px solid #ccc;
+    }
+
+.dict-indxholder {
+    margin-bottom: 10px;
+}
+
+.alphabets {
+    display: inline-block;
+    margin-right: 3px;
+    padding: 3px 7px;
+    background: #006687;
+    color: #fff;
+    border: 1px solid #006687;
+    border-radius: 5px !important;
+    border-bottom-right-radius: 0px !important;
+    border-bottom-left-radius: 0px !important;
+}
+
+    .alphabets:hover {
+        text-decoration: none;
+        color: #006687;
+        background: transparent;
+    }
+
+.label-holdr label {
+    margin-left: 14px !important;
+}
+/* CSS form Dictionary Label Ends*/
+
+/*CSS form PrintPage of Medicine Prescription*/
+.med-prescrip {
+    background: #fcc1cd;
+    position: relative;
+}
+
+.water-mark {
+    position: absolute;
+    left: 10%;
+    top: 33%;
+    opacity: 0.3;
+}
+
+.hospital-info p {
+    text-align: center;
+    margin: 0;
+}
+
+.patient-inf p {
+    padding: 0px;
+    margin: 0;
+    line-height: 20px;
+}
+
+.med-prescrip-list table, .med-prescrip-list table tr th {
+    text-align: center;
+}
+
+    .med-prescrip-list table tr td {
+        padding: 5px 5px 0px 5px;
+    }
+
+.first-row div span, .sec-row div span {
+    visibility: hidden;
+}
+/*CSS form PrintPage of Medicine Prescription Ends*/
+
+
+@keyframes slideDown2 {
+    from {
+        max-height: 0;
+    }
+
+    to {
+        max-height: 200px;
+    }
+}
+
+.ord-gen-div {
+    border: 0.5px solid;
+    border-radius: 10px !important;
+    background-color: white;
+    animation-name: slideDown2 !important;
+    animation-duration: 0.6s !important;
+}
+
+.ord-new-items {
+    animation-name: slideDown2 !important;
+    animation-duration: 1s !important;
+}
+
+@font-face {
+    font-family: 'devnagari';
+    src: url('../theme-default/kantipur reg.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'monocursiva';
+    src: url('../theme-default/Monotype Corsiva.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+.bill-itemname .ng2-auto-complete > ul {
+    background-color: #fbfbfb !important;
+    width: auto;
+    display: inline-block;
+    /*width: 300px !important;*/
+}
+
+    .bill-itemname .ng2-auto-complete > ul li {
+        font-size: 12px !important;
+        white-space: nowrap;
+    }
+
+
+/*start: sud:30Sept'18--Copied css for danpheautocomplete from ng-auto-complete*/
+
+.autocomplete-item .danphe-auto-complete > ul {
+    background-color: #fbfbfb !important;
+    width: auto;
+    display: inline-block;
+    /*width: 300px !important;*/
+}
+
+    .autocomplete-item .danphe-auto-complete > ul li {
+        font-size: 12px !important;
+        white-space: nowrap;
+    }
+
+.danphe-auto-complete ul {
+    max-height: 300px;
+    overflow-y: auto;
+}
+/*end: sud:30Sept'18--Copied css for danpheautocomplete from ng-auto-complete*/
+
+/*start: Anish::after form ANimated Pop Up*/
+.cstm-popup-holder {
+    position: fixed;
+    z-index: 10065;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    padding-top: 55px;
+    overflow-y: scroll;
+    background: #e6dfdfa8;
+}
+
+.cstm-slidefromtop {
+    position: relative;
+    -webkit-animation: fromtop 0.8s; /* Safari 4.0 - 8.0 */
+    animation: fromtop 0.8s;
+}
+
+@-webkit-keyframes fromtop {
+    0% {
+        top: -200%;
+    }
+
+    40% {
+        top: -100%;
+    }
+
+    100% {
+        top: 0%;
+    }
+}
+/*End: Anish::after Jan 18, 2019*/
+
+
+.tick-box {
+    width: 35px;
+    height: 25px;
+    display: inline-block;
+    border: 2px solid;
+    border-bottom-left-radius: 50% 50%;
+    border-bottom-right-radius: 50% 50%;
+    border-top-left-radius: 50% 50%;
+    border-top-right-radius: 50% 50%;
+    border-color: purple;
+    vertical-align: -webkit-baseline-middle;
+}
+
+.ag-center-cols-clipper {
+    height: auto !important;
+}
+
+.ag-row {
+    width: auto;
+}
+/*.ag-root-wrapper.ag-layout-normal, .ag-root.ag-layout-normal{min-height: 550px !important;}*/
+.ag-layout-normal {
+    height: inherit;
+}
+
+.ag-center-cols-viewport {
+    overflow: hidden;
+}
+
+.ag-row.ag-row-focus {
+    z-index: 11 !important;
+}
+
+.ag-theme-fresh .ag-paging-panel {
+    width: 100%;
+    text-align: center;
+    display: block !important;
+    margin-top: 20px;
+    border-top: none !important;
+}
+
+.ag-row .ag-cell:last-child {
+    overflow: inherit !important;
+}
+
+.custom-table-search {
+    width: 300px;
+    padding: 2px 26px 2px 12px;
+    border: 1px solid;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    margin-right: 16px;
+    font-size: 17px;
+    background-image: url(images/search.png);
+    background-repeat: no-repeat;
+    background-position-x: right;
+    background-size: 20px;
+    background-position: 275px;
+}
+
+table.histo-table tr td:first-child, table.cyto-table tr td:first-child {
+    white-space: nowrap;
+}
+
+table.histo-table tr td {
+    padding: 0px 10px 15px 0px;
+    vertical-align: top;
+}
+
+.rad-holder {
+    margin-right: 12px;
+    display: inline-block;
+}
+
+    .rad-holder label {
+        margin-left: 7px;
+        cursor: pointer;
+    }
+
+    .rad-holder input[type="radio"] {
+        -ms-transform: scale(1.4); /* IE 9 */
+        -webkit-transform: scale(1.4); /* Chrome, Safari, Opera */
+        transform: scale(1.4);
+    }
+
+/**Changes for Manakamana  and other hospitals based on HospitalCode**/
+.mnk table.lab-report-tbl thead tr th {
+    font-size: 15px;
+}
+
+.mnk table.lab-report-tbl tbody tr th {
+    font-size: 14px;
+}
+
+.mnk table.lab-report-tbl tbody tr td {
+    font-size: 14px;
+}
+
+.mnk table.patient-info-tabl thead tr td div {
+    font-size: 14px;
+}
+
+.mnk table.patient-info-tabl thead tr td .right-hdr {
+    min-width: 355px;
+}
+/*.mnk table, .mnk table tr, .mnk table tr td div {border-color: #9a9a9a !important;}*/
+.mnk table.lab-report-tbl .referredby {
+    white-space: normal;
+}
+
+.hams table.lab-report-tbl, .hams table.lab-report-tbl tr, .hams table.lab-report-tbl tr td div {
+    border-color: #d6d5d6 !important;
+}
+
+/*CSS for Manmohan LabReport Starts*/
+.mmth table.lab-report-tbl .patient-info-box {border-color: #d6d5d6 !important;}
+.mmth table.single-tempate-table{border: 1px solid #000;}
+.mmth table.single-tempate-table > thead > tr{border-color: #000; border-style: solid;border-width: 0px 0px 1px 0px;}
+.mmth table.single-tempate-table > tbody > tr{ border-top: 1px solid #d6d5d6;
+    border-left: 1px solid;
+    border-right: 1px solid;}
+.mmth table.culture-holder-table thead tr{border-bottom: 1px solid #d6d5d6;border-right: none;border-left: none;}
+.mmth tbody.culture-negative-testres tr{border-bottom: 1px solid #d6d5d6;}
+.mmth tbody.culture-positive-testres tr{border-bottom: 1px solid #d6d5d6; }
+tbody.culture-positive-testres tr.sensitiv-rst-hd,
+tbody.culture-positive-testres tr.sensitiv-rst-data:not(:last-child){border-bottom: 1px solid #d6d5d6;}
+tbody.culture-positive-testres tr.sensitiv-rst-data td:not(:last-child){border-right: 1px solid #d6d5d6;}
+.mmth.rep-containr table.patient-info-tabl tbody tr td .table-holder table.lab-report-tbl thead tr:first-child th:first-child {
+    text-align: center;
+}
+.mmth table.lab-report-tbl thead tr th {font-size: 13px;}
+.mmth table.lab-report-tbl tbody tr th {font-size: 12px;}
+.mmth table.lab-report-tbl tbody tr td {font-size: 12px;}
+/*CSS for Manmohan LabReport Ends*/
+
+
+.footer-text {
+    font-size: 12px !important;
+}
+
+
+/*Dropdown Style CSS*/
+.dropbtn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 16px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+    .dropdown-content a {
+        color: black;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+    }
+
+        .dropdown-content a:hover {
+            background-color: #f1f1f1
+        }
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown:hover .dropbtn {
+    background-color: #3e8e41;
+}
+/*Dropdown CSS ends*/
+
+/*CSS that was present in each component of Dashboard*/
+.appt-label {
+    padding-top: 10px;
+    text-align: right;
+    font-size: 25px;
+    line-height: 22px;
+    letter-spacing: -1px;
+    margin-bottom: 0;
+    font-weight: 300;
+    color: white;
+}
+
+.point-cursor {
+    cursor: pointer;
+}
+/*CSS that was present in each component of Dashboard ended*/
+
+
+
+.align-vertical-middle td {
+    vertical-align: middle !important;
+}
+
+
+.btn-cancel {
+    color: #3379b7;
+    background: #fdfdff;
+    border: 1px solid #3379b7;
+}
+
+    .btn-cancel:hover {
+        color: #042f54;
+        border-color: #042f54;
+    }
+
+.modelbox-header h3, .modelbox-header h4, .modelbox-header p {
+    color: #006687;
+    margin-top: 0;
+    margin-bottom: 0px;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+    .modelbox-header h4.text-danger {
+        color: #e73d4a;
+    }
+
+.portlet-body.form {
+    min-height: 100vh;
+}
+
+/*CSS for FlexGrid starts*/
+.flex-container {
+    display: -webkit-box;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.justify-sp-between {
+    -webkit-justify-content: space-between;
+    justify-content: space-between;
+}
+
+.justify-center {
+    -webkit-justify-content: center;
+    justify-content: center;
+}
+
+.flex-align-center {
+    -webkit-align-items: center;
+    align-items: center;
+}
+
+.flex-align-stretch {
+    -webkit-align-items: stretch;
+    align-items: stretch;
+}
+
+.flex-1 {
+    flex: 1;
+}
+
+.flex-2 {
+    flex: 2;
+}
+
+.flex-3 {
+    flex: 3;
+}
+
+/*CSS for FlexGrid Ends*/
+
+
+
+
+.full-width {
+    flex-basis: 100%;
+    width: 100%;
+}
+
+.lab-rpt-sign {
+    width: 100%;
+    margin-top: 30px;
+    /*float: left;*/
+}
+
+.signature-item {
+    /*min-height: 92px;*/
+    flex-basis: 29%;
+    padding: 1%;
+}
+
+    .signature-item:nth-child(3n+1) {
+        text-align: left;
+    }
+
+    .signature-item:nth-child(3n+2) {
+        text-align: center;
+    }
+
+    .signature-item:nth-child(3n) {
+        text-align: right;
+    }
+
+.signature-item-inside {
+    font-weight: 700;
+}
+
+.main-signature {
+    white-space: pre-line;
+    display: inline-block;
+    border-top: 1px solid;
+    padding: 7px 15px;
+    line-height: 16px;
+    width: 100%;
+    text-align: center;
+}
+
+/*CSS for FlexGrid Ends*/
+
+.text-danger {
+    color: #e73d4a;
+}
+
+.scroll-vertical {
+    overflow-y: auto;
+}
+
+.scroll-horizontal {
+    overflow-x: auto;
+}
+
+table.table-bordered.thin-bordered > thead > tr > td, table.table-bordered.thin-bordered > thead > tr > th {
+    border-bottom-width: 1px;
+}
+
+.btn-navlink {
+    background: #36c6d3;
+    background: -moz-linear-gradient(45deg, #36c6d3 0%, #44b6bf 100%);
+    background: -webkit-linear-gradient(45deg, #36c6d3 0%, #44b6bf 100%);
+    background: linear-gradient(45deg, #36c6d3 0%, #44b6bf 100%);
+    color: #fff;
+}
+
+    .btn-navlink:hover, .btn-navlink:active {
+        color: #fff;
+        text-decoration: none;
+        background: -moz-linear-gradient(45deg, #36c6d3 0%, #44b6bf 100%);
+        background: -webkit-linear-gradient(45deg, #36c6d3 0%, #44b6bf 100%);
+        background: linear-gradient(45deg, #36c6d3 0%, #44b6bf 100%);
+    }
+
+/*.btn-link{color: #0a4963; font-weight: 700;padding-left: 0;padding-right: 0;}*/
+
+.danphe-auto-complete-wrapper:after {
+    content: "\f103";
+    font: normal normal normal 18px/24px FontAwesome;
+    display: inline-block;
+    position: absolute;
+    top: 50%;
+    margin-top: -12px;
+    right: 4px;
+    color: #949191;
+}
+
+.danphe-auto-complete-wrapper input {
+    padding-right: 15px;
+}
+
+}
+
+.danphe-auto-complete-wrapper > input {
+    padding-right: 35px;
+}
+
+.margin-0-tp {
+    margin-top: 0px;
+}
+
+.margin-0-bt {
+    margin-bottom: 0px;
+}
+
+.margin-15-tp {
+    margin-top: 15px;
+}
+
+.margin-15-bt {
+    margin-bottom: 15px;
+}
+
+.margin-20-tp {
+    margin-top: 20px;
+}
+
+.margin-20-bt {
+    margin-bottom: 20px;
+}
+
+.margin-0-vr {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.margin-15-vr {
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.margin-20-vr {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.margin-7-hr {
+    margin-left: 7px;
+    margin-right: 7px;
+}
+
+.margin-7-rt {
+    margin-right: 7px;
+}
+
+.margin-7-lft {
+    margin-left: 7px;
+}
+
+.margin-5-tp {
+    margin-top: 5px;
+}
+
+.margin-15-lft {
+    margin-left: 15px;
+}
+
+.padding-0-tp {
+    padding-top: 0px;
+}
+
+.padding-0-bt {
+    padding-bottom: 0px;
+}
+
+.padding-15-tp {
+    padding-top: 15px;
+}
+
+.padding-20-tp {
+    padding-top: 20px;
+}
+
+.padding-15-bt {
+    padding-bottom: 15px;
+}
+
+.padding-20-bt {
+    padding-bottom: 20px;
+}
+
+.padding-15-all {
+    padding: 15px;
+}
+
+.padding-20-all {
+    padding: 20px;
+}
+
+.padding-15-vr {
+    padding-top: 15px;
+    padding-bottom: 15px;
+}
+
+.padding-15-hr {
+    padding-right: 15px;
+    padding-left: 15px;
+}
+
+.padding-7-hr {
+    padding-left: 7px;
+    padding-right: 7px;
+}
+
+.padding-5-lft {
+    padding-left: 5px;
+}
+
+.padding-8-all {
+    padding: 8px;
+}
+
+.font-600 {
+    font-weight: 600;
+}
+
+.table-header-bg {
+    background: #e1e2e4;
+}
+
+.cstm-select, .cstm-select:focus {
+    background: #e9eaea;
+    padding: 5px;
+    border: 2px solid #dedede;
+}
+
+/*@media print{
+    table.single-tempate-table{page-break-inside: avoid;}
+    table.single-tempate-table tr    { page-break-inside:avoid; page-break-after:auto }
+    table.single-tempate-table thead { display:table-header-group }
+    table.single-tempate-table tfoot { display:table-footer-group }
+}*/
+
+/*Sud: 21Jul'19--This is for show/hide of Print invoice button in Insurance Invoice inside Transaction Page.*/
+.ins-txn-invoice-btn {
+    display: none;
+    /*display: inline-block; use below if we've to show the button.*/
+}
+
+/*sud: 26Jul'19--View report is not used anywhere, hence hidden for now*/
+.rad-rpt-view-image {
+    display: none;
+}
+
+/*for mnk we need cursive font in signatory name.*/
+.mnk .rad-rpt-signature {
+    font-family: cursive;
+}
+
+.rad-req-dicom-btn {
+    display: none;
+}

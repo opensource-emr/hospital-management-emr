@@ -1,0 +1,88 @@
+<style>
+    .closeBtn {
+        float: right;
+        padding-right: 5px;
+        padding: 3px 3px 3px 5px;
+        cursor: pointer;
+    }
+</style>
+
+<div class="popup-static portlet box portlet-fullscreen">
+    <div class="portlet-body form" style="padding-top: 20px !important;">
+        <div class="modelbox-div modelbox-custm col-md-11" style="margin-left: 2%;border-radius:0px !important;padding: 0px 0px 10px;font-size: 16px;width: 96%;">
+            <div style="text-align: center;font-weight: bold;background-color: #3598dc;margin-top: 5px;">
+                Update Price Category And Requesting Doctor
+                <button class="btn-danger closeBtn" (click)="CloseItemEdit($event)" style="margin-top:-5px;">
+                    <i class="fa fa-close"></i>Close
+                </button>
+            </div>
+
+
+            <div class="col-md-12">
+                Item : {{itemToEdit.ItemName}} <br />
+                Service Department: {{itemToEdit.ServiceDepartmentName}} <br />
+
+            </div>
+            <hr style="border: 1px solid #898990;" />
+
+            <div class="col-md-10">
+                <table class="table" style="width:80%">
+                    <tr>
+                        <td>
+                            Price Category:
+                        </td>
+                        <td>
+                            <select [(ngModel)]="itemToEdit.PriceCategory" (ngModelChange)="OnPriceCategoryChange()">
+                                <option value="Normal">
+                                    Normal
+                                </option>
+                                <option value="EHS">
+                                    EHS(PayClinic)
+                                </option>
+                                <option value="Foreigner">
+                                    Foreigner
+                                </option>
+                                <option value="SAARCCitizen">
+                                    SAARC Citizen
+                                </option>
+                            </select>
+                        </td>
+                        <td>
+                            Price: {{itemToEdit.Price}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Requested By:
+                        </td>
+                        <td>
+                            <div *ngIf="doctorList && doctorList.length>0">
+                                <input class="form-control cstm-form-control" danphe-auto-complete
+                                       [(ngModel)]="requestingDoctor"
+                                       [source]="docDDLSource"
+                                       [list-formatter]="AssignedToDocListFormatter"
+                                       placeholder="Enter Name"
+                                       display-property-name="FullName"
+                                       value-property-name=null
+                                       match-formatted="true"
+                                       (focusout)="AssignSelectedDoctor()"
+                                       onClick="this.select();"
+                                       max-num-list="10" />
+                            </div>
+                        </td>
+                        <td></td>
+                    </tr>
+                </table>
+
+            </div>
+
+            <div class="col-md-12" style="padding-top:20px;text-align: center;">
+                <button class="btn blue" (click)="SaveItem()" title="Save Changes">
+                    <i class="fa fa-save" style="cursor:pointer;"></i>
+                    Update
+                </button>
+
+            </div>
+        </div>
+    </div>
+</div>

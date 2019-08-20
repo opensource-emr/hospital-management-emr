@@ -1,0 +1,48 @@
+<!-- 
+<div class="row" style="width: 100%; margin-bottom: 25px;">
+    <div class="col-md-5 col-xs-12">
+        <div class="form-group">
+            <label class="control-label col-md-4">From Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
+            <div class="col-md-8">
+                <danphe-date-picker [(ngModel)]="fromDate" ngDefaultControl [CalendarTypes]="'en,np'">
+                </danphe-date-picker>
+            </div>
+        </div>
+
+    </div>
+    <div class="col-md-5 col-xs-12">
+        <div class="form-group">
+            <label class="control-label col-md-4">To Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
+            <div class="col-md-8">
+                <danphe-date-picker [(ngModel)]="toDate" ngDefaultControl [CalendarTypes]="'en,np'">
+                </danphe-date-picker>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="col-md-2 col-xs-12">
+        <div class="form-group">
+            <button class="btn blue" type="button" (click)="LoadOutPatient()">
+                <i class="fa fa-search"></i>
+                Show Patient
+            </button>
+        </div>
+    </div>
+</div> -->
+
+
+<danphe-grid [grid-colDefaults]="nurOPDGridColumnSettings" [grid-data]="opdList" (grid-actions)="NurOPDListGridActions($event)"  
+[show-ServerSideSearch]="false"
+[api-type]="patGirdDataApi">
+</danphe-grid>
+<div class="row">
+    <div *ngIf="showDocumentsDetails">
+        <patient-upload-files [isShowUploadMode]="isShowUploadMode"
+                              [isShowListMode]="isShowListMode"
+                              [patientId]="patientId">
+        </patient-upload-files>
+    </div>
+</div>
+
+

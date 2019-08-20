@@ -1,0 +1,106 @@
+﻿<div *ngIf="showSurgicalAddBox && CurrentSurgicalHistory && CurrentSurgicalHistory.SurgicalHistoryValidator" class="prob-entry" style="padding: 40px; background: #006687;">
+    <form [formGroup]="CurrentSurgicalHistory.SurgicalHistoryValidator" class="form-horizontal">
+        <div style="margin-right: 15px;" class="cstm-close" (click)="CloseSurgicalHistoryBox()">
+            <a><i class="fa fa-close"></i> </a>
+        </div>
+        <h3 class="cstm-add-heading">{{CurrentSurgicalHistory.SurgicalHistoryId ? 'Update' : 'Add'}} Surgical History</h3>
+            <div class="form-group">
+                <label class="control-label col-md-4" style="color:white">SurgeryType<b style="float:right;">:</b></label>
+                <div class="col-md-8">
+                    <input type="text" class="form-control" maxlength="30"
+                           formControlName="SurgeryType"
+                           [(ngModel)]="CurrentSurgicalHistory.SurgeryType" />
+                    <span class="font-sm color-red"
+                          *ngIf="CurrentSurgicalHistory.IsDirty('SurgeryType')"
+                          [hidden]="CurrentSurgicalHistory.IsValidCheck('SurgeryType','maxlength')">
+                        Surgery Type should not exceed 30 characters.
+                    </span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-md-4" style="color:white">Search Problem<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                <!--<div class="col-md-8">
+                    <input danphe-auto-complete class="form-control"
+                           [(ngModel)]="icd10Selected"
+                           formControlName="ICD10Code"
+                           required
+                           [source]="ICD10List"
+                           [list-formatter]="ICDListFormatter"
+                           placeholder="ICD10"
+                           (valueChanged)="AssignSelectedICD()"
+                           display-property-name="ICD10Description"
+                           value-property-name=null
+                           onClick="this.select();"
+                           max-num-list="10" />
+                    <span class="error-msg"
+                          *ngIf="CurrentSurgicalHistory.IsDirty('ICD10Code')"
+                          [hidden]="CurrentSurgicalHistory.IsValidCheck('ICD10Code','required')">
+                        Select ICD10 Code
+                    </span>
+                </div>-->
+
+                <div class="row autocomplete-item col-md-8" *ngIf="ICD10List && ICD10List.length>0">
+                    <input danphe-auto-complete
+                           class="form-control"
+                           [(ngModel)]="icd10Selected"
+                           [source]="ICD10List"
+                           formControlName="ICD10Code"
+                           [list-formatter]="ICDListFormatter"
+                           placeholder="ICD10"
+                           display-property-name="ICD10Description"
+                           value-property-name=null
+                           (valueChanged)="AssignSelectedICD()"
+                           onClick="this.select();"
+                           match-formatted="true"
+                           [grid-sort]="'ICD10Description'"
+                           max-num-list="20" />
+                    <span class="color-red font-sm" style="color:red"
+                          *ngIf="CurrentSurgicalHistory.IsDirty('ICD10Code')"
+                          [hidden]="CurrentSurgicalHistory.IsValidCheck('ICD10Code','required')">
+                        Select ICD10 Code
+                    </span>
+                </div>
+
+
+            </div>
+            <div class="form-group">
+                <label class="control-label col-md-4" style="color:white">Surgery Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                <div class="col-md-8">
+                    <input type="date" class="form-control"
+                           formControlName="SurgeryDate"
+                           [(ngModel)]="CurrentSurgicalHistory.SurgeryDate" />
+                    <span class="error-msg"
+                          *ngIf="CurrentSurgicalHistory.IsDirty('SurgeryDate')"
+                          [hidden]="CurrentSurgicalHistory.IsValidCheck('SurgeryDate','required')">
+                        Surgery date is required.
+                    </span>
+                    <span class="error-msg"
+                          *ngIf="CurrentSurgicalHistory.IsDirty('SurgeryDate')"
+                          [hidden]="CurrentSurgicalHistory.IsValidCheck('SurgeryDate','wrongDate')">
+                        Enter Valid Surgery Date
+                    </span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-md-4" style="color:white">Note<b class="color-red"></b><b style="float:right;">:</b></label>
+                <div class="col-md-8">
+                    <textarea type="text" style="width:240px;height:95px" maxlength="1000"
+                              [(ngModel)]="CurrentSurgicalHistory.Note" [ngModelOptions]="{standalone: true}"></textarea>
+                    <!--<span class="error-msg"
+          *ngIf="CurrentSurgicalHistory.IsDirty('Note')"
+          [hidden]="CurrentSurgicalHistory.IsValidCheck('Note','required')">
+        Note is required.
+    </span>-->
+                    <!--<span class="error-msg"
+                          *ngIf="CurrentSurgicalHistory.IsDirty('Note')"
+                          [hidden]="CurrentSurgicalHistory.IsValidCheck('Note','maxLength')">
+                        Note shouldn't exceed 200 character.
+                    </span>-->
+                </div>
+            </div>
+        
+        <div style="margin-left:40px">
+            <button (click)="SaveSurgicalHistory()" [disabled]="loading" class="btn btn-primary">{{CurrentSurgicalHistory.SurgicalHistoryId ? 'Update' : 'Add' }}</button>
+        </div>
+    </form>
+</div>

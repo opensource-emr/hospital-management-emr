@@ -1,0 +1,363 @@
+﻿
+<style>
+    .AppTable tbody tr th {
+        font-weight: bold;
+        border: 2px solid blue;
+        background-color: lightgreen;
+        text-align: center;
+    }
+
+    .AppTable tbody tr td {
+        border: 1px solid blue;
+    }
+
+        .AppTable tbody tr td a {
+            font-weight: bold;
+            margin-left: 5px;
+            cursor: pointer;
+        }
+
+
+
+    .vitals-table tbody tr td:nth-child(odd), .vitals-table tbody tr td:nth-child(even) {
+        padding-right: 20px;
+    }
+
+    .div-underconstruct {
+        background-image: url('../../wwwroot/themes/theme-default/images/underconstruct.jpg');
+    }
+
+    .a-plus {
+        background-image: url('/themes/theme-default/images/plus-off.png');
+        float: right;
+        margin-right: 5px;
+        background-position-y: center;
+        background-repeat: no-repeat;
+        margin-top: 3px;
+        background-size: 21px;
+    }
+
+        .a-plus:hover {
+            background-image: url('/themes/theme-default/images/plus-on.png');
+        }
+
+    .div-scroll {
+        height: 200px;
+        overflow-y: auto;
+    }
+
+    .pat-ovv .portlet.box.blue-hoki {
+        border: none;
+        box-shadow: 1px 1px 8px #a3a5a9;
+    }
+</style>
+
+
+
+<div class="row pat-ovv" style="margin-top:5px">
+    <div class="col-md-12 col-sm-12">
+        <div class="col-md-6 col-sm-6" style="padding-left: 1px;">
+
+            <div class="portlet box blue-hoki">
+                <div class="portlet-title cstm-portlet-title">
+                    <div class="caption">
+                        Labs
+                    </div>
+                    <div class="actions" *ngIf="enableAddOrders" style="color: #374251;">
+                        <a (click)="routeTo('labs')" class="btn btn-default btn-sm" style="background: #374150 !important;">
+                            <i class="fa fa-plus-circle"></i> Add Lab Order
+                        </a>
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <div *ngIf="currentPatient.LabRequisitions[0] == undefined" style="position: relative; width: auto; height: 50px;">
+                        <p style="color: red;">no records found</p>
+                    </div>
+                    <div *ngIf="currentPatient.LabRequisitions[0] != undefined" style="position: relative; width: auto; height: 200px; overflow: auto;">
+                        <table class="table table-striped table-hover">
+
+                            <tr>
+                                <th style="width: 60%;">Test</th>
+                                <th style="width: 25%;">Date</th>
+                                <th style="width: 15%;">Result</th>
+                            </tr>
+                            <tbody>
+                                <tr *ngFor="let res of currentPatient.LabRequisitions ">
+                                    <td>{{res.LabTestName}}</td>
+                                    <td>{{res.OrderDateTime | DanpheDateTime:'datename':'DD.MM.YYYY HH:mm'}}</td>
+                                    <td>
+                                        <a style="text-decoration:underline;font-weight:bold;cursor:pointer;" *ngIf="res.OrderStatus=='report-generated'" (click)="ViewLabReport(res.RequisitionId)">View</a>
+                                        <span *ngIf="res.OrderStatus!='report-generated'">{{res.OrderStatus}}</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="portlet box blue-hoki">
+                <div class="portlet-title cstm-portlet-title">
+                    <div class="caption">
+                        Active Problems
+                    </div>
+                    <div class="actions" *ngIf="enableAddOrders">
+                        <a href="javascript:;" routerLink="../ProblemsMain/ActiveMedical" class="btn btn-default btn-sm" style="background: #374150 !important;">
+                            <i class="fa fa-plus-circle"></i> Add Active Problem
+                        </a>
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <div *ngIf="currentPatient.Problems[0] == undefined" style="position: relative; width: auto; height: 50px;">
+                        <p style="color: red;">no records found</p>
+                    </div>
+                    <div *ngIf="currentPatient.Problems[0] != undefined" style="position: relative; overflow: auto; width: auto; height: 200px;">
+                        <table class="table table-striped table-hover">
+                            <tr>
+                                <th>Problem</th>
+                                <th>Onset Date</th>
+                                <th>Action</th>
+                            </tr>
+                            <tr *ngFor="let res of currentPatient.Problems">
+                                <td><b>{{res.ICD10Description}}</b></td>
+                                <td><b>{{res.OnSetDate | DanpheDateTime:'datename':'DD.MM.YYYY'}}</b></td>
+                                <td>
+                                    <a style="text-decoration:underline;font-weight:bold;cursor:pointer;" (click)="ShowAddProblemNote(res)">Add Note</a>
+                                </td>
+                            </tr>
+                        </table>
+
+                    </div>
+                </div>
+            </div>
+            <div class="portlet box blue-hoki">
+                <div class="portlet-title cstm-portlet-title">
+                    <div class="caption">
+                        Medications
+                    </div>
+                    <div class="actions" *ngIf="enableAddOrders">
+                        <a (click)="routeTo('medication')" class="btn btn-default btn-sm" style="background: #374150 !important;">
+                            <i class="fa fa-plus-circle"></i> Add Medication Order
+                        </a>
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <div *ngIf="currentPatient.MedicationPrescriptions[0] == undefined" style="position: relative; width: auto; height: 50px;">
+                        <p style="color: red;">no records found</p>
+                    </div>
+                    <div *ngIf="currentPatient.MedicationPrescriptions[0] != undefined" style="position: relative; overflow: auto; width: auto; height: 200px;">
+                        <table class="table table-striped table-hover">
+                            <tr *ngFor="let med of currentPatient.MedicationPrescriptions">
+                                <td><b>{{med.MedicationName}}</b>&nbsp;&nbsp;{{med.Frequency}}&nbsp;times a day</td>
+                                <td>&nbsp;&nbsp;&nbsp;&nbsp;Start Date- <b> {{med.CreatedOn | DanpheDateTime:'datename':'DD.MM.YYYY'}}</b></td>
+                            </tr>
+                        </table>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-sm-6" style="padding-left: 1px;">
+            <div class="portlet box blue-hoki">
+                <div class="portlet-title cstm-portlet-title">
+                    <div class="caption">
+                        Imaging
+                    </div>
+                    <div class="actions" *ngIf="enableAddOrders">
+                        <a (click)="routeTo('imaging')" class="btn btn-default btn-sm" style="background: #374150 !important;">
+                            <i class="fa fa-plus-circle"></i> Add Imaging Order
+                        </a>
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <div *ngIf="currentPatient.ImagingItemRequisitions[0] == undefined" style="position: relative; width: auto; height: 50px;">
+                        <p style="color: red;">no records found</p>
+                    </div>
+                    <div *ngIf="currentPatient.ImagingItemRequisitions[0] != undefined" style="position: relative; overflow: auto; width: auto; height: 200px;">
+                        <table class="table table-striped table-hover">
+
+                            <tr>
+                                <th>Type</th>
+                                <th>Item</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                            </tr>
+                            <tr *ngFor="let req of currentPatient.ImagingItemRequisitions">
+                                <td><b>{{req.ImagingTypeName}}</b></td>
+                                <td>{{req.ImagingItemName}}</td>
+                                <td>{{req.ImagingDate | DanpheDateTime:'datename':'DD.MM.YYYY HH:mm'}}</td>
+                                <td>
+                                    <a style="text-decoration:underline;font-weight:bold;cursor:pointer;" *ngIf="req.OrderStatus=='final'" (click)="ViewImagingReport(req.ImagingRequisitionId)">View</a>
+                                    <span *ngIf="req.OrderStatus!='final'">{{req.OrderStatus}}</span>
+                                </td>
+                            </tr>
+                        </table>
+
+                    </div>
+                </div>
+            </div>
+            <div class="portlet box blue-hoki">
+                <div class="portlet-title cstm-portlet-title">
+                    <div class="caption">
+                        Last Vitals
+                    </div>
+                    <div class="actions">
+                        <a href="javascript:;" routerLink="../Clinical/Vitals" class="btn btn-default btn-sm" style="background: #374150 !important;">
+                            <i class="fa fa-plus-circle"></i> Add Vitals
+                        </a>
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <div *ngIf="currentPatient.Vitals[0] == undefined" style="position: relative; width: auto; height: 50px;">
+                        <p style="color: red;">no records found</p>
+                    </div>
+                    <div *ngIf="currentPatient.Vitals[0] != undefined" style="position: relative; overflow: auto; width: auto; height: 200px;">
+                        <table class="table table-striped table-hover">
+                            <tbody>
+                                <tr>
+                                    <td><b>Recorded On</b></td>
+                                    <td *ngFor="let vital of currentPatient.Vitals;">
+                                        {{vital.CreatedOn | DanpheDateTime:'format':'DD.MM.YY HH:mm'}}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Temperature</td>
+                                    <td *ngFor="let vital of currentPatient.Vitals;">
+                                        {{vital.Temperature | HasValue: vital.TemperatureUnit}}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Pulse</td>
+                                    <td *ngFor="let vital of currentPatient.Vitals;">
+                                        {{vital.Pulse | HasValue:'/min'}}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Blood Pressure</td>
+                                    <td *ngFor="let vital of currentPatient.Vitals;">
+                                        {{vital.BPSystolic | HasValue:'/'}}{{vital.BPDiastolic}}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Respiratory Rate</td>
+                                    <td *ngFor="let vital of currentPatient.Vitals;">
+                                        {{vital.RespiratoryRatePerMin | HasValue:'/min'}}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>SpO2</td>
+                                    <td *ngFor="let vital of currentPatient.Vitals;">
+                                        {{vital.SpO2 | HasValue:'/'}}{{vital.FiO2}}
+                                    </td>
+                                </tr>
+                            </tbody>
+
+                        </table>
+
+                    </div>
+                </div>
+            </div>
+            <div class="portlet box blue-hoki">
+                <div class="portlet-title cstm-portlet-title">
+                    <div class="caption">
+                        Allergies
+                    </div>
+                    <div class="actions">
+                        <a href="javascript:;" routerLink="../Clinical/Allergy" class="btn btn-default btn-sm" style="background: #374150 !important;">
+                            <i class="fa fa-plus-circle"></i> Add Allergies
+                        </a>
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <div *ngIf="currentPatient.Allergies[0] == undefined" style="position: relative; width: auto; height: 50px;">
+                        <p style="color: red;">no records found</p>
+                    </div>
+                    <div *ngIf="currentPatient.Allergies[0] != undefined" style="position: relative; overflow: auto; width: auto; height: 200px;">
+                        <table class="table table-striped table-hover">
+                            <tbody>
+                                <tr><td style="font-weight:bold;text-decoration:underline;">Medication</td><td></td></tr>
+                                <tr *ngFor="let alrg of currentPatient.MedAllergy" class="table-bordered">
+                                    <td>{{alrg.AllergenAdvRecName}}</td>
+                                    <td>{{alrg.Reaction}}</td>
+                                </tr>
+                                <tr *ngFor="let alrg of currentPatient.AdvReaction" class="table-bordered">
+                                    <td>* {{alrg.AllergenAdvRecName}}</td>
+                                    <td>{{alrg.Reaction}}</td>
+                                </tr>
+                                <tr><td style="font-weight:bold;text-decoration:underline;">Non-medication</td></tr>
+                                <tr *ngFor="let alrg of currentPatient.OtherAllergy" class="table-bordered">
+                                    <td>* {{alrg.AllergenAdvRecName}}</td>
+                                    <td>{{alrg.Reaction}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+
+
+<div *ngIf="showImagingReport==true">
+    <danphe-view-imaging-report [showImagingReport]="showImagingReport"
+                                [requisitionId]="imagingRequisitionId"></danphe-view-imaging-report>
+</div>
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showLabReport">
+    <div class="portlet-body form">
+        <div class="modelbox-div" style="width: 90%; margin: 0 auto;">
+            <div style="margin-left:0px;">
+                <i class="btn btn-danger" style="float: right;" (click)="CloseLabReport()">X</i>
+                <danphe-lab-results [requisitionIdList]="labRequisitionIdList"
+                                    [showReport]="showLabReport"
+                                    [showHeader]="false"
+                                    [showSignatories]="false"
+                                    [enableEdit]="false"></danphe-lab-results>
+            </div>
+        </div>
+    </div>
+</div>
+<div *ngIf="showAddProblemNote">
+    <div class="popup portlet box" style="margin-left:150px;height:300px;width:500px">
+        <!--Model box Heder Start-->
+        <div class="portlet-title">
+            <!--Model box Title Start-->
+            <div class="caption">
+                <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
+                <b>Add Note</b>
+            </div>
+            <!--Model Box Title End-->
+            <!--Model Box Header Buttons Start-->
+            <div class="tools">
+                <a href="javascript:;" class="fullscreen" data-original-title="" title=""> </a>
+                <i class="remove btn btn-danger" (click)="CloseAddProblemNote()">x</i>
+                <!--<a href="javascript:;" class="remove" data-original-title="" title=""> </a>-->
+            </div>
+            <!--Model Box Heder Buttons End-->
+        </div>
+        <!--Model Box Header End-->
+        <div class="portlet-body form" style="background-color:white;margin-left:20px">
+            <!--Model Box Body Start-->
+            <div style="margin-top:10px">
+                <h5 align="center"><b>Add Notes for {{selectedProblem.ICD10Description}}</b></h5>
+                <hr />
+                <form [formGroup]="selectedProblem.ActiveMedicalValidator" class="form-horizontal">
+                    <textarea type="text" class="form-control" maxlength="200"
+                              formControlName="Note"
+                              [(ngModel)]="selectedProblem.Note"></textarea>
+                    <span class="color-red font-sm"
+                          *ngIf="selectedProblem.IsDirty('Note')"
+                          [hidden]="selectedProblem.IsValidCheck('Note','maxlength')">Note should not exceed 200 characters.</span>
+                    <i class="remove btn btn-danger" (click)="AddProblemNote()">Submit</i>
+                </form>
+            </div>
+
+        </div>
+        <!--Model Box End Here-->
+    </div>
+</div>
+

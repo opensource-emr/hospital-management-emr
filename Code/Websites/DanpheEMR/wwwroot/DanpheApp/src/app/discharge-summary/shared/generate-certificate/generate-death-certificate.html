@@ -1,0 +1,101 @@
+
+  <style>
+            input {
+                     height: 25px;
+               }
+         </style>
+     <div class="container" *ngIf="showDeathCertificate"
+           style="width: 100%; padding-top:50px;font-family: 'Times New Roman', Times, serif;">
+           <div style="text-align:right;">Note: Print the death certificate from view summary.</div>
+           <div  id="PrintPage">
+                 <div style="padding:0px;">
+                 <table style="padding-top: 50px;width: 100%;">
+                  <tr>
+                        <td><b><i>Fiscal Year :
+                                    <u>{{CurrentCertificate.FiscalYearName}}</u></i> </b></td>
+                        <td style="text-align:right"><b><i>DeathCertificate No :
+                                                <u>{{CurrentCertificate.CertificateNumber}}</u></i></b></td>
+                  </tr>
+                 </table>
+            </div>
+                 <div class="col-sm-12"
+                       style="text-align: center; padding: 20px;font-family: 'Times New Roman', Times, serif;">
+                       <h3><b><i>Medical Certificate of Death</i></b></h3>
+                 </div>
+                 <br>
+                 <br>
+                 <div>
+                       <div style="display: inline-block;">
+                           <div class="hidden-print" *ngIf="!IsPrint" style="font-weight: 20px;">
+                                           This is to certify that Mr./Mrs/Ms <u><b>{{selectedPatient.Name}}</b></u> 
+                                           son/daughter of Mr <input type="text"  style="display: inline-block;"  style="width: 150px;" rows="1" maxlength="100" [(ngModel)]="FatherName" placeholder="Father Name"/>
+                                           Ms <input type="text" maxlength="150" [(ngModel)]="MotherName"  style="width: 150px;" placeholder="Mother Name"/> spouse of Mr/Ms <input type="text" rows="1" maxlength="100"  style="width: 150px;" [(ngModel)]="Spouse" placeholder="Spouse"/>
+                                              as per hospital record resident of country <u><b>{{PatientAddress.Country}} </b></u>
+                                           district  <u><b>{{PatientAddress.CountryDivision}}</b></u> village/municipality <u><b>{{PatientAddress.Street}}</b></u> ward number <u><b>{{selectedPatient.BedInformation.BedCode}}</b></u> tole <u><b>{{PatientAddress.Zip}}</b></u>
+                                           and inpatient/emergency number <u></u> expired on <input type="date"  max="100" [(ngModel)]="DeathDate" style="width:150px;"
+                                           placeholder="DeathDate" name="DeathDate"/> time <u><b> <input type="time" max="100" [(ngModel)]="DeathTime" style="width:100px;"
+                                             placeholder="DeathTime" name="DeathTime" /></b></u> (24 hours) at the age of <b>  {{selectedPatient.DateOfBirth | DanpheDateTime:'age' }}</b> (day/month/year). His/her cause of death was <input type="text" style="width: 150px;" rows="1" maxlength="200" [(ngModel)]="DeathCause" placeholder="Death Cause"/>
+                                       </div>          
+                           <div *ngIf="IsPrint">
+                                         &nbsp;   &nbsp; &nbsp;         This is to certify that Mr./Mrs/Ms <u><b>{{selectedPatient.Name}}</b></u> son/daughter of Mr <u><b>{{CurrentCertificate.FatherName}}</b></u>
+                                       Ms <u><b>{{CurrentCertificate.MotherName}}</b></u> spouse of Mr/Ms <u><b>{{CurrentCertificate.Spouse}}</b></u> as per hospital record resident of country <u><b>{{PatientAddress.Country}} </b></u>
+                                       district  <u><b>{{PatientAddress.CountryDivision}}</b></u> village/municipality <u><b>{{PatientAddress.Street}}</b></u> ward number <u><b>{{selectedPatient.BedInformation.BedCode}}</b></u> tole <u><b>{{PatientAddress.Zip}}</b></u>
+                                       and inpatient/emergency number <u></u> expired on BS <u> </u> (AD  MM//DD/YYYY) time <u><b> {{CurrentCertificate.DeathTime}}</b></u>
+                                       (24 hours) at the age of <b>{{selectedPatient.DateOfBirth | DanpheDateTime:'age' }}</b> (day/month/year). His/her cause of death was <u><b>{{CurrentCertificate.DeathCause}}</b></u>
+                                       
+                           </div>
+                             <div  style="padding-top: 50px;">
+                                   <table style="width:100%;">
+                                         <tr>
+                                               <th><b style="font-size: large;"><i>Issued By</i></b></th>
+                                               <th>   <b style="font-size: large;padding-left: 50px;"><i>Hospital/Health Facility</i></b></th>
+                                         </tr>
+                                         <tr>
+                                                      <td *ngIf="IsPrint">
+                                                                  Signature   : ______________________<br>
+                                                                  Name        : <b><u>{{CertifiedByName}}</u></b> <br>
+                                                                  Designation :<span *ngIf="!CertifiedByDesignation">______________________</span><b><u>{{CertifiedByDesignation}}</u></b><br>
+                                                                  NMC No      : <span *ngIf="!MNC">______________________</span><b><u>{{MNC}}</u></b>
+                                                      </td>
+                                                            <td class="hidden-print" *ngIf="!IsPrint">
+                                                                  <input danphe-auto-complete class="form-control"
+                                                                        [(ngModel)]="CertifiedSignatory" [source]="providerList"
+                                                                        [list-formatter]="myListFormatter" placeholder="Issued By"
+                                                                        display-property-name="FullName" value-property-name=null
+                                                                        (valueChanged)="OnChangeCertifiedSignatory()" min-chars="0"
+                                                                        max-num-list="10" [ngModelOptions]="{standalone: true}" />
+                                                            </td> 
+                                               <td style="padding-left: 50px;">
+                                                      Name   : <u><b>{{HospitalDetails.hospitalName}}</b></u> <br>
+                                                      Address: <u><b>{{HospitalDetails.address}}</b> </u>
+                                               </td>
+                                         </tr>
+                                         <tr>
+                                               <td></td>
+                                               <td style="padding-left: 50px;">
+                                                      <div class="col-md-6" style="padding-left:20px;padding-top:20px;">
+                                                                  <div class="container" style="width:250px;height:80px;border:1px solid;"></div>
+                                                            </div>
+                                               </td>
+                                         </tr>
+                                   </table>
+                             </div>
+                             <div class="col-md-12 hidden-print" style="padding-bottom: 100px;padding-top: 50px;">
+                                   <div class="col-md-4"></div>
+                                   <div class="col-md-4">
+                                               <div class="form-actions hidden-print">
+                                                           <input type="button" style="width: 100px;height: 30px;" class="btn btn-primary" (click)="Save()"  value="Update" *ngIf="Update==false"/>
+                                                           <input type="button" style="width: 100px;height: 30px;" class="btn btn-primary" (click)="UpdateCertificate()"  value="Update" *ngIf="Update==true && IsPrint==false" />
+                                                           <input type="button" style="width: 100px;height: 30px;" class="btn btn-primary hidden-print" (click)="Print()"  value="Print" *ngIf="IsPrint==true" />
+                                               </div>
+                                   </div>
+                             </div>
+                       </div>
+     
+                 </div>
+                 <div>
+     
+                 </div>
+     
+           </div>
+     </div>

@@ -1,0 +1,114 @@
+<style>
+    .printStyle {
+        border: dotted 1px;
+        margin: 10px 100px;
+    }
+
+    .print-border-top {
+        border-top: dotted 1px;
+    }
+
+    .print-border-bottom {
+        border-bottom: dotted 1px;
+    }
+
+    .print-border {
+        border: dotted 1px;
+    }
+
+    .center-style {
+        text-align: center;
+    }
+
+    .border-up-down {
+        border-top: dotted 1px;
+        border-bottom: dotted 1px;
+    }
+    .table-details-value{
+        margin-left: 10px;
+        text-align: center;
+    }
+</style>
+<div id="printpage" class="row printStyle print-border">
+    <div style="text-align:center;">
+      <div class="col-md-12">
+        <print-header [unit-name]="'Inventory Unit'"></print-header>
+        <div class="clear"></div>
+        <div class="left" style="text-align:left;">
+          <p>Supplier:<b> {{vendorName}}</b></p>
+        </div>
+
+        <div class="right" style="text-align:right;">
+          <p>Returned Date:<b> {{returnDate | date: 'yyyy-MM-dd'}}</b></p>
+        </div>
+        <div class="clear"></div>
+        <p class="text-center btm-pad border-up-down"><b> RETURN ITEMS DETAILS PRINT</b></p>
+        <div class="clear"></div>
+        <div class="clear footer"></div>
+        <div class="table-responsive">
+          <table class="table table-striped table-hover table-bordered" style="background-color:initial;margin-top:10px;width:100%">
+            <thead>
+              <tr style="font-weight: bold;text-align:center">
+                <td>Code</td>
+                <td>Item Name</td>
+                <td>S. Bill No.</td>
+                <td>Qty</td>
+                <td>Rate</td>
+                <td>Amount</td>
+                <td>Remarks</td>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="text-align:center" *ngFor="let row of returnItemDetails">
+                <td>{{row.ItemCode}}</td>
+                <td>{{row.ItemName}}</td>
+                <td>{{row.SupplierBillNo}}</td>
+                <td>{{row.ReturnQuantity}}</td>
+                <td>{{row.ItemRate}}</td>
+                <td>{{row.TotalAmount | number: '1.2-2'}}</td>
+                <td>{{row.Remarks}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <hr />
+        <div class="col-md-12">
+          <div class="right" style="text-align:right;">
+            <table class="table table-details table-striped table-hover table-bordered" style="text-align:right;">
+              <tbody>
+                <tr>
+                  <td><b>Total:</b></td>
+                  <td class="table-details-value">{{SubTotal | number: '1.2-2'}}</td>
+                </tr>
+                <tr>
+                  <td><b>Vat:</b></td>
+                  <td class="table-details-value">{{VATTotal | number: '1.2-2'}}</td>
+                </tr>
+                <tr>
+                  <td><b>Net:</b></td>
+                  <td class="table-details-value">{{AllTotalAmount | number: '1.2-2'}}</td>
+                </tr>
+              </tbody>
+            </table>
+            </div>
+          </div>
+            <div class="col-md-12 pull-right">
+              <div style="text-align: left" class="col-md-6">Returned  By:&nbsp;<b>{{returnBy}}</b></div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+<div class="row center-style">
+    <div class="col-md-12 col-xs-12 ">
+        <a (click)="print()" class="btn btn-default">
+            Print
+            <i class="glyphicon glyphicon-print"></i>
+        </a><span> </span><span> </span>
+        &nbsp;
+        <a (click)="returnToVendorList()" class="btn btn-primary">
+            Return Item List
+            <i class="glyphicon glyphicon-share-alt"></i>
+        </a>
+    </div>
+</div>

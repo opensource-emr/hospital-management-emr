@@ -1,0 +1,48 @@
+﻿<div class="popup-static portlet box portlet-fullscreen" *ngIf="showAddPage">
+    <div class="portlet-body form" style="background-color:white">
+        <form [formGroup]="CurrentDesignation.DesignationValidator" class="form-horizontal">
+            <div class="form-body">
+                <div class="col-md-12">
+                    <div class="col-md-3 hidden-xs hidden-sm" style="margin-right:24px;">
+                    </div>
+                    <div class="col-md-6 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+                        <div class="col-md-12">
+                            <div class="caption" style="color:blue;">
+                                <h3>
+                                    <span>{{ !CurrentDesignation.DesignationId ? 'Add Designation' : 'Update ' + CurrentDesignation.DesignationName}}</span>
+                                </h3>
+                            </div>
+                            <a style="float:right;  margin-top:-32px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                            <hr />
+                        </div>
+                        <div class="col-md-12">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="control-label col-md-5">Designation Name:<b class="color-red">*</b><b style="float:right;">:</b></label>
+                                    <div class="col-md-7">
+                                        <input class="form-control" maxlength="30"
+                                               [(ngModel)]="CurrentDesignation.DesignationName"
+                                               formControlName="DesignationName"
+                                               type="text" id="DesignationName" value="" placeholder="Designation Name" /><br />
+                                        <span style="color:red" *ngIf="CurrentDesignation.IsDirty('DesignationName')" [hidden]="CurrentDesignation.IsValid('DesignationName','required')"> Designation Name is required.</span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-5">Description:<b style="float:right;">:</b></label>
+                                    <div class="col-md-7">
+                                        <textarea class="form-control" [(ngModel)]="CurrentDesignation.Description" [ngModelOptions]="{standalone: true}"></textarea>
+                                    </div>
+                                </div>
+                                <div class="form-actions">
+                                    <input type="button" class="btn btn-primary" *ngIf="!CurrentDesignation.DesignationId " [disabled]="loading" (click)="AddDesignation()" value="Add Designation" />
+                                    <input type="button" class="btn btn-primary" *ngIf="CurrentDesignation.DesignationId " [disabled]="loading" (click)="UpdateDesignation()" value="Update" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+

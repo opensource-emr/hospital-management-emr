@@ -1,0 +1,23 @@
+﻿
+
+
+<!--<div class="caption">
+    <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
+    <span class="caption-subject font-blue bold uppercase">Manage Bed Feature</span>
+</div>
+<br />-->
+<input feature="button" class="btn btn-primary"(click)="AddBedFeature()" value="Add BedFeature"/>
+
+<bed-feature-add [showAddPage]="showAddPage"
+              [selectedItem]="selectedItem"
+              (callback-add)="CallBackAdd($event)"></bed-feature-add>
+
+<div *ngIf="showGrid" class="row">
+    <div class="col-md-9 col-xs-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="bedFeatureGridColumns" [grid-data]="bedFeatureList" (grid-actions)="BedFeatureGridActions($event)">
+        </danphe-grid>
+    </div>
+</div>
+
+
+

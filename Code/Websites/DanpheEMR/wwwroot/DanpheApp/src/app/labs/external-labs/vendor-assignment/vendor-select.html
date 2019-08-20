@@ -1,0 +1,36 @@
+<div class="popup-static portlet box portlet-fullscreen">
+  <div class="portlet-body form">
+    <div class="col-md-4 col-md-offset-4">
+      <div class="modelbox-div">
+        <div class="modelbox-header">
+          <h4 class="margin-0-vr text-warning">
+            <strong> Choose Vendor</strong>
+          </h4>
+        </div>
+
+        <div class="modelbox-body">
+          <select [(ngModel)]="selectedVendorId">
+            <option *ngFor="let ven of vendorList" value="{{ven.LabVendorId}}">
+              {{ven.VendorName}}
+            </option>
+          </select>
+        </div>
+
+        <div class="modelbox-footer">
+          <div class="all-buttons text-right">
+            <button class="btn btn-primary btn-sm margin-7-hr"  (click)="UpdateVendorForRequisitions()">Submit </button>
+            <button type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="OnClose()">
+              Close
+            </button>
+          </div>
+        </div>
+
+        <div class="close-modelbox">
+          <button class="btn btn-danger" (click)="OnClose()">X</button>
+        </div>
+
+
+      </div>
+    </div>
+  </div>
+</div>

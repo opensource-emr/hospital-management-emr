@@ -1,0 +1,82 @@
+
+<div class="row">
+
+    <form [formGroup]="CurrentInventorySummary.InventorySummaryValidator" class="form-horizontal">
+        <div class="form-body">
+            <div class="col-md-12">
+            <div class="caption">
+
+              <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
+              <span class="caption-subject font-red-sunglo bold uppercase">Inventory&nbsp; Summary&nbsp; Report</span>
+            </div>
+
+            <div class="col-md-5 col-xs-12">
+                <div class="form-group">
+                <label class="control-label col-md-4">From Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                <div class="col-md-8">
+                  <!--<input class="form-control" type="date" value="" [(ngModel)]="CurrentInventorySummary.FromDate"
+                         formControlName="FromDate" placeholder="DD-MM-YYYY" />
+
+
+                  <span class="color-red font-sm" *ngIf="CurrentInventorySummary.IsDirty('FromDate')" [hidden]="CurrentInventorySummary.IsValidCheck('FromDate','required')"> From Date is required</span>
+                  <span class="color-red font-sm" *ngIf="CurrentInventorySummary.IsDirty('FromDate')" [hidden]="CurrentInventorySummary.IsValidCheck('FromDate','wrongDate')"> Enter Valid Date</span>-->
+                  <danphe-date-picker [(ngModel)]="CurrentInventorySummary.FromDate" ngDefaultControl [CalendarTypes]="'en,np'" [ngModelOptions]="{standalone: true}">
+                  </danphe-date-picker>
+                </div>
+              </div>
+
+            </div>
+            <div class="col-md-5 col-xs-12">
+                <div class="form-group">
+                <label class="control-label col-md-4">To Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                <div class="col-md-8">
+                  <!--<input class="form-control" type="date" value="" [(ngModel)]="CurrentInventorySummary.ToDate"
+                         formControlName="ToDate" placeholder="DD-MM-YYYY" />
+                  <span class="color-red font-sm" *ngIf="CurrentInventorySummary.IsDirty('ToDate')" [hidden]="CurrentInventorySummary.IsValidCheck('ToDate','required')"> From Date is required</span>
+                  <span class="color-red font-sm" *ngIf="CurrentInventorySummary.IsDirty('ToDate')" [hidden]="CurrentInventorySummary.IsValidCheck('ToDate','wrongDate')"> Can't select future date</span>-->
+                  <danphe-date-picker [(ngModel)]="CurrentInventorySummary.ToDate" ngDefaultControl [CalendarTypes]="'en,np'" [ngModelOptions]="{standalone: true}">
+                  </danphe-date-picker>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-2 col-xs-12">
+                <div class="col-md-2 col-xs-12">
+                <div class="form-group">
+                    <button class="btn blue" type="button" (click)="ShowInventorySummary()">
+                      <i class="fa fa-search"></i>
+                      Show Report
+                    </button>
+                </div>
+              </div>
+            </div>
+
+
+          </div>
+            <!--<div class="col-md-12">
+                <div class="col-md-5 col-xs-12">
+                    <div class="form-group">
+                        <label class="control-label col-md-5">Item Name<b style="float:right;">:</b></label>
+                        <div class="col-md-7">
+                            <input class="form-control" value="" [(ngModel)]="CurrentInventorySummary.ItemName"
+                                   [ngModelOptions]="{standalone: true}" placeholder="Enter Item Name" />
+
+                        </div>
+                    </div>
+                </div>
+            </div>-->
+        </div>
+
+
+    </form>
+
+</div>
+
+<div class="row">
+    <div class="col-lg-12 col-sm-12" *ngIf="InventorySummaryReportData.length>0">
+        <danphe-grid [grid-colDefaults]="InventorySummaryReportColumns"
+                     [grid-data]="InventorySummaryReportData"
+                     [grid-exportOptions]="gridExportOptions" [grid-showExport]="true">
+        </danphe-grid>
+    </div>
+</div>
+

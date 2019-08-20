@@ -1,0 +1,60 @@
+﻿<base href="/">
+<div class="row">
+    <div class="col-md-3" style="height:310px;">
+      
+        <!-- BEGIN PROFILE SIDEBAR -->
+            <div class="profile-sidebar">
+                <!-- PORTLET MAIN -->
+                <div class="portlet light profile-sidebar-portlet " style="align-content:center;">
+                    <!-- SIDEBAR USERPIC -->
+                    <div class="profile-userpic" *ngIf="(userProfileInfo.ImageName != null)">
+                        <img src={{employeeService.ProfilePicSrcPath}} class="img-circle" alt="Avatar" width="170" height="170"> 
+                    
+                    </div>
+                    <div class="profile-userpic" *ngIf="(userProfileInfo.ImageName == null)">
+                        <br />
+                        <b style="margin-left:22px;">{{userProfileInfo.FirstName}} {{userProfileInfo.LastName}}</b><br />
+                        <img src="../../../../../themes/theme-default/images/No_Image.png" alt="Avatar" width="170" height="170">
+                    </div>
+                    <!-- END SIDEBAR USERPIC -->
+                    <!-- SIDEBAR USER TITLE -->
+                    <div class="profile-usertitle" style="margin-left:22px;">
+                        <div class="profile-usertitle-name" style="margin-top: 25px; font-size: 21px; font-style: italic;"><b>{{userProfileInfo.FirstName}} {{userProfileInfo.LastName}}</b> </div>
+                        <div class="profile-usertitle-name" style="margin-top: 3px; font-size: 18px; font-style: italic;"><b>{{userProfileInfo.Email}} </b> </div>
+                    </div>
+                    <!-- END SIDEBAR USER TITLE -->
+
+
+
+                </div>
+                <!-- END PORTLET MAIN -->
+            </div>
+        <!-- END PROFILE SIDEBAR -->
+    </div>
+
+
+    <div class="col-md-8">
+        <ul class="nav nav-tabs">
+
+            <li>
+                <a routerLink="UserProfile" [routerLinkActive]="'link3-active'">
+                    <i class="icon-user" ></i> User Profile
+                </a>
+            </li>
+            <li>
+                <a routerLink="ChangeProfile" [routerLinkActive]="'link3-active'">
+                    <i class="icon-user"></i> Change Profile
+                </a>
+            </li>
+            <li>
+                <a routerLink="ChangePassword" [routerLinkActive]="'link3-active'">
+                    <i class="icon-user"></i> Change Password
+                </a>
+            </li>
+
+
+        </ul>
+        <router-outlet></router-outlet>
+    </div>
+    
+</div>

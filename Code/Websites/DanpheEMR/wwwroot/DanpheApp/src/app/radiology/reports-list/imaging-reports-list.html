@@ -1,0 +1,37 @@
+<div class="flex-container flex-align-center margin-15-bt margin-5-tp">
+  <div class="flex-1">
+    <div class="caption">
+      <i class="glyphicon glyphicon-asterisk font-green-turquoise"></i>
+      <span class="caption-subject font-blue-sharp bold uppercase">Imaging Reports of All Patients</span>
+    </div>
+  </div>
+  <div class="flex-1 text-right">
+    <div>
+      <b>Filter</b>
+      <select class="margin-15-lft cstm-select" [(ngModel)]="selImgType" (ngModelChange)="FilterReportListByImagineType()">
+        <option value="All">
+          --All--
+        </option>
+        <option *ngFor="let typ of imagingTypes" value="{{typ.ImagingTypeName}}">
+          {{typ.ImagingTypeName}}
+        </option>
+      </select>
+    </div>
+  </div>
+</div>
+
+
+
+<div class="row">
+    <div class="col-lg-12 col-sm-12">
+
+        <danphe-view-imaging-report [showImagingReport]="showImagingReport" (on-report-edit)="GetBackOnClose($event)"
+                                    [requisitionId]="requisitionId"></danphe-view-imaging-report>
+      
+        <danphe-grid [grid-colDefaults]="imgReportsListGridColumns" [grid-data]="allImagingFilteredReports" 
+            [rangeType]="dateRange" (onDateChange)="onDateChange($event)" [date-range-options]="'1W,1M,3M'"
+            [show-CustomDate]="true" [show-print-button]="false" (grid-actions)="ImagingReportListGridActions($event)">
+        </danphe-grid>
+    </div>
+</div>
+

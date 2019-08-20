@@ -1,0 +1,286 @@
+
+<div style="display: flex; width:100%; height: 100%;margin-top: 20px; background-color: black">
+
+  <div class="thumbnailSelector" *ngIf="seriesList.length > 1" style="margin-right: 2px;">
+    <div class="thumbnails list-group" style="height: 100%;">
+      <a *ngFor="let series of seriesList; let i=index" [ngClass]="{'active': currentSeriesIndex === i}" class="list-group-item"
+         oncontextmenu="return false" unselectable="on" onselectstart="return false;" onmousedown="return false;"
+         mwlDraggable (dragEnd)="showSeries(i)"
+         (click)="showSeries(i)">
+        <div thumbnail [imageData]="series.imageList[0]" class="csthumbnail" oncontextmenu="return false"
+             unselectable="on" onselectstart="return false;" onmousedown="return false;">
+        </div>
+        <div class="text-center small" style="color:white;">{{series.seriesDescription}}</div>
+        <div id="mrtopright" style="position: absolute;top:3px; right:3px">
+          <div id="imageCount" style="color:red; font-size: 10pt">{{series.imageCount}}</div>
+        </div>
+      </a>
+      <div class="version">
+        <h6 style="color:white;"><small>0.1.12</small></h6>
+      </div>
+    </div>
+  </div>
+
+  <div style="overflow: hidden; width: 100%; height: 100%; background-color: black">
+    <!-- Toolbar -->
+    <div class="col-md-12">
+      <div class="btn-group">
+        <div class="btn-group" *ngIf="enableViewerTools">
+          <!-- WW/WL -->
+          <button type="button" (click)="enableWindowing()" class="btn btn-sm btn-default" data-container='body'
+                  data-toggle="tooltip" data-placement="bottom" title="Windowing">
+            <span class="fa fa-sun-o"></span>
+            <div class="buttonLabel">
+              <span>WW/WL</span>
+            </div>
+          </button>
+          <!-- Invert -->
+          <button type="button" (click)="invertImage()" class="btn btn-sm btn-default" data-container='body'
+                  data-toggle="tooltip" data-placement="bottom" title="Invert">
+            <span class="fa fa-adjust fa-sm"></span>
+            <div class="buttonLabel">
+              <span>Invert</span>
+            </div>
+          </button>
+          <!-- Zoom -->
+          <button type="button" (click)="enableZoom()" class="btn btn-sm btn-default" data-container='body'
+                  data-toggle="tooltip" data-placement="bottom" title="Zoom">
+            <span class="fa fa-search-plus fa-sm"></span>
+            <div class="buttonLabel">
+              <span>Zoom</span>
+            </div>
+          </button>
+          <!-- Pan -->
+          <button type="button" (click)="enablePan()" class="btn btn-sm btn-default" data-container='body'
+                  data-toggle="tooltip" data-placement="bottom" title="Pan">
+            <span class="fa fa-arrows-alt fa-sm"></span>
+            <div class="buttonLabel">
+              <span>Pan</span>
+            </div>
+          </button>
+          <!-- Stack scroll -->
+          <button type="button" (click)="enableScroll()" class="btn btn-sm btn-default" data-container='body'
+                  data-toggle="tooltip" data-placement="bottom" title="Scroll">
+            <span class="fa fa-bars fa-sm"></span>
+            <div class="buttonLabel">
+              <span>Stack scroll</span>
+            </div>
+          </button>
+          <!-- Anotation -->
+          <button type="button" (click)="enableAnotation()" class="btn btn-sm btn-default" data-container='body'
+                  data-toggle="tooltip" data-placement="bottom" title="Anotation">
+            <span class="fa fa-arrow-circle-o-down"></span>
+            <div class="buttonLabel">
+              <span>Anotation</span>
+            </div>
+          </button>
+          <!-- Length measurement -->
+          <button type="button" (click)="enableLength()" class="btn btn-sm btn-default" data-container='body'
+                  data-toggle="tooltip" data-placement="bottom" title="Length">
+            <span class="fa fa-arrows-h fa-sm"></span>
+            <div class="buttonLabel">
+              <span>Length</span>
+            </div>
+          </button>
+          <!-- Angle measurement -->
+          <button type="button" (click)="enableAngle()" class="btn btn-sm btn-default" data-container='body'
+                  data-toggle="tooltip" data-placement="bottom" title="Angle">
+            <span class="fa fa-angle-left fa-sm"></span>
+            <div class="buttonLabel">
+              <span>Angle</span>
+            </div>
+          </button>
+          <!-- Pixel probe -->
+          <button type="button" (click)="enableProbe()" class="btn btn-sm btn-default" data-container='body'
+                  data-toggle="tooltip" data-placement="bottom" title="Pixel Probe">
+            <span class="fa fa-dot-circle-o"></span>
+            <div class="buttonLabel">
+              <span>Pixel probe</span>
+            </div>
+          </button>
+          <!-- Elliptical ROI -->
+          <button type="button" (click)="enableElliptical()" class="btn btn-sm btn-default" data-container='body'
+                  data-toggle="tooltip" data-placement="bottom" title="Elliptical ROI">
+            <span class="fa fa-circle-o-notch"></span>
+            <div class="buttonLabel">
+              <span>Elliptical</span>
+            </div>
+          </button>
+          <!-- Rectangle ROI -->
+          <button type="button" (click)="enableRectangle()" class="btn btn-sm btn-default" data-container='body'
+                  data-toggle="tooltip" data-placement="bottom" title="Rectangle ROI">
+            <span class="fa fa-square"></span>
+            <div class="buttonLabel">
+              <span>Rectangle</span>
+            </div>
+          </button>
+          <!-- Reset Image -->
+          <button type="button" (click)="resetImage()" class="btn btn-sm btn-default" data-container='body'
+                  data-toggle="tooltip" data-placement="bottom" title="Reset Image">
+            <span class="fa fa-refresh"></span>
+            <div class="buttonLabel">
+              <span>Reset</span>
+            </div>
+          </button>
+        </div>
+        <div class="btn-group">
+          <!-- Play clip -->
+          <button type="button" (click)="playClip()" class="btn btn-sm btn-default" style="border-left: 1px dotted white;"
+                  data-container='body' data-toggle="tooltip" data-placement="bottom" title="Play Clip">
+            <span class="fa fa-fast-forward"></span>
+            <div class="buttonLabel">
+              <span>Play clip</span>
+            </div>
+          </button>
+          <!-- Slow Motion -->
+          <button type="button" (click)="SlowMotion()" class="btn btn-sm btn-default"
+                  data-container='body' data-toggle="tooltip" data-placement="bottom" title="Slow Motion">
+            <span class="fa fa-play-circle"></span>
+            <div class="buttonLabel">
+              <span>Slow Motion</span>
+            </div>
+          </button>
+          <!-- Stop clip -->
+          <button type="button" (click)="stopClip()" class="btn btn-sm btn-default" data-container='body'
+                  data-toggle="tooltip" data-placement="bottom" title="Stop Clip">
+            <span class="fa fa-stop fa-sm"></span>
+            <div class="buttonLabel">
+              <span>Stop clip</span>
+            </div>
+          </button>
+          <!-- Layout -->
+          <!-- <button type="button" style="border-left: 1px dotted white;" [matMenuTriggerFor]="menu" class="btn btn-sm btn-default" data-container='body' data-toggle="dropdown" aria-expanded="false" data-placement="top" title="Layout"><span class="fa fa-th-large"></span>
+      <div class="buttonLabel">
+          <span>Layout</span>
+
+      </div>
+  </button>
+    <mat-menu #menu="matMenu" >
+            <a mat-menu-item class="dropdown-item " id="show1" (click)="showData1()">1x1</a>
+            <a mat-menu-item class="dropdown-item " id="show2"  (click)="showData2()">2x1</a>
+            <a mat-menu-item class="dropdown-item " id="show3"  (click)="showData3()">1x2</a>
+            <a mat-menu-item class="dropdown-item " id="show4"  (click)="showData4()">2x2</a>
+
+    </mat-menu> -->
+          <!-- Download  style="border-left: 1px dotted white; height: 1px;"  id="choose-layout" (click)="showData()"-->
+          <button type="button" (click)="downloadImagesURL()" download style="border-left: 1px dotted white;"
+                  class="btn btn-sm btn-default" data-container='body' data-toggle="tooltip" data-placement="bottom"
+                  title="Download Images">
+            <span class="fa fa-cloud-download fa-sm"></span>
+            <div class="buttonLabel">
+              <span>Download</span>
+            </div>
+          </button>
+          <!-- Previous Image -->
+          <button type="button" (click)="previousImage()" [ngStyle]="hidePreviousImage" style="border-left: 1px dotted white;"
+                  class="btn btn-sm btn-default" data-container='body' data-toggle="tooltip" data-placement="bottom"
+                  title="Previous Image">
+            <span class="fa fa-backward fa-sm"></span>
+            <div class="buttonLabel">
+              <span>Previous</span>
+            </div>
+          </button>
+          <!-- Next Images -->
+          <button type="button" (click)="nextImage()" [ngStyle]="hideNextImage" class="btn btn-sm btn-default"
+                  style="border-right: 1px dotted white;"
+                  data-container='body' data-toggle="tooltip" data-placement="bottom" title="Next Images">
+            <span class="fa fa-forward fa-sm"></span>
+            <div class="buttonLabel">
+              <span>Next</span>
+            </div>
+          </button>
+          <!-- Magnify-->
+          <button type="button" (click)="magnify()" class="btn btn-sm btn-default" style="border-left: 1px dotted white;"
+                  data-container='body' data-toggle="tooltip" data-placement="bottom" title="Magnify">
+            <span class="fa fa-search"></span>
+            <div class="buttonLabel">
+              <span>Magnify</span>
+            </div>
+          </button>
+          <!-- Rotate -->
+          <button type="button" (click)="rotate()" class="btn btn-sm btn-default"
+                  data-container='body' data-toggle="tooltip" data-placement="bottom" title="Rotate">
+            <span class="fa fa-rotate-left"></span>
+            <div class="buttonLabel">
+              <span>Rotate</span>
+
+            </div>
+          </button>
+          <!-- Dustbin -->
+          <button type="button" class="btn btn-sm btn-default"
+                  data-container='body' data-toggle="tooltip" data-placement="bottom" title="Dustbin">
+            <span class="fa fa-trash"></span>
+            <div class="buttonLabel">
+              <span>Dustbin</span>
+
+            </div>
+          </button>
+          <!-- Load Next Batch
+  <button (click)="loadMoreImages()" style="border-left: .5px dotted white;color: white;"
+      class="btn btn-sm btn-default" data-container='body' data-toggle="tooltip" data-placement="bottom"
+      title="Carrega mais imagens...">
+      close {{moreImagestoLoad}} images
+
+      <div class="buttonLabel">
+          <span>Load Next Batch</span>
+
+      </div>
+  </button> -->
+          <!-- Progress Spinner -->
+          <!--<div style="padding-left: 15px; padding-top: 15px;" [ngStyle]="showProgress">
+    <mat-spinner style="display: inline-block; color: red;" diameter="30" strokeWidth="5" color="warn"></mat-spinner>
+  </div>-->
+  
+  
+          <!-- save to database -->
+          <button type="button" (click)="save()" class="btn btn-sm btn-default"
+                  data-container='body' data-toggle="tooltip" data-placement="bottom" title="save">
+            <span class="fa fa-save"></span>
+            <div class="buttonLabel">
+              <span>Save</span>
+            </div>
+          </button>
+          <!-- showToolData -->
+          <button type="button" (click)="showToolData()" class="btn btn-sm btn-default"
+                  data-container='body' data-toggle="tooltip" data-placement="bottom" title="save">
+            <span class="fa fa-eye"></span>
+            <div class="buttonLabel">
+              <span>showToolData</span>
+
+            </div>
+          </button>
+
+          <div class="loading-indicator"[ngStyle]="showProgress">
+             <img style="width: 120px; height: 120px;" [src]="pathToImage" />
+            <p style="font-size: 24px;color: #fff; text-size-adjust:150%"><b>Loading.. Please wait...</b></p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="width: 100%; height: 565px;position:relative;display:inline-block;color:white; border: 1px solid  cadetblue;"
+         oncontextmenu="return false" class='cornerstone-enabled-image' unselectable='on' onselectstart='return false;'
+         onmousedown='return false;'>
+      <div cornerstone style="width: 100%; height: 100%;top:0px;left:0px;position:absolute;outline:none;margin: 0 auto; border:thick"
+           id="dicomImage">
+      </div>
+      <div id="mrtopleft" style="position: absolute;top:3px; color: cadetblue; left:3px">
+        {{viewPort.patientName}}
+      </div>
+      <div id="mrtopright" style="position: absolute;top:3px; color: cadetblue; right:3px">
+        {{viewPort.hospital}}
+      </div>
+      <div id="mrbottomleft" style="position: absolute;bottom:3px;  left:3px">
+        <div style="color: cadetblue;">
+          {{viewPort.instanceNumber}}
+        </div>
+        <div style="color: cadetblue;">
+          WW/WC: {{viewPort.windowingValue}}
+        </div>
+      </div>
+      <div id="mrbottomright" style="position: absolute;bottom:6px; right:3px; color: cadetblue;">
+        <div id="zoomText">Zoom: {{viewPort.zoomValue}}</div>
+        <div id="sliceText">Image: {{(imageCount > 0)?viewPort.currentIndex+1:0}}/{{imageCount}}</div>
+      </div>
+    </div>
+  </div>
+</div>

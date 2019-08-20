@@ -1,0 +1,134 @@
+﻿<div class="row">
+    <div class="col-md-12" *ngIf="showAccountClosureUI">
+        <!--<div class="caption">
+            <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
+            <span class="caption-subject font-red-sunglo bold uppercase">CURRENT FISCAL YEAR : {{activeFiscalYear.FiscalYearName}}</span>
+        </div>-->
+        <div class="col-md-12" *ngFor="let coa of closureData" style="padding-bottom:15px">
+            <b class="col-md-3" style="font-size:16px">{{coa.COA}}</b>
+            <b class="col-md-3">DEBIT</b>
+            <b class="col-md-3" style="margin-left:-15px">CREDIT</b>
+            <b class="col-md-3">Net Total</b>
+            <div class="col-md-12" *ngFor="let type of coa.TypeList">
+                <b>{{type.Type}}</b>
+                <div class="col-md-12 table-responsive">
+                    <!--<span class="col-md-3">{{ledger.LedgerName}}</span>
+                    <span class="col-md-3">{{ledger.DrAmount}}</span>
+                    <span class="col-md-3">{{ledger.CrAmount}}</span>
+                    <span class="col-md-3" style="color:green" *ngIf="ledger.DrAmount > ledger.CrAmount">{{ledger.NetAmount}}</span>
+                    <span class="col-md-3" style="color:red" *ngIf="ledger.DrAmount < ledger.CrAmount">{{ledger.NetAmount}}</span>
+                    <span class="col-md-3" style="color:blue" *ngIf="ledger.DrAmount == ledger.CrAmount">{{ledger.NetAmount}}</span>-->
+                    <table class="table table-striped table-hover" style="background-color:initial;margin-top:10px">
+                        <tr *ngFor="let ledger of type.LedgersList">
+                            <td style="width:25%">{{ledger.LedgerName}}</td>
+                            <td style="width:25%;padding-left:0px">{{ledger.DrAmount  | ParseAmount  | Currency}}</td>
+                            <td style="width:25%;padding-left:0px">{{ledger.CrAmount | ParseAmount  | Currency}}</td>
+                            <td style="width:25%">{{ledger.NetAmount | ParseAmount  | Currency }} <b *ngIf="ledger.CrAmount > ledger.DrAmount">(CR)</b><b *ngIf="ledger.CrAmount < ledger.DrAmount">(DR)</b></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <!--<span class="col-md-6"></span>
+            <b class="col-md-3">{{coa.OverAllDrTotal}}</b>
+            <b class="col-md-3">{{coa.OverAllCrTotal}}</b>-->
+        </div>
+        <form [formGroup]="nextFiscalYear.FiscalYearValidator" class="form-horizontal">
+            <!--<div class="caption">
+                <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
+                <span class="caption-subject font-red-sunglo bold uppercase">NEXT FISCAL YEAR WILL BE:</span>
+            </div>-->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="control-label col-md-5">Fiscal Year Name<span style="color:red;">*</span><b style="float:right;">:</b></label>
+                        <div class="col-md-7">
+                            <input class="form-control" type="text" [(ngModel)]="nextFiscalYear.FiscalYearName" disabled
+                                   formControlName="FiscalYearName" placeholder="Fiscal Year Name" />
+                            <span class="color-red font-sm" [hidden]="nextFiscalYear.IsValidCheck('FiscalYearName','required') || !(nextFiscalYear.IsDirty('FiscalYearName'))">Fiscal Year Name is required</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-5">Nepali Fiscal Year Name<span style="color:red;">*</span><b style="float:right;">:</b></label>
+                        <div class="col-md-7">
+                            <input class="form-control" type="text" [(ngModel)]="nextFiscalYear.NpFiscalYearName" disabled
+                                   formControlName="NpFiscalYearName" placeholder="Nepali Fiscal Year Name" />
+                            <span class="color-red font-sm" [hidden]="nextFiscalYear.IsValidCheck('NpFiscalYearName','required') || !(nextFiscalYear.IsDirty('NpFiscalYearName'))">Nepali Fiscal Year Name is required</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="control-label col-md-4">Discription<span style="color:red;">*</span><b style="float:right;">:</b></label>
+                        <div class="col-md-8">
+                            <textarea class="form-control" type="text" [(ngModel)]="nextFiscalYear.Description"
+                                      formControlName="Description" placeholder="Enter Description">
+                            </textarea>
+                            <span class="color-red font-sm" [hidden]="nextFiscalYear.IsValidCheck('Description','required') || !(nextFiscalYear.IsDirty('Description'))">Description is required</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="control-label col-md-5" style="padding-top: 1px;">Start Date<span style="color:red;">*</span><b style="float:right;">:</b></label>
+                        <div class="col-md-7">
+                            <danphe-date-picker [(ngModel)]="nextFiscalYear.StartDate" (ngModelChange)="DefineFiscalYearName()"
+                                                formControlName="StartDate" ngDefaultControl [CalendarTypes]="'en,np'">
+                            </danphe-date-picker>
+                            <!--<input class="form-control" type="date" [(ngModel)]="nextFiscalYear.StartDate" formControlName="StartDate" (change)="DefineFiscalYearName()" />-->
+                            <span class="color-red font-sm" [hidden]="nextFiscalYear.IsValidCheck('StartDate','required') || !(nextFiscalYear.IsDirty('StartDate'))">StartDate is required</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="control-label col-md-4" style="padding-top: 1px;">End Date<span style="color:red;">*</span><b style="float:right;">:</b></label>
+                        <div class="col-md-8">
+                            <danphe-date-picker [(ngModel)]="nextFiscalYear.EndDate" type="date" (ngModelChange)="DefineFiscalYearName()"
+                                                formControlName="EndDate" ngDefaultControl [CalendarTypes]="'en,np'">
+                            </danphe-date-picker>
+                            <!--<input class="form-control" type="date" [(ngModel)]="nextFiscalYear.EndDate" formControlName="EndDate" (change)="DefineFiscalYearName()" />-->
+                            <span class="color-red font-sm" [hidden]="nextFiscalYear.IsValidCheck('EndDate','required') || !(nextFiscalYear.IsDirty('EndDate'))">EndDate is required</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-actions">
+                <input type="button" class="btn btn-primary" (click)="postAccountClosure()" value="Close Accounts" />
+            </div>
+        </form>
+    </div>
+    <div class="col-md-12" *ngIf="!showAccountClosureUI">
+        <h3>
+            Account has successfully closed
+        </h3>
+    </div>
+</div>
+
+
+
+
+<!--<div class="table-responsive">
+    <table class="table table-striped table-hover" style="background-color:initial;margin-top:10px" *ngFor="let coa of closureData">
+        <tr>
+            <td><b>{{coa.COA}}</b></td>
+            <td><b>DEBIT</b></td>
+            <td><b>CREDIT</b></td>
+        </tr>
+        <tr>
+            <td colspan="3">
+                <table class="table table-striped table-hover" style="background-color:initial;margin-top:10px"  *ngFor="let type of coa.TypeList">
+                    <tr>
+                        <td>{{type.Type}}</td>
+                    </tr>
+                    <tr *ngFor="let ledger of type.LedgersList">
+                        <td>{{ledger.LedgerName}}</td>
+                        <td>{{ledger.DrAmount}}</td>
+                        <td>{{ledger.CrAmount}}</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</div>-->

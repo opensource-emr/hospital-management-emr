@@ -1,0 +1,215 @@
+﻿<style>
+    table{
+        border: 1px solid #1c3b63;
+    }
+    .parent-row {
+    }
+    .child-row {
+        background-color: #550c9814;
+    }
+    .grand-child-row {
+        background-color: #1946472b;
+    }
+    tr{
+        height: 10px;
+    }
+    .btn-xs {
+        margin-top: 8px;
+    }
+</style>
+
+<div class="well">
+    <div class="row">
+        <div class="col-md-4">
+            Patient Name: <b>   {{ billingTransactionItem.FullName }}</b>
+        </div>
+        <div class="col-md-4">
+            Item Name: <b>      {{ billingTransactionItem.ItemName }}</b>
+        </div>
+        <div class="col-md-3">
+            Department: <b> {{billingTransactionItem.ServiceDepartmentName}}</b>
+        </div>
+        <br />
+        <div class="col-md-4">
+            Total Amount: <b>{{ billingTransactionItem.TotalAmount }}</b>
+        </div>
+        <div class="col-md-4">
+            Hospital Amount ({{ fractionPercent.HospitalPercent }}%): <b>{{ hospitalAmount }}</b>
+        </div>
+        <div class="col-md-4">
+            Doctor Amount ({{ fractionPercent.DoctorPercent }}%): <b>{{ doctorAmount }}</b>
+        </div>
+
+    </div>
+</div>
+<div class="col-md-12">
+    <!--<div class="form-actions">
+        <input type="button" class="btn btn-primary" (click)="Add()" value="Add New" />
+    </div>-->
+    <table class="table table-responsive text-nowrap">
+        <thead>
+            <tr>
+                <!--<th></th>
+                <th></th>-->
+                <th></th>
+                <th sortable-header col="department" colspan="3" width="200px"><b>Department</b></th>
+                <th sortable-header col="doctorname"><b>Doctor's Name</b></th>
+                <th sortable-header col="designation"><b>Designation</b></th>
+                <th></th>
+                <th sortable-header col="initialPercent"><b>Initial Percent</b></th>
+                <th sortable-header col="finalPercent"><b>Final Percent</b></th>
+                <th sortable-header col="finalPercent"><b>Amount</b></th>            
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let row of fractionCalculationList; let i = index; let last = last;" [ngClass]="row.IsChild ? 'child-row' : row.IsParent ?  'parent-row' : 'grand-child-row'">
+                <td>
+                    <a *ngIf="i != 0 && row.IsParent" class="btn btn-danger btn-xs delBtn" (click)="DeleteRow(i)" title="Click to remove " style="width: 40px"><i class=" fa fa-cross">X</i></a>
+                </td>
+
+                <td *ngIf="row.IsParent" colspan="3">
+                    <select id="department" class="form-control"
+                            [(ngModel)]="row.DepartmentId"
+                            [ngModelOptions]="{standalone: true}"
+                            (ngModelChange)="FilterDoctorList(i, $event)">
+                        <option value="0">--All--</option>
+                        <option *ngFor="let dept of departments" value="{{dept.DepartmentId}}">{{dept.DepartmentName}}</option>
+                    </select>
+                </td>
+
+                <td *ngIf="row.IsChild" style="text-align:right; width:40px;" >
+                    <a *ngIf="row.IsChild" class="btn btn-danger btn-xs" (click)="DeleteRow(i)" title="Click to remove "><i class=" fa fa-cross">X</i></a>
+                </td>
+
+                <td *ngIf="row.IsChild" colspan="2" style="width:150px">
+                    <select id="department" class="form-control"
+                            [(ngModel)]="row.DepartmentId"
+                            [ngModelOptions]="{standalone: true}"
+                            (ngModelChange)="FilterDoctorList(i, $event)">
+                        <option value="0">--All--</option>
+                        <option *ngFor="let dept of departments" value="{{dept.DepartmentId}}">{{dept.DepartmentName}}</option>
+                    </select>
+                </td>
+
+                <td *ngIf="row.IsGrandChild"></td>
+                <td *ngIf="row.IsGrandChild" style="width:20px">
+                    <a *ngIf="row.IsGrandChild" class="btn btn-danger btn-xs delBtn" (click)="DeleteRow(i)" title="Click to remove "><i class=" fa fa-cross">X</i></a>
+
+                </td>
+
+                <td *ngIf="row.IsGrandChild" style="width:150px">
+                    <select id="department" class="form-control"
+                            [(ngModel)]="row.DepartmentId"
+                            [ngModelOptions]="{standalone: true}"
+                            (ngModelChange)="FilterDoctorList(i, $event)">
+                        <option value="0">--All--</option>
+                        <option *ngFor="let dept of departments" value="{{dept.DepartmentId}}">{{dept.DepartmentName}}</option>
+                    </select>
+                </td>
+
+
+
+                <td>
+                    <form [formGroup]="row.FractionCalculationValidator" class="form-horizontal">
+                        <input class="form-control" danphe-auto-complete
+                               formControlName="DoctorId"
+                               [(ngModel)]="row.selectedDoctor"
+                               [list-formatter]="myListFormatter"
+                               [source]="row.doctorList"
+                               onclick="this.select();"
+                               (valueChanged)="onChangeItem($event,i)"
+                               placeholder="Doctor's Name"
+                               display-property-name="ProviderName"
+                               max-num-list="10" />
+                        <br />
+                        <span class="color-red font-sm" *ngIf="row.IsDirty('DoctorId')" [hidden]="row.IsValid('DoctorId','required')">Doctor is mandatory.</span>
+                    </form>
+                </td>
+                <!--[ngModelOptions]="{standalone: true}"-->
+                <td>
+                    <form [formGroup]="row.FractionCalculationValidator" class="form-horizontal">
+                        <select id="designation" class="form-control"
+                                [(ngModel)]="row.DesignationId"
+                                formControlName="DesignationId">
+                            <option *ngFor="let designation of designationList" value="{{designation.DesignationId}}">{{designation.DesignationName}}</option>
+                        </select>
+                        <span style="color:red" *ngIf="row.IsDirty('DesignationId')" [hidden]="row.IsValid('DesignationId','required')"> Designation is required.</span>
+                    </form>
+                    <br />
+                    <!--<select *ngIf="IsParent" id="designation" class="form-control"
+                [(ngModel)]="row.designationId"
+                [ngModelOptions]="{standalone: true}">
+            <option *ngFor="let designation of designationList" value="{{designation.DesignationId}}">{{designation.DesignationName}}</option>
+        </select>-->
+                </td>
+
+                <td>
+                    <a class="btn btn-success btn-xs delBtn" (click)="AddChildRow(i)" title="Click to add sub doctors" *ngIf="!row.IsGrandChild"><i class="fa fa-plus"></i></a>
+                </td>
+                <td>
+                    <form [formGroup]="row.FractionCalculationValidator" class="form-horizontal">
+                        <input *ngIf="row.IsParent" [(ngModel)]="row.InitialPercent"
+                               style="width:70px"
+                               formControlName="InitialPercent"
+                               min="1"
+                               maxlength="99"
+                               (ngModelChange)="Calculation(i, row.ParentId)"
+                               class="form-control cstm-form-control" max="100"
+                               name="initialpercent"
+                               type="number">
+
+                        <input *ngIf="row.IsChild" [(ngModel)]="row.InitialPercent"
+                               style="width:70px"
+                               formControlName="InitialPercent"
+                               min="1"
+                               maxlength="99"
+                               (ngModelChange)="CalculationForChild(i, row.ParentIndex)"
+                               class="form-control cstm-form-control" max="100"
+                               name="initialpercent"
+                               type="number">
+
+                        <input *ngIf="row.IsGrandChild" [(ngModel)]="row.InitialPercent"
+                               style="width:70px"
+                               formControlName="InitialPercent"
+                               min="1"
+                               maxlength="99"
+                               (ngModelChange)="CalculationForGrandChild(i, row.ParentIndex)"
+                               class="form-control cstm-form-control" max="100"
+                               name="initialpercent"
+                               type="number">
+
+                        <span style="color:red" *ngIf="row.IsDirty('InitialPercent')" [hidden]="row.IsValid('InitialPercent','required')"> InitialPercent is required.</span>
+                    </form>
+
+                </td>
+                <td>
+                    <input [(ngModel)]="row.FinalPercent"
+                           style="width:70px"
+                           disabled
+                           class="form-control cstm-form-control" max="100"
+                           name="finalpercent"
+                           type="number">
+
+                </td>
+                <td>
+                    <input [(ngModel)]="row.FinalAmount"
+                           style="width:70px"
+                           disabled
+                           class="form-control cstm-form-control" max="100"
+                           name="finalamount"
+                           type="number">
+
+                </td>
+                <td>
+                    <a class="btn btn-success btn-small delBtn" *ngIf="!row.IsChild" (click)="AddNewRow(i)" title="Click to add new row"><i class="fa fa-plus"></i></a>
+                </td>
+</table>
+</div>
+<div class="panel-footer">
+    <input type="button" class="btn btn-success" [disabled]="loading" value="Save" (click)="Save()" /> 
+    <!-- ag7_mig_fix: [disabled]="loading" : property not in component -->
+    <a class="btn btn-danger" (click)="Cancel()">Cancel</a>
+</div>
+
+
+

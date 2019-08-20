@@ -1,0 +1,18 @@
+﻿<div>
+    <!--<input type="button" class="btn btn-primary" (click)="AddLedgerGroup()" value="Add LedgerGroup" />-->
+    <ledger-group-add [showAddPage]="showAddPage" 
+                [selectedLedgerGroup]="selectedLedgerGroup"
+                (callback-add)="CallBackAdd($event)"></ledger-group-add>
+</div>
+<!--(grid-actions)="LedgerGroupGridActions($event)"-->
+<div *ngIf="showGrid" class="row">
+    <div class="col-md-12 col-xs-12 col-sm-12">
+        <a class="btn blue bordered " name="name" (click)="AddLedgerGroup()">
+            <span class="glyphicon glyphicon-plus"></span>Create Ledger Group
+        </a>
+        <danphe-grid [grid-colDefaults]="ledgerGroupGridColumns" [grid-data]="ledgerGroupList"
+                     (grid-actions)="LedgerGroupGridActions($event)">
+        </danphe-grid>
+    </div>
+</div>
+

@@ -1,0 +1,118 @@
+﻿<div class="popup-static portlet box portlet-fullscreen" *ngIf="showSticker">
+    <div class="portlet-body form">
+        <div class="col-md-12">
+            <div class="col-md-6">
+                <div class="modelbox-div" style="margin-left:16%;margin-right:16%;width:490px;margin-top:30px;">
+                    <div style="margin-left:60px">
+                        <i class="btn btn-danger" style="float: right" (click)="Close()" title="close... route to admitted patient list">X</i>
+                        <div class="row" *ngIf="showSticker">
+
+                            <div id="sticker" *ngIf="stickerDetail" style="width: 400px;height: 240px;border: 1px dotted black;padding: 10px;">
+                                <div id="opdprintpage" style="width:370px; height:197px;margin:0px;display:block;">
+                                    <div style="width:100%;">
+                                        <div>
+                                            <div style="font-size:14px;">
+                                                <span>
+                                                    Date : {{stickerDetail.AdmissionDate  | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}&nbsp;&nbsp;({{localDateTime}})
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <div style="display:inline-block;width: 15%;vertical-align: top;">
+                                                    Name&nbsp;:&nbsp;
+                                                </div>
+                                                <div style="font-size:16px;display:inline-block;font-weight:bold;text-transform:uppercase">
+                                                    <div style="display:inline-block;">
+                                                        {{stickerDetail.PatientName}} &nbsp;&nbsp;&nbsp;
+                                                    </div>
+                                                    <div style="display:inline-block;font-style:italic;font-size:15px;">
+                                                        {{stickerDetail.DateOfBirth | DanpheDateTime:'age'}}/{{stickerDetail.Gender | slice:0:1}}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <span style="display:inline-block;">
+                                                    Hospital No. : {{stickerDetail.PatientCode}}
+                                                </span>
+                                                <span style="float:right;font-size:14px;padding-right: 5px;">
+                                                    IP No. : {{stickerDetail.InPatientNo}}
+                                                </span>
+                                                <span style="float:right;font-size:14px;padding-right: 5px;">
+                                                    Contact : {{stickerDetail.PhoneNumber}}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <div>
+                                                    Address&nbsp;:&nbsp;{{stickerDetail.Address}} , {{stickerDetail.District}}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <hr style="border:0.5px solid black;margin:0px;" />
+                                    </div>
+                                    Admitting Doctor : <span style="width:100%;font-size:14px;">
+                                        <b style="text-transform:uppercase">
+                                            <span class="left" *ngIf=" stickerDetail.AdmittingDoctor =='Dr. Atit Poudel'||stickerDetail.AdmittingDoctor =='Prof. Dr. Padam Raj Pant'||stickerDetail.AdmittingDoctor =='Dr. Sunita Pun'">
+                                                Prof. Dr.Padam Raj Pant and Team
+                                            </span>
+                                            <span *ngIf=" stickerDetail.AdmittingDoctor !='Dr. Atit Poudel'&&stickerDetail.AdmittingDoctor !='Prof. Dr. Padam Raj Pant'&&stickerDetail.AdmittingDoctor !='Dr. Sunita Pun'">
+                                                {{stickerDetail.AdmittingDoctor}}
+                                            </span>
+                                        </b>
+                                    </span>
+                                    <div style="width:75%;display:inline-block;">
+                                        <div style="font-size:13px;text-transform:capitalize ">
+                                            Ward/Bed : {{stickerDetail.Ward}} / {{stickerDetail.BedCode}}
+                                        </div>
+                                        <div style="font-size:13px;text-transform:capitalize" *ngIf="stickerDetail.CareOfPersonName">
+                                            C/O : {{stickerDetail.CareOfPersonName}}
+                                        </div>
+                                        <div style="font-size:13px;text-transform:capitalize" *ngIf="stickerDetail.CareOfPersonPhoneNo">
+                                            C/O Tel :{{stickerDetail.CareOfPersonPhoneNo}}
+                                        </div>
+                                        <div style="font-size:13px;text-transform:capitalize" *ngIf="stickerDetail.CareOfPersonName">
+                                            C/O Relation : {{stickerDetail.CareOfPersonRelation}}
+                                        </div>
+                                        <div style="padding-top: 15px;font-size:13px;">
+                                            <span style="float:left;padding-right: 20px;">
+                                                User&nbsp;: {{stickerDetail.User}}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div style="width:19%;display:inline-block;vertical-align: top;">
+                                        <qr-code *ngIf="showQrCode" [value]="patientQRCodeInfo" [size]="75"></qr-code>
+                                    </div>
+                                </div>
+                            </div>
+                            <p style="text-align:center;width: 400px;">
+                                <button *ngIf="!showServerPrintBtn" class="btn blue" (click)="printStickerClient()">
+                                    Print Sticker
+                                    <i class="glyphicon glyphicon-print"></i>
+                                </button>
+
+                                <button *ngIf="showServerPrintBtn" class="btn blue" (click)="printStickerServer()" [disabled]="showLoading">
+                                    Print Sticker
+                                    <i class="glyphicon glyphicon-print"></i>
+                                </button>
+                            </p>
+                            <p *ngIf="showLoading" style="text-align:center;width:400px;">
+                                please wait while printing is in progress...
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div *ngIf="showWristBand">
+                    <i class="btn btn-danger" style="float:right" (click)="Close()" title="close... route to admitted patient list">X</i>
+                    <ip-wrist-band [showWristBand]="showWristBand" [patientVisitId]="patientVisitId" [showAsPopup]="false">
+                    </ip-wrist-band>
+                </div>
+
+            </div>
+            <div class="col-md-6" *ngIf="showDepositReceipt" style="background-color:white;margin-top:30px;padding:0px">
+                <i class="btn btn-danger" style="float:right" (click)="Close()" title="close... route to admitted patient list">X</i>
+                <deposit-receipt [deposit]="deposit"
+                                 [showReceipt]="showDepositReceipt"></deposit-receipt>
+            </div>
+        </div>
+
+    </div>
+</div>

@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">14.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.Props" Condition="'$(VSToolsPath)' != ''" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>b8a5fbfc-c046-4c86-a33a-9c82e4987a21</ProjectGuid>
+    <RootNamespace>DanpheEMR</RootNamespace>
+    <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">.\obj</BaseIntermediateOutputPath>
+    <OutputPath Condition="'$(OutputPath)'=='' ">.\bin\</OutputPath>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <SccProjectName>SAK</SccProjectName>
+    <SccProvider>SAK</SccProvider>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SchemaVersion>2.0</SchemaVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <DnxInvisibleTypeScriptCompile Include="wwwroot\Binder\AddressComponent - Copy (2).ts" />
+    <DnxInvisibleTypeScriptCompile Include="wwwroot\Binder\AddressComponent - Copy (3).ts" />
+    <DnxInvisibleTypeScriptCompile Include="wwwroot\Binder\Guarantor.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Components\DanpheEMR.Core\DanpheEMR.Core.csproj" />
+    <ProjectReference Include="..\..\Components\DanpheEMR.DalLayer\DanpheEMR.DalLayer.csproj" />
+    <ProjectReference Include="..\..\Components\DanpheEMR.Security\DanpheEMR.Security.csproj" />
+    <ProjectReference Include="..\..\Components\DanpheEMR.ServerModel\DanpheEMR.ServerModel.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <DnxInvisibleFolder Include="wwwroot\JS\" />
+  </ItemGroup>
+  <Import Project="$(VSToolsPath)\DotNet.Web\Microsoft.DotNet.Web.targets" Condition="'$(VSToolsPath)' != ''" />
+</Project>

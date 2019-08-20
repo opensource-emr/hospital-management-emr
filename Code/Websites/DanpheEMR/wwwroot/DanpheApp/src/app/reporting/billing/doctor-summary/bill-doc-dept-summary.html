@@ -1,0 +1,80 @@
+﻿<div class="col-md-12" *ngIf="showBillDocDeptSummaryReport" style="border: 0.5px solid;padding-top: 10px;">
+    <button class="blue btn non-printable" type="button" (click)="CallBackDocs()" *ngIf="showBackBtn">
+        <i class="fa fa-arrow-left"></i>
+        Back
+    </button>
+    <button class="blue btn non-printable" type="button" (click)="loadAllDocDeptItems()">
+        Detail View
+    </button>
+    <button class="blue btn right non-printable" type="button" (click)="ExportToExcelDocDeptSummary()">
+        <i class="fa fa-file-excel-o"></i>
+        Excel
+    </button>
+    <div class="col-md-12" style="padding:0px">
+        <span class="col-md-3 left" style="padding:0px">From Date: {{FromDate}}<br />ToDate: {{ToDate}}<br /></span>
+        <span class="col-md-6" style="text-align:center;padding:0px;font-size:20px">
+            Doctor: <b>{{reportData[0].DoctorName}}</b>
+        </span>
+        <span class="col-md-3 right" style="padding:0px;text-align:right;">Print Date: {{currentDate}}</span>
+    </div>
+    <table class="table-striped table-hover table-bordered" style="background-color:initial;margin-top:10px;width:100%">
+        <thead>
+            <tr>
+                <td style="text-align:center"><b>Sr No.</b></td>
+                <td><b>Service Department</b></td>
+                <td style="text-align:center"><b>Quantity</b></td>
+                <td style="text-align:center"><b>Gross Total</b></td>
+                <td style="text-align:center"><b>Discount Amt.</b></td>
+                <td style="text-align:center"><b>Total Amt.</b></td>
+                <td style="text-align:center"><b>Net Return Amt.</b></td>
+                <td style="text-align:center"><b>Net Sales</b></td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let row of reportData;let i=index">
+                <td style="text-align:center">{{i+1}}</td>
+                <td><a style="font-weight:bold" (click)="loadDocDeptItems(row)">{{row.ServiceDepartment}}</a></td>
+                <td style="text-align:right">{{row.Quantity}}</td>
+                <td style="text-align:right">{{row.SubTotal}}</td>
+                <td style="text-align:right">{{row.DiscountAmount}}</td>
+                <td style="text-align:right">{{row.TotalAmount}}</td>
+                <td style="text-align:right">{{row.ReturnAmount}}</td>
+                <td style="text-align:right">{{row.NetSales}}</td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-striped table-hover table-responsive" style="margin-top:10px">
+        <tr>
+            <th>Gross Total:</th>
+            <td>{{summary.tot_SubTotal}}</td>
+            <th>Discount Amount:</th>
+            <td>{{summary.tot_Discount}}</td>
+            <th>Return Amount:</th>
+            <td>{{summary.tot_Refund}}</td>
+            <th>Net Sales:</th>
+            <td>{{summary.tot_NetTotal}}</td>
+        </tr>
+        <tr>
+            <th>Provisional Amount:</th>
+            <td>{{summary.tot_Provisional}}</td>
+            <th>Cancel Amount:</th>
+            <td>{{summary.tot_Cancel}}</td>
+            <th>Credit Amount:</th>
+            <td>{{summary.tot_Credit}}</td>
+            <!--<th>Cash Collection:</th>
+            <td>{{summary.tot_CashCollection}}</td>
+            <th>Total Sales:</th>
+            <td>{{summary.tot_SalesTotal}}</td>-->
+        </tr>
+    </table>
+</div>
+<div class="col-md-12">
+    <rpt-bill-doc-dept-item-summary *ngIf="showItemLevelReport"
+                                    [showDocDeptItemSummary]="showItemLevelReport"
+                                    [fromDate]="FromDate"
+                                    [toDate]="ToDate"
+                                    [providerId]="ProviderId"
+                                    [servDeptName]="selServDeptName"
+                                    (callback)="CallBackDocDept()">
+    </rpt-bill-doc-dept-item-summary>
+</div>

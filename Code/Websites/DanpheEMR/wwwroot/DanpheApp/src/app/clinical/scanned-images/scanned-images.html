@@ -1,0 +1,105 @@
+<style>
+        .container {
+          position: relative;
+          width: 100%;
+          max-width: 400px;
+        }
+        .container .btn {
+          position: absolute;
+          top: 10%;
+          left: 86%;
+          transform: translate(-50%, -50%);
+          -ms-transform: translate(-50%, -50%);
+          border: none;
+          cursor: pointer;
+          border-radius: 5px;
+          text-align: center;
+        }
+        
+        .container .btn:hover {
+          background-color: black;
+        }
+        </style>
+
+<h3><b>Uploaded Images</b></h3>
+<div class="col-md-12">
+    <div class="col-md-8 col-centered">
+        <div class="col-md-3" *ngFor="let image of album; let i=index"
+            style="width:250px;height:250px;">
+            <div style="position: inherit;"><span><b> {{image.caption}}</b></span></div>
+            <div class="container">   
+                <input type="button" class="btn btn-danger btn-sm" (click)="DeleteUploadedImage(i)" value="X" >
+                 <img style="height: 180px;" class="img-responsive" [src]="image.src" (click)="open(i)" />
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="panel panel-default" style="width:400px;">
+            <div class="panel-body">
+                <span style="size: 10px;font-size:medium;padding-left: 50px;"><b>UpLoad Images</b></span>
+                <form [formGroup]="selectedImage.PatientImageValidator" class="form-horizontal">
+                    <div class="form-body">
+                        <div class="col-md-12 col-xs-12 col-sm-12">
+                            <div class="form-group">
+                                <label class="control-label col-md-5">File Type<b class="color-red">*</b><b
+                                        style="float:right;">:</b></label>
+                                <div class="col-md-6">
+                                    <select class="form-control" [(ngModel)]="selectedImage.FileType"
+                                        formControlName="FileType">
+                                        <option value="Admin">Admin</option>
+                                        <option value="Pathology">Pathology</option>
+                                        <option value="Radiology">Radiology</option>
+                                        <option value="Clinical">Clinical</option>
+                                        <option value="Insurance">Insurance</option>
+                                        <option value="Photo">Photo</option>
+                                    </select>
+                                    <span class="color-red font-sm"
+                                        [hidden]="selectedImage.IsValidCheck('FileType','required') || !(selectedImage.IsDirty('FileType'))">FileType
+                                        is required</span>
+                                </div>
+                            </div>
+                        </div><br>
+                        <div class="col-md-12 col-xs-12 col-sm-12">
+                            <div class="form-group">
+                                <label class="control-label col-md-5">Title<b style="float:right;">:</b></label>
+                                <div class="col-md-6">
+                                    <input class="form-control" [(ngModel)]="selectedImage.Title"
+                                        [ngModelOptions]="{standalone: true}" type="text" id="title" value="" />
+                                </div>
+                            </div>
+                        </div><br>
+                        <div class="col-md-12 col-xs-12 col-sm-12">
+                            <div class="form-group">
+                                <label class="control-label col-md-5">Choose Image<b class="color-red">*</b><b
+                                        style="float:right;">:</b></label>
+                                <div class="col-md-6">
+                                    <input class="form-control" #fileInput type="file"
+                                        accept="image/x-png,image/gif,image/jpeg,image/jpg,image/*,.*txt,.*doc,.*docx,.*zip,.*xls,.*xlsx,.*ppt,.*pptx,.*csv,.*pdf,"
+                                        value="" multiple />
+                                </div>
+                            </div>
+                        </div><br>
+                        <div class="col-md-12 col-xs-12 col-sm-12">
+                            <div class="form-group">
+                                <label class="control-label col-md-5">Comment<b style="float:right;">:</b></label>
+                                <div class="col-md-6">
+                                    <textarea class="form-control" [(ngModel)]="selectedImage.Comment"
+                                        [ngModelOptions]="{standalone: true}" type="text" id="title"
+                                        value=""></textarea>
+                                </div>
+                            </div>
+                        </div><br>
+                        <div class="col-md-12 col-xs-12 col-sm-12">
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <input type="button" class="btn btn-primary" (click)="SubmitImages()"
+                                        value="Upload" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

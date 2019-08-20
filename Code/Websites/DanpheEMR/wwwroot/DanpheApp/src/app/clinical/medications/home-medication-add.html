@@ -1,0 +1,97 @@
+﻿<div *ngIf="showMedicationAddBox && CurrentHomeMedication.HomeMedicationValidator" class="prob-entry" style="padding: 5px 0px 15px 0px; background: #006687;">
+    <form [formGroup]="CurrentHomeMedication.HomeMedicationValidator" class="form-horizontal">
+        <div class="cstm-close" (click)="showMedicationAddBox = false">
+            <a><i class="fa fa-close"></i> </a>
+        </div>
+        <h3 class="cstm-add-heading">{{CurrentHomeMedication.HomeMedicationId ? 'Update' : 'Add'}} Home Medication</h3>
+
+        <div class="form-group cstm-form-group">
+            <label class="control-label cstm-control-label col-md-4">Medication Name<b class="color-red">  *</b><b style="float:right;">:</b></label>
+            <div class="col-md-8">
+                <input danphe-auto-complete
+                       class="form-control cstm-form-control"
+                       [(ngModel)]="medicineSelected"
+                       formControlName="MedicationId"
+                       [source]="allMedicineList"
+                       placeholder="MedicationName"
+                       path-to-data="Results"
+                       display-property-name="MedicineName"
+                       value-property-name=null
+                       [list-formatter]="myListFormatter"
+                       onClick="this.select();"
+                       max-num-list="10" />
+                <span class="color-red font-sm"
+                      *ngIf="CurrentHomeMedication.IsDirty('MedicationId')"
+                      [hidden]="CurrentHomeMedication.IsValidCheck('MedicationId','required')">Select Medication Name</span>
+            </div>
+        </div>
+        <div class="form-group cstm-form-group">
+            <label class="control-label cstm-control-label col-md-4">Dose<b class="color-red">  *</b><b style="float:right;">:</b></label>
+            <div class="col-md-8">
+                <input type="text" class="form-control cstm-form-control"
+                       formControlName="Dose" maxlength="100"
+                       [(ngModel)]="CurrentHomeMedication.Dose" />
+                <span class="color-red font-sm" style="color:red"
+                      *ngIf="CurrentHomeMedication.IsDirty('Dose')"
+                      [hidden]="CurrentHomeMedication.IsValidCheck('Dose','required')">Enter Dose</span>
+            </div>
+        </div>
+        <div class="form-group cstm-form-group">
+            <label class="control-label cstm-control-label col-md-4">Route<b class="color-red">  *</b><b style="float:right;">:</b></label>
+            <div class="col-md-8">
+                <select class="form-control cstm-form-control" [(ngModel)]="CurrentHomeMedication.Route"
+                        formControlName="Route">
+                    <option value="Oral Route">Oral Route</option>
+                    <option value="Injection Routes">Injection Routes</option>
+                    <option value="Ocular Route">Ocular Route</option>
+                </select>
+                <span class="font-sm color-red" style="color:red"
+                      *ngIf="CurrentHomeMedication.IsDirty('Route')"
+                      [hidden]="CurrentHomeMedication.IsValidCheck('Route','required')">Select Route</span>
+            </div>
+        </div>
+        <div class="form-group cstm-form-group">
+            <label class="control-label cstm-control-label col-md-4">Frequency<b class="color-red">  *</b><b style="float:right;">:</b></label>
+            <div class="col-md-8">
+                <input type="number" class="form-control cstm-form-control"
+                       formControlName="Frequency"
+                       [(ngModel)]="CurrentHomeMedication.Frequency" />
+                <span class="color-red font-sm" style="color:red"
+                      *ngIf="CurrentHomeMedication.IsDirty('Frequency')"
+                      [hidden]="CurrentHomeMedication.IsValidCheck('Frequency','required')">Enter Fequency(Num of times per day)</span>
+            </div>
+        </div>
+        <div class="form-group cstm-form-group">
+            <label class="control-label cstm-control-label col-md-4">Last Taken<b class="color-red">  *</b><b style="float:right;">:</b></label>
+            <div class="col-md-8">
+                <input type="date" class="form-control cstm-form-control"
+                       formControlName="LastTaken"
+                       [(ngModel)]="CurrentHomeMedication.LastTaken" />
+                <div class="color-red font-sm"
+                     *ngIf="CurrentHomeMedication.IsDirty('LastTaken')"
+                     [hidden]="CurrentHomeMedication.IsValidCheck('LastTaken','required')">
+                    Last taken date and time is required.
+                </div>
+                <span class="color-red font-sm"
+                      *ngIf="CurrentHomeMedication.IsDirty('LastTaken')"
+                      [hidden]="CurrentHomeMedication.IsValidCheck('LastTaken','wrongDate')">
+                    Enter Valid Date.
+                </span>
+            </div>
+        </div>
+        <div class="form-group cstm-form-group">
+            <label class="control-label cstm-control-label col-md-4">Comments<b style="float:right;">:</b></label>
+            <div class="col-md-8">
+                <textarea type="text" class="form-control cstm-form-control" maxlength="200"
+                          formControlName="Comments"
+                          [(ngModel)]="CurrentHomeMedication.Comments"></textarea>
+                <span class="color-red font-sm"
+                      *ngIf="CurrentHomeMedication.IsDirty('Comments')"
+                      [hidden]="CurrentHomeMedication.IsValidCheck('Comments','maxlength')">Comments should not exceed more than 200 characters.</span>
+            </div>
+        </div>
+        <div>
+            <input type="button" class="btn btn-primary" style="background: #374150; margin-left:15px;" name="name" value="{{CurrentHomeMedication.HomeMedicationId ? 'Update' : 'Add'}}" (click)="SaveHomeMedication()" />
+        </div>
+    </form>
+</div>

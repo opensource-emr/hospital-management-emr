@@ -1,0 +1,59 @@
+﻿<div class="row">
+    <div class="col-md-12 col-xs-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="stockTxnItemsGridColumns" [grid-data]="stockTxnItemList" (grid-actions)="StockTxnItemGridActions($event)">
+        </danphe-grid>
+    </div>
+</div>
+<!--Model Box Starting Here-->
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showStockTxnItemsUpdatePage">
+    <div class="portlet-body form" style="background-color:white">
+        <!--Model Box Body Start-->
+        <div  >
+            <div class="form-body">
+                <div class="col-md-12">
+                    <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+                    </div>
+                    <div class="col-md-8 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+                        <div class="col-md-12">
+                            <div class="caption" style="color:blue; margin-top:10px;">                               
+                                <span *ngIf="update">Update MRP</span>
+                            </div>
+                            <a style="float:right;  margin-top:-13px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                            <hr />
+                        </div>
+                        <br />
+                        <div class="col-md-12" style="    margin-bottom: 50px;">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="control-label col-md-6">Enter New MRP<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                                    <div class="col-md-6">
+                                        <input class="form-control" type="number" maxlength="50"
+                                               [(ngModel)]="currentStockTxnItem.MRP"                                             
+                                               value="" (focusout)="CheckMRPValidation()"
+                                               placeholder="enter new valid MRP" />
+                                        <span class="color-red font-sm" *ngIf="!isValidMRP">required, valid MRP only</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Old MRP<b style="float:right;">:</b></label>
+                                    <div class="col-md-8">
+                                        <b>{{oldMRP}}</b>
+                                        <input style="margin-left:40px;" type="button" class="btn btn-primary" *ngIf="update" (click)="Update()" value="Update" />
+                                    </div>
+                                </div>
+                             
+                            </div>
+
+                        </div>                      
+                    </div>
+                    <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--</form>-->
+        <!--Model Box Body End-->
+    </div>
+</div>

@@ -1,0 +1,91 @@
+<style>
+    .printStyle {
+        border: dotted 1px;
+        margin: 10px 100px;
+    }
+
+    .print-border-top {
+        border-top: dotted 1px;
+    }
+
+    .print-border-bottom {
+        border-bottom: dotted 1px;
+    }
+
+    .print-border {
+        border: dotted 1px;
+    }
+
+    .center-style {
+        text-align: center;
+    }
+
+    .border-up-down {
+        border-top: dotted 1px;
+        border-bottom: dotted 1px;
+    }
+</style>
+<div id="printpage" class="row printStyle print-border">
+    <div style="text-align:center;">
+        <div class="col-md-12">
+            <print-header [unit-name]="'Inventory Unit'"></print-header>
+           
+            <div class="clear"></div>
+            <div class="left" style="text-align:left;">
+                <p>Requisition No:<b> {{requisitionId}}</b></p>
+                <p>Department Name:<b> {{departmentName}}</b> </p>
+            </div>
+
+            <div class="right" style="text-align:right;">
+                <p>Requisition Date:<b> {{requisitionDate}}</b></p>
+            </div>
+            <div class="clear"></div>
+            <p class="text-center btm-pad border-up-down"><b> REQUISITION DETAILS PRINT</b></p>
+            <div class="clear"></div>
+            <div class="clear footer"></div>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover" style="background-color:initial;margin-top:10px;width:100%">
+                    <thead>
+                        <tr style="font-weight: bold;text-align:center">
+                            <td>Item Name</td>
+                            <td>Quantity</td>
+                            <td>Received Qty.</td>
+                            <td>Pending Qty.</td>
+                            <td>Status</td>
+                            <td>Remarks</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="text-align:center" *ngFor="let row of requisitionItemsDetails">
+                            <td>{{row.ItemName}}</td>
+                            <td>{{row.Quantity}}</td>
+                            <td>{{row.ReceivedQuantity}}</td>
+                            <td>{{row.PendingQuantity}}</td>
+                            <td><b>{{row.RequisitionItemStatus}}</b></td>
+                            <td><b>{{row.Remark}}</b></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <hr />
+            <div class="col-md-12">
+                <div style="text-align: left" class="col-md-6">Requested By:&nbsp;<b>{{createdby}}</b></div>
+                <div style="text-align: right" *ngIf="dispatchedby" class="col-md-6">Dispatched By:&nbsp;<b>{{dispatchedby}}</b></div>
+
+            </div>
+            </div>
+    </div>
+</div>
+<div class="row center-style">
+    <div class="col-md-12 col-xs-12 ">
+        <a (click)="print()" class="btn btn-default">
+            Print
+            <i class="glyphicon glyphicon-print"></i>
+        </a><span> </span><span> </span>
+        &nbsp;
+        <a (click)="requisitionList()" class="btn btn-primary">
+            Requisition List
+            <i class="glyphicon glyphicon-share-alt"></i>
+        </a>
+    </div>
+</div>

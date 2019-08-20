@@ -1,0 +1,11 @@
+.portlet.light.bordered {
+  margin-top: 5px;
+}
+
+.tbl-summ {
+  width: 100%;
+}
+
+.blinkAmount {
+  animation-name: blinkAmountsFrameNormal !important;
+}

@@ -1,0 +1,16 @@
+﻿
+<input type="button" class="btn btn-primary" (click)="AddRack()" value="Add Rack" />
+
+<phrm-rack-add [showAddPage]="showAddPage" [selected-rack]="rack" (callback-add)="pushToList($event)"></phrm-rack-add>
+
+<phrm-rack-drug-list [rack-name]="rackName" [drug-list]="drugList" [showDrugListPage]="showDrugListPage"></phrm-rack-drug-list>
+
+<div class="row">
+    <div class="col-md-12 col-xs-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="rackGridColumns" [grid-data]="rackList" (grid-actions)="RackGridActions($event)">
+        </danphe-grid>
+    </div>
+</div>
+
+
+

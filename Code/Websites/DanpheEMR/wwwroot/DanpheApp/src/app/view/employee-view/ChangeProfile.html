@@ -1,0 +1,35 @@
+﻿
+
+    <!-- CHANGE AVATAR TAB -->
+    <div class="tab-pane" id="tab_1_2" style="background-color:white;">
+        <div class="form-group">
+                <div class="fileinput fileinput-new" data-provides="fileinput">
+                    <div *ngIf="(userProfileInfo.ImageName != null)" style="width:330px; height:280px;">
+                        
+                        <img src={{pathToImage}} alt="Avatar" style="width:280px; height:230px;">
+                    </div>
+                    <div class="fileinput-new thumbnail" style="width: 200px; height: 150px;"  *ngIf="(userProfileInfo.ImageName == null)">
+                        <img src="http://www.placehold.it/200x150/EFEFEF/AAAAAA&amp;text=no+image" alt="" />
+                    </div>
+                    
+                    <div>
+                      <span class="btn default btn-file">
+                           <input #fileInput type="file" name="...">
+                        </span>
+                    </div>
+                </div>
+                
+            </div>
+            <div class="margin-top-10">
+                <a style="cursor:pointer" class="btn green" (click)="ChangeProfileImage(userProfileInfo)"> Submit </a>
+                <a class="btn default"> Cancel </a>
+            </div>
+    </div>
+    <!-- END CHANGE AVATAR TAB -->
+
+
+
+
+
+
+

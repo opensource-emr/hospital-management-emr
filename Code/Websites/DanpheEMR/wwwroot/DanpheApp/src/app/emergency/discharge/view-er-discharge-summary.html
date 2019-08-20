@@ -1,0 +1,161 @@
+﻿<style>
+    th, td {
+        border: 1px solid black;
+        padding: 0px 7px;
+    }
+
+    .no-border th, .no-border td {
+        border: none !important;
+    }
+
+    .equal-width td {
+        width: 50%;
+        vertical-align: top;
+    }
+
+
+    p.discharg-hd {
+        font-weight: 700;
+        text-decoration: underline;
+        margin-bottom: 5px;margin-top: 5px;
+    }
+
+    textarea {
+        width: 100%;
+    }
+</style>
+<div class="row" style="margin-top:12px;">
+    <div id="dischargeSummaryToPrint">
+        <div class="col-md-12">
+
+            <table style="width: 100%; border-collapse: collapse; border: 1px solid;">
+                <thead>
+                    <tr>
+                        <th colspan="2" style="text-align: center;background: #ececec;"><p style="font-weight: 700;">Discharge Summary</p></th>
+                    </tr>
+                    <tr>
+                        <td colspan="1"><strong>Name: {{ERpatientSummary.EmergencyPatient.FullName}}</strong></td>
+                        <td colspan="1"><strong>Hospital Number: {{ERpatientSummary.EmergencyPatient.PatientCode}}</strong></td>
+                    </tr>
+                    <tr class="equal-width">
+                        <td colspan="1"><strong>Age: {{ERpatientSummary.EmergencyPatient.Age}}</strong></td>
+                        <td colspan="1"><strong>Sex: {{ERpatientSummary.EmergencyPatient.Gender}}</strong></td>
+                    </tr>
+                    <tr class="equal-width">
+                        <td colspan="1"><strong>Address: {{ERpatientSummary.EmergencyPatient.Address}}</strong></td>
+                        <td colspan="1"><strong>Brought by: {{ERpatientSummary.EmergencyPatient.CareOfPerson}}</strong></td>
+                    </tr>
+                    <tr>
+                        <td colspan="1"><strong>Mobile No.: {{ERpatientSummary.EmergencyPatient.ContactNo}}</strong></td>
+                        <td colspan="1"><strong>Visit Code: {{ERpatientSummary.VisitCode}}</strong></td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngIf="ERpatientSummary.Vitals">
+                        <td colspan="2">
+                            <!--*ngIf="ERpatientSummary.Vitals"-->
+
+                            <p style="text-align: center; width: 100%;margin: 0px 0px 5px 0px;"><span style="font-weight: 700;text-decoration: underline;">Vitals on Arrival</span></p>
+
+                            <table style="width: 100%; border-collapse: collapse; border: 1px solid;margin-bottom: 10px;">
+                                <tr>
+                                    <td *ngIf="ERpatientSummary.Vitals.BPSystolic">BP: {{ERpatientSummary.Vitals.BPSystolic}}/{{ERpatientSummary.Vitals.BPDiastolic}} mmHg</td>
+                                    <td *ngIf="ERpatientSummary.Vitals.RespiratoryRatePerMin">RR: {{ERpatientSummary.Vitals.RespiratoryRatePerMin}}/Min</td>
+                                    <td *ngIf="ERpatientSummary.Vitals.Pulse">Pulse: {{ERpatientSummary.Vitals.Pulse}}/Min</td>
+                                    <td *ngIf="ERpatientSummary.Vitals.Temperature">T: {{ERpatientSummary.Vitals.Temperature}}{{ERpatientSummary.TemperatureUnit}}</td>
+                                    <td *ngIf="ERpatientSummary.Vitals.SpO2">SPO<sub>2</sub>: {{ERpatientSummary.Vitals.SpO2}}%</td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr class="equal-width">
+                        <td colspan="1">
+                            <table class="no-border" style="width: 100%; border-collapse: collapse;">
+                                <tr>
+                                    <!--Chief Complaint-->
+                                    <td>
+                                        <p class="discharg-hd">Chief Complaints:</p>
+                                        <p style="white-space:pre-line;margin: 0;">{{DischargeSummary.ChiefComplaints}}</p>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>
+                                        <p class="discharg-hd">O/E:</p>
+                                        <p style="white-space:pre-line;margin: 0;">{{DischargeSummary.OnExamination}}</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td colspan="1">
+                            <table class="no-border" style="width: 100%; border-collapse: collapse;">
+                                <tr>
+                                    <td>
+                                        <p class="discharg-hd">Investigations:</p>
+                                        <div style="padding-left: 8px;">
+                                            <strong>Lab:</strong> &nbsp;
+                                            <span *ngFor="let laborder of LabOrdersList;let i = index;">{{laborder.InvestigationName}}&nbsp;<span *ngIf="i+1 != LabOrdersList.length">,</span></span>
+                                        </div>
+                                        <div style="padding-left: 8px;margin-top: 5px;">
+                                            <strong>Imaging:</strong> &nbsp;
+                                            <span *ngFor="let radorder of RadOrderList; let i= index;">{{radorder.InvestigationName}}&nbsp;<span *ngIf="i+1 != RadOrderList.length">,</span></span>
+                                        </div>
+                                        <div style="padding-left: 8px;margin-top: 5px;">
+                                            <strong>Others:</strong> &nbsp;
+                                            <span style="margin-bottom: 10px;" *ngFor="let other of OthersList; let j = index;">
+                                                {{other.InvestigationName}}&nbsp;<span *ngIf="j+1 != OthersList.length">,</span>
+                                            </span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <p class="discharg-hd">Treatment in ER:</p>
+                                        <p style="white-space:pre-line;margin: 0;">{{DischargeSummary.TreatmentInER}}</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <p class="discharg-hd">Advice on discharge:</p>
+                                        <div style="margin-bottom: 4px;" *ngFor="let adv of allAdvice; let j = index;">
+                                            <p style="margin: 0;"><span>{{j+1}}</span> &nbsp; {{adv.value}}</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr class="equal-width">
+                        <td colspan="1">
+                            <p style="margin: 0;font-weight:700;float: left;">Provisional Diagnosis:&nbsp;</p>
+                            <p *ngIf="!DischargeSummary.ProvisionalDiagnosis" style="white-space:pre-line;margin: 0;"></p>
+                            <p *ngIf="DischargeSummary.ProvisionalDiagnosis" style="white-space:pre-line;margin: 0;">{{DischargeSummary.ProvisionalDiagnosis}}</p>
+                        </td>
+                        <td colspan="1"></td>
+                    </tr>
+                    <tr class="equal-width">
+                        <td colspan="1">
+                            Discharge Type:
+                            <span *ngIf="ERpatientSummary.EmergencyPatient.FinalizedStatus=='lama'">LAMA</span>
+                            <span *ngIf="ERpatientSummary.EmergencyPatient.FinalizedStatus=='admitted'">Admitted</span>
+                            <span *ngIf="ERpatientSummary.EmergencyPatient.FinalizedStatus=='transferred'">Transferred</span>
+                            <span *ngIf="ERpatientSummary.EmergencyPatient.FinalizedStatus=='discharged'">Discharged</span>
+                            <span *ngIf="ERpatientSummary.EmergencyPatient.FinalizedStatus=='death'">Death</span>
+                        </td>
+                        <td colspan="1">Time: {{DischargeSummary.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'}}</td>
+                    </tr>
+                    <tr class="equal-width">
+                        <td colspan="1">Doctor Name:&nbsp; {{DischargeSummary.DoctorName}}</td>
+                        <td colspan="1">DMO:&nbsp; {{DischargeSummary.MedicalOfficer}}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+    </div>    
+    <div class="col-md-12" style="margin-top: 15px;text-align: center;">
+        <button style="width: auto;display: inline-block;margin-right: 15px;" class="btn btn-blue blue" (click)="EditDischargeSummary()">Edit Discharge Summary</button>
+        
+        <button style="width: auto;display: inline-block;margin-left: 15px;background: #47afaf;color: #fff;" class="btn btn-blue" (click)="PrintDischargeSummary()">Print Discharge Summary</button>
+    </div>
+</div>

@@ -1,0 +1,50 @@
+<div *ngIf="showEnCalendar" style="padding-bottom:3px">
+    <table class="engcalender">
+        <tr>
+            <td *ngIf="!showcalendar">
+                <b>(AD)</b>
+            </td>
+            <td>
+                <input class="margin-7-hr" type="date" [(ngModel)]="enDate" (change)="EngCalendarOnDateChange()" />
+            </td>
+            <td *ngIf="!showcalendar">
+               
+                <div class="tooltip  no-print" style="padding: 0px 5px;color: #006687;z-index: inherit;">
+                    <span (click)="changetoNepali()" style="display: inline-block; background: #d8dff1;padding: 1px 2px 0px;cursor: pointer;">
+                        <input type="button" value="BS" 
+                        matTooltipPosition="below"
+                        matTooltip="Change to Nepali date."/>
+                    </span>
+                    <!-- <p class="tooltiptext ttptextdown" style="width: 150px;margin-left: -75px;">Change to Nepali date.</p> -->
+                </div>
+            </td>
+        </tr>
+    </table>
+   
+   
+</div>
+<div *ngIf="showNpCalendar" style="padding-left:3px;padding-top:2px;">   
+    <table class="nepcalender">
+        <tr>
+            <td>
+                <b>(BS)</b>
+            </td>
+            <td>
+                <np-calendar [ngModelOptions]="{standalone: true}" ngDefaultControl [(ngModel)]="npDate" (change)="NepCalendarOnDateChange()"></np-calendar>
+            </td>
+            <td>
+                <div class="tooltip  no-print" style="padding: 0px 5px;color: #006687;z-index: inherit;">
+                    <span (click)="changetoEnglish()" style="display: inline-block; background: #d8dff1;padding: 1px 2px 0px;cursor: pointer;">
+                         <input type="button" value="AD"
+                         matTooltipPosition="below"
+                         matTooltip="Change to English date."/> 
+                         <!-- mat tooltip position== 'after', 'before', 'above', 'below', 'left', 'right' -->
+                    </span>
+                    
+                    <!-- <p class="tooltiptext ttptextdown" style="width: 150px;margin-left: -75px;">Change to English date.</p> -->
+                </div>
+            </td>
+        </tr>
+    </table>
+
+</div>

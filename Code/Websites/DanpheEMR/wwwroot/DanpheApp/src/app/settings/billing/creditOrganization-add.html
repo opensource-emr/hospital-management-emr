@@ -1,0 +1,62 @@
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showAddPage">
+    <div class="portlet-body form" style="background-color:white">
+        <form [formGroup]="CurrentCreditOrganization.CreditOrganizationValidator" class="form-horizontal">
+            <div class="form-body">
+                <div class="col-md-12">
+                    <div class="col-md-3 hidden-xs hidden-sm" style="margin-right:24px;">
+                    </div>
+                    <div class="col-md-6 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+                        <div class="col-md-12">
+                            <div class="caption" style="color:blue;">
+                                <h3>
+                                    <span *ngIf="!update">Add Organization</span>
+                                    <span *ngIf="update">Update Organization</span>
+                                </h3>
+                            </div>
+                            <a style="float:right;  margin-top:-32px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                            <hr />
+                        </div>
+                        <div class="col-md-12">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Organization Name<b class="color-red">*</b><b style="float:right;">:</b></label>
+                                    <div class="col-md-8">
+                                        <input type="text" name="" required value="" class="form-control" maxlength="40"
+                                               [(ngModel)]="CurrentCreditOrganization.OrganizationName"
+                                               formControlName="OrganizationName"
+                                               id="OrganizationName" placeholder="Organization Name" />
+                                        <span Class="color-red font-sm" [hidden]="CurrentCreditOrganization.IsValidCheck('OrganizationName','required') || !(CurrentCreditOrganization.IsDirty('OrganizationName'))">Enter Organization Name</span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Is Active <b style="float:right;">:</b> </label>
+                                    <div class="col-md-8">
+                                        <div class="input-group">
+                                            <div class="icheck-inline">
+                                                <label class="mt-checkbox mt-checkbox-outline">
+                                                    <input id="IsActive" name="IsActive" type="checkbox" value=""
+                                                           [(ngModel)]="CurrentCreditOrganization.IsActive"
+                                                           [ngModelOptions]="{standalone: true}">
+                                                    <span></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-actions">
+                                    <input type="button" class="btn btn-primary" *ngIf="!update" (click)="Add()" value="Add" />
+                                    <input type="button" class="btn btn-primary" *ngIf="update" (click)="Update()" value="Update" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+
+

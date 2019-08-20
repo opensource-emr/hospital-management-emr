@@ -1,0 +1,159 @@
+<style>
+        .printStyle {
+            border: dotted 1px;
+            margin: 10px 100px;
+        }
+    
+        .print-border-top {
+            border-top: dotted 1px;
+        }
+    
+        .print-border-bottom {
+            border-bottom: dotted 1px;
+        }
+    
+        .print-border {
+            border: dotted 1px;
+        }
+    
+        .center-style {
+            text-align: center;
+        }
+    
+        .border-up-down {
+            border-top: dotted 1px;
+            border-bottom: dotted 1px;
+        }
+    </style>
+    <div style="margin-left: 100px">
+        <a (click)="sendEmail()" class="btn btn-success">
+            <i class="glyphicon glyphicon-envelope"></i>
+            Send Email
+        </a>
+    </div>
+    <div id="printpage" class="row printStyle print-border">
+        <div style="text-align:center;">
+            <div class="col-md-12">
+                <print-header [unit-name]="'Inventory Unit'"></print-header>
+                <div class="clear"></div>
+                <div class="left" style="text-align:left;">
+                    <p>Order No:<b> {{purchaseorderDetails.PurchaseOrderId}}</b></p>
+                    <p>Vendor Name:<b> {{purchaseorderDetails.VendorName}}</b></p>
+                    <p>Vendor Contact No:<b> {{purchaseorderDetails.VendorNo}}</b></p>
+                    <p>Vendor Address:<b> {{purchaseorderDetails.VendorAddress}}</b></p>
+                </div>
+    
+                <div class="right" style="text-align:right;">
+                    <p>Date:<b> {{purchaseorderDetails.PoDate}}</b></p>
+                    <p>Time:<b> {{PoTime}}</b></p>
+                    <p>Order Status: <b>{{purchaseorderDetails.POStatus}}</b></p>
+                </div>
+                <div class="clear"></div>
+                <p class="text-center btm-pad border-up-down"><b> PURCHASE ORDER DETAILS</b></p>
+                <div class="clear"></div>
+                <div class="clear footer"></div>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover table-bordered" style="background-color:initial;margin-top:10px">
+                        <thead>
+                          <tr style="font-weight: bold;text-align:center">
+                            <td>S.N</td>
+                            <td>Item Name</td>
+                            <td>Order Qty.</td>
+                            <td>Received Qty.</td>
+                            <td>Standard Rate</td>
+                            <td>Total Amount</td>
+                            <td>Delivery Days</td>
+                            <td>Item Status</td>
+                            <td>Delivery Days</td>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr style="text-align:center" *ngFor="let row of purchaseorderItemsDetails; let i = index ">
+                            <td><b>{{i+1}}</b></td>
+                            <td><b>{{row.ItemName}}</b></td>
+                            <td>{{row.Quantity}}</td>
+                            <td>{{row.ReceivedQuantity}}</td>
+                            <td>{{row.StandardRate}}</td>
+                            <td>{{row.ItemTotalAmount | number: "1.2-2"}}</td>
+                            <td>{{row.DeliveryDays}}</td>
+                            <td><b>{{row.POItemStatus}}</b></td>
+                            <td><b>{{row.DeliveryDays}}</b></td>
+                          </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <hr />
+                <div class="left" style="margin-top:20px">
+                    <b>Remark:</b> {{purchaseorderDetails.PORemark}}
+                </div>
+                <div class="col-md-12">
+                    <div class="right" style="text-align:right;">
+                        <table class="table table-striped table-hover table-bordered" style="background-color:initial;margin-top:10px">
+                            <tr>
+                                <td>Sub Total</td>
+                                <td><b>{{purchaseorderDetails.SubTotal | number: "1.2-2"}}</b></td>
+                            </tr>
+                            <tr>
+                                <td>VAT Amount</td>
+                                <td><b>{{purchaseorderDetails.VATAmount | number: "1.2-2"}}</b></td>
+                            </tr>
+                            <tr>
+                                <td>Total Amount</td>
+                                <td><b>{{purchaseorderDetails.TotalAmount | number: "1.2-2"}}</b></td>
+                            </tr>
+    
+    
+    
+                        </table>
+                    </div>
+                </div>
+                <div class="col-md-12 clear">
+                    <hr />
+                    <div class="left" style="width:33.33%;text-align:left">
+                        <strong>Prepared By</strong><br />
+                        Name: <b>{{creator.Name}}</b><br />
+                        Designation: {{creator.Role}}
+                        <br /><br />
+                        <b *ngIf="purchaseorderDetails.Terms"> Terms & Conditions:  </b>
+                        <br />
+                        <p style="font-style: italic">{{purchaseorderDetails.Terms}}</p>
+                    </div>
+                  <div class="left" style="width:33.33%;text-align:left">
+                        <strong>Verified By</strong><br />
+                        Name:<br />
+                        Designation: 
+                    </div>
+                    <div class="left" style="width:33.33%;text-align:left">
+                        <strong>Authorized By</strong><br />
+                        Name: <b>{{authorizer.Name}}</b><br />
+                        Designation: {{authorizer.Role}}
+                    </div>
+    
+                </div>
+    
+            </div>
+         
+        </div>
+    </div>
+    
+    <div class="row center-style">
+      <div class="col-md-12 col-xs-12 ">
+        <a (click)="EditPurchaseOrder(purchaseorderDetails.POStatus)" class="btn btn-warning">
+          Edit
+          <i class="glyphicon glyphicon-print"></i>
+        </a><span> </span><span> </span>
+        &nbsp;
+        <a (click)="print()" class="btn btn-default">
+          Print
+          <i class="glyphicon glyphicon-print"></i>
+        </a><span> </span><span> </span>
+        &nbsp;
+        <a (click)="purchaseorderList()" class="btn btn-primary">
+          Purchase Order List
+          <i class="glyphicon glyphicon-share-alt"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- @**** BELOW <div> IS FOR PRINTING PURCHASE ORDER DETAILS ****@
+    @**** BELOW <div> was removed because printing purchase is done from the upper div as suggested by Abhisek Dhakal Sir ****@ -->

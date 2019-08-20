@@ -1,0 +1,14 @@
+﻿<div>
+    <input type="button" class="btn btn-primary" (click)="AddVoucherHead()" value="Create Voucher Head" />
+    <voucher-head-add [showAddPage]="showAddPage"
+                 [selectedVoucherHead]="selectedVoucherHead"
+                 (callback-add)="CallBackAdd($event)"></voucher-head-add>
+</div>
+<div class="row">
+    <div class="col-md-12 col-xs-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="voucherHeadGridColumns" [grid-data]="voucherHeadList"
+                     (grid-actions)="VoucherHeadGridActions($event)">
+        </danphe-grid>
+    </div>
+</div>
+

@@ -1,0 +1,224 @@
+﻿<style>
+    .colon {
+        float: right;
+        margin-right: 6px;
+        margin-left: 4px;
+    }
+
+    .neg-amt {
+        color: red;
+    }
+
+    .prov-icon {
+        color: #006687;
+        width: 20px;
+        height: 15px;
+        /*padding-left: 2px;
+           padding-right: 2px;*/
+    }
+
+        .prov-icon:hover {
+            font-size: 15px;
+            /*padding: 0px;*/
+        }
+
+    /*Overwritting Bootstrap's class only for this page*/
+    .table > tbody > tr > td {
+        padding: 3px !important;
+    }
+</style>
+
+
+
+<div class="row">
+
+    <div class="col-md-12">
+
+
+        <div class="table-responsive">
+
+            <table class="table table-striped table-hover" style="background-color:initial;margin-top:20px">
+                <thead>
+                    <tr style="background-color:whitesmoke">
+                        <th>S.N.</th>
+                        <th>Department</th>
+                        <th>AssignedTo Dr.</th>
+                        <th>ItemName </th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        <th> Discount</th>
+                        <th> Total</th>
+                        <th>Agg.Discount</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <tr *ngFor="let row of model.BillingTransactionItems; let i = index">
+                        <td style="padding: 7px 0px 0px 0px;">
+                            <label class="form-control cstm-form-control" style="text-align:center">{{i+1}}</label>
+                        </td>
+                        <td><input class="form-control cstm-form-control" type="text" [(ngModel)]="row.ServiceDepartmentName" style="width:150px" value="row.ServiceDepartmentName" disabled name="department"></td>
+                        <td><input class="form-control cstm-form-control" type="text" [(ngModel)]="row.ProviderName" style="width:120px" disabled></td>
+                        <td><input class="form-control cstm-form-control" type="text" [(ngModel)]="row.ItemName" style="width:300px" disabled name="itemnames"></td>
+                        <td><input class="form-control cstm-form-control" type="number" [(ngModel)]="row.Quantity" style="width:60px" disabled name="quantity"></td>
+                        <td><input class="form-control cstm-form-control" type="number" [(ngModel)]="row.Price" disabled style="width:70px " name="price"></td>
+                        <td><input class="form-control cstm-form-control" type="number" [(ngModel)]="row.DiscountPercent" style="width:70px " disabled name="discountpercent"></td>
+                        <td><input class="form-control cstm-form-control" type="number" [(ngModel)]="row.TotalAmount" disabled style="width:70px" name="total"></td>
+                        <td><input class="form-control cstm-form-control" type="number" [(ngModel)]="row.DiscountPercentAgg" style="width:70px ;background-color:red" disabled name="discountpercentagg"></td>
+
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<div class="row">
+
+    <div class="col-md-4">
+        <div style="border: 1px solid blue;padding:5px;border-radius: 15px !important;" *ngIf="patBillHistory.IsLoaded">
+            <div style="padding-left: 51px;margin-bottom: 5px;border-bottom: 1px solid green;">
+                Billing History
+            </div>
+            <table>
+                <tr><td>Credit <b class="colon">:</b></td><td>{{patBillHistory.CreditAmount}}</td></tr>
+                <tr>
+                    <td>
+                        Provisional Amount
+                        <i class="fa fa-question-circle help-about prov-icon" title="Items in current page are NOT INCLUDED in this Amount"></i>
+                        <b class="colon">:</b>
+                    </td>
+                    <td style="text-decoration:underline;">
+                        {{patBillHistory.ProvisionalAmt}}
+                    </td>
+                </tr>
+                <tr><td>Total Due<b class="colon">:</b></td><td>{{patBillHistory.TotalDue}}</td></tr>
+                <tr><td>Deposit Balance <b class="colon">:</b> </td><td>{{patBillHistory.DepositBalance}}</td></tr>
+                <tr>
+                    <td>Balance Amount <b class="colon">:</b></td>
+                    <td style="font-weight: bold;color: blue;font-size: 17px;">
+                        <span [ngClass]="{'neg-amt': patBillHistory.BalanceAmount < 0}">
+                            {{patBillHistory.BalanceAmount}}
+                        </span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+
+
+        <div class="table-responsive">
+            <table class="col-sm-offset-3 col-sm-9 " style="margin-top:15px">
+                <tr>
+                    <td class="col-sm-offset-8 col-sm-2"></td>
+                    <td> SubTotal : </td>
+                    <td><input type="number" [(ngModel)]="model.SubTotal" disabled id="subtotal" name="subtotal"></td>
+                </tr>
+                <tr class="form-group">
+                    <td class="col-sm-offset-8 col-sm-2"></td>
+                    <td>Discount % Total : </td>
+                    <td style="padding-top: 5px;"> 
+                        <input type="number" [(ngModel)]="model.DiscountPercent" (ngModelChange)="Calculationforall();" 
+                               name="DiscountPercent" value="{{0}}" onClick="this.select();">
+                    </td>
+                </tr>
+                <tr class="form-group">
+                    <td class="col-sm-offset-8 col-sm-2"></td>
+                    <td> Discount Amt : </td>
+                    <td style="padding-top: 5px;"><input type="number" disabled [(ngModel)]="model.DiscountAmount" name="DiscountAmount" value="{{0}}"></td>
+                </tr>
+
+                <tr class="form-group">
+                    <td class="col-sm-offset-8 col-sm-2"></td>
+                    <td>Total Amount : </td>
+                    <td style="padding-top: 5px;"><input type="number" [(ngModel)]="model.TotalAmount" disabled name="TotalAmount"></td>
+                </tr>
+                <tr class="form-group">
+                    <td class="col-sm-offset-8 col-sm-2"> </td>
+                    <td>Remarks: </td>
+                    <td style="padding-top: 5px;">
+                        <textarea [(ngModel)]="model.Remarks" placeholder="Remarks"  onClick="this.select();"></textarea>
+                    </td>
+                </tr>
+
+                <tr class="dot">
+                    <td colspan="3" class="text-capitalize">In Words : <b style="color:coral">{{currencyUnit}}{{model.TotalAmount}}/-  :{{model.TotalAmount | NumberInWords}} only</b>. <br /><br /></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+    </div>
+    <div class="col-md-2">
+
+    </div>
+
+    <div class="col-md-6">
+        <div class="col-md-5">
+            Tender: <input type="number" style="width:100px" [(ngModel)]="model.Tender" (ngModelChange)="ChangeTenderAmount()" name="Tender" placeholder="Rupees"
+                            [disabled]="model.PaymentMode == 'credit'"
+                           value="{{model.TotalAmount}}" onClick="this.select();" />
+            <br />
+            Change/Return :<span>{{currencyUnit}}<b>{{model.Change}}</b></span>
+        </div>
+        <div class="col-md-5">
+            <div>
+                Deduct from Deposit: <input type="checkbox" [(ngModel)]="deductDeposit" ng-checked="deductDeposit" [disabled]="currentDepositBalance <= 0 || model.PaymentMode == 'credit'"
+                                            style="width:18px;height:18px;" (change)="DepositDeductCheckBoxChanged()">
+            </div>
+
+
+            <div *ngIf="deductDeposit" style="border: 1px solid;border-radius: 5px !important;padding-left: 14px;padding-bottom: 5px;">
+                <span>Deposit Deduction: {{depositDeductAmount}}</span><br />
+                <span>
+                    New Deposit Balance:
+                </span>
+                <span style="width:150px"><b style="color:blue"> {{newDepositBalance}}</b></span><br />
+            </div>
+
+
+
+        </div>
+
+    </div>
+</div>
+
+
+<div class="row" style="border: 1px solid #96969a;margin: 8px 0px 50px 0px;border-radius: 10px !important;padding: 10px 0px;">
+    <div class="col-md-3">
+
+    </div>
+    <div class="col-md-3">
+        Payment Mode:
+        <select [(ngModel)]="model.PaymentMode" style="width:100px" name="pay_mode" id="pay_mode" (change)="OnPaymentModeChange()">
+            <option value="cash">Cash</option>
+            <option value="credit" style="font-weight:bold" [disabled]="deductDeposit">CREDIT</option>
+            <option value="cheque">Cheque</option>
+            <option value="card">Smart Card</option>
+        </select>
+        <div *ngIf="model.PaymentMode != 'cash'">
+            Payment Details: <textarea [(ngModel)]="model.PaymentDetails"></textarea>
+        </div>
+    </div>
+    <div class="col-md-5">
+        <input type="submit" style="font-weight: bold;" class="btn blue btn-success" value="Print Invoice" (click)="loading=true;PostBillingTransaction();" [disabled]="loading" />
+        <button type="button" style="margin-left: 45px;" class="btn btn-danger" (click)="PrintProvisionalSlip()" [disabled]="loading">Print Provisional Slip</button>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+

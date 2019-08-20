@@ -1,0 +1,244 @@
+<div class="row">
+    <div class="col-lg-6 col-xs-12 col-sm-12">
+        <div class="portlet light bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="icon-bar-chart font-green-haze"></i>
+                    <span class="caption-subject bold uppercase font-green-haze">Daily Stock Value (last 7 days)</span>
+                    <span class="caption-helper"></span>
+                </div>
+                <div class="tools">
+                    <a href="javascript:;" class="collapse" data-original-title="" title=""> </a>
+                    <a href="javascript:;" class="fullscreen" data-original-title="" title=""> </a>
+                    <a href="javascript:;" class="remove" data-original-title="" title=""> </a>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div id="dvPHRMDailyValueTrend" class="CSSAnimationChart" style="height:400px;"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6 col-xs-12 col-sm-12">
+        <div class="portlet light bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="icon-bar-chart font-green-haze"></i>
+                    <span class="caption-subject bold uppercase font-green-haze">Counter/User Daily  Collection</span>
+                    <span class="caption-helper"></span>
+                </div>
+
+                <div class="tools">
+                    <a href="javascript:;" class="collapse" data-original-title="" title=""> </a>
+                    <a href="javascript:;" class="fullscreen" data-original-title="" title=""> </a>
+                    <a href="javascript:;" class="remove" data-original-title="" title=""> </a>
+                </div>
+            </div>
+            <div class="portlet-body" style="padding-top: 0px;">
+                <p style="background-color:#e7ecf1;padding-left:15px;">
+                    <b>Select Date</b>&nbsp;&nbsp;:&nbsp;&nbsp;<input type="date" placeholder="date" [(ngModel)]="counterDayDate" (change)="LoadAllSaleRecord()"/>
+                    <button class="btn btn-sm blue" disabled type="button" style="margin-left:15px;">
+                        <i class="fa fa-search"></i>
+                        Search
+                    </button>
+                </p>
+                <div class="row">
+                  <div class="col-md-6">
+                    <p>
+                      <b> User collection on </b>{{counterDayDate}}
+                    </p>
+                    <div *ngFor="let usr of SelectedData.UserCollection" style="padding-top:15px; padding-bottom:10px">
+                      <h4 class="label label-success">{{usr.UserName}}</h4> <b>:  {{usr.UserSale}}</b>
+                    </div>
+                    <p></p>
+                    <div style="padding-top:15px; padding-bottom:10px">
+                      <h4 class="label label-success">Total Collection</h4> <b>:  {{SelectedData.TotalSale}}</b>
+                    </div>
+                    <p></p>
+                    <div style="padding-top:15px; padding-bottom:10px">
+                      <h4 class="label label-success">Total Return</h4> <b>:  {{SelectedData.TotalReturn}}</b>
+                    </div>
+                    <p> </p>
+                    <div style="padding-top:15px; padding-bottom:10px">
+                      <h4 class="label label-success">Net Collection</h4> <b>:  {{SelectedData.NetSale}}</b>
+                    </div>
+                    <p></p>
+                    <div style="padding-top:15px; padding-bottom:10px">
+                      <h4 class="label label-success">Deposit Amount</h4> <b>:  {{SelectedData.TotalDeposit}}</b>
+                    </div>
+                    <p> </p>
+                    <div style="padding-top:15px; padding-bottom:10px">
+                      <h4 class="label label-success">Deposit Returned</h4> <b>:  {{SelectedData.DepositReturned}}</b>
+                    </div>
+                  </div>
+                    <div class="col-md-6">
+                        <p>
+                            <b> Counter collection on </b>{{counterDayDate}}
+                        </p>
+                        <div *ngFor="let cntr of counterDayCollection" style="padding-top:15px; padding-bottom:10px">
+                            <h4 class="label label-success">{{cntr.CounterName}}</h4> <b>:  {{cntr.CounterSale}}</b>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="row">
+                 
+                </div>
+
+
+            </div>
+        </div>
+
+        <div class="portlet light bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="icon-bar-chart font-green-haze"></i>
+                    <span class="caption-subject bold uppercase font-green-haze">Pending Bills</span>
+                    <span class="caption-helper"></span>
+                </div>
+                <div class="tools">
+                    <a href="javascript:;" class="collapse" data-original-title="" title=""> </a>
+                    <a href="javascript:;" class="fullscreen" data-original-title="" title=""> </a>
+                    <a href="javascript:;" class="remove" data-original-title="" title=""> </a>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <table style="font-weight:bold;width:80%;color:#006687;">
+                    <tr>
+                        <td>PROVISIONAL ITEMS</td>
+                        <td>Rs.{{overallBills.TotalProvisional}}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding-top:10px;">UNPAID INVOICES</td>
+                        <td style="padding-top:10px;">Rs.{{overallBills.TotalCredits}} </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+    </div>
+    <!--<div class="col-lg-6 col-xs-12 col-sm-12">
+        <div class="portlet light bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="icon-bar-chart font-green-haze"></i>
+                    <span class="caption-subject bold uppercase font-green-haze">Top 10 Items (by sales value)</span>
+                    <span class="caption-helper"></span>
+                </div>
+                <div class="tools">
+                    <a href="javascript:;" class="collapse" data-original-title="" title=""> </a>
+                    <a href="javascript:;" class="fullscreen" data-original-title="" title=""> </a>
+                    <a href="javascript:;" class="remove" data-original-title="" title=""> </a>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div id="dvPHRMTop10ItemsbySale" class="CSSAnimationChart" style="height:400px;"></div>
+            </div>
+        </div>
+    </div>-->
+</div>
+<!--<div class="row">
+    <div class="col-lg-6 col-xs-12 col-sm-12">
+        <div class="portlet light bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="icon-bar-chart font-green-haze"></i>
+                    <span class="caption-subject bold uppercase font-green-haze">Top 10 Items (by purchase value)</span>
+                    <span class="caption-helper"></span>
+                </div>
+                <div class="tools">
+                    <a href="javascript:;" class="collapse" data-original-title="" title=""> </a>
+                    <a href="javascript:;" class="fullscreen" data-original-title="" title=""> </a>
+                    <a href="javascript:;" class="remove" data-original-title="" title=""> </a>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div id="dvPHRMTop10ItemsByPurchase" class="CSSAnimationChart" style="height:400px;"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6 col-xs-12 col-sm-12">
+        <div class="portlet light bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="icon-bar-chart font-green-haze"></i>
+                    <span class="caption-subject bold uppercase font-green-haze">RED Zone Items in Stock</span>
+                    <span class="caption-helper"></span>
+                </div>
+                <div class="tools">
+                    <a href="javascript:;" class="collapse" data-original-title="" title=""> </a>
+                    <a href="javascript:;" class="fullscreen" data-original-title="" title=""> </a>
+                    <a href="javascript:;" class="remove" data-original-title="" title=""> </a>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div id="dvPHRMRedZoneItems" class="CSSAnimationChart" style="height:400px;"></div>
+            </div>
+        </div>
+    </div>
+</div>-->
+
+
+<div class="row">
+    <div class="col-lg-12 col-xs-12 col-sm-12">
+        <div class="portlet light bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="icon-bar-chart font-green-haze"></i>
+                    <span class="caption-subject bold uppercase font-green-haze">{{Status}} TRENDS ( Comparison )</span>
+                    <span class="caption-helper"></span>
+
+                </div>
+                <div class="tools">
+                    <a href="javascript:;" class="collapse" data-original-title="" title=""> </a>
+                    <a href="javascript:;" class="fullscreen" data-original-title="" title=""> </a>
+                    <a href="javascript:;" class="remove" data-original-title="" title=""> </a>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div class="col-lg-12">
+                    <div class="input-group">
+                        <div class="icheck-inline" [(ngModel)]="Status" ngDefaultControl>
+                            <label class="mt-checkbox mt-checkbox-outline">
+                                <input type="radio" checked="checked" (change)="LoadStatus('sales')" name="name" value="" style="width:15px;height:15px" />
+                                <span></span>Sales
+                            </label>
+
+                            <label class="mt-checkbox mt-checkbox-outline">
+                                <input type="radio" name="name" value="" (change)="LoadStatus('purchase')" style="width:15px;height:15px" />
+                                <span></span>Purchase
+                            </label>
+
+
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-12">
+                    <div class="col-lg-3">
+                        <b>From:</b>:<input type="date" placeholder="date" [(ngModel)]="salePurchaseFromDate" />
+                    </div>
+                    <div class="col-lg-3">
+                        <b class="col-lg-3">To:</b><input type="date" placeholder="date" [(ngModel)]="salePurchaseToDate" />
+                    </div>
+                    <div class="col-lg-3">
+                        <danphe-multiselect [ddl-data]="ItemList"
+                                            [placeholder-text]="'---Select Item---'"
+                                            [value-property-name]="'ItemId'"
+                                            (selected-items-list)="onChange($event)"
+                                            [display-property-name]="'ItemName'"
+                                            [single-selection]="false">
+                        </danphe-multiselect>
+                        <span class="color-red" *ngIf="checkSelectedItem==true">Please select Proper Item</span>
+                    </div>
+                    <div class="col-lg-3">
+                        <button class="btn btn-sm blue" type="button" (click)="LoadSalePurchaseGraphData()">
+                            <i class="fa fa-search"></i>
+                            Reload
+                        </button>
+                    </div>
+                </div>
+                <div id="dvSalesPurchase" class="CSSAnimationChart" style="height:400px;"></div>
+            </div>
+        </div>
+    </div>
+</div>

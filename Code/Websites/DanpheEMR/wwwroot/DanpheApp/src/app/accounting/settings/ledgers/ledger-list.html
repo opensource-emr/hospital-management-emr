@@ -1,0 +1,20 @@
+<div>
+  <a class="btn blue bordered" style="background-color:#337ab7;" name="name" (click)="AddLedger()">
+    <span class="glyphicon glyphicon-plus"></span>Create Ledger
+  </a>
+  <ledger-add [showAddPage]="showAddPage"
+              (callback-add)="CallBackAdd($event)"></ledger-add>
+  <ledger-edit [showEditPage]="showEditPage"
+               [selectedLedger]="selectedLedger"
+               (callback-add)="CallBackAdd($event)"></ledger-edit>
+</div>
+<div class="row">
+  <div class="col-md-12 col-xs-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="ledgerGridColumns" [grid-data]="ledgerList"
+                 (grid-actions)="LedgerGridActions($event)">
+    </danphe-grid>
+  </div>
+</div>
+
+
+

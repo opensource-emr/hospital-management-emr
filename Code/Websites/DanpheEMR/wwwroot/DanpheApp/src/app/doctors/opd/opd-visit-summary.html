@@ -1,0 +1,279 @@
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showSummaryPage">
+
+    <div class="portlet-body form" style="background-color:white">
+        <form class="form-horizontal">
+            <div class="form-body">
+                <div class="col-md-12">
+
+                    <div class="col-md-12 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+                        <div class="col-md-12">
+                            <div class="caption" style="color:blue;">
+                                <h4>
+                                    <span>Visit Summary</span>
+                                </h4>
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn btn-primary dropdown-toggle" type="button" [disabled]="loading" data-toggle="dropdown" aria-expanded="false">
+                                    <i class="fa fa-share-square"></i> Actions
+                                    <i class="fa fa-angle-down"></i>
+                                </button>
+                                <ul class="dropdown-menu" role="menu">
+                                    <li>
+                                        <a href="javascript:;">
+                                            <i class="fa fa-file-pdf-o" style="color:red;"></i> Download PDF
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="javascript:;">
+                                            <i class="glyphicon glyphicon-print"></i>&nbsp;&nbsp;Print
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <a style="float:right;  margin-top:-32px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                            <hr />
+
+                        </div>
+                        <div class="row" style="margin-top:5px">
+                            <div class="col-md-12 col-sm-12" style="padding-left: 0px;">
+                                <div class="col-md-6 col-sm-6" style="padding-left: 1px;">
+                                    <div class="portlet box blue-hoki">
+                                        <div class="portlet-title">
+                                            <div class="caption">
+                                                Active Problems
+                                            </div>
+
+                                        </div>
+                                        <div class="portlet-body">
+                                            <div style="position: relative; overflow: auto; width: auto; height: 200px;">
+                                                <table class="table table-striped table-hover">
+                                                    <tr *ngIf="currentPatient.Problems[0] == undefined">
+                                                        <td style="color:red;">no records found</td>
+                                                    </tr>
+                                                    <tr *ngIf="currentPatient.Problems[0] != undefined">
+                                                        <th>Problem</th>
+                                                        <th>Onset Date</th>
+
+                                                    </tr>
+                                                    <tr *ngFor="let res of currentPatient.Problems">
+                                                        <td><b>{{res.ICD10Description}}</b></td>
+                                                        <td><b>{{res.OnSetDate | DanpheDateTime:'datename':'DD.MM.YYYY'}}</b></td>
+
+                                                    </tr>
+                                                </table>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-sm-6" style="padding-left: 1px;">
+                                    <div class="portlet box blue-hoki">
+                                        <div class="portlet-title">
+                                            <div class="caption">
+                                                Last Vitals
+                                            </div>
+
+                                        </div>
+                                        <div class="portlet-body">
+                                            <div style="position: relative; overflow: auto; width: auto; height: 200px;">
+                                                <table class="table table-striped table-hover">
+                                                    <tr *ngIf="currentPatient.Vitals[0] == undefined">
+                                                        <td style="color:red;">no records found</td>
+                                                    </tr>
+                                                    <tbody *ngIf="currentPatient.Vitals[0] != undefined">
+                                                        <tr>
+                                                            <td><b>Recorded On</b></td>
+                                                            <td *ngFor="let vital of currentPatient.Vitals;">
+                                                                {{vital.CreatedOn | DanpheDateTime:'format':'DD.MM.YY HH:mm'}}
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Temperature</td>
+                                                            <td *ngFor="let vital of currentPatient.Vitals;">
+                                                                {{vital.Temperature | HasValue: vital.TemperatureUnit}}
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Pulse</td>
+                                                            <td *ngFor="let vital of currentPatient.Vitals;">
+                                                                {{vital.Pulse | HasValue:'/min'}}
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Blood Pressure</td>
+                                                            <td *ngFor="let vital of currentPatient.Vitals;">
+                                                                {{vital.BPSystolic | HasValue:'/'}}{{vital.BPDiastolic}}
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Respiratory Rate</td>
+                                                            <td *ngFor="let vital of currentPatient.Vitals;">
+                                                                {{vital.RespiratoryRatePerMin | HasValue:'/min'}}
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>SpO2</td>
+                                                            <td *ngFor="let vital of currentPatient.Vitals;">
+                                                                {{vital.SpO2 | HasValue:'/'}}{{vital.FiO2}}
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+
+                                                </table>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row" style="margin-top:5px">
+                            <div class="col-md-12 col-sm-12" style="padding-left: 0px;">
+                                <div class="col-md-6 col-sm-6" style="padding-left: 1px;">
+                                    <div class="portlet box blue-hoki">
+                                        <div class="portlet-title">
+                                            <div class="caption">
+                                                Imaging
+                                            </div>
+
+                                        </div>
+                                        <div class="portlet-body">
+                                            <div style="position: relative; overflow: auto; width: auto; height: 200px;">
+                                                <table class="table table-striped table-hover">
+                                                    <tr *ngIf="currentPatient.ImagingItemRequisitions[0] == undefined">
+                                                        <td style="color:red;">no records found</td>
+                                                    </tr>
+                                                    <tr *ngIf="currentPatient.ImagingItemRequisitions[0] != undefined">
+                                                        <th>Type</th>
+                                                        <th>Item</th>
+                                                        <th>Date</th>
+                                                        <th>Status</th>
+                                                    </tr>
+                                                    <tr *ngFor="let req of currentPatient.ImagingItemRequisitions">
+                                                        <td><b>{{req.ImagingTypeName}}</b></td>
+                                                        <td>{{req.ImagingItemName}}</td>
+                                                        <td>{{req.ImagingDate | DanpheDateTime:'datename':'DD.MM.YYYY HH:mm'}}</td>
+                                                        <td>
+                                                            <a style="text-decoration:underline;font-weight:bold;cursor:pointer;" *ngIf="req.OrderStatus=='final'" (click)="ViewImagingReport(req.ImagingRequisitionId)">View</a>
+                                                            <span *ngIf="req.OrderStatus!='final'">{{req.OrderStatus}}</span>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="col-md-6 col-sm-6" style="padding-left: 1px;">
+                                    <div class="portlet box blue-hoki">
+                                        <div class="portlet-title">
+                                            <div class="caption">
+                                                Allergies
+                                            </div>
+
+                                        </div>
+                                        <div class="portlet-body">
+                                            <div style="position: relative; overflow: auto; width: auto; height: 200px;">
+                                                <table class="table table-striped table-hover">
+                                                    <tr *ngIf="currentPatient.Allergies[0] == undefined">
+                                                        <td style="color:red;">no records found</td>
+                                                    </tr>
+                                                    <tbody *ngIf="currentPatient.Allergies[0] != undefined">
+                                                        <tr><td style="font-weight:bold;text-decoration:underline;">Medication</td></tr>
+                                                        <tr *ngFor="let alrg of currentPatient.MedAllergy" class="table-bordered">
+                                                            <td>* {{alrg.AllergenAdvRecName}}-</td>
+                                                            <td>{{alrg.Reaction}}</td>
+                                                        </tr>
+                                                        <tr *ngFor="let alrg of currentPatient.AdvReaction" class="table-bordered">
+                                                            <td>* {{alrg.AllergenAdvRecName}}-</td>
+                                                            <td>{{alrg.Reaction}}</td>
+                                                        </tr>
+                                                        <tr><td style="font-weight:bold;text-decoration:underline;">Non-medication</td></tr>
+                                                        <tr *ngFor="let alrg of currentPatient.OtherAllergy" class="table-bordered">
+                                                            <td>* {{alrg.Others}}-</td>
+                                                            <td>{{alrg.Reaction}}</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row" style="margin-top:5px">
+                            <div class="col-md-12 col-sm-12" style="padding-left: 0px;">
+                                <div class="col-md-6 col-sm-6" style="padding-left: 1px;">
+                                    <div class="portlet box blue-hoki">
+                                        <div class="portlet-title">
+                                            <div class="caption">
+                                                Medications
+                                            </div>
+
+                                        </div>
+                                        <div class="portlet-body">
+                                            <div style="position: relative; overflow: auto; width: auto; height: 200px;">
+                                                <table class="table table-striped table-hover">
+                                                    <tr *ngIf="currentPatient.MedicationPrescriptions[0] == undefined">
+                                                        <td style="color:red;">no records found</td>
+                                                    </tr>
+                                                    <tr *ngFor="let med of currentPatient.MedicationPrescriptions">
+                                                        <td><b>{{med.MedicationName}}</b>&nbsp;&nbsp;{{med.Frequency}}&nbsp;times a day</td>
+                                                        <td>&nbsp;&nbsp;&nbsp;&nbsp;Start Date- <b> {{med.CreatedOn | DanpheDateTime:'datename':'DD.MM.YYYY'}}</b></td>
+                                                    </tr>
+                                                </table>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-sm-6" style="padding-left: 1px;">
+                                    <div class="portlet box blue-hoki">
+                                        <div class="portlet-title">
+                                            <div class="caption">
+                                                Labs
+                                            </div>
+
+                                        </div>
+                                        <div class="portlet-body">
+                                            <div class="" style="position: relative; overflow: auto; width: auto; height: 200px;">
+                                                <table class="table table-striped table-hover">
+                                                    <tr *ngIf="currentPatient.LabRequisitions[0] == undefined">
+                                                        <td style="color:red;">no records found</td>
+                                                    </tr>
+                                                    <tr *ngIf="currentPatient.LabRequisitions[0] != undefined">
+                                                        <th style="width: 60%;">Test</th>
+                                                        <th style="width: 25%;">Date</th>
+                                                        <th style="width: 15%;">Result</th>
+                                                    </tr>
+                                                    <tbody>
+                                                        <tr *ngFor="let res of currentPatient.LabRequisitions ">
+                                                            <td>{{res.LabTestName}}</td>
+                                                            <td>{{res.OrderDateTime | DanpheDateTime:'datename':'DD.MM.YYYY HH:mm'}}</td>
+                                                            <td>
+                                                                <a style="text-decoration:underline;font-weight:bold;cursor:pointer;" *ngIf="res.OrderStatus=='final'" (click)="ViewLabReport(res.RequisitionId)">View</a>
+                                                                <span *ngIf="res.OrderStatus!='final'">{{res.OrderStatus}}</span>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                </div>
+            </div>
+        </form>
+
+    </div>
+
+</div>

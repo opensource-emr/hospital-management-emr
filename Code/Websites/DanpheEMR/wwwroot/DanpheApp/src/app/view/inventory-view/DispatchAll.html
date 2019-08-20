@@ -1,0 +1,64 @@
+﻿<style>
+    .bg-on {
+        font-weight: bold;
+        background-color: #f65151;
+    }
+
+    .bg-off {
+        background-color: #ffffff;
+        font-weight: bold;
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="caption">
+            <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
+            <span class="caption-subject font-blue-sharp bold uppercase">Dispatch All</span>
+        </div>
+    </div>
+</div>
+<div class="row" style="padding-top:20px;">
+    <div class="col-md-12">
+        <div class="form-control" style="background-color:whitesmoke">
+            Item Name : <b>{{itemName}}</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Available Quantity : <b>{{clonecurAvailQty}}</b><br />
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="table-responsive" style="padding-top:10px">
+            <table class="table table-striped table-hover" style="background-color:initial">
+                <thead>
+                    <tr style="font-weight:bold;text-align:center">
+                        <td>Department Name</td>
+                        <td>Require Quantity</td>
+                        <td>Dispatch Quantity</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let row of model; let i = index" style="text-align:center">
+                        <td><input name="DepartmentName" [(ngModel)]="row.DepartmentName" disabled style="width:200px " class="table-input" type="text" /></td>
+                        <td><input name="RequiredQuantity" [(ngModel)]="row.RequiredQuantity" disabled style="width:150px " class="table-input" type="text" /></td>
+                        <td>
+                            <form [formGroup]="row.DispatchItemValidator">
+                                <input [(ngModel)]="row.DispatchedQuantity" formControlName="DispatchedQuantity" style="width:150px;" class="table-input"
+                                       (ngModelChange)="UpdatingAvailQty()" name="DispatchedQuantity" type="number" min="0" value=""
+                                       [ngClass]="clonecurAvailQty<0? 'bg-on':'bg-off'" />
+                                <div *ngIf="row.DispatchedQuantity>row.RequiredQuantity" style="color:red">Dispatch quantity cannot be than required quantity</div>
+                                <div style="color:red" *ngIf="row.IsDirty('DispatchedQuantity')" [hidden]="row.IsValidCheck('DispatchedQuantity','required')">Dispatch Quantity is required</div>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-sm-offset-5 col-sm-5">
+            <input type="button" class="btn btn-success" value="Dispatch" (click)="SaveDispatch()" [disabled]="loading" />
+            <span></span>
+            <a class="btn btn-danger" (click)="Cancel()">Cancel</a>
+        </div>
+    </div>
+</div>
+
+

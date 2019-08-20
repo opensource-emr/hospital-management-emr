@@ -1,0 +1,231 @@
+﻿@using DanpheEMR.Security
+@model LoginViewModel
+
+@{
+    string message = (string)ViewData["status"];
+    string expiryNotice = (string)ViewData["ExpiryNotice"];
+}
+
+
+<meta charset="utf-8" />
+<link href="~/assets-dph/external/global/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+<style type="text/css">
+    html {
+        background-image: none;
+    }
+
+    #versionBar {
+        background-color: #212121;
+        position: fixed;
+        width: 100%;
+        height: 35px;
+        bottom: 0;
+        left: 0;
+        text-align: center;
+        line-height: 35px;
+    }
+
+    .copyright {
+        text-align: center;
+        font-size: 10px;
+        color: #CCC;
+    }
+
+    .copyright a {
+        color: #7db86d;
+        text-decoration: none;
+    }
+
+    .ui-selectmenu.small, .ui-selectmenu-menu.small {
+        width: 320px;
+    }
+
+    .username_id {
+        background-image: url(../images/icon/user_.png);
+    }
+
+    .main-wrapper {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        background: #006687; /* fallback for old browsers */
+        background: -webkit-linear-gradient(to right, #006687, #36cdff); /* Chrome 10-25, Safari 5.1-6 */
+        background: linear-gradient(to right, #006687, #36cdff);
+    }
+
+    .form-wrapper {
+        padding: 1rem;
+        background: #f7f7f7;
+        border-radius: 8px;
+    }
+
+    .zeropad {
+        padding: 0 !important;
+    }
+
+    .reduce-padding {
+        padding: 0.6rem;
+        margin: 0;
+    }
+
+    .balck {
+        color: #000;
+    }
+
+    .txt-xs {
+        font-size: 80%;
+    }
+</style>
+
+
+
+<div id="alertMessage" class="error"></div>
+@*<div class="text_success">
+        <img src="~/themes/theme-default/login/images/loadder/loader_green.gif" alt="Danphe" />
+        <span>Please wait</span>
+    </div>*@
+
+
+<div class="main-wrapper">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6  col-md-offset-3 col-xs-10  col-xs-offset-1 col-sm-6 col-sm-offset-3">
+                @*below message should be shown in UAT server so set to display block in UAT server..*@
+                <div style="width: 100%;font-weight: bold;font-size: 18px;color: #2e6da4;padding: 5px; background: #f7f7f7;
+text-align: center; margin-bottom: 15px;display: none;border-radius: 8px;">
+                    DanpheEMR TEST-SERVER <br />
+                    <span style="font-size: 15px;">Only to be used for UAT and Training Purpose</span>
+                </div>
+
+                <div class="form-wrapper">
+                    @using (Html.BeginForm("Login", "Account", FormMethod.Post))
+                    {
+
+                        <div class="form-horizontal">
+
+                            <div class="form-group text-center">
+                                <img src="~/themes/theme-default/images/danphe-logo.png" alt="Alternate Text" />
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-sm-offset-3 col-sm-8">
+                                    <h1><small class="balck">Sign in to Danphe Health</small></h1>
+                                </div>
+                            </div>
+
+                            @if (message == "login-failed")
+                            {
+                                <div class="form-group has-error">
+                                    <div class="col-sm-offset-3 col-sm-8">
+                                        <div class="alert alert-danger reduce-padding">
+                                            Invalid credentials !
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            else if (message == "logout-success")
+                            {
+                                <div class="form-group has-error">
+                                    <div class="col-sm-offset-3 col-sm-8">
+                                        <div class="alert alert-success reduce-padding">
+                                            You've been logged out successfully !
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            else if (message == "user-inactive")
+                            {
+                                <div class="form-group has-error">
+                                    <div class="col-sm-offset-3 col-sm-8">
+                                        <div class="alert alert-danger reduce-padding">
+                                            Your account has been DE-ACTIVATED ! Please contact System Administrator to activate it.
+                                        </div>
+                                    </div>
+                                </div>
+
+                            }
+
+                            @if (!string.IsNullOrEmpty(expiryNotice))
+                            {
+                                <div class="form-group has-error">
+                                    <div class="col-sm-offset-3 col-sm-8">
+                                        <div class="alert alert-danger reduce-padding">
+                                            @expiryNotice
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+
+                            <div class="form-group">
+                                <label for="username_id" class="col-sm-3 control-label">Username</label>
+                                <div class="col-sm-8">
+                                    <input class="form-control" name="Username" required type="text" id="username_id" title="Username" placeholder="Username" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="password" class="col-sm-3 control-label">Password</label>
+                                <div class="col-sm-8">
+                                    <input class="form-control" name="password" required type="Password" id="password" title="Password" placeholder="Password" />
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-sm-offset-3 col-sm-8">
+                                    <div class="checkbox zeropad">
+                                        <label class="pull-left">
+                                            @Html.CheckBoxFor(x => x.RememberMe)                                            
+                                            @Html.DisplayNameFor(m => m.RememberMe)
+                                        </label>
+                                        <a class="pull-right" href="@Url.Action("ForgotPassword","Account")" target="_blank">Forgot password?</a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-sm-offset-3 col-sm-8">
+                                    <div><span class="txt-xs">Read <a href="#" original-title="">Terms &amp; Condition</a> before signin to <b>Danphe EMR Version 1.0</b></span> </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-sm-offset-3 col-sm-3">
+                                    <button id="login" type="submit" class="btn btn-primary btn-block">Sign in</button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!--Login div-->
+<div class="clear"></div>
+<div id="versionBar">
+    <div class="copyright"> &copy; Copyright 2019  All Rights Reserved <a href="http://www.danphehealth.com/" target="_blank" title="DanpheHealth Pvt. Ltd.">DanpheHealth Pvt. Ltd.</a>  </div>
+    <!-- // copyright-->
+</div>
+<!-- Link JScript-->
+<script>
+    var doc = document.querySelector(".has-error");
+    document.getElementById('username_id').addEventListener("click", function (e) {
+        if (doc) {
+            doc.style.display = "none";
+        }
+    });
+
+    document.getElementById('password').addEventListener("click", function (e) {
+        if (doc) {
+            doc.style.display = "none";
+        }
+    });
+</script>
+<script type="text/javascript" src="~/themes/theme-default/login/js/jquery.min.js"></script>
+<script type="text/javascript" src="~/themes/theme-default/login/components/effect/jquery-jrumble.js"></script>
+<script type="text/javascript" src="~/themes/theme-default/login/components/ui/jquery.ui.min.js"></script>
+<script type="text/javascript" src="~/themes/theme-default/login/components/tipsy/jquery.tipsy.js"></script>
+<script type="text/javascript" src="~/themes/theme-default/login/components/checkboxes/iphone.check.js"></script>
+<script type="text/javascript" src="~/themes/theme-default/login/js/login.js"></script>

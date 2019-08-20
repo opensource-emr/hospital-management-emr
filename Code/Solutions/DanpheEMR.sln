@@ -1,0 +1,102 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.645
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5141BD3B-8895-41D2-81EA-0A09C9D44822}"
+	ProjectSection(SolutionItems) = preProject
+		global.json = global.json
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DanpheEMR.DalLayer", "..\Components\DanpheEMR.DalLayer\DanpheEMR.DalLayer.csproj", "{EC22CBD9-A8E4-467A-8A16-43F3E71B4290}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DanpheEMR.ServerModel", "..\Components\DanpheEMR.ServerModel\DanpheEMR.ServerModel.csproj", "{DF409EE3-C34B-4AE6-9070-3C1554D41402}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DanpheEMR.Security", "..\Components\DanpheEMR.Security\DanpheEMR.Security.csproj", "{8991B666-5859-409A-A2DF-396A5D54FD72}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DanpheEMR.Core", "..\Components\DanpheEMR.Core\DanpheEMR.Core.csproj", "{60955CC2-3E42-4C29-9C75-483D93519B6D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DanpheEMR", "..\Websites\DanpheEMR\DanpheEMR.csproj", "{F613364E-FA91-4F17-B88D-FC403FA76A3A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DanpheEMR.Sync", "..\Components\DanpheEMR.Sync\DanpheEMR.Sync.csproj", "{A645F8EC-8CC3-4984-8C6E-2513CE3307BB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DanpheEMR.Jobs", "..\Components\DanpheEMR.Jobs\DanpheEMR.Jobs.csproj", "{A3C6E7FC-8466-478E-8335-198E900ACEA7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DanpheEMR.AccTransfer", "..\Components\DanpheEMR.AccTransfer\DanpheEMR.AccTransfer.csproj", "{65F2D966-FEAA-4B2B-A818-9BAA4BD2BB3E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EC22CBD9-A8E4-467A-8A16-43F3E71B4290}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC22CBD9-A8E4-467A-8A16-43F3E71B4290}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC22CBD9-A8E4-467A-8A16-43F3E71B4290}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC22CBD9-A8E4-467A-8A16-43F3E71B4290}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF409EE3-C34B-4AE6-9070-3C1554D41402}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF409EE3-C34B-4AE6-9070-3C1554D41402}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF409EE3-C34B-4AE6-9070-3C1554D41402}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF409EE3-C34B-4AE6-9070-3C1554D41402}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8991B666-5859-409A-A2DF-396A5D54FD72}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8991B666-5859-409A-A2DF-396A5D54FD72}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8991B666-5859-409A-A2DF-396A5D54FD72}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8991B666-5859-409A-A2DF-396A5D54FD72}.Release|Any CPU.Build.0 = Release|Any CPU
+		{60955CC2-3E42-4C29-9C75-483D93519B6D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60955CC2-3E42-4C29-9C75-483D93519B6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60955CC2-3E42-4C29-9C75-483D93519B6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60955CC2-3E42-4C29-9C75-483D93519B6D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F613364E-FA91-4F17-B88D-FC403FA76A3A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F613364E-FA91-4F17-B88D-FC403FA76A3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F613364E-FA91-4F17-B88D-FC403FA76A3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F613364E-FA91-4F17-B88D-FC403FA76A3A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A645F8EC-8CC3-4984-8C6E-2513CE3307BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A645F8EC-8CC3-4984-8C6E-2513CE3307BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A645F8EC-8CC3-4984-8C6E-2513CE3307BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A645F8EC-8CC3-4984-8C6E-2513CE3307BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3C6E7FC-8466-478E-8335-198E900ACEA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3C6E7FC-8466-478E-8335-198E900ACEA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3C6E7FC-8466-478E-8335-198E900ACEA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3C6E7FC-8466-478E-8335-198E900ACEA7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{65F2D966-FEAA-4B2B-A818-9BAA4BD2BB3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{65F2D966-FEAA-4B2B-A818-9BAA4BD2BB3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{65F2D966-FEAA-4B2B-A818-9BAA4BD2BB3E}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{65F2D966-FEAA-4B2B-A818-9BAA4BD2BB3E}.Release|Any CPU.Build.0 = Debug|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EE515FDC-1D29-4CB9-A3F6-F7E5FF989C06}
+	EndGlobalSection
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 5
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = https://danphehealth.visualstudio.com/
+		SccProjectUniqueName0 = ..\\Components\\DanpheEMR.DalLayer\\DanpheEMR.DalLayer.csproj
+		SccProjectName0 = ../Components/DanpheEMR.DalLayer
+		SccAuxPath0 = https://danphehealth.visualstudio.com
+		SccLocalPath0 = ..\\Components\\DanpheEMR.DalLayer
+		SccProvider0 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccProjectUniqueName1 = ..\\Components\\DanpheEMR.ServerModel\\DanpheEMR.ServerModel.csproj
+		SccProjectName1 = ../Components/DanpheEMR.ServerModel
+		SccAuxPath1 = https://danphehealth.visualstudio.com
+		SccLocalPath1 = ..\\Components\\DanpheEMR.ServerModel
+		SccProvider1 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccProjectUniqueName2 = ..\\Components\\DanpheEMR.Security\\DanpheEMR.Security.csproj
+		SccProjectName2 = ../Components/DanpheEMR.Security
+		SccAuxPath2 = https://danphehealth.visualstudio.com
+		SccLocalPath2 = ..\\Components\\DanpheEMR.Security
+		SccProvider2 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccProjectUniqueName3 = ..\\Components\\DanpheEMR.Core\\DanpheEMR.Core.csproj
+		SccProjectName3 = ../Components/DanpheEMR.Core
+		SccAuxPath3 = https://danphehealth.visualstudio.com
+		SccLocalPath3 = ..\\Components\\DanpheEMR.Core
+		SccProvider3 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccProjectUniqueName4 = ..\\Websites\\DanpheEMR\\DanpheEMR.csproj
+		SccProjectName4 = ../Websites/DanpheEMR
+		SccAuxPath4 = https://danphehealth.visualstudio.com
+		SccLocalPath4 = ..\\Websites\\DanpheEMR
+		SccProvider4 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+	EndGlobalSection
+EndGlobal

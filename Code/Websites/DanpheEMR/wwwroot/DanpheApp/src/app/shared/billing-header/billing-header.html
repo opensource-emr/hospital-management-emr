@@ -1,0 +1,17 @@
+﻿<div *ngIf="headerDetail">
+    <div class="col-md-3">
+        <div *ngIf="'ShowLogo' | booleanParameter : 'Billing'">
+            <img class="img-responsive" style="max-height:90px;" src="../../../themes/theme-default/images/hospital-logo.PNG" />
+        </div>
+    </div>
+    <div class="col-md-6 bill-head-div">
+        <div class="text-center billing-head" style="text-align: center;font-family:sans-serif;padding-top: 5px;">
+            <span style="font-size:14px;"><strong>{{headerDetail.CustomerName}}</strong></span><br />
+            <span style="font-size:14px;">{{headerDetail.Address}}</span><br />
+            <span style="font-size:13px;">{{headerDetail.CustomerRegLabel}}</span><br />
+            <span style="font-size:13px;"> Ph No: {{headerDetail.Tel}}</span><br />
+            <!--<span style="font-size:13px;">{{headerDetail.CustomerRegLabel}}: {{headerDetail.CustomerRegNo}}, Ph No: {{headerDetail.Tel}}</span><br />-->
+        </div>
+    </div>
+    <div class="col-md-3"></div>
+</div>

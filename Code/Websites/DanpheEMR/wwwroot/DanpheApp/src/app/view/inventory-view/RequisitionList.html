@@ -1,0 +1,35 @@
+<div style="padding:2px 0px">
+  <input type="button" class="btn btn-primary" (click)="CreateRequisition()" value="Create Requisition" />
+</div>
+<div>
+ 
+    <div class="col-md-6" style="position: absolute;margin-left: 370px;z-index: 2;padding-top: 11px;">
+        <div class="input-group">
+            <div class="icheck-inline">
+                <label class="mt-checkbox mt-checkbox-outline" style="font-weight: bold;color: green;">
+                    <input checked="checked" (change)="LoadDeptwiseList('all')" name="name" style="width:15px;height:15px" type="radio" class="ng-untouched ng-pristine ng-valid">
+                    <span></span>ALL
+                </label>
+                <label class="mt-checkbox mt-checkbox-outline" style="font-weight: bold;color: green;">
+                    <input name="name" (change)="LoadDeptwiseList('complete')" style="width:15px;height:15px" type="radio" class="ng-untouched ng-pristine ng-valid">
+                    <span></span>Completed
+                </label>
+                <label class="mt-checkbox mt-checkbox-outline" style="font-weight: bold;color: green;">
+                    <input name="name" (change)="LoadDeptwiseList('pending')" style="width:15px;height:15px" type="radio" class="ng-untouched ng-pristine ng-valid">
+                    <span></span>Pending
+                </label>
+            </div>
+        </div>
+    </div>
+
+   <!-- @*-----All Item Requisition List-----*@-->
+  
+    <div>      
+        <div class="row">
+            <div class="col-lg-12 col-sm-12">
+                <danphe-grid [grid-colDefaults]="deptwiseGridColumns" [grid-data]="deptRequisitionList" (grid-actions)="DeptGridAction($event)"></danphe-grid>
+            </div>
+        </div>
+    </div>
+</div>
+

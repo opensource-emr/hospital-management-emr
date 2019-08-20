@@ -1,0 +1,328 @@
+
+<style>
+  .main-info {
+    margin-top: 31px;
+  }
+
+  table.bill-itms tr td, table.bill-itms tr th {
+    text-align: left;
+    padding: 3px 5px;
+  }
+
+  .receipt-watermark:after {
+    font-size: 1000% !important;
+    z-index: 0 !important;
+    margin-left: -500px !important;
+  }
+
+  .showPrintDate {
+    display: none;
+  }
+
+  @media print {
+    .dischargebill-header {
+      position: relative !important;
+      left: 20% !important;
+    }
+  }
+</style>
+<div class="col-md-12" id="printpage">
+  <div [ngClass]="{'receipt-watermark': receipt.IsReturned ? true : false || showReturnWaterMark ? true : false}">
+    <div *ngIf="isDuplicate" class="col-md-12">
+      <div *ngIf="dischargeBill.BillingTransactionDetail && dischargeBill.BillingTransactionDetail.PrintCount > 0">
+        <p class="no-margin" style="text-align:center;font-style:italic;font-size:13px;">COPY({{dischargeBill.BillingTransactionDetail.PrintCount}}) OF ORIGINAL RECEIPT</p>
+      </div>
+    </div>
+    <div class="dischargebill-header" style="margin-top:35px;margin-bottom:20px">
+      <billing-header></billing-header>
+    </div>
+    <div class="qr-code" style="position: absolute;right: 15px;top: 20px; margin-bottom:35px">
+      <qr-code *ngIf="showQrCode" [value]="patientQRCodeInfo" [size]="75" [backgroundAlpha]="0"></qr-code>
+    </div>
+    <div class="col-md-12 main-info" style="padding:0px;">
+
+      <!--start patient and bill details-->
+      <div class="col-md-12" style="padding:0px;border-top: 0.5px solid;border-bottom: 0.5px solid;text-align: left;">
+        <div style="margin:5px 0px 5px 0px">
+          <table style="width: 100%;">
+            <tr>
+              <td style="width: 50%;" *ngIf="dischargeBill.BillingTransactionDetail">
+                Hospital No: {{dischargeBill.PatientDetail.HospitalNo}}
+
+              </td>
+                            
+              <td style="float: right;min-width: 200px;" *ngIf="dischargeBill.BillingTransactionDetail">
+                Invoice No: {{dischargeBill.BillingTransactionDetail.FiscalYear}} - {{dischargeBill.BillingTransactionDetail.InvoiceNumber}}
+
+              </td>
+            </tr>
+            <tr>
+              <td style="width: 50%;">
+                Patient's Name: {{dischargeBill.PatientDetail.PatientName}}
+              </td>
+              <td style="float: right;min-width: 200px;" *ngIf="dischargeBill.BillingTransactionDetail">
+                Transaction Date: {{dischargeBill.BillingTransactionDetail.BillingDate | DanpheDateTime:'format':'YYYY-MM-DD'}}
+              </td>
+            </tr>
+            <tr>
+              <td style="width: 50%;">
+                Age/Sex : {{dischargeBill.PatientDetail.DateOfBirth | DanpheDateTime:'age' }}/{{dischargeBill.PatientDetail.Gender}}
+              </td>
+              <td style="float: right;min-width: 200px;" *ngIf="dischargeBill.BillingTransactionDetail">
+                Invoice Date: {{dischargeBill.BillingTransactionDetail.BillingDate | DanpheDateTime:'format':'YYYY-MM-DD'}}
+              </td>
+
+            </tr>
+            <tr>
+              <td style="width: 50%;">
+                Address: {{dischargeBill.PatientDetail.Address}}, {{dischargeBill.PatientDetail.CountrySubDivision}}
+              </td>
+              <td style="float: right;min-width: 115px;" *ngIf="dischargeBill.BillingTransactionDetail">
+                ({{dischargeBill.BillingTransactionDetail.BillingDate | nepaliDate}})
+              </td>
+            </tr>
+            <tr>
+              <td style="width: 50%;">
+                Contact No: {{dischargeBill.PatientDetail.ContactNo}}
+              </td>
+              <td style="float: right;min-width: 200px;" *ngIf="dischargeBill.PatientDetail.PANNumber">
+                Purchaser's PAN: {{dischargeBill.PatientDetail.PANNumber}}
+              </td>
+            </tr>
+            <tr>
+              <td style="width: 50%;" >
+                IP No: {{dischargeBill.PatientDetail.InpatientNo}}
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <!--end patient and bill details-->
+      <!--start: admission detail-->
+      <div class="col-md-12" *ngIf="dischargeBill.AdmissionDetail"
+           style="padding:0px;border-top: 0.5px solid;border-bottom: 0.5px solid;text-align: left;">
+        <div style="margin:5px 0px 5px 0px">
+          <table style="width: 100%;">
+            <tr>
+              <td style="width: 50%;">DOA: {{dischargeBill.AdmissionDetail.AdmissionDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+              <td *ngIf="billType=='invoice'" style="float: right;min-width: 200px;">DOD: {{dischargeBill.AdmissionDetail.DischargeDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+            </tr>
+            <tr>
+              <td style="width: 50%;">Admitting Doctor: {{dischargeBill.AdmissionDetail.AdmittingDoctor}}</td>
+              <td style="float: right;min-width: 200px;"> Room Category: {{dischargeBill.AdmissionDetail.RoomType}}</td>
+            </tr>
+            <tr>
+              <td style="width: 50%;">
+                Department: {{dischargeBill.AdmissionDetail.Department}}
+              </td>
+              <td style="float: right;min-width: 200px;">
+                Duration of stay: {{dischargeBill.AdmissionDetail.LengthOfStay}}
+              </td>
+            </tr>
+            <tr>
+              <td style="width: 50%;" *ngIf="dischargeBill.AdmissionDetail.ProcedureType">
+                Procedure: {{dischargeBill.AdmissionDetail.ProcedureType}}
+              </td>
+            </tr>
+          </table>
+
+        </div>
+      </div>
+      <!--end: admission detail-->
+      <!--start: billing details-->
+      <div class="col-md-12" style="display:none" *ngIf="dischargeBill.BillingTransactionDetail">
+        <p style="text-align: center;">Method of payment: <span style="text-transform:capitalize;"> {{dischargeBill.BillingTransactionDetail.PaymentMode }}</span></p>
+      </div>
+      <div class="col-md-12">
+        <p style="text-align:center">
+          <b *ngIf="billType=='estimation'">Provisional Bill</b>
+          <b *ngIf="billType=='invoice'">Invoice</b>
+        </p>
+        <p style="text-align:center;"><b>Discharge Bill</b></p>
+      </div>
+      <div class="clear footer"></div>
+
+      <!--start: summary/breakup component-->
+
+      <discharge-bill-summary *ngIf="showDischargeBillSummary" [discharge-bill]="dischargeBill" [billType]="billType"></discharge-bill-summary>
+
+      <discharge-bill-breakup *ngIf="showDischargeBillBreakup" [discharge-bill]="dischargeBill" [billType]="billType"></discharge-bill-breakup>
+      <!--end: summary/breakup component-->
+
+
+
+      <div class="bill-summ-div" style="width: 100%;display: table; margin-top: 10px;border-bottom: 1px solid;">
+        <div style="width: 50%;text-align: left;float: left;">
+          <table class="bil-summ" style="width:100%;float:left;text-align:left;">
+            <tr style="border-top:0px;">
+              <td style="width:130px">
+                In Words:
+              </td>
+              <td>
+                {{dischargeBill.TotalAmount | NumberInWords | uppercase }} <span *ngIf="dischargeBill.TotalAmount !=0">ONLY</span>
+              </td>
+            </tr>
+            <tr *ngIf="dischargeBill.BillingTransactionDetail">
+              <td style="width:130px">Payment Mode:</td>
+              <td>{{dischargeBill.BillingTransactionDetail.PaymentMode}}</td>
+            </tr>
+            <tr *ngIf="dischargeBill.BillingTransactionDetail != null">
+              <td  *ngIf="dischargeBill.BillingTransactionDetail.OrganizationName != null && dischargeBill.BillingTransactionDetail.OrganizationName != '' && dischargeBill.BillingTransactionDetail.OrganizationName != undefined  && 'CreditOrganization' | booleanParameter : 'Billing'" style="width:auto">Credit Organization:</td>
+              <td>{{dischargeBill.BillingTransactionDetail.OrganizationName}}</td>
+            </tr>
+            <tr class="showPrintDate">
+              <td style="width:130px">Print Date:</td>
+              <td>{{printDate}}</td>
+            </tr>
+            <tr *ngIf="dischargeBill.BillingTransactionDetail">
+              <td style="width:130px">User:</td>
+              <td>{{dischargeBill.BillingTransactionDetail.User}}</td>
+            </tr>
+            <tr *ngIf="dischargeBill.BillingTransactionDetail">
+              <td style="width:130px">Remarks:</td>
+              <td>{{dischargeBill.BillingTransactionDetail.Remarks}}</td>
+            </tr>
+          </table>
+        </div>
+        <div style="width: 50%;float: left;">
+          <table class="bil-summ" style="width:100%; float: right;text-align: right;">
+            <tr style="border-top: 0px;">
+              <td>
+                <strong>Gross Total</strong>
+              </td>
+              <td>
+                {{dischargeBill.SubTotal | number: "1.2-2"}}
+              </td>
+            </tr>
+            <tr *ngIf="dischargeBill.DiscountAmount>0">
+              <td>
+                <strong>Discount</strong>
+              </td>
+              <td>
+                {{dischargeBill.DiscountAmount | number: "1.2-2"}}
+              </td>
+            </tr>
+            <tr *ngIf="dischargeBill.TaxableAmount">
+              <td><strong>Net Total</strong></td>
+              <td>{{dischargeBill.TaxableAmount}}</td>
+            </tr>
+            <tr *ngIf="dischargeBill.TaxTotal">
+              <td><strong>{{taxLabel}} </strong></td>
+              <td>{{dischargeBill.TaxTotal}}</td>
+            </tr>
+            <tr style="border-bottom: 0px;height:40px">
+              <td><strong>Total Amount</strong></td>
+              <td>{{dischargeBill.TotalAmount | number: "1.2-2"}}</td>
+            </tr>
+            <tr style="border-bottom: 0px;" *ngIf="TotalAmountInUSD!=0">
+              <td>
+                <strong>In USD</strong>
+                <div style="color:indianred;font-size:smaller">{{1 | currency }} = {{ExchangeRate | currency:'NPR'}}</div>
+              </td>
+              <td>{{TotalAmountInUSD | number | currency}}</td>
+            </tr>
+            <tr style="border-bottom: 0px;">
+              <td><strong>Deposited Amount</strong></td>
+              <!--incase of final/duplicate bill-->
+              <td *ngIf="dischargeBill.BillingTransactionDetail">{{dischargeBill.BillingTransactionDetail.DepositBalance | number: "1.2-2"}}</td>
+              <!--incase of estimation bill-->
+              <td *ngIf="!dischargeBill.BillingTransactionDetail">{{dischargeBill.DepositBalance | number: "1.2-2"}}</td>
+            </tr>
+            <!--finalduplicate bill-->
+
+            <tr style="border-bottom: 0px;" *ngIf="dischargeBill.BillingTransactionDetail && dischargeBill.BillingTransactionDetail.DepositBalance - dischargeBill.BillingTransactionDetail.TotalAmount >=0">
+              <td><strong>To be Returned</strong></td>
+              <td>{{dischargeBill.BillingTransactionDetail.DepositBalance - dischargeBill.BillingTransactionDetail.TotalAmount  | number: "1.2-2"}}</td>
+            </tr>
+            <tr style="border-bottom: 0px;" *ngIf="dischargeBill.BillingTransactionDetail && dischargeBill.BillingTransactionDetail.DepositBalance - dischargeBill.BillingTransactionDetail.TotalAmount < 0">
+              <td><strong>Balance To Be Paid</strong></td>
+              <td>{{dischargeBill.BillingTransactionDetail.TotalAmount - dischargeBill.BillingTransactionDetail.DepositBalance  | number: "1.2-2"}}</td>
+            </tr>
+            <!--estimation billing-->
+            <tr style="border-bottom: 0px;" *ngIf="!dischargeBill.BillingTransactionDetail && dischargeBill.DepositBalance - dischargeBill.TotalAmount >=0">
+              <td><strong>To be Returned</strong></td>
+              <td>{{dischargeBill.DepositBalance - dischargeBill.TotalAmount  | number: "1.2-2"}}</td>
+            </tr>
+            <tr style="border-bottom: 0px;" *ngIf="!dischargeBill.BillingTransactionDetail && dischargeBill.DepositBalance - dischargeBill.TotalAmount < 0">
+              <td><strong>Balance To Be Paid</strong></td>
+              <td>{{dischargeBill.TotalAmount - dischargeBill.DepositBalance  | number: "1.2-2"}}</td>
+            </tr>
+          </table>
+        </div>
+
+      </div>
+
+      <div class="bill-summ-div" style="width: 100%;display: table; margin-top: 10px;padding-bottom:20px;" *ngIf="dischargeBill && dischargeBill.DepositDetails && dischargeBill.DepositDetails.length">
+        <strong style="float:left">Deposit Detail:</strong>
+        <br />
+        <table class="bill-itms" style="width:60%">
+          <thead>
+            <tr>
+              <th>Receipt No.</th>
+              <th>Date</th>
+              <th>Deposit Type</th>
+              <th>Amount</th>
+              <th>Balance</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of dischargeBill.DepositDetails; let i=index">
+              <td *ngIf="row.ReceiptNum">{{row.ReceiptNo}}</td>
+              <td *ngIf="!row.ReceiptNum"></td>
+              <td>{{row.Date | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</td>
+              <td>{{row.DepositType}}</td>
+              <td>{{row.Amount  | number: "1.2-2"}}</td>
+              <td>{{row.Balance  | number: "1.2-2"}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <!--end: billing details-->
+    </div>
+    <div class="clear"></div>
+  </div>
+  <div class="row">
+    <div class="bold" style="margin-top:5px;" *ngIf="TotalAmountInUSD">
+      In Words [USD]: {{TotalAmountInUSD | number | NumberInWords | titlecase}}.
+    </div>
+    <div *ngIf="billStatus=='unpaid'">
+      Note:
+      Payment after a week of the invoice date will bear interest at 12% of the Total Amount.
+      <div *ngIf="TotalAmountInUSD">
+        Rate of Exchange shall be the prevailing selling rate of USD fixed by Nepal Rastra Bank on the date of Payment.
+      </div>
+    </div>
+  </div>
+  <div style="width: 100%;display: table; margin-top: 10px;padding-bottom:20px;">
+    <strong style="float:left"></strong>
+    <br />
+    <table style="width:100%">
+      <thead>
+        <tr>
+          <th>Prepared By</th>
+          <th>Verified By</th>
+          <th>Approved By</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="noPrint" style="padding-bottom:20px;">
+    <button class="btn purple" (click)="ToggleView()">
+      {{showDischargeBillSummary ? 'Details' : 'Summary'}}
+    </button>
+    <button class="btn blue" (click)="print()">
+      Print Receipt
+      <i class="glyphicon glyphicon-print"></i>
+    </button>
+  </div>
+</div>
+
+

@@ -1,0 +1,14 @@
+﻿
+<div>
+    <input type="button" class="btn btn-primary" (click)="showAddTerms()" value="Add Terms & Conditions" />
+    <terms-add [showAddPage]="showAddPage"
+               [selected-list]="selTermslist"
+               (callback-add)="CallBackAdd($event)"
+               ></terms-add>
+</div>
+<div class="row">
+    <div class="col-md-12 col-xs-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="TermsGridColumns" [grid-data]="allTermsLists" (grid-actions)="TermsGridActions($event)">
+        </danphe-grid>
+    </div>
+</div>

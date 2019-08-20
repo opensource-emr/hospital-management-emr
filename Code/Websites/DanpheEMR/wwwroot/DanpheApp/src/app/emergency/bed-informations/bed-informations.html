@@ -1,0 +1,27 @@
+﻿<div class="table-responsive">
+    <table class="table table-bordered table-hover  table-condensed" id="bedFeature">
+        <thead>
+            <tr style="background-color: #599be0; color: white;">
+                <th>Bed Feature</th>
+                <th>Occupied</th>
+                <th>Vacant</th>
+                <th>Total</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let row1 of bedFeature; let i=index">
+                <td>{{row1.BedFeatureName}}</td>
+                <td>{{row1.Occupied}}</td>
+                <td>{{row1.Vacant}}</td>
+                <td>{{row1.Total}}</td>
+            </tr>
+            <tr *ngFor="let row of totaloccupid; let i=index">
+                <td><b>Total</b></td>
+                <td><b>{{row.Occupied}}</b></td>
+                <td><b>{{row.Vacant}}</b></td>
+                <td><b>{{row.Total}}</b></td>
+            </tr>
+        </tbody>
+    </table>
+</div>

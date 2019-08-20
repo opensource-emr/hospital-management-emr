@@ -1,0 +1,56 @@
+
+<div *ngFor="let group of dischargeBill.BillItemSummary;"  [ngClass]="{'discharge-breakup': group.ItemGroupName =='DOCTOR VISIT CHARGES' || group.ItemGroupName =='BED CHARGES' || group.ItemGroupName =='ADMISSION CHARGE'}">
+  <strong style="float:left">{{group.ItemGroupName}}</strong>
+    
+    <table class="table table-striped table-hover" style="width: 100%;border-bottom: 1px solid;">
+        <thead>
+            <tr>
+                <th>Sn.</th>
+                <th *ngIf="group.ItemGroupName !='LAB Charges'">Date</th>
+                <th *ngIf="group.ItemGroupName !='DOCTOR VISIT CHARGES'">Particular(s)</th>
+                <th *ngIf="group.ItemGroupName =='DOCTOR VISIT CHARGES'">Doctor Name</th>
+                <th *ngIf="group.ItemGroupName !='BED CHARGES'" style="text-align: right;">Unit</th>
+                <th *ngIf="group.ItemGroupName =='BED CHARGES'" style="text-align: right;">No of Days</th>
+                <th *ngIf="group.ItemGroupName !='DOCTOR VISIT CHARGES' && group.ItemGroupName !='BED CHARGES'" style="text-align: right;">Amount</th>
+                <th *ngIf="group.ItemGroupName =='DOCTOR VISIT CHARGES'" style="text-align: right;">Doctor Charge</th>
+                <th *ngIf="group.ItemGroupName =='BED CHARGES'" style="text-align: right;">Bed Charge</th>
+                <th style="text-align: right;">Gross Total</th>
+                <th style="text-align: right;">Discount</th>
+                <th style="text-align: right;">Total</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr *ngFor="let row of group.Items; let i=index">
+              <td style="text-align: left;">{{i+1}}</td>
+                <td *ngIf="group.ItemGroupName !='LAB Charges'" style="text-align: left;">{{row.BillDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                <td *ngIf="group.ItemGroupName !='DOCTOR VISIT CHARGES'" style="text-align: left;">
+                    {{row.ItemName}} 
+                    <!-- <span *ngIf="row.IsEdited==1" style=" color:red; font-weight:bold;">(edited)</span> -->
+                    <div *ngIf="row.DoctorName">
+                        <span style="font-size: 12px;font-weight: bold;">
+                            ({{row.DoctorName}})
+                        </span>
+                    </div>
+                </td>
+                <td *ngIf="group.ItemGroupName =='DOCTOR VISIT CHARGES'" style="text-align: left;">{{row.DoctorName}}</td>
+
+                <td style="text-align: right;">{{row.Quantity}}</td>
+                <td style="text-align: right;">{{row.Price | number: "1.2-2"}}</td>
+                <td style="text-align: right;">{{row.SubTotal | number: "1.2-2"}}</td>
+                <td style="text-align: right;">{{row.DiscountAmount | number: "1.2-2"}}</td>
+                <td style="text-align: right;">{{row.TotalAmount | number: "1.2-2"}}</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td *ngIf="group.ItemGroupName !='LAB Charges'"></td>
+                <td style="text-align: right;"><b>Gross Total</b></td>
+                <td style="text-align: right;"><b>{{group.Quantity}}</b></td>
+                <td style="text-align: right;"><b>{{group.TotalPrice | number: "1.2-2"}}</b></td>
+                <td style="text-align: right;"><b>{{group.SubTotal | number: "1.2-2"}}</b></td>
+                <td style="text-align: right;"><b>{{group.DiscountAmount | number: "1.2-2"}}</b></td>
+                <td style="text-align: right;"><b>{{group.TotalAmount |  number: "1.2-2"}}</b></td>
+            </tr>
+        </tbody>
+    </table>
+</div>

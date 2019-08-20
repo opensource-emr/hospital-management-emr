@@ -1,0 +1,34 @@
+<div class="row" style="padding-left:40px;">
+  <div class="col-md-12">
+    <div class="col-md-2 col-xs-12" style="padding-top:20px;">
+      <select class="form-control" [(ngModel)]="rangeType" (change)="RangeTypeOnChange()" style="width:auto;">
+        <option value="today">Today</option>
+        <option value="thisMonth">This Month</option>
+        <option value="last3Months">Last 3 Months</option>
+        <option value="last6Months">Last 6 Month</option>
+        <option value="currFiscalYear">Current Fiscal Year</option>
+        <option value="custom">Custom Date</option>
+      </select>
+    </div>
+    <div *ngIf="showLabel" class="col-md-8 col-xs-12" style="padding-top:20px;">
+      <label *ngIf="!isOutOfFiscalYearDate" class="control-label col-md-3" style="margin:7px"><b>From Date : {{fromDate}}</b></label>
+      <label *ngIf="isOutOfFiscalYearDate" class="control-label col-md-6" style="margin:7px"><b>Fiscal Yeart Start Date (From Date): {{fromDate}}</b></label>
+      <label class="control-label col-md-3" style="margin:7px"><b>To Date : {{toDate}}</b></label>
+    </div>
+    <div *ngIf="showSelector" class="col-md-10 col-xs-12">
+      <div class="col-md-3">
+        <label style="margin:7px">From Date<b>:</b></label>
+        <danphe-date-picker [(ngModel)]="fromDate" [ngModelOptions]="{standalone: true}" ngDefaultControl [CalendarTypes]="'np,en'">
+        </danphe-date-picker>
+      </div>
+      <div class="col-md-3">
+        <label style="margin:7px">To Date<b>:</b></label>
+        <danphe-date-picker [(ngModel)]="toDate" [ngModelOptions]="{standalone: true}" ngDefaultControl [CalendarTypes]="'np,en'">
+        </danphe-date-picker>
+      </div>
+      <div class="col-md-3" style="padding-top:20px;">
+        <input style="width:100px;height:40px;font-weight:bold;" type="button" class="blue btn" value="Load" (click)="ChangeCustomDate()" />
+      </div>
+    </div>
+  </div>
+</div>

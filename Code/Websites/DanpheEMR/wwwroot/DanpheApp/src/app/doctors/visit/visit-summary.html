@@ -1,0 +1,109 @@
+
+
+<div class="row"  *ngIf="isTemplateLoaded">
+    <div *ngIf="dynTempService.templateRenderMode !='view'">
+        <button (click)="SaveTemplateData('save')" class="btn blue btn-sm">Save Data</button>
+        <button (click)="SaveTemplateData('submit')" class="btn blue btn-sm">Submit Data</button>
+        <!--<button (click)="dynTempService.GetTemplateQuestions(template)">Get Questions</button>-->
+    </div>
+    <!--<hr />-->
+    <div class="col-md-12 col-lg-12" style="padding-left: 0px;">
+        <div class="portlet box green-meadow" *ngFor="let qnr of template.Qnairs;let i=index;">
+            <div class="portlet-title">
+                <div class="tools" style="float:left;margin-right: 12px;">
+                    <a href="javascript:;" class="collapse" data-original-title="" title=""> </a>
+                </div>
+                <div class="caption">
+                    <b style="font-size: large;text-decoration: underline;"> {{qnr.Text}}</b>
+                </div>
+                <div class="tools" *ngIf="dynTempService.templateRenderMode !='view'">
+                    <div class="actions">
+                        <div class="btn-group">
+                            <a class="btn btn-sm green" href="javascript:;" data-toggle="dropdown" aria-expanded="false">
+                                <i class="fa fa-cog"></i>
+                                <!--<i class="fa fa-angle-down"></i>-->
+                            </a>
+                            <ul class="dropdown-menu pull-right">
+                                <li>
+                                    <a (click)="ShowVisitList(qnr.QnairId)" style="color:green;">
+                                        <i class="fa fa-reply"></i> Load from previous record
+                                    </a>
+                                </li>
+                                <li>
+                                    <a (click)="dynTempService.ResetAnsOfQnair(template,qnr.QnairId)" style="color:green;">
+                                        <i class="fa fa-refresh"></i> Reset Answers
+                                    </a>
+                                </li>
+
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="portlet-body" style="display: block;padding-left:8px;">
+                <div class="row">
+                    <div *ngFor="let qtn of qnr.ChildQuestions;let i=index;" class="col-md-12 col-lg-12">
+                        <div class="col-md-1 col-lg-1" style="padding: 0px; width: 34px;">
+                            {{i+1}}.
+                        </div>
+                        <div class="col-md-11 col-lg-11" style="padding: 0px;">
+                            <danphe-qtn-hrc ngDefaultControl [(question)]="qnr.ChildQuestions[i]" [dataSets]="definedDataSets"></danphe-qtn-hrc>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+<div *ngIf="showVisitList">
+    <!--Model Box Starting Here-->
+    <div class="popup portlet box" style="margin-left:300px;width:600px;height:auto">
+        <!--Model box Heder Start-->
+        <div class="portlet-title">
+            <!--Model box Title Start-->
+            <div class="caption">
+                <span>Previous Visit List</span>
+            </div>
+            <!--Model Box Title End-->
+            <!--Model Box Header Buttons Start-->
+            <div class="tools">
+                <i class="remove btn btn-danger" (click)="showVisitList=false">x</i>
+            </div>
+            <!--Model Box Heder Buttons End-->
+        </div>
+        <!--Model Box Header End-->
+        <div class="portlet-body form" style="background-color:white">
+            <!--Model Box Body Start-->
+            <div *ngIf="visitList.length">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr style="background-color:lightgray">
+                                <th>Date</th>
+                                <th>Doctor</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let visit of visitList">
+                                <td>{{visit.VisitDateTime | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</td>
+                                <td> {{visit.DoctorName}}</td>
+                                <td>
+                                    <i class="btn blue fa-align-right" (click)="SelectVisit(visit)">Load from this visit</i>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!--Model Box Body End-->
+        </div>
+    </div>
+
+
+</div>

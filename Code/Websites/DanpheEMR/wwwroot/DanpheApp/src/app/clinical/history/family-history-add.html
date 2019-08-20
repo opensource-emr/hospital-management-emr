@@ -1,0 +1,56 @@
+﻿<div *ngIf="showFamilyHistoryAddBox && CurrentFamilyHistory.FamilyHistoryValidator" class="prob-entry" style="padding: 5px 0px 15px 0px; background: #006687;">
+    <form [formGroup]="CurrentFamilyHistory.FamilyHistoryValidator" 
+          class="form-horizontal">
+        <div class="cstm-close" (click)="CloseAddUpdateFamilyHistoryBox()">
+            <a><i class="fa fa-close"></i> </a>
+        </div>
+        <h3 class="cstm-add-heading">{{CurrentFamilyHistory.FamilyProblemId ? 'Update' : 'Add'}} Family History</h3>
+
+        <div class="form-group cstm-form-group">
+            <label class="control-label cstm-control-label col-md-4">Search Problem<b class="color-red">  *</b><b style="float:right;">:</b></label>
+            <div class="row autocomplete-item col-md-8" *ngIf="ICD10List && ICD10List.length>0">
+                <input danphe-auto-complete
+                       class="form-control"
+                       [(ngModel)]="icd10Selected"
+                       [source]="ICD10List"
+                       formControlName="ICD10Code"
+                       [list-formatter]="ICDListFormatter"
+                       placeholder="ICD10"
+                       display-property-name="ICD10Description"
+                       value-property-name=null
+                       (valueChanged)="AssignSelectedICD()"
+                       onClick="this.select();"
+                       match-formatted="true"
+                       [grid-sort]="'ICD10Description'"
+                       max-num-list="20" />
+                <span class="color-red font-sm" style="color:red"
+                      *ngIf="CurrentFamilyHistory.IsDirty('ICD10Code')" [hidden]="CurrentFamilyHistory.IsValidCheck('ICD10Code','required')">
+                    Select ICD10 Code
+                </span>
+            </div>
+        </div>
+        <div class="form-group cstm-form-group">
+            <label  class="control-label cstm-control-label col-md-4">Relationship<b class="color-red">  *</b><b style="float:right;">:</b></label>
+            <div class="col-md-8">
+                <input type="text" class="form-control cstm-form-control"
+                       formControlName="Relationship"
+                       [(ngModel)]="CurrentFamilyHistory.Relationship" />
+                <span class="error-msg" *ngIf="CurrentFamilyHistory.IsDirty('Relationship')" [hidden]="CurrentFamilyHistory.IsValidCheck('Relationship','required')">Mention Relationship.</span>
+                <span class="error-msg" *ngIf="CurrentFamilyHistory.IsDirty('Relationship')" [hidden]="CurrentFamilyHistory.IsValidCheck('Relationship','maxlength')">Length should not exceed 20 characters.</span>
+
+            </div>
+        </div>
+        <div class="form-group cstm-form-group">
+            <label  class="control-label cstm-control-label col-md-4">Note<b style="float:right;">:</b></label>
+            <div class="col-md-8">
+                <textarea type="text" style="width:240px;height:95px" maxlength="1000"
+                          [(ngModel)]="CurrentFamilyHistory.Note" [ngModelOptions]="{standalone: true}"></textarea>
+                <!--<span class="error-msg" *ngIf="CurrentFamilyHistory.IsDirty('Note')" [hidden]="CurrentFamilyHistory.IsValidCheck('Note','maxlength')">Note should not exceed 200 characters</span>-->
+
+            </div>
+        </div>
+        <div class="row">
+            <input type="button" class="btn btn-primary" style="background: #374150; margin:30px" [disabled]="!(CurrentFamilyHistory.IsValid())" name="name" value="{{CurrentFamilyHistory.FamilyProblemId ? 'Update Problem' : 'Add Problem'}}" (click)="SaveFamilyHistory()" />
+        </div>
+    </form>
+</div>

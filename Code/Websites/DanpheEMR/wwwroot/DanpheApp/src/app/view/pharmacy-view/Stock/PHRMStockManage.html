@@ -1,0 +1,111 @@
+﻿<style>
+    /*This class for background border red */
+    .bg-on {
+        font-weight: bold;
+        border: solid 1px red;
+    }
+
+    /*This class for */
+    .bg-off {
+        font-weight: bold;
+    }
+
+    .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+        padding: 1px !important; /*for table td padding */
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="caption">
+            <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
+            <span class="caption-subject font-blue-sharp bold uppercase">Stock Manage</span>
+        </div>
+    </div>
+</div>
+<div class="row" style="padding-top:5px;">
+    <div class="col-md-12" style="background-color:whitesmoke">
+        <div class="form-control" style="background-color:whitesmoke">
+            <b>Item Name : {{this.itemName}}</b>
+            <br />
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="table-responsive" style="padding-top:10px">
+            <table class="table table-striped table-hover" style="background-color:initial">
+                <thead>
+                    <tr style="font-weight:bold;text-align:left">
+                        <td></td>
+                        <td>Batch No.</td>
+                        <td>Item Price</td>
+                        <td>Received Qty</td>
+                        <td>Current Qty</td>
+                        <td>Modified Qty</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let row of stockDetails; let i = index" style="text-align:left">
+                        <td><a (click)="DeleteRowUpper(i)"><i class="btn btn-danger fa">X</i></a></td>
+                        <td><input [(ngModel)]="row.BatchNo" disabled style="width:150px" class="table-input" name="BatchNo" type="text" /></td>
+                        <td><input [(ngModel)]="row.GRItemPrice" disabled style="width:150px" class="table-input" name="GRItemPrice" type="text" /></td>           
+                        <td><input [(ngModel)]="row.ReceivedQuantity" disabled style="width:150px" class="table-input" name="ReceivedQty" type="text" /></td>
+                        <td><input [(ngModel)]="row.curtQuantity" disabled style="width:150px" class="table-input" name="curQuantity" type="text" /></td>
+                        <td>
+                            <input [(ngModel)]="row.modQuantity" (ngModelChange)="CalculationAll()"
+                                   [ngClass]="row.modQuantity > row.ReceivedQuantity || row.modQuantity == row.curtQuantity  ? 'bg-on' : 'bg-off'"
+                                   style="width:150px" class="table-input" name="ModQuantity" type="number" min="0" /><br />
+                            <span class="color-red font-sm" *ngIf="row.ReceivedQuantity<row.modQuantity">Physical Qty Should not be greater then Received Qty</span>
+                            <span class="color-red font-sm" *ngIf="row.modQuantity==row.curtQuantity">Physical Qty and Current Qty is Same</span>
+                        </td>
+
+                    </tr>
+                    <tr *ngFor="let row of zeroStockDetails; let i = index" style="text-align:left">
+                        <td><a (click)="DeleteRow(i)"><i class="btn btn-danger fa">X</i></a></td>
+                        <td>
+                          <input [(ngModel)]="row.BatchNo" disabled style="width:150px" class="table-input" name="BatchNo" type="text" />
+                        </td>
+                        <td><input [(ngModel)]="row.GRItemPrice" disabled style="width:150px" class="table-input" name="GRItemPrice" type="text" /></td>
+                        <td><input [(ngModel)]="row.ReceivedQuantity" disabled style="width:150px" class="table-input" name="ReceivedQty" type="text" /></td>
+                        <td><input [(ngModel)]="row.curtQuantity" disabled style="width:150px" class="table-input" name="curQuantity" type="text" /></td>
+                        <td>
+                            <input [(ngModel)]="row.modQuantity" (ngModelChange)="CalculationAll()"
+                                   [ngClass]="row.modQuantity > row.ReceivedQuantity  ? 'bg-on' : 'bg-off'"
+                                   style="width:150px" class="table-input" name="ModQuantity" type="number" min="0" /><br />
+                            <span class="color-red font-sm" *ngIf="row.ReceivedQuantity<row.modQuantity">Physical Qty Should not be greater then Received Qty</span>
+
+                        </td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="table-responsive">
+            <table class="col-sm-offset-3 col-sm-5" style="margin-top:10px">
+                <tr>
+                    <td>Current Total Available : </td>
+                    <td>
+                        <input [(ngModel)]="currQuantity" [ngModelOptions]="{standalone: true}"
+                               disabled class="form-control" name="currQuantity" type="number" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>Modified Total Available : </td>
+                    <td>
+                        <input [(ngModel)]="moddQuantity" [ngModelOptions]="{standalone: true}"
+                               disabled class="form-control" name="moddQuantity" type="number" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-sm-offset-5 col-sm-5" style="margin-top:10px">
+            <input type="button" class="btn btn-success" value="Update Stock" (click)="UpdateStock()" [disabled]="loading" />
+            <span></span>
+            <input type="button" class="btn btn-danger" (click)="Cancel()" value="Cancel" [disabled]="loading">
+            <span></span>
+        </div>
+    </div>
+</div>

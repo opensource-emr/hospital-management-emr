@@ -1,0 +1,63 @@
+
+<!-- START LABEL STATS -->
+<div class="row">
+
+    <div class="col-lg-4 col-md-3 col-sm-6 col-xs-12">
+        <div class="dashboard-stat dashboard-stat-v2 blue">
+            <div class="visual">
+                <i class="fa fa-flask"></i>
+            </div>
+            <div class="details">
+                <div class="number">
+                    <span data-counter="counterup">{{stats.TotalRegisteredPatients}}</span>
+                </div>
+                <div class="desc"> Total Emergency Patients Registered Today</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4 col-md-3 col-sm-6 col-xs-12">
+        <div class="dashboard-stat dashboard-stat-v2 red">
+            <div class="visual">
+                <i class="fa fa-calendar"></i>
+            </div>
+            <div class="details" style="color: white;width: 100%;padding-left: 42px;font-size:15px;">
+                <div style="text-align: center;font-weight: bold;font-size: 17px;margin-bottom:10px;margin-top:5px;">
+                    Total Patients Triaged Today : {{stats.TotalTriagedPatients}}
+                </div>
+                <div>
+                    <div class="left">
+                        <span>Mild : {{stats.MildPatients}} </span><br />
+                        <span>Moderate : {{stats.ModeratePatients}} </span><br />
+                        <span>Critical : {{stats.CriticalPatients}} </span><br />
+                    </div>                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-3 col-sm-6 col-xs-12">
+        <div class="dashboard-stat dashboard-stat-v2 green">
+            <div class="visual">
+                <i class="fa fa-tasks"></i>
+            </div>
+            <div class="details" style="color: white;width: 100%;padding-left: 42px;font-size:15px;">
+                <div style="text-align: center;font-weight: bold;font-size: 17px;margin-bottom:10px;margin-top:5px;">
+                    Total Patients Finalized Today : {{stats.TotalFinalizedPatients}}
+                </div>
+                <div>
+                    <div class="left">
+                        <span>LAMA : {{stats.LAMAPatients}} </span><br />
+                        <span>Admitted : {{stats.AdmittedPatients}} </span><br />
+                        <span>Transferred : {{stats.TransferredPatients}} </span><br />
+                    </div>
+                    <div class="right">
+                        <span>Discharged : {{stats.DischargedPatients}} </span><br />
+                        <span>Death : {{stats.DeathPatients}} </span><br />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="clearfix"></div>
+

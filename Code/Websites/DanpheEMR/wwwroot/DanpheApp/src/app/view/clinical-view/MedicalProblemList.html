@@ -1,0 +1,123 @@
+﻿
+<div>
+    <div class="form-body">
+        <div id="ActiveMedical">
+            <div class="col-md-12">
+                <div class="row">
+
+                   <!-- @*--List-- *@-->
+                    <div class="col-md-7">
+                        <div class="row">
+                          <!--  @*--Active Medical List-- *@-->
+                            <div class="portlet cstm-portlet portlet-with-collapse">
+                                <div class="portlet-title cstm-pt-title">
+                                    <div class="cstm-portlet-caption">
+                                        Active Medical Problems
+                                    </div>
+                                    <div class="cstm-action" (click)="btnActiveProblem()">
+                                        <a class="cstm-add">
+                                            <i class="fa fa-plus-circle"></i> Add New
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="cstm-portlet-body">
+                                    <table class="table table-responsive table-striped table-hover table-bordered" id="editable-sample">
+                                        <thead>
+                                            <tr>
+                                                <th>ICD10 Description</th>
+                                                <th>Date</th>
+                                                <th>Notes</th>
+                                                <th>Is Resolved</th>
+                                                <th>Edit</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr class="tr-block" *ngFor="let add of problems; let i = index">
+                                                <td>({{add.ICD10Code}}){{add.ICD10Description}}</td>
+                                                <td>{{add.OnSetDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                                                <td class="text-center">
+                                                    <div class="tooltip">
+                                                        <i class="fa fa-sticky-note-o"></i>
+                                                        <span class="tooltiptext ttptextup">{{add.Note}}</span>
+                                                    </div>
+                                                </td>
+                                                <td class="text-center">
+                                                    <div class="icheck-inline" style="margin-top: 0px;">
+                                                        <label class="mt-checkbox mt-checkbox-outline">
+                                                            <input type="checkbox" id="Resolved"
+                                                                   (click)="Resolved(add,i)"><span style="background: #fff; border: 1px solid #b3b2b9;"></span>
+                                                        </label>
+                                                    </div>
+                                                </td>
+
+                                                <td>
+                                                    <a (click)="Edit(add,i)" class="bs-glyphicon-class btn yello" style="padding: 0px;"><span class="glyphicon glyphicon-edit"></span>Edit</a>
+                                                </td>
+                                            </tr>
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                          <!--  @* --Past Medical List-- *@-->
+                            <div class="portlet cstm-portlet portlet-with-collapse">
+                                <div class="portlet-title cstm-pt-title">
+                                    <div class="cstm-portlet-caption">
+                                        Past Medical Problems
+                                    </div>
+                                    <div class="cstm-action">
+                                        <a class="cstm-add" (click)="ShowPastProblemBox()">
+                                            <i class="fa fa-plus-circle"></i> Add New Past Problem
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="cstm-portlet-body">
+                                    <table class="table table-responsive table-striped table-hover table-bordered" id="editable-sample">
+                                        <thead>
+                                            <tr>
+                                                <th>ICD10 Description</th>
+                                                <th>On Set Date</th>
+                                                <th>Resolved Date</th>
+                                                <th>Set As Active</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+
+                                            <tr class="tr-block" *ngFor="let pastMed of pastMedicals;let i=index">
+                                                <td>({{pastMed.ICD10Code}}){{pastMed.ICD10Description}}</td>
+                                                <td>{{pastMed.OnSetDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                                                <td>{{pastMed.ResolvedDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                                                <td><a style="cursor:pointer" (click)="SetAsActive(pastMed)">Set as Active</a></td>
+                                            </tr>
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                   <!-- @*-------------Add---------------*@-->
+                    <div class="col-md-5">
+                        <active-medical-add [selected-active-medical]="selectedActiveMedical"
+                                            [show-active-medical-add]="addActiveProblemBox"
+                                            (callback-addupdate)="CallBackAddActiveUpdate($event)"></active-medical-add>
+
+                      <!--  @* --Past Medical Add-- *@-->
+                        <past-medical-add [selected-past-medical]="selectedPastMedical"
+                                          [show-past-medical-add]="addPastProblemBox"
+                                          (callback-addupdate)="CallBackAddPastUpdate($event)"></past-medical-add>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+
+
+</div>
+
+

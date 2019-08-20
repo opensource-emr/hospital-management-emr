@@ -1,0 +1,50 @@
+<div class="row">
+    <form class="form-horizontal">
+        <div class="form-body">
+            <div class="col-md-12">
+
+                <div class="row" style="width: 100%; margin-bottom: 25px;">
+                    <div class="col-md-5 col-xs-12">
+                        <div class="form-group">
+                            <label class="control-label col-md-3">From Date<b style="float:right;">:</b></label>
+                            <div class="col-md-9">
+                                <danphe-date-picker [(ngModel)]="fromDate" [ngModelOptions]="{standalone: true}" ngDefaultControl [CalendarTypes]="'en,np'">
+                                </danphe-date-picker>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="col-md-5 col-xs-12">
+                        <div class="form-group">
+                            <label class="control-label col-md-3">To Date<b style="float:right;">:</b></label>
+                            <div class="col-md-9">
+                              <danphe-date-picker [(ngModel)]="toDate" [ngModelOptions]="{standalone: true}" ngDefaultControl [CalendarTypes]="'en,np'">
+                              </danphe-date-picker>
+                            </div>
+                        </div>
+
+                    </div>
+                      <div class="col-md-2 col-xs-12">
+                          <div class="form-group">
+                              <button class="btn blue" type="button" (click)="GetGoodsReceiptList()">
+                                <i class="fa fa-search"></i>
+                                Show Details
+                              </button>
+                          </div>
+                      </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<a class="btn btn-primary btn-sm" (click)="inventoryService.POId = null" [routerLink]="'../GoodsReceiptAdd'">Create Good Receipt</a>
+
+<div class="row">
+    <div class="col-lg-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="goodsreceiptGridColumns"
+                     [grid-data]="grListfiltered"
+                     (grid-actions)="GoodsReceiptGridAction($event)">
+        </danphe-grid>
+    </div>
+</div>

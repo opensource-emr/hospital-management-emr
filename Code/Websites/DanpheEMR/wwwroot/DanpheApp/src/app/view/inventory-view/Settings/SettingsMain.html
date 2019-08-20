@@ -1,0 +1,18 @@
+<base href="/">
+<div class="row">
+  <ul class="nav nav-tabs">
+    <li><a [routerLink]="'currency-list'" [routerLinkActive]="'a-tab-active'">Currency</a></li>
+    <li><a [routerLink]="'company-list'" [routerLinkActive]="'a-tab-active'">Company</a></li>
+    <li><a [routerLink]="'packagingtype-list'" [routerLinkActive]="'a-tab-active'">PackagingType</a></li>
+    <li><a [routerLink]="'unitofmeasurement-list'" [routerLinkActive]="'a-tab-active'">Unit of Measurement</a></li>
+    <li><a [routerLink]="'accounthead-list'" [routerLinkActive]="'a-tab-active'">AccountHead</a></li>
+    <!-- <li><a [routerLink]="'itemcategory-list'" [routerLinkActive]="'a-tab-active'">ItemsCategory List</a></li> -->
+    <li><a [routerLink]="'item-list'" [routerLinkActive]="'a-tab-active'">Items</a></li>
+    <li><a [routerLink]="'vendor-list'" [routerLinkActive]="'a-tab-active'">Vendors</a></li>
+    <li><a [routerLink]="'terms-list'" [routerLinkActive]="'a-tab-active'">Terms</a></li>
+    <li><a [routerLink]="'sub-category-list'" [routerLinkActive]="'a-tab-active'">Sub Category</a></li>
+  </ul>
+</div>
+
+<router-outlet>
+</router-outlet>

@@ -1,0 +1,12 @@
+﻿
+<a class="btn btn-primary btn-sm" (click)="AddDesignation()">Add Designation</a>
+<!-- ag7_mig_fix:  [routerLink]="'./Designation-add'" :removed for ag7 error -->
+<designation-add [showAddPage]="showAddPage" [designation]="Designation" (callback-add)="pushToList($event)" (close-popUp)="closePopUp($event)"></designation-add>
+<div class="row">
+    <div class="col-md-12 col-xs-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="DesignationGridColumns" [grid-data]="DesignationList" (grid-actions)="DesignationGridActions($event)">
+        </danphe-grid>
+    </div>
+</div>
+
+

@@ -1,0 +1,119 @@
+<div class="col-md-12 noPadding " style="border-bottom:1px dotted ">
+
+  <div class="col-md-12 col-xs-12 noPadding " style="margin-bottom: 10px;margin-left: -44px;">
+    <div class="col-md-6 col-xs-12 noPadding">
+      <div class="form-group">
+        <label class="control-label"><b>Supplier</b><b class="color-red"> *</b><b style="float:right;">:</b></label>
+        <form [formGroup]="QuotationAdd.QuotationValidator">
+          <div>
+            <input danphe-auto-complete class="form-control col-md-11" [(ngModel)]="QuotationAdd.SelectedItem"
+              [source]="VendorList" [list-formatter]="myVendorListFormatter" placeholder="Supplier Name"
+              display-property-name="VendorName" value-property-name=null max-num-list="10" name=" VendorName"
+              formControlName="VendorId" (valueChanged)="SelectVendorFromSearchBox(QuotationAdd.SelectedItem)"
+              onclick="this.select();" style="width: 417px;" />
+          </div>
+          <div class="color-red font-sm"
+            [hidden]="QuotationAdd.IsValidCheck('VendorId','required') || !(QuotationAdd.IsDirty('VendorId'))">
+            SupplierName is required</div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="col-md-5" style="padding:10px;float:left">
+  <div class="col-md-6">
+    <div *ngIf="showViewFiles">
+      <table class="table table-striped table-hover" style="background-color:initial; width:450px; padding:0px">
+        <thead>
+          <tr>
+            <th><b>FileName</b></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let file of ViewFileList;let i=index; ">
+            <td (click)="SelectViewFiles(i)"><a>{{file.FileName}}</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="col-md-10" *ngIf="showImage">
+    <div class="col-md-2" style="color:blue;display:flex;">
+      <h3>
+        <span> {{popupImageData.FileName}}</span>
+      </h3>
+      <i style="margin-top:19px; margin-left:144px; height: 33px;" class="btn btn-sm btn-default pull-right"
+        (click)="closeFiles()" title="Cancel"><span class="fa fa-arrow-left fa-sm"></span></i>
+    </div>
+    <div>
+      <img [src]="'data:image/jpeg;base64,'+popupImageData.FileBinaryData" type="application/jpeg" width="500"
+        height="400" />
+    </div>
+  </div>
+  <div class="col-md-10" *ngIf="showPDF">
+    <div class="col-md-2" style="color:blue;display:flex;">
+      <h3>
+        <span> {{popupImageData.FileName}}</span>
+      </h3>
+      <i style="margin-top:19px; margin-left:144px; height: 33px;" class="btn btn-sm btn-default pull-right"
+        (click)="closeFiles()" title="Cancel"><span class="fa fa-arrow-left fa-sm"></span></i>
+    </div>
+    <div>
+      <embed id="ShowPDF" width="500" height="400" type="application/pdf" [src]="url ">
+    </div>
+  </div>
+
+</div>
+<div class="col-md-7">
+  <div class="table-responsive">
+    <table class="table table-striped table-hover" style="background-color:initial;margin-top:10px">
+      <thead>
+        <tr>
+          <th></th>
+          <th><b>Item Name</b></th>
+          <th></th>
+          <th><b>Price(<small>per unit</small>)</b></th>
+          <th><b>Description</b></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of QuotationAdd.quotationItems; let i = index">
+          <td style="width:20px"><a (click)="DeleteRow(i)"><i class="btn btn-danger fa">X</i></a></td>
+          <td style=" width: 120px;
+          position: absolute;">            
+            <div>
+              <input danphe-auto-complete class="form-control col-md-11" [(ngModel)]="row.ItemName"
+                [source]="RFQItemsList" [list-formatter]="myListFormatter" placeholder="Item Name"
+                display-property-name="ItemName" value-property-name=null
+                (valueChanged)="SelectItemFromSearchBox(row.ItemName,i)" max-num-list="10" onclick="this.select();"
+                match-formatted="true" no-match-found-text="click ? to add new item" />
+            </div>         
+          </td>
+          <td style="vertical-align:middle;width:20px">
+            <a *ngIf="!row.ItemId" class="fa fa-question" (click)="AddItemPopUp(i)"
+              title="Unable to find item ? Click to add to ItemName"></a>
+          </td>
+          <td>            
+            <input style="width:80px;" [(ngModel)]="row.Price" class="form-control" placeholder="Price" />           
+          </td>
+          <td>
+            <textarea [(ngModel)]="row.Description" class="form-control" placeholder="Description" name="Description"
+              type="text" style="width:250px;margin:0px;padding:0px">
+             </textarea>
+          </td>
+          <td>
+            <a (click)="AddRowRequestOnClick(i)">
+              <i class="glyphicon glyphicon-plus btn btn-success"></i>
+            </a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="col-sm-offset-7 col-sm-7" style="margin-bottom:20px">
+    <input type="button" class="btn btn-success" (click)="SaveQuotation()" value="Request" />
+    <span></span>
+  </div>
+</div>

@@ -1,0 +1,158 @@
+<style>
+      .mt-checkbox {
+            margin-bottom: 0px;
+            padding-left: 25px;
+      }
+
+      .icheck-inline {
+            margin-left: 10px;
+      }
+
+ @media print {
+	input[type=checkbox] , label { display: none; }
+	input[type=checkbox]:ng-checked ~ div { display: block; }  }
+
+</style>
+
+<div class="container" *ngIf="showBirthCertificate"
+      style="width: 100%;padding-top: 50px; padding:0px;font-family: 'Times New Roman', Times, serif;">
+      <div style="text-align:right;">Note: Print the birth certificate from view summary.</div>
+      <div id="PrintPage">
+            <div style="padding:0px;">
+                  <table style="padding-top: 50px;width: 100%;">
+                        <tr>
+                              <td><b><i>Fiscal Year :
+                                                <u>{{this.CurrentCertificate.FiscalYearName}}</u></i> </b></td>
+                              <td style="text-align:right"><b><i>Certificate No :
+                                                <u>{{CurrentBaby.CertificateNumber}}</u></i></b></td>
+                        </tr>
+                  </table>
+            </div>
+
+            <div class="col-sm-12"
+                  style="text-align: center; padding: 20px;font-family: 'Times New Roman', Times, serif;">
+                  <h3><b><i>Birth Report</i></b></h3>
+            </div>
+            <br>
+            <br>
+            <div>
+                  <div class="input-group">
+                        <div class="icheck-inline" ngDefaultControl   *ngIf="!IsPrint"
+                              style="display: inline-block;">
+                              This is to certify that a live {{CurrentBaby.Sex}} (Male/Female/Other) baby was born on
+                              <u><b>{{CurrentBaby.BirthDate | nepaliDate}}</b></u>
+                              (<u><b><i>{{CurrentBaby.BirthDate}}AD</i></b></u>, YYYY/MM/DD) at
+                              <u><b>{{CurrentBaby.BirthTime}}</b></u>(24 hours)
+                              with baby weight <u><b>{{CurrentBaby.WeightOfBaby}}</b></u> grams. The type of birth was
+                              <li *ngFor="let itm of BirthTypeList; let i=index" style="display: inline-block;">
+                                    <label class="mt-checkbox mt-checkbox-outline" style="padding-right: 15px;">
+                                          <input class="zoomcheckbox" [(ngModel)]="itm.IsSelected" name="IsSelected" width="100" type="checkbox" ng-checked="itm.IsSelected=true"
+                                    (ngChange)="CheckBirthType(itm)"> <span></span>{{itm.type}}
+                                    </label>
+                              </li>. According to hospital/facility record the mother is Ms
+                              <u><b>{{CurrentBaby.MotherName}}</b></u> and father is Mr
+                              <u><b>{{CurrentBaby.FathersName}}</b></u>
+                              resident of country <u><b>{{PatientAddress.Country}} </b></u>district
+                              <u><b>{{PatientAddress.CountryDivision}}</b></u> village/municipality
+                              <u><b>{{PatientAddress.Street}}</b></u> tole <u><b>{{PatientAddress.Zip}}</b></u>.
+                        </div>
+                   <div *ngIf="IsPrint" class="icheck-inline" ngDefaultControl 
+                        style="display: inline-block;">
+                        &nbsp;   &nbsp; &nbsp;  This is to certify that a live {{CurrentBaby.Sex}} (Male/Female/Other) baby was born on
+                        <u><b>{{CurrentBaby.BirthDate | nepaliDate}}</b></u>
+                        (<u><b><i>{{CurrentBaby.BirthDate}}AD</i></b></u>, YYYY/MM/DD) at
+                        <u><b>{{CurrentBaby.BirthTime}}</b></u>(24 hours)
+                        with baby weight <u><b>{{CurrentBaby.WeightOfBaby}}</b></u> grams. The type of birth was  <u><b>
+                        {{CurrentCertificate.BirthType}}</b></u>. According to hospital/facility record the mother is Ms 
+                        <u><b>{{CurrentBaby.MotherName}}</b></u> and father is Mr
+                        <u><b>{{CurrentBaby.FathersName}}</b></u>
+                        resident of country <u><b>{{PatientAddress.Country}} </b></u>district
+                        <u><b>{{PatientAddress.CountryDivision}}</b></u> village/municipality
+                        <u><b>{{PatientAddress.Street}}</b></u> tole <u><b>{{PatientAddress.Zip}}</b></u>.
+                  </div>
+                        <div style="padding-top:50px;">
+
+                              <table  style="width: 100%;">
+                                    <tr>
+                                          <th>
+                                                <b style="font-size: large;"><i>Issued By</i></b>
+                                          </th>
+                                          <th>
+                                                <b style="font-size: large;"><i>Hospital/Health Facility</i></b>
+                                          </th>
+                                    </tr>
+                                    <tr>
+                                          <td *ngIf="IsPrint">
+                                                Signature : ______________________<br>
+                                                Name : <b><u>{{IssuedByName}}</u></b><br>
+                                                Designation :<span *ngIf="!IssuedByDesignation">______________________</span> <b><u>{{IssuedByDesignation}}</u></b>
+                                          </td>
+                                          <td *ngIf="!IsPrint">
+                                                <input danphe-auto-complete class="form-control"
+                                                      [(ngModel)]="IssuedSignatory" [source]="providerList"
+                                                      [list-formatter]="myListFormatter" placeholder="Issued By"
+                                                      display-property-name="FullName" value-property-name=null
+                                                      (valueChanged)="OnChangeIssuedSignatory()" min-chars="0"
+                                                      max-num-list="10" [ngModelOptions]="{standalone: true}" />
+                                          </td>
+                                          <td>
+                                                Name: <u><b>{{HospitalDetails.hospitalName}}</b></u> <br>
+                                                Address: <u><b>{{HospitalDetails.address}}</b> </u>
+                                          </td>
+                                    </tr>
+                              </table>
+                        </div>
+                        <div style="padding-top:50px;">
+                              <table style="width: 100%;">
+                                    <tr>
+                                          <th> <b style="font-size: large;"><i>Certified By</i></b></th>
+                                          <th></th>
+                                    </tr>
+                                    <tr>
+                                          <td *ngIf="IsPrint">
+                                                Signature : ______________________<br>
+                                                Name : <b><u>{{CertifiedByName}}</u></b><br>
+                                                Designation :<span *ngIf="!CertifiedByDesignation">______________________</span>  <b><u>{{CertifiedByDesignation}}</u></b>
+                                          </td>
+                                          <td *ngIf="!IsPrint">
+                                                <input danphe-auto-complete class="form-control"
+                                                      [(ngModel)]="CertifiedSignatory" [source]="providerList"
+                                                      [list-formatter]="myListFormatter" placeholder="Certified By"
+                                                      display-property-name="FullName" value-property-name=null
+                                                      (valueChanged)="OnChangeCertifiedSignatory()" min-chars="0"
+                                                      max-num-list="10" [ngModelOptions]="{standalone: true}" />
+                                          </td>
+                                          <td>
+                                                <div class="container"
+                                                      style="width:250px;height:80px;border:1px solid;"></div>
+                                          </td>
+                                    </tr>
+                              </table>
+                        </div>
+                        <div class="col-md-12" style="padding-bottom: 50px;padding-top: 50px;">
+                              <div class="col-md-4"></div>
+                              <div class="col-md-4">
+                                    <div class="form-actions hidden-print">
+                                          <input type="button" style="width: 100px;" class="btn btn-primary"
+                                                (click)="Save()" value="Update" *ngIf="update==false" />
+                                          <input type="button" style="width: 100px;" class="btn btn-primary"
+                                                (click)="UpdateCertificate()" value="Update"
+                                                *ngIf="update==true && IsPrint==false" />
+                                          <input type="button" style="width: 100px;height: 30px;"
+                                                class="btn btn-primary hidden-print" (click)="Print()" value="Print"
+                                                *ngIf="IsPrint==true" />
+                                    </div>
+                              </div>
+                        </div>
+                  </div>
+
+
+
+            </div>
+            <div>
+
+            </div>
+
+
+      </div>
+</div>

@@ -1,0 +1,245 @@
+﻿
+<style>
+    .padding-set {
+        padding: 2px 3px !important;
+    }
+
+    .control-label {
+        font-size: 13px;
+    }
+
+    .form-control {
+        font-size: 13px;
+    }
+
+    div.col-md-7 {
+        padding: 0px;
+    }
+
+    div.col-md-5 {
+        padding: 0px;
+    }
+
+    div.col-md-4 {
+        padding: 0px;
+    }
+
+    div.col-md-3 {
+        padding: 0px;
+    }
+
+    .mt-checkbox {
+        font-size: 13px;
+    }
+
+    div.col-xs-12 {
+        padding-left: 7px;
+        margin-left: 0px;
+        margin-right: 0px;
+    }
+
+    div.col-md-12 {
+        padding-left: 7px;
+        margin-left: 0px;
+        margin-right: 0px;
+    }
+
+    /*This class for background border red */
+    .bg-on {
+        font-weight: bold;
+        border: solid 1px red;
+    }
+
+    /*This class for */
+    .bg-off {
+        font-weight: bold;
+    }
+
+    .no-margin {
+        margin: 0px;
+    }
+</style>
+<div class="hide-main">
+    <div class="hide-cover" [hidden]="!divDisable"></div>
+    <div class="row" style="margin-left: -2px;">
+        <div class="form-body">
+            <div class="caption">
+                <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
+                <span class="caption-subject font-blue-sharp bold uppercase">Register New Outdoor Patient</span>
+            </div>
+            <div id="phrmPatientation">
+                <div class="col-md-12">
+                    <div class="row">
+                        <form [formGroup]="currentPatient.PHRMPatientValidator">
+                            <div class="col-md-12 col-xs-12">
+                                <div class="form-group">
+                                    <div class="col-md-3 padding-set">
+                                        <input class="form-control" maxlength="30" type="text" formControlName="FirstName" [(ngModel)]="currentPatient.FirstName"
+                                               required value=""
+                                               placeholder="First Name  *" />
+
+                                        <span class="color-red font-sm" *ngIf="currentPatient.IsDirty('FirstName')" [hidden]="currentPatient.IsValidCheck('FirstName','required')"> First Name is required</span>
+                                        <span class="color-red font-sm" *ngIf="currentPatient.IsDirty('FirstName')" [hidden]="currentPatient.IsValidCheck('FirstName','maxlength')"> First Name must be less than 30 characters</span>
+                                    </div>
+                                    <div class="col-md-3 padding-set">
+                                        <input class="form-control" maxlength="30" type="text" formControlName="MiddleName" [(ngModel)]="currentPatient.MiddleName"
+                                               value=""
+                                               placeholder="Middle Name" />
+                                        <span class="color-red font-sm" *ngIf="currentPatient.IsDirty('MiddleName')" [hidden]="currentPatient.IsValidCheck('MiddleName','maxlength')">Middle Name must be less than 30 characters</span>
+                                    </div>
+                                    <div class="col-md-3 padding-set">
+                                        <input class="form-control" maxlength="30" type="text" formControlName="LastName" [(ngModel)]="currentPatient.LastName"
+                                               required value=""
+                                               placeholder="Last Name *" />
+                                        <span class="color-red font-sm" *ngIf="currentPatient.IsDirty('LastName')" [hidden]="currentPatient.IsValidCheck('LastName','required')"> Last Name is required</span>
+                                        <span class="color-red font-sm" *ngIf="currentPatient.IsDirty('LastName')" [hidden]="currentPatient.IsValidCheck('LastName','maxlength')"> Last Name must be less than 30 characters</span>
+                                    </div>
+                                    <div class="col-md-3 padding-set">
+                                        <input class="form-control" maxlength="100" type="text" formControlName="Address" [(ngModel)]="currentPatient.Address"
+                                               value=""
+                                               placeholder="Address  *" />
+                                        <span class="color-red font-sm" *ngIf="currentPatient.IsDirty('Address')" [hidden]="currentPatient.IsValidCheck('Address','required')">Address is required</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-12 col-xs-12">
+                                <div class="form-group">
+                                    <div class="col-md-3 padding-set">
+                                        <div class="col-md-3" style="padding-left:0px;padding-right: 0px;">
+                                            <input class="form-control" type="number" min="0" max="150" name="Age" (focusout)="CalculateDob();"
+                                                   [(ngModel)]="currentPatient.Age" placeholder="Age" style="padding-right:0px;" formControlName="Age" />
+                                        </div>
+                                        <div class="col-md-9" style="padding-right: 0px; padding-left: 4px;">
+                                            <div class="input-group">
+                                                <div class="icheck-inline">
+                                                    <label class="no-margin" style="color:red;">
+                                                        <span></span>*
+                                                    </label>
+                                                    <label class="mt-radio mt-radio-outline no-margin">
+                                                        <input name="AgeUnit" type="radio" value="Y" [(ngModel)]="currentPatient.AgeUnit" [ngModelOptions]="{standalone: true}" (focusout)="CalculateDob();">
+                                                        <span></span>Yrs
+                                                    </label>
+
+                                                    <label class="mt-radio mt-radio-outline no-margin">
+                                                        <input name="AgeUnit" type="radio" value="M" [(ngModel)]="currentPatient.AgeUnit" [ngModelOptions]="{standalone: true}" (focusout)="CalculateDob();">
+                                                        <span></span>Mnths
+                                                    </label>
+
+                                                    <label class="mt-radio mt-radio-outline no-margin">
+                                                        <input name="AgeUnit" type="radio" value="D" [(ngModel)]="currentPatient.AgeUnit" [ngModelOptions]="{standalone: true}" (focusout)="CalculateDob();">
+                                                        <span></span>Days
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <span class="color-red font-sm" *ngIf="currentPatient.IsDirty('Age')" [hidden]="currentPatient.IsValidCheck('Age','required')">Age is required</span>
+                                    </div>
+                                    <div class="col-md-3 padding-set">
+                                        <div class="input-group">
+                                            <div class="icheck-inline">
+                                                <label class="mt-checkbox mt-checkbox-outline">
+                                                    <input type="radio" value="Male" [(ngModel)]="currentPatient.Gender" formControlName="Gender">
+                                                    <span></span>Male
+                                                </label>
+
+                                                <label class="mt-checkbox mt-checkbox-outline">
+                                                    <input type="radio" value="Female" [(ngModel)]="currentPatient.Gender" formControlName="Gender">
+                                                    <span></span>Female
+                                                </label>
+                                                <label class="mt-checkbox mt-checkbox-outline">
+                                                    <input type="radio" value="Others" [(ngModel)]="currentPatient.Gender" formControlName="Gender">
+                                                    <span></span>Other
+                                                </label>
+                                                <label class="no-margin" style="color:red;">
+                                                    <span></span>*
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 padding-set">
+                                        <input class="form-control" maxlength="11" type="tel" [(ngModel)]="currentPatient.PhoneNumber" [ngModelOptions]="{standalone: true}" name="PhoneNumber" placeholder="contact number" />
+                                        <span class="color-red font-sm" *ngIf="currentPatient.IsDirty('Gender')" [hidden]="currentPatient.IsValidCheck('Gender','required')">Gender is required</span>
+                                    </div>
+                                    <div class="col-md-3 padding-set">
+                                        <input type="button" class="btn blue" style="margin-left:10px;" name="registerpatient" value="Register Patient" (click)="RegisterPatient()" [disabled]="loading" />
+                                    </div>
+                                </div>
+
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!--Model Box Starting Here-->
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showExstingPatientList">
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="col-md-12">
+                <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+                </div>
+                <div class="col-md-8 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+                    <div class="col-md-12">
+                        <b>
+                            <u style="color:#bd8111">Alert ! we have found existing Patient(s) with similar information.</u>
+                            <a style="float:right;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                        </b>
+                        <hr />
+                    </div>
+                    <br />
+
+                    <div class="col-md-12">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr style="background-color:lightgray">
+                                        <th>Name</th>
+                                        <th>Hospital No.</th>
+                                        <th>Gender</th>
+                                        <th>Phone Number</th>
+                                        <th>Birth Date</th>
+                                        <th>Address</th>
+                                        <th>Patient Type</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let patient of matchingPatientList;let i = index">
+                                        <td>{{patient.FirstName}}&nbsp;{{patient.MiddleName}}&nbsp;{{patient.LastName}}</td>
+                                        <td> {{patient.PatientCode}}</td>
+                                        <td> {{patient.Gender}}</td>
+                                        <td> {{patient.PhoneNumber}}</td>
+                                        <td> {{patient.DateOfBirth}}</td>
+                                        <td> {{patient.Address}}</td>
+                                        <td>{{ patient.IsOutdoorPat==true?'Indoor':'Outdoor'}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-md-12" style="padding-bottom: 18px;">
+                        <b>IF YOU'RE SURE THAT THIS IS NEW PATIENT, CLICK &nbsp; &nbsp;&nbsp; &nbsp;<span class="glyphicon glyphicon-hand-right" style="font-size:25px;vertical-align: middle;"></span> </b> &nbsp; &nbsp;
+                        <button type="button" class="btn btn-primary btn-sm" (click)="PostPatientRegistration()" [disabled]="loading1">
+                            <i class="glyphicon glyphicon-plus"> </i>&nbsp;&nbsp;Add as New Patient
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+
+
+
+
+

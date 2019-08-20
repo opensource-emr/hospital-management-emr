@@ -1,0 +1,63 @@
+<!--FOR EDIT AND FILL MODE-->
+<div *ngIf="renderMode =='fill' || renderMode =='edit'">
+    <span>
+        <input *ngIf="repeatRows" type="number" [(ngModel)]="repeatCount" (change)="RepeatCountOnChange()">
+    </span>
+    <br />
+    <div class="table-responsive" style="padding-top:10px">
+        <table *ngIf="repeatCount>0" style="background-color:initial">
+            <tr>
+                <th *ngIf="showNums">
+                </th>
+                <th *ngFor="let hdr of tableHeaders">
+                    {{hdr}}
+                </th>
+            </tr>
+            <tr *ngFor="let obj of tableJson;let i=index;">
+                <td *ngIf="showNums" style="padding-right: 10px;">
+                    {{i+1}}.
+                </td>
+                <td *ngFor="let hdr of tableHeaders;" style="padding:3px 5px 0px 0px;">
+                    <input type="text" style="width:70px;" [(ngModel)]="obj[hdr]" (change)="TableValuesChanged()">
+                </td>
+                <td>
+                    <i *ngIf="repeatCount>1" (click)="deleteRow(i)" title="delete this row"
+                       class="fa fa-remove btn btn-danger btn-xs" style="padding-right: 5px;">
+
+                    </i>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+
+
+<!--FOR VIEW MODE-->
+<div *ngIf="renderMode=='view'">
+    <span>
+        <b>{{repeatCount}}</b>
+    </span>
+    <br />
+    <div class="table-responsive" style="padding-top:10px">
+        <table class="table table-bordered" *ngIf="repeatCount>0" style="background-color:initial">
+            <tr>
+                <th *ngIf="showNums" style="padding:0px">
+                    S.No.
+                </th>
+                <th *ngFor="let hdr of tableHeaders" style="padding:0px">
+                    {{hdr}}
+                </th>
+            </tr>
+            <tr *ngFor="let obj of tableJson;let i=index;">
+                <td *ngIf="showNums" style="padding:0px;">
+                    {{i+1}}.
+                </td>
+                <td *ngFor="let hdr of tableHeaders;" style="padding:0px;">
+                    {{obj[hdr]}}
+                </td>
+
+            </tr>
+        </table>
+    </div>
+</div>

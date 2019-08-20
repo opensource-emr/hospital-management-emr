@@ -1,0 +1,62 @@
+﻿<div *ngIf="!showGridList">
+    <button (click)="Back()" class="btn blue">Back To Transferred Patient List</button>
+</div>
+
+<div *ngIf="showOrderPopUp" (click)="ParentOfPopUpClicked($event)" class="triaged-patient-orders cstm-popup-holder" style="padding: 55px;">
+    <div class="cstm-slidefromtop">
+        <div style="width: 100%; height: auto;">
+            <er-ward-billing (sendBackERPatientOrderData)="ReturnFromOrderAction($event)" [selectedPatient]="selectedEmergencyPatient"></er-ward-billing>
+        </div>
+    </div>
+</div>
+
+<div *ngIf="showAddVitals" (click)="ParentOfPopUpClicked($event)" class="cstm-popup-holder" style="padding: 55px;">
+    <div id="cstmSlideFromTop" class="cstm-slidefromtop">
+        <div style="width: 100%; height: auto;">
+            <vitals-add [showVitalList]="showVitalsList"  [visitIdfromADT]="visitId" [showVitalAddBox]="showAddVitals" (callback-add)="ReturnFromOrderAction($event)"></vitals-add>
+        </div>
+    </div>
+</div>
+
+<div *ngIf="showERPatRegistration" (click)="ParentOfPopUpClicked($event)" class="cstm-popup-holder" style="padding: 55px;">
+    <div id="cstmSlideFromTop" class="cstm-slidefromtop">
+        <div style="width: 100%; height: auto;">
+            <er-patient-registration (sendBackERPatientData)="ReturnFromPatRegistrationEdit($event)"
+                                     [currentPatientToEdit]="selectedERPatientToEdit"></er-patient-registration>
+        </div>
+    </div>
+</div>
+
+<div *ngIf="showSummaryAdd" (click)="ParentOfPopUpClicked($event)" class="cstm-popup-holder" style="padding: 55px; background: #151414a8 !important;">
+    <div class="cstm-slidefromtop">
+        <div style="width: 100%; height: auto;background: #fff;padding: 0px 20px;">
+            <discharge-summary-add [selectedDischarge]="selectedDischarge"
+                                   [showDischargeSummary]="showSummaryAdd"></discharge-summary-add>
+            <a (click)="CloseSummaryAdd()" style="background: #b51717;padding: 7px 6px 2px;position: absolute;right: 0;top: 0px; color: #fff;"><i class="fa fa-2x fa-close"></i></a>
+            <!--<er-patient-registration (sendBackERPatientData)="ReturnFromPatRegistrationEdit($event)"
+                             [currentPatientToEdit]="selectedERPatientToEdit"></er-patient-registration>-->
+        </div>
+    </div>
+</div>
+
+
+<div *ngIf="showSummaryView" (click)="ParentOfPopUpClicked($event)" class="cstm-popup-holder" style="padding: 55px; background: #151414a8 !important;">
+    <div class="cstm-slidefromtop">
+        <div style="width: 100%; height: auto;background: #fff;padding: 0px 20px;">
+            <discharge-summary-view [selectedADT]="selectedDischarge"
+                                    [showSummaryView]="showSummaryView"></discharge-summary-view>
+            <a (click)="CloseSummaryAdd()" style="background: #b51717;padding: 7px 6px 2px;position: absolute;right: 0;top: 0px; color: #fff;"><i class="fa fa-2x fa-close"></i></a>
+            <!--<er-patient-registration (sendBackERPatientData)="ReturnFromPatRegistrationEdit($event)"
+                             [currentPatientToEdit]="selectedERPatientToEdit"></er-patient-registration>-->
+        </div>
+    </div>
+</div>
+
+<div *ngIf="!showGridList">
+    <er-discharge-summary [patientId]="patientId" [visitId]="visitId"></er-discharge-summary>
+</div>
+
+<div class="transferred-patient-grid" *ngIf="showGridList">
+    <danphe-grid [grid-colDefaults]="ERTransferredPatientGridCol" [grid-data]="allTransferredPatients" (grid-actions)="EditAction($event)">
+    </danphe-grid>
+</div>

@@ -1,0 +1,13 @@
+﻿
+<div class="row">
+    <ul class="nav nav-tabs">
+        <li>  <a [ngClass]="{'a-tab-active': showEmployeeList==true}" (click)="updateView(0)">Manage Employee</a></li>
+        <li>  <a [ngClass]="{'a-tab-active': showEmployeeRoleList==true}" (click)="updateView(1)">Manage EmployeeRole</a></li>
+        <li>  <a [ngClass]="{'a-tab-active': showEmployeeTypeList==true}" (click)="updateView(2)">Manage EmployeeType</a></li>
+    </ul>
+</div>
+<div class="col-md-12">
+    <employee-list *ngIf="showEmployeeList"></employee-list>
+    <employee-role-list *ngIf="showEmployeeRoleList"></employee-role-list>
+    <employee-type-list *ngIf="showEmployeeTypeList"></employee-type-list>
+</div>

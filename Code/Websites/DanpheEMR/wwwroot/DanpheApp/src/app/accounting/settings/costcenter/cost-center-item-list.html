@@ -1,0 +1,13 @@
+﻿<div>
+    <input type="button" class="btn btn-primary" (click)="AddCostCenterItems()" value="Create New CostCenter" />
+    <costcenter-item-add [showAddPage]="showAddPage"
+                [selectedCostCenterItem]="selectedCostCenterItem"
+                (callback-add)="CallBackAdd($event)"></costcenter-item-add>
+</div>
+<div class="row">
+    <div class="col-md-12 col-xs-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="costCenterItemsGridColumns" [grid-data]="costCenterItemsList"
+                     (grid-actions)="CostCenterItemGridActions($event)">
+        </danphe-grid>
+    </div>
+</div>

@@ -1,0 +1,55 @@
+﻿<div class="row">
+    <form [formGroup]="patientCreditSummary.PatientCreditSummaryValidator" class="form-horizontal">
+        <div class="form-body">
+            <div class="col-md-12">
+                <div class="caption">
+                    <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
+                    <b><span class="caption-subject font-red-sunglo bold uppercase">Patient&nbsp; Wise&nbsp;Credit&nbsp; Report&nbsp;On&nbsp; {{TodayDate}}</span></b>
+                </div>
+
+                <div class="col-md-5 col-xs-12">
+                        <div class="form-group">
+                            <label class="control-label col-md-5">From Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                            <div class="col-md-7">
+                                <input class="form-control" type="date" value="" [(ngModel)]="patientCreditSummary.fromDate"
+                                       formControlName="fromDate" placeholder="DD-MM-YYYY" />
+                                <span class="color-red font-sm" *ngIf="patientCreditSummary.IsDirty('fromDate')" [hidden]="patientCreditSummary.IsValid('fromDate','required')"> From Date is required</span><br />
+                                <span class="color-red font-sm" *ngIf="patientCreditSummary.IsDirty('fromDate')" [hidden]="patientCreditSummary.IsValid('fromDate','wrongDate')"> Enter Valid Date</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-5 col-xs-12">
+                        <div class="form-group">
+                            <label class="control-label col-md-4">To Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                            <div class="col-md-8">
+                                <input class="form-control" type="date" value="" [(ngModel)]="patientCreditSummary.toDate"
+                                       formControlName="toDate" placeholder="DD-MM-YYYY" />
+                                <span class="color-red font-sm" *ngIf="patientCreditSummary.IsDirty('toDate')" [hidden]="patientCreditSummary.IsValid('toDate','required')"> To Date is required</span><br />
+                                <span class="color-red font-sm" *ngIf="patientCreditSummary.IsDirty('toDate')" [hidden]="patientCreditSummary.IsValid('toDate','wrongDate')"> Can't select future date</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-xs-12">
+                        <div class="form-group">
+                            <button class="btn blue" type="button" (click)="Load()" [disabled]="!(patientCreditSummary.IsValid())">
+                                <i class="fa fa-search"></i>
+                                Show Report
+                            </button>
+                        </div>
+                    </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+
+<div class="row">
+    <div class="col-lg-12 col-sm-12" *ngIf="patientCreditSummaryData.length>0">
+        <danphe-grid [grid-colDefaults]="patientCreditSummaryColumns"
+                        [grid-data]="patientCreditSummaryData"
+                        [grid-exportOptions]="gridExportOptions" [grid-showExport]="true"
+                        (grid-actions)="OnGridExport($event)">
+        </danphe-grid>
+    </div>
+</div>
+

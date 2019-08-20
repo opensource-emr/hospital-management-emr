@@ -1,0 +1,92 @@
+﻿<div class="row">
+    <div class="col-md-12">
+        <div class="col-lg-4 col-md-12">
+            <label class="control-label">Transfer Type:</label>
+            <select [(ngModel)]="TransferId" id="Transferid" style="width:250px;height:30px;" (change)="onChange(TransferId)">
+                <option value="1">Normal Transfer</option>
+                <option value="2">Expiry Transfer</option>
+            </select>
+        </div>
+    </div>
+</div>
+<div class="row" *ngIf="showNormalTransfer">
+    <div class="col-md-12">
+        <div class="col-md-8 table-responsive" style="width:100%;padding-left: 0px;">
+            <table class="table table-striped table-hover">
+                <tr>
+                    <th style="width: 140px;">Ward Name</th>
+                    <th>Item Name</th>
+                    <th>Available Quantity</th>
+                    <th>Return Quantity</th>
+                    <th style="padding-right: 5px !important;">Quantity</th>
+                    <th>Expiry Date</th>
+                    <th style="width:30px;">
+                        <input type="checkbox" [(ngModel)]="selectAllItems" class="zoomcheckbox" ng-checked="selectAllItems" (change)="SelectAllChkOnChange()" title="Select All"
+                               [ngModelOptions]="{standalone: true}" />
+                    </th>
+                </tr>
+                <tr *ngFor="let row of medicineList;let i = index">
+                    <td>{{row.WardName}}</td>
+                    <td>{{row.ItemName}}</td>
+                    <td>
+                        <input [(ngModel)]="row.AvailableQuantity"
+                               [ngModelOptions]="{standalone: true}" style="width:80px ; "
+                               min="0" class="form-control" type="text" value="" disabled>
+                    </td>
+                    <td>
+                        <input class="form-control"
+                               [(ngModel)]="row.DispachedQuantity"
+                               [ngModelOptions]="{standalone: true}"
+                               (ngModelChange)="ValueChanged(i,row)"
+                               style="width:80px ; " min="0" type="number">
+                        <span class="error-msg" *ngIf="row.AvailableQuantity<row.DispachedQuantity">Return Qty Should be less than Dispatch Qty</span>
+                    </td>
+
+                    <td>
+                        <input [(ngModel)]="row.Quantity"
+                               [ngModelOptions]="{standalone: true}" style="width:80px ; " (ngModelChange)="ValueChanged(i)"
+                               min="0" class="form-control" type="text" value="" disabled>
+                    </td>
+                    <td>{{row.ExpiryDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                    <td>
+                        <input class="zoomcheckbox" [(ngModel)]="row.IsSelected" name="IsSelected" type="checkbox" ng-checked="row.IsSelected"
+                               (change)="SelectItemChkOnChange(row)" [ngModelOptions]="{standalone: true}" title="select item">
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div class="" style="margin-top:10px; text-align:center;">
+        <input type="button" style="margin:2em;width:10em;" class="btn btn-success" value="Transfer" (click)="PharmacyTransfer()" [disabled]="loading" />
+    </div>
+</div>
+
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showConfirmation">
+    <div class="portlet-body form">
+        <!--Model Box Body Start-->
+        <div class="form-body">
+            <div class="col-md-12 modelbox-div" style="width: 95%;left: 3%;right:5%; padding-bottom: 10px;">
+                <i class="btn btn-danger" style="float: right;margin-top:15px;margin-right:15px" (click)="Close()" title="close window">X</i>
+                <br />
+                <table class="table table-striped table-hover">
+                    <tr>
+                        <th style="width: 140px;">Expiry Date</th>
+                        <th>Item Name</th>
+                        <th>Ward Name</th>
+                        <th>Return Quantity</th>
+                    </tr>
+                    <tr *ngFor="let row of returnItems;let i = index">
+                        <td>{{row.ExpiryDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                        <td>{{row.ItemName}}</td>
+                        <td>{{row.WardName}}</td>
+                        <td>{{row.DispachedQuantity}}</td>
+                    </tr>
+                </table>
+                <div class="" style="margin-top:10px; text-align:center;">
+                    <input type="button" style="margin:2em;width:10em;" class="btn btn-danger" value="Confirm Transfer" (click)="ConfirmTransfer()" [disabled]="loading" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

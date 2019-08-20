@@ -1,0 +1,316 @@
+<style>
+  img {
+    border: 1px solid #ddd; /* Gray border */
+    border-radius: 4px; /* Rounded border */
+    padding: 10px; /* Some padding */
+    width: 150px; /* Set a small width */
+    cursor: pointer;
+  }
+
+    /* Add a hover effect (blue shadow) */
+    img:hover {
+      box-shadow: 0 0 2px 1px rgba(0, 140, 186, 0.5);
+      transform: scale(1.0);
+      -moz-transform: scale(1.0);
+      -webkit-transform: scale(1.0);
+    }
+
+
+  .key-shortcut-info {
+    color: #b56714;
+    margin-top: 5px;
+    margin-bottom: 5px;
+  }
+
+  .lineheight-3 {
+    line-height: 3;
+  }
+
+  .rad-pat-info {
+    padding: 5px;
+    border: 1px solid #dadada;
+  }
+
+  .misc-fields {
+    border-bottom: 1px solid #dadada;
+  }
+
+  .txt-autocomp {
+    text-align: right;
+    padding-right: 15px;
+  }
+  .kdrc .dontshow {
+    display: none;
+  }
+</style>
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showreport">
+  <div class="portlet-body form">
+    <div class="col-md-12">
+      <div class="modelbox-div">
+        <div class="modelbox-header">
+          <h4 class="margin-0-vr"><strong>Add report of {{report.ImagingItemName}} ({{report.ImagingTypeName}})</strong></h4>
+        </div>
+        <div class="modelbox-body">
+          <div class="rad-pat-info margin-15-bt">
+            <div class="flex-container flex-align-center">
+              <div class="flex-2 single-flx">
+                <strong>Patient Name: </strong>&nbsp;{{patient.ShortName}}( {{patient.DateOfBirth | DanpheDateTime:'age' }}/{{patient.Gender}} )
+              </div>
+              <div class="flex-1 single-flx">
+                <strong>Hospital No: </strong>&nbsp;{{patient.PatientCode}}
+              </div>
+              <div class="flex-2 single-flx">
+                <div class="flex-container flex-align-center">
+                  <div class="flex-1 txt-autocomp"><strong>Ref. by</strong></div>
+                  <div class="flex-3">
+                    <input class="form-control" danphe-auto-complete
+                           style="font-weight:bold;"
+                           [(ngModel)]="selReferredByDr"
+                           [list-formatter]="ReferredByDrListFormatter"
+                           [source]="referredByDrList"
+                           placeholder="Referred By Dr."
+                           display-property-name="FullName"
+                           value-property-name=null
+                           match-formatted="true"
+                           onClick="this.select();"
+                           max-num-list="10" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex-container flex-align-center margin-5-tp">
+              <div class="flex-2 single-flx">
+                <strong>Address: </strong>&nbsp; {{patient.Address}}
+              </div>
+              <div class="flex-1 single-flx">
+                <strong>Phone No: </strong>&nbsp;{{patient.PhoneNumber}}
+              </div>
+              <div class="flex-2 single-flx">
+                <div class="flex-container flex-align-center">
+                  <div class="flex-1 txt-autocomp"><strong>Requested On: </strong></div>
+                  <div class="flex-3">
+                    {{report.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div [ngClass]="hospitalCode" class="misc-fields">
+            <div class="flex-container flex-align-center margin-15-tp">
+              <div class="flex-2 single-flx">
+                <strong>Report Template: </strong>&nbsp;
+                <span *ngIf="report.TemplateName">{{report.TemplateName}}</span>
+                <span *ngIf="!report.TemplateName">Not Set</span>
+              </div>
+              <div class="flex-1 single-flx">
+                <a *ngIf="!changeReportTemplate" (click)="GetAllReportTemplates()" title="click to change report template"
+                   style="color:#b56714;font-size:13px;">
+                  Select different template ?
+                </a>
+                <input *ngIf="changeReportTemplate" class="form-control" danphe-auto-complete
+                       [(ngModel)]="selectedTemplate"
+                       [list-formatter]="ReportTempListFormatter"
+                       [source]="reportTemplates"
+                       placeholder="search template"
+                       display-property-name="TemplateName"
+                       value-property-name=null
+                       match-formatted="true"
+                       (valueChanged)="AssignSelectedReport()"
+                       onClick="this.select();"
+                       max-num-list="10" />
+              </div>
+              <div class="flex-2 single-flx text-center">
+                <a class="dontshow" *ngIf="enableDicomImages" (click)="GetAllDicomImageList()" title="click to select Dicom Images"
+                   style="color:#b56714;font-size:13px;">
+                  Select Dicom Images ?
+                </a>
+              </div>
+            </div>
+
+            <div class="row margin-5-tp">
+              <div class="col-md-12 col-xs-12 col-sm-12">
+
+                <div class="row">
+                  <div class="col-md-12">
+                    <div class="row">
+                      <div class="col-md-7">
+                        <div class="row">
+                          <div class="col-md-3"><p class="lineheight-3 margin-0-vr">Indication:</p></div>
+                          <div class="col-md-9"><input class="form-control" [(ngModel)]="report.Indication" type="text" placeholder="Indication" /></div>
+                        </div>
+                      </div>
+                      <!--<div class="col-md-3"></div>-->
+
+                      <div class="col-md-5">
+                        <div *ngIf="enableImgUpload" class="row">
+                          <label class="control-label col-md-4" style="line-height: 35px;">Upload Images<b class="color-red">*</b><b style="float:right;">:</b></label>
+                          <div class="col-md-8">
+                            <input class="form-control" #fileInput type="file" value="" multiple />
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+          <div class="editor-content">
+            <div class="row">
+              <div class="col-md-12 col-xs-12 col-sm-12" style="min-height:460px;">
+                <danphe-ckeditor [readonly]="isReadOnly"
+                                 (get-html-content)="onChangeEditorData($event)"
+                                 (get-shortcut)="onShortCutPressed($event)"
+                                 [set-html-content]="report.ReportText">
+                </danphe-ckeditor>
+              </div>
+            </div>
+          </div>
+
+
+          <div class="rad-report-footer">
+            <div class="row">
+              <div class="col-md-12 col-xs-12 col-sm-12">
+                <div *ngIf="selectedTemplate" class="row">
+                  <div class="col-md-12" style=" margin-top: 20px; padding-right: 30px;">
+                    <p *ngIf="selectedTemplate.FooterNote"><small><strong>Footer Disclaier</strong>{{selectedTemplate.FooterNote}}</small></p>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-12 margin-20-tp">
+                    <danphe-signatories ngDefaultControl [(ngModel)]="report.Signatories" [defaultEmployeeIdList]="defaultSigEmpIdList" [displayMode]="'edit'" [departmentName]="'radiology'">
+                    </danphe-signatories>
+                    <!--<div class="color-red font-sm" *ngIf="IsDirty('Signatories')" [hidden]="IsValidCheck('Signatories','required')"> Please select Reporting Doctors.</div>-->
+                  </div>
+                </div>
+
+
+
+              </div>
+            </div>
+          </div>
+
+          <div class="image-table-holder">
+            <div class="row">
+              <div class="table-responsive">
+                <table class="table table-striped table-hover" style="background-color:initial; margin:0px;">
+                  <tr>
+                    <th *ngFor="let image of album; let i=index">
+                      <div class="input-group">
+                        <div class="icheck-inline">
+                          <label class="mt-checkbox mt-checkbox-outline">
+                            <input id="isActive" name="isActive" type="checkbox" value=""
+                                   [(ngModel)]="image.isActive" (ngModelChange)="onCheckedChanged()">
+                            <span style="border: solid 0.5px black;"></span>
+                          </label>
+                        </div>
+                      </div>
+                      <img style="width:200px; height:200px; object-fit:contain;" (click)="open(i)" [src]="image.src" />
+                    </th>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </div>
+
+
+        </div>
+
+        <div class="modelbox-footer">
+          <div class="all-buttons text-right">
+
+            <input *ngIf="buttonsList.indexOf('save')>-1" type="button" class="btn btn-primary margin-7-hr" (click)="SaveReport()" value="Save" [disabled]="loading" />
+            <input style="margin-left: 15px;" *ngIf="buttonsList.indexOf('submit')>-1" type="button" class="btn btn-primary margin-7-hr" (click)="SubmitAndPrintReport()" value="Submit & Print" [disabled]="loading" />
+            <!-- <input style="margin-left: 15px;" *ngIf="buttonsList.indexOf('print')>-1" type="button" class="btn btn-primary" (click)="AddReport(orderStatus='print')" value="Print" [disabled]="loading" /> -->
+            <input type="button" class="btn btn-danger margin-7-hr" (click)="DeleteImagesAndSave('pending')" value="Delete Images" *ngIf="enableDicomImages" [disabled]="loading" />
+
+            <label class="mt-checkbox mt-checkbox-outline" *ngIf="enableDicomImages">
+              <input id="allImages" name="allImages" type="checkbox" value="" [disabled]="loading"
+                     [(ngModel)]="allImagSelect" (ngModelChange)="SelectDeselectAllImages()">
+              <span style="border: solid 0.5px black;"></span> &nbsp;All Images
+            </label>
+
+          </div>
+        </div>
+
+        <div class="close-modelbox">
+          <button class="btn btn-danger" (click)="Close()">X</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="changeDicomImageList">
+  <div class="portlet-body form " style="background-color:white">
+    <div class="form-horizontal">
+      <div class="form-body">
+        <div class="col-md-12">
+          <div class="col-md-2 hidden-xs hidden-sm" style="">
+          </div>
+          <div class="col-md-8 col-sm-12 col-xs-12 modelbox-div" style="height:auto !important;">
+            <div class="col-md-12">
+              <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
+              <span class="caption-subject font-red-sunglo bold uppercase">Dicom&nbsp;Image&nbsp;List</span>
+              <a style="float:right;  margin-top:0px;" class="btn btn-danger" (click)="ClosePat()" title="Cancel">X</a>
+              <div class="col-md-12" style="margin-bottom: 5px; border-bottom: 1px solid black;  line-height:2; margin-left:0px">
+                <div class="col-md-4">
+                  Patient Name: <span> <b> {{patient.ShortName}}</b> </span>
+                  <b>( {{patient.DateOfBirth | DanpheDateTime:'age' }}/{{patient.Gender}} )</b>
+                </div>
+                <div class="col-md-4">
+                  Hospital No: <span><b>{{patient.PatientCode}}</b> </span>
+                </div>
+
+                <div class="col-md-4">
+                  Visit Code: <span><b>{{report.PatientVisitId}}</b> </span>
+                </div>
+                <div class="col-md-4">
+                  Requested On:<span> {{report.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</span>
+                </div>
+
+              </div>
+            </div>
+            <div class="col-md-12" style="max-height:300px;overflow-y:scroll;">
+              <table class="table-striped table-hover data-table" style="width:100%">
+                <thead style="background-color: #d0d9d0;">
+                  <tr>
+                    <th>PatientId</th>&nbsp;&nbsp;
+                    <th>PatientName</th>&nbsp;&nbsp;
+                    <th>StudyDate</th>&nbsp;&nbsp;
+                    <th>UpLoadedDate </th>&nbsp;&nbsp;
+                    <th>Check Box</th>&nbsp;&nbsp;
+                  </tr>
+                </thead>
+                <tbody>
+
+                  <tr *ngFor="let img of dicomImageDatas">
+                    <td>{{img.PatientId}}</td>&nbsp;&nbsp;
+                    <td>{{img.PatientName}}</td>&nbsp;&nbsp;
+                    <td>{{img.StudyDate| DanpheDateTime:'format':'DD-MM-YYYY'}}</td>&nbsp;&nbsp;
+                    <td>{{img.CreatedOn| DanpheDateTime:'format':'DD-MM-YYYY'}}</td>&nbsp;&nbsp;
+                    <td>
+                      <input type="checkbox" class="zoomcheckbox" [(ngModel)]="img.IsMapped" style="font-size:10px;" />
+                      <span></span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <input style="float:initial;  padding:10px;" type="button" class="btn btn-primary" (click)="AddDicomImage()" value="Add" />
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

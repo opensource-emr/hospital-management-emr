@@ -1,0 +1,97 @@
+﻿
+<style>
+    .table-fixed {
+        width: 100%;
+        background-color: #f3f3f3;
+        tbody
+
+    {
+        height: 200px;
+        overflow-y: auto;
+        width: 100%;
+    }
+
+    thead, tbody, tr, td, th {
+        display: block;
+    }
+
+    tbody {
+        td
+
+    {
+        float: left;
+    }
+
+    }
+
+    thead {
+        tr
+
+    {
+        th
+
+    {
+        float: left;
+        background-color: #f39c12;
+        border-color: #e67e22;
+    }
+
+    }
+    }
+    }
+</style>
+
+<div class="row">
+    <div class="form-body">
+        <div class="col-md-12">
+            <div class="caption">
+                <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
+                <span class="caption-subject font-red-sunglo bold uppercase">Invoice&nbsp; Details</span>
+            </div>
+            <div class="col-md-5 col-xs-12">
+                <div class="form-group">
+                    <label class="control-label col-md-5">From Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                    <div class="col-md-7">
+                        <danphe-date-picker [(ngModel)]="fromDate" ngDefaultControl [CalendarTypes]="'en,np'">
+                        </danphe-date-picker>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-5 col-xs-12">
+                <div class="form-group">
+                    <label class="control-label col-md-4">To Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                    <div class="col-md-7">
+                        <danphe-date-picker [(ngModel)]="toDate" ngDefaultControl [CalendarTypes]="'en,np'">
+                        </danphe-date-picker>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 col-xs-12">
+                <div class="form-group">
+                    <button class="btn blue" type="button" (click)="GetInvoiceDetails()">
+                        <i class="fa fa-search"></i>
+                        Show Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <hr />
+        <danphe-grid [grid-colDefaults]="bilInvoiceDetailGridColumns"
+                     [grid-data]="curtInvoiceDetail" [grid-exportOptions]="GetGridExportOptions()"
+                     [grid-showExport]="true">
+        </danphe-grid>
+       
+    </div>
+</div>
+
+
+
+
+
+
+
+

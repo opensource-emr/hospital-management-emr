@@ -1,0 +1,9 @@
+﻿<FractionPercent-add [showAddPage]="showAddPage" [FractionPercent]="FractionPercent" (callback-add)="pushToList($event)" (close-popup)="closePopUp($event)"></FractionPercent-add>
+<div class="row">
+    <div class="col-md-12 col-xs-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="FractionPercentGridColumns" [grid-data]="FractionApplicableItemList" (grid-actions)="FractionPercentGridActions($event)">
+        </danphe-grid>
+    </div>
+</div>
+
+

@@ -1,0 +1,50 @@
+﻿<style>
+    .divTab {
+        font-weight: bold;
+        border: 1px solid;
+    }
+</style>
+
+
+<div *ngIf="showOrderPopUp" (click)="ParentOfPopUpClicked($event)" class="triaged-patient-orders cstm-popup-holder" style="padding: 55px;">
+    <div class="cstm-slidefromtop">
+        <div style="width: 100%; height: auto;">
+            <er-ward-billing (sendBackERPatientOrderData)="ReturnFromOrderAndLamaAction($event)" [selectedPatient]="selectedTriagedPatientForOrder"></er-ward-billing>
+        </div>
+    </div>
+</div>
+
+<div *ngIf="showlamaPopUp" (click)="ParentOfPopUpClicked($event)" class="triaged-patient-orders cstm-popup-holder" style="padding: 55px;">
+    <div class="cstm-slidefromtop">
+        <div style="width: 100%; height: auto;">
+            <er-patient-lama (sendBackERPatientLamaData)="ReturnFromOrderAndLamaAction($event)" [currentPatientToLeave]="selectedPatientForLama" [action]="action"></er-patient-lama>
+        </div>
+    </div>
+</div>
+
+<div *ngIf="showERPatRegistration" (click)="ParentOfPopUpClicked($event)" class="cstm-popup-holder" style="padding: 55px;">
+    <div id="cstmSlideFromTop" class="cstm-slidefromtop">
+        <div style="width: 100%; height: auto;">
+            <er-patient-registration (sendBackERPatientData)="ReturnFromPatRegistrationEdit($event)" 
+                                     [currentPatientToEdit]="selectedERPatientToEdit"></er-patient-registration>
+        </div>
+    </div>
+</div>
+
+<div *ngIf="showAssignDoctor" (click)="ParentOfPopUpClicked($event)" class="cstm-popup-holder" style="padding: 55px;">
+    <div id="cstmSlideFromTop" class="cstm-slidefromtop">
+        <div style="width: 100%; height: auto;">
+            <assign-doctor (sendBackERPatientData)="ReturnFromAssignDoctor($event)" [allDoctorList]="doctorsList"
+                                     [currentPatientToAssign]="selectedERPatientToEdit"></assign-doctor>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="triaged-patient-grid">
+    <danphe-grid [grid-colDefaults]="TriagedERPatientGridCol" [grid-data]="TriagedERPatients" (grid-actions)="EditAction($event)">
+    </danphe-grid>
+</div>
+
+

@@ -1,0 +1,83 @@
+﻿
+<!--@*New changes in ApplicationAdd from ADT for testing*@-->
+<section id="addapplicationSection">
+
+    <form [formGroup]="CurrentApplication.ApplicationValidator" style="background-color:#E6E6FA; width: 50%">
+
+        <div>
+            <h4 style="color:#532c7b;">Application Section</h4>
+        </div>
+
+        <div class="add-application-content">
+
+
+            <table class="tableContent" style="height: 100%;">
+
+
+                <tr>
+                    <td align="left"> Application Name <b class="color-red">*</b> :-</td>
+
+                    <td>
+                        <input class="pat-input" style="width:180px; height:40px;"
+                               [(ngModel)]="CurrentApplication.ApplicationName"
+                               formControlName="ApplicationName"
+                               type="text" id="ApplicationName" value="" placeholder="Enter Application Name" /><br />
+                        <div style="color:red" [hidden]="CurrentApplication.IsValidCheck('ApplicationName','required') || !(CurrentApplication.IsDirty('ApplicationName'))">Application Name is required</div>
+                        <div style="color:red" *ngIf="CurrentApplication.IsDirty('ApplicationName')" [hidden]="CurrentApplication.IsValidCheck('ApplicationName','maxlength')"> Length is not proper</div>
+
+                    </td>
+                </tr>
+
+
+                <tr>
+                    <td align="left"> Application code  <b class="color-red">*</b> :-</td>
+
+                    <td>
+                        <input class="pat-input" style="width:180px; height:40px;"
+                               [(ngModel)]="CurrentApplication.ApplicationCode"
+                               formControlName="ApplicationCode"
+                               type="text" id="ApplicationCode" value="" placeholder="Enter Application code" /><br />
+                        <div style="color:red" [hidden]="CurrentApplication.IsValidCheck('ApplicationCode','required') || !(CurrentApplication.IsDirty('ApplicationCode'))">Application Code is required</div>
+                        <div style="color:red" *ngIf="CurrentApplication.IsDirty('ApplicationCode')" [hidden]="CurrentApplication.IsValidCheck('ApplicationCode','pattern')"> Use Capital alphabets Only</div>
+
+                    </td>
+                </tr>
+
+
+                <tr>
+                    <td align="left"> Application Description   :-</td>
+
+                    <td>
+                        <textarea class="pat-input" style="width:180px; height:40px;"
+                               [(ngModel)]="CurrentApplication.Description"
+                               [ngModelOptions]="{standalone: true}"
+                               type="text" id="Description" value="" placeholder="Enter Application Description"> 
+                        </textarea><br />
+
+                    </td>
+                </tr>
+
+
+
+
+                <tr>
+                    <td align="left"> </td>
+
+                    <td>
+                        <input type="button" (click)="AddApplication()" value="Submit" style="width:80px; height:35px;" />
+                        &nbsp;&nbsp;&nbsp;&nbsp;
+                        <input type="button" (click)="Clear()" value="Cancel" style="width:80px; height:35px;" />
+                    </td>
+                </tr>
+
+
+
+
+
+
+            </table>
+        </div>
+
+    </form>
+</section>
+

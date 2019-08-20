@@ -1,0 +1,13 @@
+﻿<div>
+    <input type="button" class="btn btn-primary" (click)="AddNewFiscalYear()" value="Create New Fiscal Year" disabled/>
+    <fiscalyear-add [showAddPage]="showAddPage"
+                [selectedFiscalYear]="selectedFiscalYear"
+                (callback-add)="CallBackAdd($event)"></fiscalyear-add>
+</div>
+<div class="row">
+    <div class="col-md-12 col-xs-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="fiscalYearGridColumns" [grid-data]="fiscalYearList"
+                     (grid-actions)="FiscalYearGridActions($event)">
+        </danphe-grid>
+    </div>
+</div>

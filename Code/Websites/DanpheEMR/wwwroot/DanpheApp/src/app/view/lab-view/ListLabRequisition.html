@@ -1,0 +1,13 @@
+﻿
+<div class="caption">
+    <i class="glyphicon glyphicon-asterisk font-green-turquoise"></i>
+    <span class="caption-subject font-blue-sharp bold uppercase">List Requisition</span>
+</div>
+
+<div class="row">
+    <div class="col-lg-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="LabGridColumns" [grid-data]="requisitions" (grid-actions)="LabGridActions($event)">
+        </danphe-grid>
+    </div>
+</div>
+

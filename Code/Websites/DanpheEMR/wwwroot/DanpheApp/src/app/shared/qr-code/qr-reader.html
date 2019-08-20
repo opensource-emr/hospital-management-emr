@@ -1,0 +1,47 @@
+﻿<div class="col-md-12" *ngIf="qrService.show">
+    <div class="col-md-12" style="padding-bottom: 12px;">
+        <div class="col-md-6">
+            <button class="btn btn-sm blue" (click)="OpenScanner()" *ngIf="!qrService.openScanner">
+                Scan Again ?
+            </button>
+            <button class="btn btn-sm red" (click)="CloseCamera()" *ngIf="qrService.openScanner">
+                <i class="fa fa-close"></i>
+                Close Scanner
+            </button>
+
+            <div style="width: 200px;height:200px;" *ngIf="qrService.openScanner">
+                <qr-scanner 
+                [debug]="true" 
+                [canvasWidth]="200"
+                [canvasHeight]="200"                
+                [stopAfterScan]="false" 
+                [updateTime]="50"(onRead)="OnScanSuccess($event)">
+            </qr-scanner>
+            
+            </div>
+        </div>
+        <div class="col-md-6">
+            HospitalNo: <input type="text" id="txtHosptlNum" [(ngModel)]="patientCode" (keydown.enter)="handleKeyDown($event)" />
+            <button class="btn blue btn-sm" style="border-radius: 8px !important;margin-left: 10px;" (click)="LoadPatientInfo(patientCode)">Load</button>
+            <br />
+            <span *ngIf="invalidPatientCode" style="color:red;">Couldn't load patient information, please type it manually.</span>
+        </div>
+    </div>
+
+    <div class="col-md-12" *ngIf="showPatientPanel" style="padding: 10px 10px;border: 1px solid;border-radius: 10px !important;">
+        <span>
+            Name : <b>{{selPatient.ShortName}}</b>
+        </span>
+        <span style="margin-left: 15px;">
+            HospitalNo : <b> {{selPatient.PatientCode}}</b>
+        </span>
+        <span style="margin-left: 15px;">
+            Age/Sex : <b>{{selPatient.Age}}/ {{selPatient.Gender}}</b>
+        </span>
+        <span style="margin-left: 15px;">
+            Contact No :  <b>{{selPatient.PhoneNumber}}</b>
+        </span>
+    </div>
+</div>
+
+

@@ -1,0 +1,89 @@
+
+<div class="row" *ngIf="showGrid">
+  <div class="col-lg-12 col-sm-12">
+    <div class="caption">
+      <i class="glyphicon glyphicon-asterisk font-green-turquoise"></i>
+      <span class="caption-subject font-blue-sharp bold uppercase">Pending Lab Results</span>
+    </div>
+  </div>
+ 
+  <div class="col-lg-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="pendingLabResultsGridColumns" [grid-data]="pendingResults" (grid-actions)="PendingResultGridActions($event)">
+    </danphe-grid>
+  </div>
+</div>
+
+<div *ngIf="!showGrid" style="margin-top: 5px;">
+  <button class="btn btn-navlink margin-7-rt pull-left" style="z-index: 1;position: relative;" (click)="BackToGrid()">
+    <i class="fa fa-arrow-left"></i>
+    Back To Grid
+  </button>
+  <danphe-lab-results [showReport]="showReport"
+                      [showAddEditResult]="showAddEditResult"
+                      [requisitionIdList]="requisitionIdList"
+                      [verificationRequired]="verificationRequired"
+                      (callback-cancel)="CancelAction($event)"></danphe-lab-results>
+
+
+</div>
+
+
+<div *ngIf="showlabsticker" class="popup-static portlet box portlet-fullscreen">
+  <div class="portlet-body form">
+    <div class="col-md-8 col-md-offset-2">
+      <div class="modelbox-div">
+
+        <div class="modelbox-header">
+          <h4 class="margin-0-vr">Print Lab Sticker</h4>
+        </div>
+
+        <div class="modelbox-body">
+          <lab-sticker (callback-Add)="ExitOutCall($event)" [showlabsticker]="showlabsticker"
+                       [PatientLabInfo]="PatientLabInfo" [requisitionIdList]="requisitionIdList">
+          </lab-sticker>
+        </div>
+
+        <div class="modelbox-footer">
+          <div class="all-buttons text-right">
+            <button type="button" class="btn btn-cancel btn-sm horizontal-space" (click)="CloseSticker()">
+              Close
+            </button>
+          </div>
+        </div>
+
+        <div class="close-modelbox">
+          <button class="btn btn-danger" (click)="CloseSticker()">X</button>
+        </div>
+
+      </div>
+    </div>  
+  </div>
+</div>
+
+<div *ngIf="showUndoOption" class="popup-static portlet box portlet-fullscreen">
+  <div class="portlet-body form">
+    <div class="col-md-8 col-md-offset-2">
+      <div class="modelbox-div">
+
+        <div class="modelbox-header">
+          <h4 class="margin-0-vr">Reset Run Number</h4>
+        </div>
+
+        <div class="modelbox-body">
+          <undo-samplecode (callback-Add)="ExitOutUndoCall($event)" [showUndoOption]="showUndoOption"
+                           [PatientLabInfo]="PatientLabInfo" [requisitionIdList]="requisitionIdList">
+          </undo-samplecode>
+        </div>      
+
+        <div class="close-modelbox">
+          <button class="btn btn-danger"  (click)="CloseUndoBox()">X</button>
+        </div>
+
+      </div>
+
+    
+
+    </div>
+  </div>
+</div>
+

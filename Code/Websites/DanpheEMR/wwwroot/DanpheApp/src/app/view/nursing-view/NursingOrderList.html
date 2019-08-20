@@ -1,0 +1,34 @@
+﻿
+<div class="row">
+    <div class="col-md-12">
+        <div class="caption" style="color:#2c8e1a;width: 100%; display:table;">
+            <h4 style="display: inline-block; float: left;margin: 0;line-height: 32px;"><b>Orders List for {{shortName}}</b></h4>
+            <a class="btn blue" href="#" style="display:inline-block; float: right;">Add New IP Billing Request</a>
+        </div>
+
+        <div class="table-responsive" style="margin-top: 10px;">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr style="background-color:lightgray">
+                            <th>Sr. No</th>
+                            <th>Department Name</th>
+                            <th>Item Name No</th>
+                            <th>Quantity</th>
+                            <th>Bill Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let itm of nursingOrderItems;let i = index">
+                            <td><b>{{i+1}}</b></td>
+                            <td>{{itm.DepartmentName}}</td>
+                            <td> {{itm.ItemName}}</td>
+                            <td> {{itm.Quantity}}</td>
+                            <td> {{itm.BillStatus}}</td>
+                            <td> {{itm.CreatedOn}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>

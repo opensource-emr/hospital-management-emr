@@ -1,0 +1,167 @@
+<style>
+  .noPadding {
+    padding-left: 2px !important;
+    padding-right: 2px !important;
+  }
+</style>
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showLedgerDetail">
+  <div class="portlet-body form" style="background-color:white">
+    <div class="col-md-12">
+      <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+      </div>
+      <div class="modelbox-div" style="float:inherit;margin-left:150px;">
+        <div class="col-md-12">
+          <div class="row" *ngIf="showLedgerDetail">
+            <div class="form-body">
+              <div class="col-md-12">
+                <div class="col-md-6">
+                  <div class="input-group" style="padding-left:20px;">
+                    <div class="icheck-inline">
+                      <label class="mt-checkbox mt-checkbox-outline" style="font-weight:bold;color:green;padding-left:30px;">
+                        <input name="showParticular" type="checkbox" value="Detail View" [(ngModel)]="IsDetailsView">
+                        <span></span> Detail View
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="input-group" style="padding-left:20px;float: right;">
+                    <div class="icheck-inline">
+                      <label class="mt-checkbox mt-checkbox-outline" style="font-weight:bold;color:green;padding-left:30px;">
+                        <button class="btn btn-danger hidden-print fa" (click)="CallBack()"value="X" title="Close">X</button>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="ledgerResult">
+            <div class="row" id="printpage">
+              <customer-header [header-title]="ledgerName + ' Ledger'"></customer-header>
+              <div class="col-md-12 col-xs-12">
+                <hr style="border:1px solid black;margin-top: 0px;margin-bottom: 5px;" class="hidden-print" />
+                <div class="col-md-12" style="overflow-y:auto">
+                  <table class="table table-bordered table-hover table-condensed" id="exportTable" border="1" style="width:100%;">
+                    <tr>
+                      <th>Date</th>
+                      <th>Voucher No.</th>
+                      <th>Voucher Type</th>
+                      <th *ngIf="IsDetailsView!=true"><a (click)="DisplayParticular()">as per details</a></th>
+                      <th *ngIf="IsDetailsView"><a (click)="DisplayParticular()"> Particular(s)</a> </th>
+                      <th>Debit</th>
+                      <th>Credit</th>
+                      <th *ngIf="actionView">Action</th>
+                    </tr>
+                    <tr *ngFor="let txnItm of ledgerResult" (click)="ViewTransactionDetails(txnItm.VoucherNumber)">
+                      <td>{{txnItm.TransactionDate  | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                      <td>{{txnItm.VoucherNumber}}</td>
+                      <td>{{txnItm.VoucherName}}</td>
+                      <td>
+                        <table border="0" style="width:100%;" *ngIf="IsDetailsView == true">
+                          <tr *ngFor="let txn of txnItm.TransactionItems" style="font-style:italic; border:none;">
+                            <td style="width:70%;border:none;">
+                              {{txn.LedgerName}}
+                              <span *ngFor="let det of txn.Details" style="font-size:12px;color:green;">
+                                <br />
+                                <span> &nbsp;&nbsp;&nbsp;{{det.Name}}</span>
+                                <span>
+                                  <span *ngIf="det.DrCr">
+                                    Dr: {{det.Amount | Currency}}
+                                  </span>
+                                  <span *ngIf="!det.DrCr">
+                                    Cr: {{det.Amount | Currency}}
+                                  </span>
+                                </span>
+                              </span>
+                            </td>
+                            <td style="width:60%; border:none;">
+                              <div *ngIf="txn.Details?.length == 0">
+                                <div *ngIf="txn.DrCr">
+                                  Dr: {{txn.LedAmount | Currency}}
+                                </div>
+                                <div *ngIf="!txn.DrCr">
+                                  Cr: {{txn.LedAmount | Currency}}
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        </table>
+
+                      </td>
+                      <td><p *ngIf="txnItm.DrCr  && IsOpeningBalance!=true">{{txnItm.Amount | Currency}}</p></td>
+                      <td><p *ngIf="!txnItm.DrCr  && IsOpeningBalance!=true">{{txnItm.Amount | Currency}}</p></td>
+                      <td *ngIf="actionView && IsOpeningBalance!=true"><a class="hidden-print">View Detail</a></td>
+                    </tr>
+                    <tr>
+                      <th></th>
+                      <th></th>
+                      <th></th>
+                      <th>Opening Balance</th>
+                      <td><b>{{ledgerResult.OpeningBalanceDrAmount | Currency}}</b></td>
+                      <td><b>{{ledgerResult.OpeningBalanceCrAmount | Currency}}</b></td>
+                      <td *ngIf="actionView"></td>
+                    </tr>
+                    <tr>
+                      <th></th>
+                      <th></th>
+                      <th></th>
+                      <th>Current Total</th>
+                      <td><b>{{ledgerResult.DrTotalAmount | Currency}}</b></td>
+                      <td><b>{{ledgerResult.CrTotalAmount | Currency}}</b></td>
+                      <td *ngIf="actionView"></td>
+                    </tr>
+                    <tr>
+                      <th></th>
+                      <th></th>
+                      <th></th>
+                      <th>Closing Balance</th>
+                      <td><b>{{ledgerResult.DrNetAmount | Currency}}</b></td>
+                      <td><b>{{ledgerResult.CrNetAmount | Currency}}</b></td>
+                      <td *ngIf="actionView"></td>
+                    </tr>
+                  </table>
+                </div>
+                <div style="text-align:right;display:inline-block;padding-left:50px;">
+
+                  <b>In Words :</b> {{ledgerResult.DrNetAmount | Currency | NumberInWords | CapitalFirstLetter}} {{ledgerResult.CrNetAmount | Currency | NumberInWords | CapitalFirstLetter}}<span *ngIf="ledgerResult.DrNetAmount !=0 || ledgerResult.CrNetAmount !=0">Only</span>
+                </div><br />
+                <div style="text-align:right;display:inline-block;padding-left:50px;">
+                  <b>Narration:</b>&nbsp;{{ledgerResult.Remarks}}
+                </div>
+
+
+                <div class="col-md-12" style="padding-top:50px;">
+                  <table style="width:100%;border:0;text-align:center;">
+                    <tr>
+                      <td>
+                        <input type="text" class="signature" style="border: 0;border-bottom: 1px solid #000;" /><br />
+                        <b> Prepared By</b>
+                      </td>
+                      <td>
+                        <input type="text" class="signature" style="border: 0;border-bottom: 1px solid #000;" /><br />
+                        <b> Checked By</b>
+                      </td>
+                      <td>
+                        <input type="text" class="signature" style="border: 0;border-bottom: 1px solid #000;" /><br>
+                        <b> Approved By</b>
+                      </td>
+                    </tr>
+
+                  </table>
+                </div>
+                <div class="col-md-12" style="padding: 18px;">
+                  <div class="form-actions">
+                    <button class="btn btn-primary hidden-print" (click)="Print()" value="Print" title="print page">Print<i class="glyphicon glyphicon-print" style="margin-left:10px;"></i></button>
+                    <button class="btn btn-primary hidden-print" (click)="ExportToExcel('exportTable')" value="" title="export to excel">Export<i class="fa fa-file-excel-o" style="margin-left:10px;"></i></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <transaction-view [voucherNumber]="voucherNumber"></transaction-view>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

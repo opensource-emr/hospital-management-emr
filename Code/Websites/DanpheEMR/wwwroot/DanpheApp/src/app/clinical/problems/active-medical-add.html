@@ -1,0 +1,100 @@
+﻿<form *ngIf="addActiveProblemBox" [formGroup]="CurrentProblem.ActiveMedicalValidator" class="form-horizontal">
+    <div class="prob-entry" style="padding: 5px 0px 15px 0px; background: #006687;">
+        <h3 class="cstm-add-heading">{{CurrentProblem.PatientProblemId ? 'Update' : 'Add'}} Active Problem</h3>
+        <div class="col-md-offset-1 col-md-10 col-xs-12">
+            <div class="form-group">
+                <label class="control-label" style="padding-bottom: 5px;">Search Problem<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                <div class="col-md-12">
+                    <div class="row autocomplete-item" *ngIf="ICD10List && ICD10List.length>0">
+                        <input danphe-auto-complete
+                               class="form-control"
+                               [(ngModel)]="icd10Selected"
+                               [source]="ICD10List"
+                               formControlName="ICD10Code"
+                               [list-formatter]="ICDListFormatter"
+                               placeholder="ICD10"
+                               display-property-name="ICD10Description"
+                               value-property-name=null
+                               (valueChanged)="AssignSelectedICD()"
+                               onClick="this.select();"
+                               match-formatted="true"
+                               [grid-sort]="'ICD10Description'"
+                               max-num-list="20" />
+                        <span class="color-red font-sm" style="color:red"
+                              *ngIf="CurrentProblem.IsDirty('ICD10Code')"
+                              [hidden]="CurrentProblem.IsValidCheck('ICD10Code','required')">Select ICD10 Code.</span>
+                    </div>
+
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label" style="padding-bottom: 5px;">Current Status<b style="float:right;">:</b></label>
+                <div class="col-md-12">
+                    <div class="row">
+                        <input type="text" class="form-control" maxlength="30"
+                               [ngModelOptions]="{standalone: true}"
+                               [(ngModel)]="CurrentProblem.CurrentStatus" />
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label" style="padding-bottom: 5px;">OnSet Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                <div class="col-md-12">
+                    <div class="row">
+                        <input type="date" class="form-control"
+                               formControlName="OnSetDate"
+                               [(ngModel)]="CurrentProblem.OnSetDate" />
+                        <span class="color-red font-sm"
+                              *ngIf="CurrentProblem.IsDirty('OnSetDate')"
+                              [hidden]="CurrentProblem.IsValidCheck('OnSetDate','required')">
+                            Onset Date is required.
+                        </span>
+                        <span class="color-red font-sm"
+                              *ngIf="CurrentProblem.IsDirty('OnSetDate')"
+                              [hidden]="CurrentProblem.IsValidCheck('OnSetDate','wrongDate')">
+                            Enter Valid Date.
+                        </span>
+                    </div>
+
+
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label" style="padding-bottom: 5px;">Note<b class="color-red">  </b><b style="float:right;">:</b></label>
+                <div class="col-md-12">
+                    <div class="row">
+                        <textarea type="text"  style="width:430px;height:115px" maxlength="1000"
+                                  [(ngModel)]="CurrentProblem.Note" [ngModelOptions]="{standalone: true}"></textarea>
+                        <!--<span class="color-red font-sm"
+                              *ngIf="CurrentProblem.IsDirty('Note')"
+                              [hidden]="CurrentProblem.IsValidCheck('Note','required')">
+                            Note is required.
+                        </span>
+                        <span class="color-red font-sm"
+                              *ngIf="CurrentProblem.IsDirty('Note')"
+                              [hidden]="CurrentProblem.IsValidCheck('Note','maxlength')">Note should not exceed 200 characters.</span>-->
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-offset-1 col-md-10 col-xs-12">
+                <input type="button"
+                       class="btn btn-primary"
+                       style="background: #374150; margin:30px"
+                       [disabled]="!(CurrentProblem.IsValid())"
+                       name="name"
+                       value="{{CurrentProblem.PatientProblemId ? 'Update Problem' : 'Add Problem'}}"
+                       (click)="SaveActiveMedical()" />
+            </div>
+        </div>
+
+        <div class="cstm-close" (click)="addActiveProblemBox = false">
+            <a><i class="fa fa-close"></i> </a>
+        </div>
+
+    </div>
+
+</form>

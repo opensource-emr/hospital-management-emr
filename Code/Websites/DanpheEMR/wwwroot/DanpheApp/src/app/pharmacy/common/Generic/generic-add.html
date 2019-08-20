@@ -1,0 +1,95 @@
+﻿
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showGenericAddPage">
+    <div class="portlet-body form" style="background-color:white">
+        <!--Model Box Body Start-->
+        <form [formGroup]="currentGeneric.GenericValidator" class="form-horizontal">
+            <div class="form-body">
+                <div class="col-md-12">
+                    <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+                    </div>
+                    <div class="col-md-8 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+                        <div class="col-md-12">
+                            <div class="caption" style="color:blue; margin-top:10px;">
+                                <span >Add Generic Name</span>
+                            </div>
+                            <a style="float:right;  margin-top:-13px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                            <hr />
+                        </div>
+                        <br />
+                        <div class="col-md-12">
+
+                            <div class="form-group">
+                                <label class="control-label col-md-4">Generic Name<b class="color-red">  *</b><b style="float:right;">:</b><br /></label>
+                                <div class="col-md-8">
+                                    <input class="form-control" type="text"
+                                           [(ngModel)]="currentGeneric.GenericName"
+                                           formControlName="GenericName"
+                                           value=""
+                                           placeholder="Enter Generic Name" />
+                                    <span class="color-red font-sm" [hidden]="currentGeneric.IsValidCheck('GenericName','required') || !(currentGeneric.IsDirty('GenericName'))">Generic Name is required</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label col-md-4">General Category<b style="float:right;">:</b><br />Number</label>
+                                <div class="col-md-8">
+                                    <input class="form-control" type="text"
+                                           [(ngModel)]="currentGeneric.GeneralCategory"
+                                           [ngModelOptions]="{standalone: true}"
+                                           value=""
+                                           placeholder="Enter Generic Category" />
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label col-md-4">Therapeutic Category<b style="float:right;">:</b><br />Number</label>
+                                <div class="col-md-8">
+                                    <input class="form-control" type="text"
+                                           [(ngModel)]="currentGeneric.TherapeuticCategory"
+                                           [ngModelOptions]="{standalone: true}"
+                                           value=""
+                                           placeholder="Enter Therapeutic Category" />
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label col-md-4">Counseling<b style="float:right;">:</b><br />Number</label>
+                                <div class="col-md-8">
+                                    <input class="form-control" type="text"
+                                           [(ngModel)]="currentGeneric.Counseling"
+                                           [ngModelOptions]="{standalone: true}"
+                                           value=""
+                                           placeholder="Enter Counseling" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label col-md-4">IsActive<b style="float:right;">:</b></label>
+                            <div class="col-md-7">
+                                <div class="input-group">
+                                    <div class="icheck-inline">
+                                        <label class="mt-checkbox mt-checkbox-outline">
+                                            <input name="IsActive" type="checkbox" value="IsActive" [(ngModel)]="currentGeneric.IsActive" [ngModelOptions]="{standalone: true}">
+                                            <span></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="col-md-12" style="padding-bottom: 18px;">
+                            <div class="form-actions">
+                                <input type="button" class="btn btn-primary" (click)="Add()" value="Add" />
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,112 @@
+
+<div>
+  <h3 class="cstm-add-heading" style="text-align: center;color: #000;">{{quickVisit.Visit.AppointmentType}} Visit</h3>
+  <div class="row">
+    <div class="col-md-12">
+      <h4 [className]="quickVisit.Patient.PatientId ? 'clp clp-hd collapsed' : 'clp clp-hd'" [attr.aria-expanded]="quickVisit.Patient.PatientId ? 'false' : 'true'" data-toggle="collapse" data-target="#patient">
+        Patient Information
+      </h4>
+      <div [className]="quickVisit.Patient.PatientId ? 'collapse clp-cntnt' : 'collapse clp-cntnt in'" id="patient" class="collapse clp-cntnt">
+        <div style="width:99%">
+          <visit-patient-info [patient]="quickVisit.Patient"></visit-patient-info>
+        </div>
+
+      </div>
+      <visit-info [visit]="quickVisit.Visit"
+                  [isInsuranceBilling]="quickVisit.BillingTransaction.IsInsuranceBilling"></visit-info>
+
+
+      <visit-billing-info [billing-transaction]="quickVisit.BillingTransaction"></visit-billing-info>
+
+      <div class="text-center" style="margin-bottom:20px;" *ngIf="visitService.appointmentType=='New'">
+        <input type="button" class="btn blue btn-success" value="Print Invoice" [disabled]="loading" (click)="CheckExistingPatientsAndSubmit()" />
+      </div>
+      <div class="text-center" style="margin-bottom:20px;" *ngIf="visitService.appointmentType=='Transfer'">
+        <input type="button" class="btn blue btn-success" value="Transfer" [disabled]="loading" (click)="CheckExistingPatientsAndSubmit()" />
+      </div>
+      <div class="text-center" style="margin-bottom:20px;" *ngIf="visitService.appointmentType=='Referral'">
+        <input type="button" class="btn blue btn-success" value="Refer" [disabled]="loading" (click)="CheckExistingPatientsAndSubmit()" />
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<patient-duplicate-warning-box *ngIf="showExstingPatientListPage"
+                               [matchedPatResult]="matchedPatientList"
+                               [currentPatInfo]="quickVisit.Patient"
+                               [btnActionName]="'Check-In this Patient'"
+                               (emit-close-action)="emitCloseAction($event)">
+
+</patient-duplicate-warning-box>
+
+
+
+<!--Model Box Starting Here-->
+<!--<div class="popup-static portlet box portlet-fullscreen" *ngIf="showExstingPatientList">
+  <div class="portlet-body form">
+    <div class="form-body">
+      <div class="col-md-12">
+        <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+        </div>
+        <div class="col-md-8 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+          <div class="col-md-12">
+            <h4 style="text-align:center">
+              <b>
+                <u style="color:#bd8111">Alert ! we have found existing Patient(s) with similar information.</u>
+                <a style="float:right;" class="btn btn-danger" (click)="CloseExistingPatientWindow()" title="Cancel">X</a>
+              </b>
+            </h4>
+
+            <hr />
+          </div>
+          <br />
+
+          <div class="col-md-12">
+            <div class="table-responsive">
+              <table class="table table-striped table-hover">
+                <thead>
+                  <tr style="background-color:lightgray">
+                    <th>Name</th>
+                    <th>Hospital No.</th>
+                    <th>Gender</th>
+                    <th>Phone Number</th>
+                    <th>Birth Date</th>
+                    <th>Address</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let patient of matchedPatientList;let i = index">
+                    <td>{{patient.FirstName}}&nbsp;{{patient.MiddleName}}&nbsp;{{patient.LastName}}</td>
+                    <td> {{patient.PatientCode}}</td>
+                    <td> {{patient.Gender}}</td>
+                    <td> {{patient.PhoneNumber}}</td>
+                    <td> {{patient.DateOfBirth}}</td>
+                    <td> {{patient.Address}}</td>
+                    <td style="text-align:right;">
+                      <button type="button" class="btn blue" style="margin-left:10px;" name="patientselect"
+                              [disabled]="loading"
+                              (click)="loading=true;AssignMatchedPatientAndProceed(patient)">
+                        <i class="fa fa-check-square-o"></i>&nbsp;&nbsp;Check-In this Patient
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="col-md-12" style="padding-bottom: 18px;">
+            <b>IF YOU'RE SURE THAT THIS IS NEW PATIENT, CLICK &nbsp; &nbsp;&nbsp; &nbsp;<span class="glyphicon glyphicon-hand-right" style="font-size:25px;vertical-align: middle;"></span> </b> &nbsp; &nbsp;
+            <button type="button" class="btn btn-primary btn-sm" [disabled]="loading" (click)="loading=true;CheckAppointmentTypeAndCreateVisit()">
+              <i class="glyphicon glyphicon-plus"> </i>&nbsp;&nbsp;Add as New Patient and Check-In
+            </button>
+          </div>
+        </div>
+        <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>-->

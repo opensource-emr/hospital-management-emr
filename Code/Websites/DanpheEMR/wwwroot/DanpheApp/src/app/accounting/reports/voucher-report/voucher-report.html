@@ -1,0 +1,66 @@
+﻿
+<style>
+    .noPadding {
+        padding-left: 2px !important;
+        padding-right: 2px !important;
+    }
+</style>
+<transaction-view [voucherNumber]="voucherNumber"></transaction-view>
+<div class="row">
+    <div class="caption">
+        <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
+        <span class="caption-subject font-red-sunglo bold uppercase">Voucher Report</span>
+    </div>
+    <div class="col-md-12 col-xs-12 col-sm-12">
+        <!--<div class="caption col-md-2 col-xs-12 noPadding">
+            <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
+            <span class="caption-subject font-red-sunglo bold uppercase">Voucher Details</span>
+        </div>-->
+        <div class="col-md-3 col-xs-12 noPadding">
+            <div class="form-group">
+                <label class="control-label">Voucher Type<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                <div>
+
+                    <select [(ngModel)]="selVoucher.VoucherId" id="voucher" (ngModelChange)="AssignVoucher()" style="width:200px;height:30px;">
+                        <option value={{-1}} selected>— All —</option>
+                        <option *ngFor="let v of voucherList" value="{{v.VoucherId}}">{{v.VoucherName}}</option>
+                    </select>
+                    <div class="color-red font-sm" *ngIf="!selVoucher.VoucherId"> please select voucher.</div>
+                </div>
+            </div>
+        </div>
+        
+        
+        <div class="col-md-3 col-xs-12 noPadding">
+            <div class="form-group">
+                <label class="control-label">From Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                <div>
+                    <danphe-date-picker [(ngModel)]="fromDate" [ngModelOptions]="{standalone: true}" ngDefaultControl [CalendarTypes]="'np,en'">
+                    </danphe-date-picker>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-xs-12 noPadding">
+            <div class="form-group">
+                <label class="control-label">To Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                <div>
+                    <danphe-date-picker [(ngModel)]="toDate" [ngModelOptions]="{standalone: true}" ngDefaultControl [CalendarTypes]="'np,en'">
+                    </danphe-date-picker>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-xs-12 noPadding">
+            <div class="form-group">
+                <button class="btn blue" type="button" (click)="GetTxnList()">
+                    <i class="fa fa-search"></i>
+                    Show Details
+                </button>
+            </div>
+        </div>
+        <hr />
+        <danphe-grid [grid-colDefaults]="txnGridColumns" [grid-data]="txnList" (grid-actions)="TransactionGridActions($event)">
+        </danphe-grid>
+    </div>
+</div>
+
+

@@ -1,0 +1,63 @@
+<style>
+  th {
+    text-align: center;
+  }
+</style>
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="caption">
+      <span style="font:800;float:inherit;font-size:20px;" class="caption-subject font-blue-sharp bold uppercase">Quotation Analysis</span>
+    </div>
+  </div>
+</div>
+
+
+<div class="row" style="padding-top:10px">
+  <div class="col-md-12">    
+    <div style="float:left; padding-left:100px;">
+      <button class="btn blue" type="button" (click)="BackToReqForQuotation()" title="Back To RFQ">
+        <i class="fa fa-arrow-left"></i>
+       Back
+      </button>
+    </div>
+    <div style="float:right; padding-right:100px;">
+      <button class="btn blue" type="button" (click)="SaveSelectedVender()" title="save selected Vendor" [disabled]="loading">
+        <i class="fa fa-save"></i>
+        Select Vendor for PO
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<div class="row" *ngIf="showQuotationDetails">
+  <div class="col-md-12">
+    <div class="table-responsive">
+      <table class="table table-striped table-hover" style="background-color:initial;margin-top:10px;text-align:center;">
+        <tr>
+          <th rowspan="2" style="align-content:center;font-size:16px;padding-top:30px;">Item Name</th>
+          <!--setting dynamic vendor numbers-->
+          <th [attr.colspan]="vendors" style="align-content:center;font-size:16px;">Vendors (Price per unit)</th>
+        </tr>
+
+        <tr>
+          <th *ngFor="let itm of VendorList, let i= index" style="font-size:15px;">
+            <input class="zoomcheckbox" [(ngModel)]="itm.IsSelected" name="IsSelected" width="100" type="checkbox" ng-checked="itm.IsSelected=true"
+                   (change)="ToggleItemSelection(i)">   {{itm.VendorName}} ({{itm.Currency}})
+          </th>
+        </tr>
+        <tbody>
+          <tr *ngFor="let row of QuotItemList">
+            <td>{{row.ItemName}}</td>
+            <td *ngFor="let itm of row.Vendordetails">{{itm.Price}}</td>
+          </tr>
+          <tr>
+            <th style="align-content:center;font-size:16px;"><b>Total</b></th>
+            <td *ngFor="let amt of TotalAmount" style="align-content:center;font-size:16px;"><b>{{amt.Totalamount}}</b></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,26 @@
+
+<div class="row">
+            <div class="form-body">
+                <div class="col-md-12">
+                    <div class="caption">
+    
+                        <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
+                        <span class="caption-subject font-red-sunglo bold uppercase">Fraction&nbsp; Report&nbsp; By Item</span>
+                    </div>
+                </div>
+            </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-12 col-sm-12" *ngIf="fractionReportByItemList.length>0">
+            <danphe-grid [grid-colDefaults]="FractionReportGridColumns"
+                         [grid-data]="fractionReportByItemList"
+                         [grid-exportOptions]="gridExportOptions" [grid-showExport]="true"
+                         >
+            </danphe-grid>
+        </div>
+    </div>
+               
+    
+    
+    

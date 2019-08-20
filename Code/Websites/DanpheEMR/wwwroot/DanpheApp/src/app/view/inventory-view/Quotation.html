@@ -1,0 +1,173 @@
+
+<style>
+  .printStyle {
+    border: dotted 1px;
+    margin: 10px 100px;
+  }
+
+  .print-border-top {
+    border-top: dotted 1px;
+  }
+
+  .print-border-bottom {
+    border-bottom: dotted 1px;
+  }
+
+  .print-border {
+    border: dotted 1px;
+  }
+
+  .center-style {
+    text-align: center;
+  }
+
+  .border-up-down {
+    border-top: dotted 1px;
+    border-bottom: dotted 1px;
+  }
+
+ </style>
+<div class="row" >
+  <div class="col-lg-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="QuotationGridColumns" [grid-data]="quotationList" (grid-actions)="QuotationGridAction($event)"></danphe-grid>
+  </div>
+</div>
+<!-- This PopUp is for Just Showing how many QuotationItems there in the list-->
+<div class="popup-static portlet box portlet-fullscreen" style="margin-bottom:25px" *ngIf="showQuotationItemsList">
+  <div class="portlet-body" style="background-color:white">
+    <div class="col-md-12">
+      <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+      </div>
+      <div class="col-md-8 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+        <div style="padding:10px">
+          <i style="margin-top:10px; margin-right:-10px;" class="btn btn-danger pull-right" (click)="Close()" title="Cancel">X</i>
+        </div>
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            QUOTATION ITEM DETAILS
+          </div>
+          <div class="panel-body">
+            <div class="col-md-12 col-xs-12 col-sm-12">
+              <div class="table-responsive">
+                <table class="table table-striped table-hover" style="background-color:initial;margin-top:10px">
+                  <thead>
+                    <tr>
+                      <th><b>Item Name</b>
+                      <th><b>Price</b></th>
+                      <th><b>Description</b></th>
+                      <th><b>Uploaded Date</b></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let row of QuotationItems">
+                      <td>{{row.ItemName}}</td>
+                      <td>{{row.Price}}</td>
+                      <td>{{row.Description}}</td>
+                      <td>{{row.UpLoadedOn | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!--commented because this PopUp is used for Printing the QuotationItems in future if client wants then we will use it-->
+
+<!-- <div class="popup-static portlet box portlet-fullscreen" *ngIf="showQuotationPrintPage">
+  <div class="portlet-body" style="background-color:white">
+    <div class="col-md-12">
+      <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+      </div>
+      <div class="col-md-8 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+        <div style="padding:10px">
+          <i style="margin-top:10px; margin-right:-10px;" class="btn btn-danger pull-right" (click)="Close()" title="Cancel">X</i>
+        </div>
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            Quotation Print
+          </div>
+          <div class="panel-body">
+            <div class="col-md-12 col-xs-12 col-sm-12" style="margin-top:20px">
+              <div id="printpage" class="row printStyle print-border">
+                <div style="text-align:center;">
+                  <div class="col-md-12">
+                    <print-header [unit-name]="'Inventory Unit'"></print-header>
+                    <div class="left" style="text-align:left; width: 50%">
+                      <p>Subject:<b> {{quotationList.Subject}}</b></p>
+                      <p>Supplier Name:<b> {{quotationList.VendorName}}</b></p>
+                      
+                    </div>
+                    <div class="right" style="text-align:right;">
+                      <p>Quotation Date:<b> {{quotationList.CreatedOn |  DanpheDateTime:'format':'YYYY-MM-DD'}}</b></p>
+                     
+                      <p>Quotation Status: <b>{{quotationList.Status}}</b></p>
+                    </div>
+                    <div class="clear"></div>
+                    <p class="text-center btm-pad border-up-down"><b> Quotation Details</b></p>
+                    <div class="clear"></div>
+                    <div class="clear footer"></div>
+                    <div class="table-responsive">
+                      <table class="table table-striped table-hover quo-items" style="background-color:initial;margin-top:10px">
+                        <thead>
+                          <tr>
+                            <th style="width:30px"><b>Item Name</b>
+                            <th style="width:20px"><b>Price  (<small> per item</small>)</b></th>
+                            <th style="width:300px"><b>Description</b></th>
+                            <th style="width:30px"><b>Uploaded Date</b></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr *ngFor="let row of QuotationItems">
+                            <td>{{row.ItemName}}</td>
+                            <td>{{row.Price}}</td>
+                            <td>{{row.Description}}</td>
+                            <td>{{row.UpLoadedOn | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <hr />
+                   
+                    <div class="col-md-12 clear">
+                
+                      <div class="left" style="text-align:left">
+                        <strong>Prepared By</strong><br />
+                        Name: <b>{{ReqForQuotationList.RequestedBy}}</b><br />
+                        Designation: {{ReqForQuotationList.RequestedBy}}
+                        <br /><br /><br /><br />
+
+                      </div>
+                      <div class="right" style="text-align:left">
+                        <strong>Authorized By</strong><br />
+                        Name: <b>{{ReqForQuotationList.RequestedBy}}</b><br />
+                        Designation: {{ReqForQuotationList.RequestedBy}} <br /> <br />
+                        Sign:<hr>
+
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row center-style">
+                <div class="col-md-12 col-xs-12 ">
+                  <a (click)="print()" class="btn btn-default">
+                    Print
+                    <i class="glyphicon glyphicon-print"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> -->
+

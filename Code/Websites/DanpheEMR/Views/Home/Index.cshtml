@@ -1,0 +1,87 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>DanpheHealth</title>
+    <base href="">
+    <meta charset="utf-8" />
+    <!-- BEGIN GLOBAL MANDATORY STYLES -->
+    <link href="~/themes/theme-default/g-static/fonts-googleapi.css" rel="stylesheet" />
+
+    @*<link href="../assets/global/plugins/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css" />*@
+
+    <link href="~/assets-dph/external/global/plugins/font-awesome/css/font-awesome.min.css" rel="stylesheet" />
+    <link href="~/assets-dph/external/global/plugins/simple-line-icons/simple-line-icons.min.css" rel="stylesheet" />
+    <link href="~/assets-dph/external/global/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/assets-dph/external/global/plugins/bootstrap-switch/css/bootstrap-switch.min.css" rel="stylesheet" />
+    <link href="~/assets-dph/external/global/plugins/jqvmap/jqvmap.css" rel="stylesheet" />
+    <link href="~/assets-dph/external/global/css/components.min.css" rel="stylesheet" />
+    <link href="~/assets-dph/external/global/css/plugins.min.css" rel="stylesheet" />
+    <link href="~/themes/theme-default/layout.min.css" rel="stylesheet" />
+    <link href="~/assets-dph/external/layouts/css/darkblue.min.css" rel="stylesheet" />
+    @*<link href="~/assets-dph/external/layouts/css/custom.min.css" rel="stylesheet" />
+    <link href="~/themes/theme-default/custom.css" rel="stylesheet" />*@
+    <link href="~/themes/theme-default/DanpheStyle.css" rel="stylesheet" />
+    @*<link href="~/themes/theme-default/grid-style.css" rel="stylesheet" />*@
+    <link href="~/themes/theme-default/lightbox.css" rel="stylesheet" />
+
+    <link href="~/themes/theme-default/grid-style-new.css" rel="stylesheet" />
+    <link href="~/themes/theme-default/dropdown-style.css" rel="stylesheet" />
+
+   
+
+
+
+</head>
+
+
+<body class="page-header-fixed page-sidebar-closed-hide-logo page-container-bg-solid">
+    <!-- BEGIN CORE PLUGINS -->
+    <script src="~/assets-dph/external/global/jquery.min.js"></script>
+    <script src="~/assets-dph/external/global/plugins/bootstrap/js/bootstrap.min.js"></script>
+    <script src="~/assets-dph/external/global/js.cookie.min.js"></script>
+    <script src="~/assets-dph/external/global/plugins/bootstrap-switch/js/bootstrap-switch.min.js"></script>
+    <script src="~/assets-dph/external/amcharts/amcharts.js" type="text/javascript"></script>
+    <script src="~/assets-dph/external/amcharts/serial.js" type="text/javascript"></script>
+    <script src="~/assets-dph/external/amcharts/pie.js" type="text/javascript"></script>
+    <script src="~/assets-dph/external/amcharts/radar.js" type="text/javascript"></script>
+    <script src="~/assets-dph/external/amcharts/themes/light.js" type="text/javascript"></script>
+    <script src="~/assets-dph/external/amcharts/themes/patterns.js" type="text/javascript"></script>
+    <script src="~/assets-dph/external/amcharts/themes/chalk.js" type="text/javascript"></script>
+    <script src="~/assets-dph/external/amcharts/ammap/ammap.js" type="text/javascript"></script>
+    <script src="~/assets-dph/external/amcharts/amstock.js" type="text/javascript"></script>
+    <script src="~/assets-dph/external/amcharts/ammap/maps/nepalLow.js" type="text/javascript"></script>
+    <script src="~/assets-dph/external/global/app.min.js" type="text/javascript"></script>
+    <script src="~/assets-dph/external/layouts/layout.min.js" type="text/javascript"></script>
+    <script src="~/assets-dph/external/layouts/quick-sidebar.min.js" type="text/javascript"></script>
+    <script src="~/assets-dph/external/layouts/quick-nav.min.js" type="text/javascript"></script>
+    <script src="~/assets-dph/scripts/unicode/pramukhime.js" type="text/javascript"></script>
+    <script src="~/assets-dph/scripts/unicode/pramukhindic.js" type="text/javascript"></script>
+    <script src="~/assets-dph/scripts/unicode/pramukhindic-i18n.js" type="text/javascript"></script>
+    <script src="../themes/theme-default/assets/ckeditor/ckeditor.js" type="text/javascript"></script>
+
+
+
+    <my-app>
+        <h4 style="position:absolute;top:41%;left:30%;">
+            <b><span style="color:sandybrown ;">Please wait, DanpheHealth application is loading.............</span></b>
+            <img src="~/themes/theme-default/images/loading.gif" alt="Page Loading" height="100" width="100">
+        </h4>
+    </my-app>
+    @*Nagesh/vikas: Angular 7 Development & production code changes*@
+    <!--START: Production build code change  here-->
+    
+    @* Comment below 5 lines in production enviornment *@
+    @* below five lines only need in development time *@
+    <script type="text/javascript" src="/DanpheApp/dist/DanpheApp/runtime.js"></script>
+    <script type="text/javascript" src="/DanpheApp/dist/DanpheApp/polyfills.js"></script>
+    <script type="text/javascript" src="/DanpheApp/dist/DanpheApp/styles.js"></script>
+    <script type="text/javascript" src="/DanpheApp/dist/DanpheApp/vendor.js"></script>
+    <script type="text/javascript" src="/DanpheApp/dist/DanpheApp/main.js"></script>
+
+    @* Copy all code from /DanpheApp/dist/DanpheApp/Index.html
+        and paste here after comment line                         *@
+
+    <!--END: Production build code change  here-->
+</body>
+
+</html>

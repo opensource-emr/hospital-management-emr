@@ -1,0 +1,435 @@
+import { Component, Directive, ViewChild } from '@angular/core';
+import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
+import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
+import { AccountingReportsBLService } from "../shared/accounting-reports.bl.service";
+import { BalanceSheetReportVMModel } from "../shared/balance-sheet-reportVM.model";
+import { FiscalYearModel } from '../../settings/shared/fiscalyear.model';
+import * as moment from 'moment/moment';
+import { CommonFunctions } from '../../../shared/common.functions';
+
+@Component({
+  selector: 'my-app',
+  templateUrl: "./balance-sheet-report.html"
+})
+export class BalanceSheetReportComponent {
+  public fromDate: string = null;
+  public toDate: string = null;
+  public accBalanceSheetReportData: BalanceSheetReportVMModel = new BalanceSheetReportVMModel();
+  public balanceSheetData: any;
+  public AssetList: any = null;
+  public LiabilityList: any = null;
+  public fiscalYears: Array<FiscalYearModel> = new Array<FiscalYearModel>();
+  public selFiscalYear: number = 0;
+  public LiabilitiesData: any;
+  public DisplayData: any;
+  public AssetsData: any;
+  public showResult: boolean = false;
+  public netProfitLoss: number = 0;
+  public assetTotal: number = 0;
+  public liabilitiesTotal: number = 0;
+  public isLedgerLevel: boolean = false;
+  public showLedgerDetail: boolean = false;
+  public ledgerId: number = 0;
+  public ledgerName: string = '';
+  public dateRange: string = null;
+  public IsDataLoaded: boolean = false;
+
+  constructor(
+    public messageBoxService: MessageboxService,
+    public accReportBLService: AccountingReportsBLService) {
+    this.fromDate = moment().format('YYYY-MM-DD');
+    this.toDate = moment().format('YYYY-MM-DD');
+    this.loadFiscalYearList();
+    this.dateRange = "today";
+  }
+  //event onDateChange
+  onDateChange($event) {
+    this.showResult = false;
+    this.fromDate = $event.fromDate;
+    this.toDate = $event.toDate;
+    var type = $event.type;
+    this.checkDateValidation();
+    this.DisplayData = null;
+    if (type != "custom") {
+      this.LoadData();
+    }
+  }
+  //Load balance sheet data
+  LoadData() {
+    if (this.checkDateValidation() && this.checkValidFiscalYear()) {
+      try {
+        this.accReportBLService.GetBalanceSheetReportData(this.fromDate, this.toDate)
+          .subscribe(res => {
+            if (res.Status == 'OK') {
+              this.balanceSheetData = res.Results;
+              let ProfitLossData = this.balanceSheetData.filter(a => a.PrimaryGroup == "Revenue" || a.PrimaryGroup == "Expenses");
+              this.calNetProfitLoss(ProfitLossData);
+              this.balanceSheetData = this.balanceSheetData.filter(a => a.PrimaryGroup == "Assets" || a.PrimaryGroup == "Liabilities");
+              this.CalculateTotalAmounts();
+              this.LiabilityList = this.balanceSheetData.find(a => a.PrimaryGroup == "Liabilities");
+              this.AssetList = this.balanceSheetData.find(a => a.PrimaryGroup == "Assets");
+              this.formatDataforDisplay();
+              this.showResult = true;
+            }
+            else {
+              this.messageBoxService.showMessage("failed", [res.ErrorMessage])
+            }
+          });
+      }
+      catch (exception) {
+        this.ShowCatchErrMessage(exception);
+      }
+    }
+  }
+  checkDateValidation() {
+    let flag = true;
+    flag = moment(this.fromDate, "YYYY-MM-DD").isValid() == true ? flag : false;
+    flag = moment(this.toDate, "YYYY-MM-DD").isValid() == true ? flag : false;
+    flag = (this.toDate >= this.fromDate) == true ? flag : false;
+    if (!flag) {
+      this.messageBoxService.showMessage("error", ['select proper date(FromDate <= ToDate)']);
+    }
+    return flag;
+  }
+  checkValidFiscalYear() {
+    var frmdate = moment(this.fromDate, "YYYY-MM-DD");
+    var tdate = moment(this.toDate, "YYYY-MM-DD");
+    var flag = false;
+    this.fiscalYears.forEach(a => {
+      if ((moment(a.StartDate, 'YYYY-MM-DD') <= frmdate) && (tdate <= moment(a.EndDate, 'YYYY-MM-DD'))) {
+        flag = true;
+      }
+    });
+    if (!flag) {
+      this.messageBoxService.showMessage("error", ['Selected dates must be with in a fiscal year']);
+    }
+    return flag;
+  }
+  //Export data grid options for excel file
+  gridExportOptions = {
+    fileName: 'AccountingBalanceSheetReport_' + moment().format('YYYY-MM-DD') + '.xls',
+  };
+
+  //This function only for show catch messages
+  ShowCatchErrMessage(exception) {
+    if (exception) {
+      let ex: Error = exception;
+      this.messageBoxService.showMessage("error", ["Check error in Console log !"]);
+      console.log("Error Messsage =>  " + ex.message);
+      console.log("Stack Details =>   " + ex.stack);
+    }
+  }
+
+  calNetProfitLoss(listData) {
+    let expenseAmt = 0;
+    let revenueAmt = 0;
+    for (var i = 0; i < listData.length; i++) {
+      var overallTotal = 0;
+      for (var j = 0; j < listData[i].COAList.length; j++) {
+        var tAmt = 0;
+        for (var k = 0; k < listData[i].COAList[j].LedgerGroupList.length; k++) {
+          for (var l = 0; l < listData[i].COAList[j].LedgerGroupList[k].LedgerList.length; l++)
+            if (listData[i].PrimaryGroup == "Expenses") {
+              tAmt = tAmt + listData[i].COAList[j].LedgerGroupList[k].LedgerList[l].DRAmount - listData[i].COAList[j].LedgerGroupList[k].LedgerList[l].CRAmount;
+            }
+            else {
+              tAmt = tAmt + listData[i].COAList[j].LedgerGroupList[k].LedgerList[l].CRAmount - listData[i].COAList[j].LedgerGroupList[k].LedgerList[l].DRAmount;
+            }
+        }
+        overallTotal = overallTotal + tAmt;
+      }
+      expenseAmt = listData[i].PrimaryGroup == "Expenses" ? overallTotal : expenseAmt;
+      revenueAmt = listData[i].PrimaryGroup == "Revenue" ? overallTotal : revenueAmt;
+    }
+    this.netProfitLoss = revenueAmt - expenseAmt;
+  }
+
+  CalculateTotalAmounts() {
+    let expenseAmt = 0;
+    let revenueAmt = 0;
+
+
+    for (var i = 0; i < this.balanceSheetData.length; i++) {
+      var overallTotal = 0;
+      for (var j = 0; j < this.balanceSheetData[i].COAList.length; j++) {
+        var COAAmount = 0;
+        for (var k = 0; k < this.balanceSheetData[i].COAList[j].LedgerGroupList.length; k++) {
+          var LedgerGroupAmount = 0;
+
+          if (this.balanceSheetData[i].COAList[j].COA == "Capital and Equity") {
+            this.balanceSheetData[i].COAList[j].LedgerGroupList[k].LedgerList.push({ "LedgerId": 0, "LedgerName": "Net Profit and Loss", "LedgerGroupAmount": this.netProfitLoss });
+          }
+          for (var l = 0; l < this.balanceSheetData[i].COAList[j].LedgerGroupList[k].LedgerList.length; l++) {
+            var LedgerAmount = 0; var temp = 0;
+            /// calculating amount..if assets then debit - credit , else liablities then credit - debit
+            if (this.balanceSheetData[i].COAList[j].LedgerGroupList[k].LedgerList[l].LedgerName != "Net Profit and Loss") {
+
+              if (this.balanceSheetData[i].PrimaryGroup == "Assets") {
+                temp = this.balanceSheetData[i].COAList[j].LedgerGroupList[k].LedgerList[l].DRAmount - this.balanceSheetData[i].COAList[j].LedgerGroupList[k].LedgerList[l].CRAmount
+                  + this.balanceSheetData[i].COAList[j].LedgerGroupList[k].LedgerList[l].OpeningBalanceDr - this.balanceSheetData[i].COAList[j].LedgerGroupList[k].LedgerList[l].OpeningBalanceCr;
+              }
+              else {
+                temp = this.balanceSheetData[i].COAList[j].LedgerGroupList[k].LedgerList[l].CRAmount - this.balanceSheetData[i].COAList[j].LedgerGroupList[k].LedgerList[l].DRAmount
+                  + this.balanceSheetData[i].COAList[j].LedgerGroupList[k].LedgerList[l].OpeningBalanceCr - this.balanceSheetData[i].COAList[j].LedgerGroupList[k].LedgerList[l].OpeningBalanceDr;
+              }
+              //let temp = this.balanceSheetData[i].COAList[j].LedgerGroupList[k].LedgerList[l].DRAmount - this.balanceSheetData[i].COAList[j].LedgerGroupList[k].LedgerList[l].CRAmount
+              //    + this.balanceSheetData[i].COAList[j].LedgerGroupList[k].LedgerList[l].OpeningBalanceDr - this.balanceSheetData[i].COAList[j].LedgerGroupList[k].LedgerList[l].OpeningBalanceCr;
+              this.balanceSheetData[i].COAList[j].LedgerGroupList[k].LedgerList[l].Amount = temp;
+              LedgerGroupAmount = LedgerGroupAmount + temp;
+            }
+            else {
+              //    LedgerAmount = LedgerAmount + this.netProfitLoss;
+              this.balanceSheetData[i].COAList[j].LedgerGroupList[k].LedgerList[l].Amount = this.netProfitLoss;
+              LedgerGroupAmount = LedgerGroupAmount + this.netProfitLoss;
+            }
+          }
+          this.balanceSheetData[i].COAList[j].LedgerGroupList[k].Amount = CommonFunctions.parseAmount(LedgerGroupAmount);
+          COAAmount = COAAmount + LedgerGroupAmount;
+        }
+        this.balanceSheetData[i].COAList[j].Amount = CommonFunctions.parseAmount(COAAmount);
+        overallTotal = overallTotal + COAAmount;
+
+      }
+      this.balanceSheetData[i].Amount = CommonFunctions.parseAmount(overallTotal);
+    }
+
+  }
+
+
+
+  loadFiscalYearList() {
+    this.accReportBLService.GetFiscalYearsList().subscribe(res => {
+      if (res.Status == "OK") {
+        this.fiscalYears = res.Results;
+        //this.currentFiscalYear = this.fiscalYears.find(x => x.IsActive == true);
+        this.IsDataLoaded = true;
+      }
+      else {
+        this.messageBoxService.showMessage("failed", [res.ErrorMessage]);
+      }
+    });
+  }
+
+  formatDataforDisplay() {
+    this.AssetsData = [];
+    this.LiabilitiesData = [];
+    this.DisplayData = [];
+    let totAmt = 0;
+    let nonCurrentAssetsAmount = 0;
+    let currentAssetsAmount = 0;
+    let lessLiabilitiesAmount = 0;
+    //push Capital & Equity
+    this.LiabilityList.COAList.forEach(a => {
+      //if (a.COA == "Capital and Equity") {
+      //    totAmt = a.Amount;
+      //    this.DisplayData = this.pushToList(this.DisplayData, a.COA, "", "BoldCategory");
+      //    a.LedgerGroupList.forEach(b => {
+      //        if (b.LedgerGroupName == "Net Profit and Loss") {
+      //            this.DisplayData = this.pushToList(this.DisplayData, b.LedgerGroupName, b.Amount, "ledgerGroupLevel");
+      //        }
+      //        else {
+      //            this.DisplayData = this.pushToList(this.DisplayData, b.LedgerGroupName, b.Amount, "ledgerGroupLevel");
+      //            b.LedgerList.forEach(c => {
+      //                this.DisplayData = this.pushToList(this.DisplayData, c.LedgerName, c.Amount, "ledgerLevel");
+      //            });
+      //        }
+      //    });
+      //}
+      if (a.COA == "Capital and Equity") {
+        totAmt = a.Amount;
+        this.DisplayData = this.pushToList(this.DisplayData, a.COA, "", "BoldCategory", 0, []);
+        a.LedgerGroupList.forEach(b => {
+          this.DisplayData = this.pushToList(this.DisplayData, b.LedgerGroupName, b.Amount, "ledgerGroupLevel", 0, []);
+          b.LedgerList.forEach(c => {
+            this.DisplayData = this.pushToList(this.DisplayData, c.LedgerName, c.Amount, "ledgerLevel", c.LedgerId, c.Details);
+          });
+        });
+      }
+    });
+
+    //push Long Term Liabilities
+    this.LiabilityList.COAList.forEach(a => {
+      if (a.COA == "Long Term Liabilities") {
+        totAmt += a.Amount;
+        this.DisplayData = this.pushToList(this.DisplayData, a.COA, "", "BoldCategory", 0, []);
+        a.LedgerGroupList.forEach(b => {
+          this.DisplayData = this.pushToList(this.DisplayData, b.LedgerGroupName, b.Amount, "ledgerGroupLevel", 0, []);
+          b.LedgerList.forEach(c => {
+            this.DisplayData = this.pushToList(this.DisplayData, c.LedgerName, c.Amount, "ledgerLevel", c.LedgerId, c.Details);
+          });
+        });
+      }
+    });
+    //push total amount of Capital & Equity's + Long Term Liabilities
+    this.DisplayData = this.pushToList(this.DisplayData, "Total", totAmt, "BoldTotal", 0, []);
+    //blank entry
+    //this.DisplayData = this.pushToList(this.DisplayData, "", 0, "BlankEntry",0);
+
+    //Assets
+    this.DisplayData = this.pushToList(this.DisplayData, "Assets", "", "BoldCategory", 0, []);
+    //push non current assets
+
+    this.DisplayData = this.pushToList(this.DisplayData, "Non Current Assets", 0, "BoldCategory", 0, []);
+    this.AssetList.COAList.forEach(a => {
+      if (a.COA == "Non Current Assets") {
+        nonCurrentAssetsAmount = a.Amount;
+        a.LedgerGroupList.forEach(b => {
+          this.DisplayData = this.pushToList(this.DisplayData, b.LedgerGroupName, b.Amount, "ledgerGroupLevel", 0, []);
+          b.LedgerList.forEach(c => {
+            this.DisplayData = this.pushToList(this.DisplayData, c.LedgerName, c.Amount, "ledgerLevel", c.LedgerId, c.Details);
+          });
+        });
+      }
+    });
+    //total non current asstes
+    this.DisplayData = this.pushToList(this.DisplayData, "Total Non Current Assets", nonCurrentAssetsAmount, "BoldTotal", 0, []);
+    //blank entry
+    //this.DisplayData = this.pushToList(this.DisplayData, "", 0, "BlankEntry",0);
+
+    //push current assets
+    this.DisplayData = this.pushToList(this.DisplayData, "Current Assets", 0, "BoldCategory", 0, []);
+    this.AssetList.COAList.forEach(a => {
+      if (a.COA == "Current Assets") {
+        currentAssetsAmount = a.Amount;
+        a.LedgerGroupList.forEach(b => {
+          if (b.Amount != 0) {
+            this.DisplayData = this.pushToList(this.DisplayData, b.LedgerGroupName, b.Amount, "ledgerGroupLevel", 0, []);
+            b.LedgerList.forEach(c => {
+              this.DisplayData = this.pushToList(this.DisplayData, c.LedgerName, c.Amount, "ledgerLevel", c.LedgerId, c.Details);
+            });
+          }
+        });
+      }
+    });
+    //total current assets
+    this.DisplayData = this.pushToList(this.DisplayData, "Total Current Assets", currentAssetsAmount, "BoldTotal", 0, []);
+    //blank entry
+    //this.DisplayData = this.pushToList(this.DisplayData, "", 0, "BlankEntry",0);
+
+    //less current liabiliteis
+    this.LiabilityList.COAList.forEach(a => {
+      if (a.COA == "Current Liabilities") {
+        lessLiabilitiesAmount = a.Amount
+        this.DisplayData = this.pushToList(this.DisplayData, a.COA, 0, "BoldCategory", 0, []);
+        a.LedgerGroupList.forEach(b => {
+          if (b.Amount != 0) {
+            this.DisplayData = this.pushToList(this.DisplayData, b.LedgerGroupName, b.Amount, "ledgerGroupLevel", 0, []);
+            b.LedgerList.forEach(c => {
+              this.DisplayData = this.pushToList(this.DisplayData, c.LedgerName, c.Amount, "ledgerLevel", c.LedgerId, c.Details);
+            });
+          }
+        });
+      }
+    });
+
+    //total Current Liabilities
+    this.DisplayData = this.pushToList(this.DisplayData, "Total Current Liabilities", lessLiabilitiesAmount, "BoldTotal", 0, []);
+    //blank entry
+    //this.DisplayData = this.pushToList(this.DisplayData, "", 0, "BlankEntry",0);
+
+    //net current assets =(current assets) - (current liabilities)
+    let netAmt = currentAssetsAmount - lessLiabilitiesAmount;
+    this.DisplayData = this.pushToList(this.DisplayData, "Net Current Assets", netAmt, "BoldTotal", 0, []);
+    //blank entry
+    //this.DisplayData = this.pushToList(this.DisplayData, "", 0, "BlankEntry",0);
+
+    //total =(non current asstes + net current)
+    this.DisplayData = this.pushToList(this.DisplayData, "Total", nonCurrentAssetsAmount + netAmt, "BoldTotal", 0, []);
+    //blank entry
+    //this.DisplayData = this.pushToList(this.DisplayData, "", 0, "BlankEntry",0);
+
+  }
+
+  //common function for foramtting
+  //it takes source list, name, amount and style string then return by attaching obj to it.
+  pushToList(list, name, amt, style, ledgerId, Details) {
+    let Obj = new Object();
+    Obj["Name"] = name;
+    Obj["Amount"] = amt;
+    Obj["Style"] = style;
+    Obj["LedgerId"] = ledgerId;
+    Obj["ShowLedgerGroup"] = false;
+    Obj["ShowLedger"] = false;
+    if (Details != undefined) {
+      for (let i = 0; i < Details.length; i++) {
+        if (Details[i].Dr >= Details[i].Cr) {
+          Details[i].Dr = Details[i].Dr - Details[i].Cr;
+          Details[i].Cr = 0;
+        }
+        else {
+          Details[i].Cr = Details[i].Cr - Details[i].Dr;
+          Details[i].Dr = 0;
+        }
+      }
+    }
+    Obj["Details"] = Details;
+    list.push(Obj);
+
+    return list;
+  }
+  Print() {
+    let popupWinindow;
+    var headerContent = document.getElementById("headerForPrint").innerHTML;
+    var printContents = '<b>Report Date Range: ' + this.fromDate + ' To ' + this.toDate + '</b>';
+    printContents += '<style> table { border-collapse: collapse; border-color: black; } th { color:black; background-color: #599be0; } </style>';
+    printContents += document.getElementById("printpage").innerHTML;
+    popupWinindow = window.open('', '_blank', 'width=600,height=700,scrollbars=no,menubar=no,toolbar=no,location=no,status=no,titlebar=no');
+    popupWinindow.document.open();
+    let documentContent = "<html><head>";
+    documentContent += '<link rel="stylesheet" type="text/css" media="print" href="../../themes/theme-default/DanphePrintStyle.css"/>';
+    documentContent += '<link rel="stylesheet" type="text/css" href="../../themes/theme-default/DanpheStyle.css"/>';
+    documentContent += '<link rel="stylesheet" type="text/css" href="../../../assets/global/plugins/bootstrap/css/bootstrap.min.css"/>';
+    documentContent += '</head>';
+    documentContent += '<body onload="window.print()">' + headerContent + printContents + '</body></html>'
+    popupWinindow.document.write(documentContent);
+    popupWinindow.document.close();
+  }
+  ExportToExcel(tableId) {
+    if (tableId) {
+      let workSheetName = 'Balance Sheet Report';
+      let Heading = 'Balance sheet Report';
+      let filename = 'BalanceSheetReport';
+      //NBB-send all parameters for now 
+      //need enhancement in this function 
+      //here from date and todate for show date range for excel sheet data
+      CommonFunctions.ConvertHTMLTableToExcel(tableId, this.fromDate, this.toDate, workSheetName,
+        Heading, filename);
+    }
+  }
+
+  SwitchViews(row) {
+    if (row.Name != 'Net Profit and Loss') {
+      this.ledgerId = row.LedgerId;
+      this.ledgerName = row.Name;
+      this.showLedgerDetail = true;
+    }
+  }
+  ShowReport($event) {
+    this.showLedgerDetail = false;
+  }
+  ShowChild(row, level) {
+    let flag = 1;
+    for (let i = 0; i < this.DisplayData.length; i++) {
+      if (flag == 0) {
+        if (level == 'COA') {
+          this.DisplayData[i].ShowLedgerGroup = (this.DisplayData[i].ShowLedgerGroup == true) ? false : true;
+          if (this.DisplayData[i].ShowLedgerGroup == false) {
+            this.DisplayData[i + 1].ShowLedger = false;
+          }
+          if (this.DisplayData[i].Style == 'BoldCategory') {
+            break;
+          }
+        }
+        else {
+          this.DisplayData[i].ShowLedger = (this.DisplayData[i].ShowLedger == true) ? false : true;
+          if (this.DisplayData[i].Style == 'ledgerGroupLevel') {
+            break;
+          }
+        }
+      }
+      if (this.DisplayData[i] == row) {
+        flag = 0;
+      }
+    }
+  }
+}

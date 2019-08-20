@@ -1,0 +1,89 @@
+<style>
+  .labBarCodeSticker{margin: 0 auto;}
+  .test-list{max-height: 250px;min-height: 175px;}
+  .lbl-rotate {
+    height: 20px;
+    width: 70px;
+    transform: translateX(25%) translateY(-50%) rotate(90deg);
+    font-weight: bold;
+    float: right;
+    font-size: 14px;
+    line-height: 0.8;
+    position: absolute;
+    right: 0;
+    top: 50%;
+    z-index: 2;
+    text-align: center;
+  }
+</style>
+
+<div class="lab-sticker" *ngIf="showlabsticker">
+  <div [ngClass]="allLabRequisitions && allLabRequisitions.length > 0 ? 'row':''">
+    <div [ngClass]="allLabRequisitions && allLabRequisitions.length > 0 ? 'col-md-8':''" *ngIf="allLabRequisitions && allLabRequisitions.length > 0">
+      <div class="row">
+        <div class="col-md-3">
+          <p class="margin-0-vr"><strong>Patient Name</strong></p>
+          <!--<p><strong>Total number of tests</strong></p>-->
+        </div>
+        <div class="col-md-9">
+          <p class="margin-0-vr"><strong>{{patientinfos.PatientName}}</strong></p>
+          <!--<p><strong>{{allLabRequisitions.length}}</strong></p>-->
+        </div>
+      </div>
+      <div class="table-responsive scroll-vertical test-list margin-15-tp">        
+        <table class="table table-bordered">
+          <thead>  
+            <tr>
+              <th>Test Name</th>
+              <th>Requested On</th>
+              <th>Referred By</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let req of allLabRequisitions;">
+              <td>{{req.LabTestName}}</td>
+              <td>{{req.OrderDateTime  | DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'}}</td>
+              <td>{{req.ProviderName}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div [ngClass]="allLabRequisitions && allLabRequisitions.length > 0 ? 'col-md-4':''" class="sticker-holder">
+      <div id="LabSticker">
+        <div class="labBarCodeSticker" style="width: 180px;position: relative;display:block;font-family:sans-serif;font-size: 11px;padding: 0px;border: 1px dashed;">
+          <div style="width:100%;display:inline-block; font-size:12px;">
+            Hosp. No: <b> {{patientinfos.HospitalNumber}} &nbsp;<span>{{patientinfos.VisitType}}</span></b>
+            <br />
+            <b style="padding-right: 20px;display: inline-block;">{{patientinfos.PatientName}} {{patientinfos.AgeSex}}</b>
+          </div>
+          <div style="width:100%;margin-top: -3px;">
+            <danphe-bar-code [barcode-number]="patientinfos.BarCodeNumber" [width]="1.5" [height]="25" [barcode-margin]="3" [text-margin]="0">
+            </danphe-bar-code>
+          </div>
+          <div class="lbl-rotate">
+            {{patientinfos.SampleCodeFormatted}}
+          </div>
+        </div>
+      </div>
+      <div class="print-button-holder">
+        <div class="text-center">
+          <div class="margin-15-tp">
+            <div>
+              <label for="numberOfPrint">No. of copies: &nbsp;</label><input id="numberOfPrint" type="number" style="padding: 2px 5px 5px 5px;" [(ngModel)]="numberOfPrint" min="0" max="5" name="number of barcode print" value="" onwheel="this.blur()" />
+            </div>
+            <div class="margin-15-tp">
+              <!--print from server if showServerSidePrinting is true.-->
+              <button *ngIf="showServerSidePrinting" [disabled]="loading" (click)="loading = true;PrintLabSticker_Server(numberOfPrint);" class="btn blue" id="printBarCOde" style="padding: 3px 15px;"><i class="fa fa-print"></i>&nbsp;Print</button>
+
+              <!--else print from browser-->
+              <button *ngIf="!showServerSidePrinting" (click)="PrintLabSticker_Client(numberOfPrint);" class="btn blue" id="printBarCOde" style="padding: 3px 15px;"><i class="fa fa-print"></i>&nbsp;Print</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+

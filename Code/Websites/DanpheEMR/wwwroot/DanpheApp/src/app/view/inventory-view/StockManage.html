@@ -1,0 +1,82 @@
+﻿<div class="row">
+    <div class="col-md-12">
+        <div class="caption">
+            <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
+            <span class="caption-subject font-blue-sharp bold uppercase">Stock Manage</span>
+        </div>
+    </div>
+</div>
+<div class="row" style="padding-top:5px;">
+    <div class="col-md-12" style="background-color:whitesmoke">
+        <div class="form-control" style="background-color:whitesmoke">
+            <b>Item Name : {{this.itemName}}</b>
+            <br />
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="table-responsive" style="padding-top:10px">
+            <table class="table table-striped table-hover" style="background-color:initial">
+                <thead>
+                    <tr style="font-weight:bold;text-align:left">
+                        <td></td>
+                        <td>Batch No.</td>
+                        <td>Received Qty</td>
+                        <td>Current Qty</td>
+                        <td>Modified Qty</td>
+                        <td><a (click)="AddRow()"><i class="glyphicon glyphicon-plus btn btn-success"></i></a></td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let row of stockDetails" style="text-align:left">
+                        <td></td>
+                        <td><input [(ngModel)]="row.BatchNo" disabled style="width:150px" class="table-input" name="BatchNo" type="text" /></td>
+                        <td><input [(ngModel)]="row.ReceivedQty" disabled style="width:150px" class="table-input" name="ReceivedQty" type="text" /></td>
+                        <td><input [(ngModel)]="row.curQuantity" disabled style="width:150px" class="table-input" name="curQuantity" type="text" /></td>
+                        <td><input [(ngModel)]="row.ModQuantity" (ngModelChange)="CalculationAll()" style="width:150px" class="table-input" name="ModQuantity" type="number" min="0" /></td>
+                        <td></td>
+                    </tr>
+                    <tr *ngFor="let row of tempList; let i = index" style="text-align:left">
+                        <td><a (click)="DeleteRow(i)"><i class="btn btn-danger fa">X</i></a></td>
+                        <td>
+                            <input danphe-auto-complete [(ngModel)]="row.BatchNo" class="table-input" [source]="zeroStockDetails" [list-formatter]="myListFormatter"
+                                   placeholder="Batch No" display-property-name="BatchNo" value-property-name=null min-chars="1"
+                                   (valueChanged)="SelectBatchNoFromSearchBox(row.BatchNo,i)" max-num-list="10" style="width:150px " />
+                        </td>
+                        <td><input [(ngModel)]="row.ReceivedQty" disabled style="width:150px" class="table-input" name="ReceivedQty" type="text" /></td>
+                        <td><input [(ngModel)]="row.curQuantity" disabled style="width:150px" class="table-input" name="curQuantity" type="text" /></td>
+                        <td><input [(ngModel)]="row.ModQuantity" (ngModelChange)="CalculationAll()" style="width:150px" class="table-input" name="ModQuantity" type="number" min="0" /></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="table-responsive">
+            <table class="col-sm-offset-3 col-sm-5" style="margin-top:10px">
+                <tr>
+                    <td>Current Total Available : </td>
+                    <td>
+                        <input [(ngModel)]="currQuantity" [ngModelOptions]="{standalone: true}"
+                               disabled class="form-control" name="currQuantity" type="number" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>Modified Total Available : </td>
+                    <td>
+                        <input [(ngModel)]="moddQuantity" [ngModelOptions]="{standalone: true}"
+                               disabled class="form-control" name="moddQuantity" type="number" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-sm-offset-5 col-sm-5" style="margin-top:10px">
+            <input type="button" class="btn btn-success" value="Update Stock" (click)="UpdateStock()" />
+            <span></span>
+            <input type="button" class="btn btn-danger" (click)="routetoStockList()" value="Cancel">
+            <span></span>
+        </div>
+    </div>
+</div>

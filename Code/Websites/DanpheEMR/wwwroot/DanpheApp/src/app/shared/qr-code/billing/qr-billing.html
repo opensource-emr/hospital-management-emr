@@ -1,0 +1,38 @@
+﻿<div class="popup-static portlet box portlet-fullscreen w3-modal-content w3-card-4 w3-animate-zoom" *ngIf="qrService.showBilling">
+    <div class="portlet-body form" style="background-color:white">
+        <!--Model Box Body Start-->
+        <div class="form-body">
+            <div class="col-md-12">
+                <div class="col-md-12 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;padding-bottom: 12px;">
+                    <div class="col-md-12">
+                        <div class="caption" style="color:blue;">
+                            <h3>
+                                <span>Scan Patient Card for Billing</span>
+                            </h3>
+                        </div>
+                        <a style="float:right;  margin-top:-32px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                    </div>
+
+                    <danphe-qr-reader *ngIf="qrService.show" (on-success)="OnQrReadSuccess($event)">
+
+                    </danphe-qr-reader>
+
+                    <div class="col-md-12" *ngIf="showBillingPanel" style="padding: 10px;">
+                        <button class="btn green" (click)="NewBillingRequest()">New Billing Request</button>
+                        <button class="btn green" (click)="NewDeposit()">Add Deposit</button>
+                        <!--<button class="btn blue" (click)="DoctorOrders()">Doctor Orders</button>
+                        <button class="btn blue" (click)="BillHistory()">Bill History</button>
+                        <button class="btn blue" (click)="Settlements()">Credit Settlements</button>-->
+
+                        <div>
+                            <bill-history [showPatientBillHistory]="showBillingPanel"
+                                          [patient]="selPatient"></bill-history>
+                        </div>
+                      
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

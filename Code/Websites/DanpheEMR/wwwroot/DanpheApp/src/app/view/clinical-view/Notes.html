@@ -1,0 +1,90 @@
+
+<div *ngIf="showNotesMain" style="padding-top: 10px;">
+  <div *ngIf="!summaryMode">
+    <h3 class="caption-subject font-blue-soft bold uppercase" style="font-size: 20px;margin:0px;">Clinical Notes</h3>
+    <hr />
+    <button class="btn blue" (click)="AddNewOPDGeneralNote()">
+      <i class="fa fa-plus"></i>
+      Add OPD General Note
+    </button>
+    <button class="btn blue" (click)="AddNewOPDOrthoNote()">
+      <i class="fa fa-plus"></i>
+      Add OPD Orthopedics Note
+    </button>
+    <hr />
+  </div>
+
+  <div *ngIf="summaryMode" style="width: 100%;margin-top: 15px;text-align:center;">
+    <h3 class="caption-subject font-blue-soft bold uppercase" style="font-size: 20px;margin:0px;">Notes Summary</h3>
+  </div>
+
+  <div *ngIf="!patientClinicalNotes.length" style="text-align: center;margin-top: 30px;">
+    <h4>No Data Found. Please Add Some Notes for this patient</h4>
+  </div>
+
+
+
+  <table class="table table-bordered" *ngIf="patientClinicalNotes.length">
+    <thead style="background-color:whitesmoke">
+      <tr>
+        <th sortable-header col="itemnames"><b>Date</b></th>
+        <th sortable-header col="itemnames"><b>Note Type</b></th>
+        <th sortable-header col="itemnames"><b>Action</b></th>
+      </tr>
+    </thead>
+
+    <tr *ngFor="let note of patientClinicalNotes">
+      <td>{{note.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</td>
+      <td>{{note.NoteType}}</td>
+      <td>
+        <button class="btn blue" (click)="EditNote(note)" *ngIf="!summaryMode">
+          <i class="fa fa-edit"></i>
+          Edit
+        </button>
+        <button class="btn blue" (click)="ViewNote(note)">
+          <i class="fa fa-window-maximize"></i>
+          View
+        </button>
+      </td>
+    </tr>
+
+  </table>
+</div>
+
+<div *ngIf="!showNotesMain">
+  <button class="btn blue pull-left" (click)="BackToNotesMain()">
+    <i class="fa fa-backward"></i>
+    Back
+  </button>
+  <opd-general-note [showOPDGeneralNote]="showOPDGeneralNote"
+                    [notesId]="notesId"
+                    (callBackAddUpdate)="BackToNotesMain()" [renderType]="renderMode"></opd-general-note>
+
+  <opd-ortho-note *ngIf="showOrthoNote"></opd-ortho-note>
+</div>
+
+
+<button class="btn blue pull-left" (click)="ShowPrescriptionNote()">
+  Show Prescription Notes
+</button>
+
+<div *ngIf="showPrescriptionNote">
+
+
+  <div class="popup-static portlet box portlet-fullscreen">
+    <div class="portlet-body form">
+      <div class="modelbox-div" style="">
+        <div style="margin:15px;padding:10px;">
+          <div class="cstm-close" (click)="HidePrescriptionNote()" style="float:right;">
+            <a><i class="fa fa-close"></i> </a>
+          </div>
+          <prescription-note *ngIf="showPrescriptionNote">
+          </prescription-note>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</div>
+

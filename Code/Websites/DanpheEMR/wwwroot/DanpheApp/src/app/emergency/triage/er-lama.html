@@ -1,0 +1,78 @@
+﻿<style>
+    .btn-critc:hover {
+        background: #f70a0a !important;
+        color: #fff;
+    }
+
+    .btn-moderate:hover {
+        background: #ff4500 !important;
+        color: #fff;
+    }
+
+    .btn-normal:hover {
+        background: #50e812 !important;
+        color: #fff;
+    }
+</style>
+<div style="width: 100%;position: relative;padding: 0px 0px 25px 0px;background: #000000e6;">
+    <div class="row">
+        <div class="form-body">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <div class="col-md-12">
+                        <a style="font-size: 16px; display: block; font-weight: 700; background: #0f1314;border-color: #fff;border: none;border-bottom: 1px solid #fff;" class="btn blue bordered btn-sm" name="Anonymous Patient">                            
+                             <!-- ag7_mig_fix:(click)="RegisterNewERPatient()" not exist in component -->                       
+                            <span *ngIf="action=='discharged'" style="display: inline-block; margin-left: 5px;">Discharge Patient</span>
+                            <span *ngIf="action=='transferred'" style="display: inline-block; margin-left: 5px;">Transfer Patient</span>
+                            <span *ngIf="action=='lama'" style="display: inline-block; margin-left: 5px;">Leave Against Medical Advice</span>
+                            <span *ngIf="action=='death'" style="display: inline-block; margin-left: 5px;">Death</span>
+                            <span *ngIf="action=='admitted'" style="display: inline-block; margin-left: 5px;">Admit Patient</span>
+                        </a>
+                    </div>
+
+                    <div class="col-md-12">
+                        <div class="table-responsive">
+                            <table class="table table-bordered" style="color: #fff;">
+                                <thead>
+                                    <tr>
+                                        <th>Patient Name</th>
+                                        <th>Age/Sex</th>
+                                        <th>Visit Date/Time</th>
+                                        <th>Case</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>{{ERPatient.FullName}}</td>
+                                        <td>{{ERPatient.Age}}/{{ERPatient.Gender}}</td>
+                                        <td>{{ERPatient.VisitDateTime | DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'}}</td>
+                                        <td>{{ERPatient.Case}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="col-md-8">
+                        <label *ngIf="action=='lama'" style="display: block; color: #fff;">Remarks</label>
+                        <label *ngIf="action=='transferred'" style="display: block; color: #fff;">Remarks</label>
+                        <label *ngIf="action=='discharged'" style="display: block; color: #fff;">Remarks</label>
+                        <label *ngIf="action=='death'" style="display: block; color: #fff;">Remarks</label>
+                        <label *ngIf="action=='admitted'" style="display: block; color: #fff;">Remarks</label>
+                        <textarea style="width: 100%;" rows="4" [(ngModel)]="ERPatient.FinalizedRemarks"></textarea>
+                        <button [disabled]="loading" style="font-size: 16px; display: block; font-weight: 700;margin-top: 12px;" class="btn blue bordered btn-sm" name="update" (click)="loading=true;PutLamaOfERPatient(action);">
+                            <i style="font-size: 16px;" class="fa fa-plus-circle"></i>
+                            <span *ngIf="action=='lama'" style="display: inline-block; margin-left: 5px;">Leave Against Medical Advice</span>
+                            <span *ngIf="action=='transferred'" style="display: inline-block; margin-left: 5px;">Transfer</span>
+                            <span *ngIf="action=='discharged'" style="display: inline-block; margin-left: 5px;">Discharge</span>
+                            <span *ngIf="action=='admitted'" style="display: inline-block; margin-left: 5px;">Admit</span>
+                            <span *ngIf="action=='death'" style="display: inline-block; margin-left: 5px;">Death</span>
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <a (click)="Close()" style="background: #b51717;padding: 7px 6px 2px;position: absolute;right: 0;top: 0px; color: #fff;"><i class="fa fa-2x fa-close"></i></a>
+    </div>
+</div>

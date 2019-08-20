@@ -1,0 +1,145 @@
+﻿<div class="row">
+    <form [formGroup]="currentDrIncome.DoctorwisIncomeSummaryReportValidator" class="form-horizontal">
+        <div class="form-body">
+            <div class="col-md-12">
+                <div class="caption">
+                    <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
+                    <span class="caption-subject font-red-sunglo bold uppercase">DOCTORWISE INCOME SUMMARY (OP + IP) REPORT</span>
+                </div>
+                <div class="col-md-5 col-xs-12">
+                    <div class="form-group">
+                        <label class="control-label col-md-5">From Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                        <div class="col-md-7">
+                            <danphe-date-picker [(ngModel)]="currentDrIncome.fromDate" ngDefaultControl [CalendarTypes]="calType" formControlName="fromDate">
+                            </danphe-date-picker>
+                            <span class="color-red font-sm" *ngIf="currentDrIncome.IsDirty('fromDate')" [hidden]="currentDrIncome.IsValidCheck('fromDate','required')"> From Date is required</span><br />
+                            <span class="color-red font-sm" *ngIf="currentDrIncome.IsDirty('fromDate')" [hidden]="currentDrIncome.IsValidCheck('fromDate','wrongDate')"> Enter Valid Date</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-5 col-xs-12">
+                    <div class="form-group">
+                        <label class="control-label col-md-4">To Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                        <div class="col-md-8">
+                            <danphe-date-picker [(ngModel)]="currentDrIncome.toDate" ngDefaultControl [CalendarTypes]="calType" formControlName="toDate">
+                            </danphe-date-picker>
+                            <span class="color-red font-sm" *ngIf="currentDrIncome.IsDirty('toDate')" [hidden]="currentDrIncome.IsValidCheck('toDate','required')"> To Date is required</span><br />
+                            <span class="color-red font-sm" *ngIf="currentDrIncome.IsDirty('toDate')" [hidden]="currentDrIncome.IsValidCheck('toDate','wrongDate')"> Can't select future date</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2 col-xs-12">
+                    <div class="col-md-2 col-xs-12">
+                        <div class="form-group">
+                            <button class="btn blue" type="button" (click)="Load()">
+                                <i class="fa fa-search"></i>
+                                Show Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div class="col-md-5 col-xs-12">
+                    <div class="form-group">
+                        <label class="control-label col-md-5">Doctor<b style="float:right;">:</b></label>
+                        <div class="col-md-7">
+                            <select [(ngModel)]="currentDrIncome.providerId" class="form-control" [ngModelOptions]="{standalone: true}">
+                                <option>---Select---</option>
+                                <option value="0">No Doctor</option>
+                                <option *ngFor="let doc of doctorList" value="{{doc.EmployeeId}}">
+                                    {{doc.FullName}}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="row" *ngIf="showReport">
+    <div class="col-md-12" id="printPage">
+        <div class="text-center bill-head col-md-12" style="text-align:center;font-family:sans-serif;padding-top: 5px;">
+            <span style="font-size:20px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
+            <span style="font-size:14px;">{{headerDetail.address}}</span><br />
+        </div>
+        <div class="col-md-12">
+            <span class="col-md-2 left">From Date: {{fromDate}}<br />ToDate: {{toDate}}<br /></span>
+            <span class="col-md-8" style="text-align:center"><b>DOCTORWISE INCOME SUMMARY (OP + IP) REPORT</b></span>
+            <span class="col-md-2 right">Print Date: {{currentDate}}</span>
+        </div>
+        <div class="col-md-12">
+            <table class="table table-striped table-hover" style="background-color:initial;margin-top:10px">
+                <thead>
+                    <tr>
+                        <td rowspan="2" style="text-align:center"><b>Sr No.</b></td>
+                        <td rowspan="2"><b>Doctor Name</b></td>
+                        <td colspan="4" style="text-align:center"><b>OP Income</b></td>
+                        <td colspan="4" style="text-align:center"><b>IP Income</b></td>
+                        <td rowspan="2"><b>Grand Total</b></td>
+                    </tr>
+                    <tr>
+                        <td style="text-align:center"><b>Collection</b></td>
+                        <td style="text-align:center"><b>Discount</b></td>
+                        <td style="text-align:center"><b>Refund</b></td>
+                        <td style="text-align:center"><b>NetTotal</b></td>
+                        <td style="text-align:center"><b>Collection</b></td>
+                        <td style="text-align:center"><b>Discount</b></td>
+                        <td style="text-align:center"><b>Refund</b></td>
+                        <td style="text-align:center"><b>NetTotal</b></td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let row of reportData;let i=index">
+                        <td style="text-align:center">{{i+1}}</td>
+                        <td>{{row.DoctorName}}</td>
+                        <td style="text-align:right">{{row.OP_Collection | ParseAmount}}</td>
+                        <td style="text-align:right">{{row.OP_Discount | ParseAmount}}</td>
+                        <td style="text-align:right">{{row.OP_Refund | ParseAmount}}</td>
+                        <td style="text-align:right">{{row.OP_NetTotal | ParseAmount}}</td>
+                        <td style="text-align:right">{{row.IP_Collection | ParseAmount}}</td>
+                        <td style="text-align:right">{{row.IP_Discount | ParseAmount}}</td>
+                        <td style="text-align:right">{{row.IP_Refund | ParseAmount}}</td>
+                        <td style="text-align:right">{{row.IP_NetTotal | ParseAmount}}</td>
+                        <td style="text-align:right">{{row.Grand_Total | ParseAmount}}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <table class="table table-striped table-hover table-responsive" style="margin-top:10px">
+                <tr>
+                    <th>Gross Total:</th>
+                    <td>{{summary.tot_SubTotal}}</td>
+                    <th>Discount Amount:</th>
+                    <td>{{summary.tot_Discount}}</td>
+                    <th>Return Amount:</th>
+                    <td>{{summary.tot_Refund}}</td>
+                    <th>Net Total:</th>
+                    <td>{{summary.tot_NetTotal}}</td>
+                </tr>
+                <tr>
+                    <th>Provisional Amount:</th>
+                    <td>{{summary.tot_Provisonal}}</td>
+                    <th>Cancel Amount:</th>
+                    <td>{{summary.tot_Cancel}}</td>
+                    <th>Credit Amount:</th>
+                    <td>{{summary.tot_Credit}}</td>
+                    <th>Cash Collection:</th>
+                    <td>{{summary.tot_CashCollection}}</td>
+                    <th>Total Sales:</th>
+                    <td>{{summary.tot_SalesTotal}}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div class="form-group" style="text-align:center">
+        <button class="blue btn" type="button" (click)="Print()">
+            <i class="fa fa-print"></i>
+            Print
+        </button>
+        <button class="blue btn" type="button" title="Export to Excel" (click)="ExportToExcel()">
+            <i class="fa fa-file-excel-o"></i>
+            Export
+        </button>
+    </div>
+</div>

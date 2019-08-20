@@ -1,0 +1,76 @@
+﻿<div *ngIf="showSticker">
+    <div id="EmergencySticker" style="width: 400px;height: 170px;border: 1px dotted black;padding: 10px;">
+        <div id="emergencyStickerPrint" style="width:370px; height:180px;margin:0px;display:block;font-family:sans-serif;">
+            <div style="width:100%;">
+                <div>
+                    <div style="font-size:14px;">
+                        <span>
+                            <b>Emergency</b>
+                        </span>
+                        <span *ngIf="stickerDetail.ProviderName">
+                            <b>/ {{stickerDetail.ProviderName}}</b>
+                        </span>
+                    </div>
+                    <div style="font-size:14px;">
+                        <div>
+                            <span>
+                                Date: {{stickerDetail.VisitDate | DanpheDateTime:'format':'YYYY-MM-DD' }} ( {{stickerDetail.VisitDate | nepaliDate }})
+                            </span>
+                            <span style="float:right">
+                                Time: {{stickerDetail.VisitTime}}
+                            </span>
+
+                        </div>
+                        <div>
+                            <span>
+                                Hospital No: <b>{{stickerDetail.PatientCode}}</b>
+                            </span>
+                           <span  style="float:right">
+                               ER No: <b>{{stickerDetail.VisitCode}}</b>
+                           </span>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="display:inline-block;width: 15%;vertical-align: top;">
+                            Name&nbsp;:&nbsp;
+                        </div>
+                        <div style="font-size:16px;display:inline-block;font-weight:bold;text-transform:uppercase">
+                            <div style="display:inline-block;">
+                                {{stickerDetail.PatientName}} &nbsp;&nbsp;&nbsp;
+                            </div>
+                            <div style="display:inline-block;font-style:italic;font-size:15px;">
+                                {{stickerDetail.DateOfBirth | DanpheDateTime:'age' }}/{{stickerDetail.Gender | slice:0:1}}
+                            </div>
+                        </div>
+                    </div>
+                    <div style="font-size:14px;">
+                        <div>
+                            Address&nbsp;:&nbsp;{{stickerDetail.Address}}, {{stickerDetail.CountrySubDivisionName}}
+                        </div>
+                        <div>
+                            <span style="display:inline-block;">
+                                Contact :  {{stickerDetail.PhoneNumber}}
+                            </span>
+                            <span style="float:right;font-size:14px;padding-right: 5px;">
+                                {{stickerDetail.User}}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <p style="text-align:center;width: 400px;">
+        <button *ngIf="!showServerPrintBtn" class="btn blue" (click)="printStickerClient()">
+            Print Sticker
+            <i class="glyphicon glyphicon-print"></i>
+        </button>
+        <button *ngIf="showServerPrintBtn" class="btn blue" (click)="printStickerServer()" [disabled]="loading">
+            Print Sticker
+            <i class="glyphicon glyphicon-print"></i>
+        </button>
+    </p>
+    <p *ngIf="showLoading" style="text-align:center;width:400px;">
+        please wait while printing is in progress...
+    </p>
+</div>

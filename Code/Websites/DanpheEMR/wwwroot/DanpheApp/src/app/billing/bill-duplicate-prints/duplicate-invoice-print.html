@@ -1,0 +1,36 @@
+<div class="row" *ngIf="!showReceipt">
+  <div class="col-lg-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="duplicateBillPrintGridColumns" [grid-data]="transactionList"
+                 (grid-actions)="DuplicateBillPrintGridActions($event)" 
+                 [show-ServerSideSearch]="true"
+                 [api-type]="patGirdDataApi">
+                 <!-- [rangeType]="dateRange" (onDateChange)="onDateChange($event)" [show-CustomDate]="showCustomDate" -->
+    </danphe-grid>
+  </div>
+</div>
+<div *ngIf="showReceipt">
+  <a class="btn blue" style="margin-bottom:10px" (click)="ShowGridView()">
+    <i class="fa fa-backward"></i> Back
+  </a>
+
+  <div class="text-center">
+    <a class="btn blue" style="margin-bottom:10px;margin-right: 10px" (click)="ShowPreviousInvoice()">
+      <i class="fa fa-backward"></i> Previous
+    </a>
+    <a class="btn blue" style="margin-bottom:10px;margin-right: 10px" (click)="ShowNextInvoice()">
+      <i class="fa fa-forward"></i>Next
+    </a>
+  </div>
+  <billing-receipt [receipt]="invoice" *ngIf="showNormalReceipt">
+  </billing-receipt>
+
+  <!--<ip-billing-receipt  [receipt]="invoice" *ngIf="showInpatientReceipt">
+  </ip-billing-receipt>-->
+
+  <discharge-bill-main *ngIf="showInpatientReceipt" style="text-align:center" [ipVisitId]="invoice.VisitId"
+                       [patientId]="invoice.Patient.PatientId" [billType]="'invoice'" [billingTxnId]="invoice.BillingTransactionId"
+                       [isDuplicate]="true" [billStatus]=invoice.BillStatus></discharge-bill-main>
+  <br />
+
+
+</div>

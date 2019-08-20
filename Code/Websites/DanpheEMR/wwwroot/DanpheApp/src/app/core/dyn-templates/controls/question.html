@@ -1,0 +1,153 @@
+<style>
+    .mar0 {
+        margin: 0px !important;
+        padding: 0px !important;
+    }
+
+    /*to show less margin*/
+    .mar-bottom {
+        margin: 0px !important;
+        margin-bottom: 3px !important;
+        padding: 0px !important;
+    }
+
+    .div-row {
+        /*margin-bottom: -14px;*/
+    }
+
+        .div-row:hover {
+            background-color: #dce8dc;
+        }
+
+    /*THis blinker is added as a part of trial, remove it if not required: sud-13jan'18*/
+    @keyframes css-blink {
+        from {
+            /*color: #f18872;*/
+        }
+
+        to {
+            /*color: #337ab7;*/
+            font-size: 20px;
+        }
+    }
+
+
+    /* The element to apply the animation to */
+    .blink:hover {
+        animation-name: css-blink;
+        animation-duration: 0.7s;
+        animation-iteration-count: 5;
+    }
+
+    .qtn-icon {
+        color: #e6ede6;
+        padding: 3px 5px;
+        background-color: #7878ce;
+        border-radius: 4px !important;
+    }
+
+    .qtn-plus {
+        background-color: #7878ce;
+    }
+
+    .qtn-minus {
+        background-color: #e51245;
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-12 col-lg-12 col-xs-12 div-row" style="padding:0px;">
+        <div class="form-group">
+
+
+            <label class="control-label col-lg-5 col-md-5 mar0">{{question.Text}}</label>
+            <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+            <!--show answerText if the RenderMode=VIEW-->
+            <div *ngIf="renderMode=='view'" class="col-lg-5 col-md-5 mar0">
+                <span *ngIf="question.Type !='table'">
+                    <b>{{question.SelectedAnswer}}</b>
+                </span>
+                <span *ngIf="question.Type=='table'">
+                    <danphe-json-table ngDefaultControl [data]="question.Options[0].Text" [(ngModel)]="question.SelectedAnswer"></danphe-json-table>
+                </span>
+
+            </div>
+            <!--Render answers Control if the rendermode is not VIEW-->
+            <div *ngIf="renderMode !='view'" class="col-lg-5 col-md-5 mar-bottom">
+                <span *ngIf="question.Type =='text'">
+                    <i class="fa fa-plus qtn-plus" (click)="question.ShowAnswers=true;" title="show answer"></i>
+                    <i class="fa fa-minus qtn-minus" (click)="question.ShowAnswers=false;" title="hide answer"></i>
+
+                    <textarea *ngIf="question.ShowAnswers" [(ngModel)]="question.SelectedAnswer" cols="50" [id]="question.QuestionId" (keyup)="autogrow(question.QuestionId)"></textarea>
+                </span>
+                <span *ngIf="question.Type =='radio'">
+                    <span *ngFor="let opt of question.Options">
+                        <span *ngIf="opt.EntityState !='deleted' && opt.IsActive">
+                            <input type="radio" name="{{question.QuestionId}}" [value]="opt.Text" [(ngModel)]="question.SelectedAnswer"
+                                   (change)="OnAnswerChange(question,opt)" />
+                            <i>{{opt.Text}}</i>
+                        </span>
+                    </span>
+                </span>
+                <div *ngIf="question.Type =='checkbox'">
+                    <div *ngFor="let opt of question.Options" style="display: inline-block;margin-right:10px;">
+                        <label class="mt-checkbox mt-checkbox-outline">
+                            <input type="checkbox" name="{{opt.OptionId}}" />
+                            {{opt.Text}}
+                            <span></span>
+                        </label>
+                    </div>
+
+                    <!--<span *ngFor="let opt of question.Options">
+                        <span *ngIf="opt.EntityState !='deleted' && opt.IsActive">
+                            <input type="checkbox" name="{{opt.OptionId}}"
+                                   (change)="OnAnswerChange(question,opt)" />
+                            <i>{{opt.Text}}</i>
+                        </span>
+                    </span>-->
+                </div>
+                <span *ngIf="question.Type =='dropdown'">
+                    <select [(ngModel)]="question.SelectedAnswer">
+                        <option *ngFor="let opt of question.Options"
+                                value="{{opt.Text}}">
+                            {{opt.Text}}
+                        </option>
+                    </select>
+                </span>
+                <span *ngIf="question.Type =='search-tbx'" style="display: inline-block;">
+                    <input danphe-auto-complete [(ngModel)]="question.SelectedAnswer"
+                           [source]="defaultDataSource"
+                           placeholder="enter text"
+                           value-property-name=null
+                           match-formatted="true"
+                           onClick="this.select();"
+                           max-num-list="10"
+                           style="width: 300px;" />
+                </span>
+                <span *ngIf="question.Type=='table'">
+                    <danphe-json-table ngDefaultControl [data]="question.Options[0].Text" [(ngModel)]="question.SelectedAnswer"></danphe-json-table>
+                </span>
+
+            </div>
+            <!--Display this section only when RenderMode=edit, and for QuestionLevel 0 and 1.-->
+            <div class="col-lg-1 col-md-1" *ngIf="dynTemplateServ.templateRenderMode=='edit'">
+                <a class="green" href="javascript:;" data-toggle="dropdown" style="float:right;" aria-expanded="false" title="click for settings">
+                    <i class="fa fa-cog blink" style="font-size:18px;"></i>
+                </a>
+                <ul class="dropdown-menu pull-right">
+                    <li *ngIf="question.QtnHRCLevel<2">
+                        <a (click)="dynTemplateServ.DisplayAddQuestion(question,'qtn')">
+                            <i class="fa fa-plus"></i> add child Question
+                        </a>
+                    </li>
+                    <li>
+                        <a (click)="dynTemplateServ.DisplayEditQuestion(question)">
+                            <i class="fa fa-pencil"></i> edit question
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+</div>

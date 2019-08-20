@@ -1,0 +1,88 @@
+/*Add Bootstrap src for buttons.*/
+@import '~bootstrap/dist/css/bootstrap.min.css';
+
+@import '../../../../../../themes/theme-default/loading.component.css';
+ .btn-default {
+  color: #ffffff;
+  /* background-color: #424242;
+    border-color: #424242;
+    font-size: 24pt; */
+  background-image: none;
+  text-shadow: none;
+}
+
+.thumbnailSelector {
+  width: 106px;
+  float: left;
+  margin-left: 5px;
+  height: 100%;
+  background-color: #424242;
+}
+
+.thumbnails {
+  margin: 0px;
+  margin-bottom: 0px;
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+
+
+.csthumbnail {
+  color: white;
+  background-color: black;
+  width: 100px;
+  height: 100px;
+  border: 0px;
+  padding: 0px;
+}
+
+.version {
+  position: absolute;
+  bottom: 20px;
+  width: 106px;
+  text-align: center;
+}
+
+a.list-group-item {
+  background-color: black;
+  padding: 2px;
+  border: 1px solid #424242;
+  z-index: 5;
+  margin-bottom: 3px;
+}
+
+  a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.active:focus {
+    background-color: #424242;
+    border-color: #4e4e4e;
+    background-image: linear-gradient(red, red, red);
+  }
+
+.fa {
+  color: cadetblue;
+  font-size: 15px;
+}
+
+.buttonLabel {
+  color: cadetblue;
+  font-size: 10px;
+}
+
+  .buttonLabel:hover {
+    color: whitesmoke;
+  }
+
+.wrapper {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: 200px;
+}
+
+/* Absolute Center Spinner */
+.loading-indicator {
+ position: fixed; 
+  z-index: 999;
+  /* overflow: show; */
+  margin:auto;
+  margin-left: 50px;
+  margin-top:180px;
+}

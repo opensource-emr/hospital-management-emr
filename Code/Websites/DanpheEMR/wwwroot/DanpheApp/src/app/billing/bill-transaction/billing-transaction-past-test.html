@@ -1,0 +1,49 @@
+<style>
+  .my-custom-scrollbar {
+    position: relative;
+    height: 200px;
+    overflow: auto;
+  }
+
+  .table-wrapper-scroll-y {
+    display: block;
+    margin-bottom: 25px;
+  }
+
+  table.past-test-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+    table.past-test-table tr th, table.past-test-table tr td {
+      padding: 3px 2px;
+      border: 1px solid #bcbdbf;
+    }
+</style>
+
+<hr>
+
+<!--class="table-wrapper-scroll-y my-custom-scrollbar"-->
+<div class="table-wrapper-scroll-y my-custom-scrollbar">
+  <p><strong>Patient Tests History</strong></p>
+  <table class="past-test-table">
+    <thead>
+      <tr>
+        <th>S.N</th>
+        <th>Invoice</th>
+        <th>Tests</th>
+        <th>Date</th>
+        <th>User</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let data of allTests; let i=index;">
+        <td>{{i+1}}</td>
+        <td>{{data.InvoiceNumber}}</td>
+        <td>{{data.ItemName}}</td>
+        <td>{{data.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD  HH:mm'}}</td>
+        <td>{{data.User}}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,84 @@
+<style>
+  li.horizontal-bar:hover > a {
+    background: none;
+  }
+
+  li.bil-hr-bar:hover ul.dropdown-menu li a {
+    background: none;
+    color: #6f6f6f !important;
+  }
+
+  .dropdown.bil-hr-bar.open a.dropdown-toggle {
+    background: linear-gradient(to bottom, #006687 0%,#035671 50%,#034256 100%);
+    border-radius: 4px !important;
+  }
+
+  .dropdown.bil-hr-bar.open ul.bil-hr-dropdown li a {
+    color: #6f6f6f;
+  }
+
+  .hr-ddlCstm {
+    border-bottom: 1px solid #c5cbc5;
+  }
+
+  ul.dropdown-menu.bil-hr-dropdown {
+    margin-top: 0px;
+  }
+
+  .bil-hr-dropdown li a:hover {
+    font-weight: 700;
+  }
+
+  li.dropdown.bil-hr-bar:hover ul.dropdown-menu.bil-hr-dropdown {
+    display: block;
+  }
+
+  .dropdown-menu {
+    min-width: 182px;
+  }
+  /*li.dropdown.bil-hr-bar a[aria-expanded="true"].dropdown-toggle:hover + ul.dropdown-menu.bil-hr-dropdown {
+    display: block;
+  }*/
+
+</style>
+
+<base href="/">
+<div class="page-bar">
+  <ul class="page-breadcrumb" *ngIf="validRoutes != undefined">
+    <!--Start: Primary Menu Items -->
+    <li *ngFor="let route of primaryNavItems">
+      <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'link3-active'" *ngIf="route.IsSecondaryNavInDropdown!=1">
+        {{route.DisplayName}}
+        <i class="{{route.Css}}"></i>
+      </a>
+    </li>
+    <!--End: Primary Menu Items -->
+    <!--Start: Secondary Menu Items-->
+    <li *ngIf="secondaryNavItems && secondaryNavItems.length>0" class="dropdown bil-hr-bar" style="display:inline-block;">
+      <a href="JavaScript:void(0);">
+        More...
+        <span class="caret"></span>
+      </a>
+      <ul class="dropdown-menu bil-hr-dropdown">
+        <li class="hr-ddlCstm" *ngFor="let route of secondaryNavItems">
+          <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'link3-active'">
+            {{route.DisplayName}}
+            <i class="{{route.Css}}"></i>
+          </a>
+        </li>
+
+        <li>
+          <a (click)="OpenQrPage()" title="Scan Card">
+            Scan Health Card
+            <img src="../../../../../themes/theme-default/images/barcode.png" width="25" height="20" style="background-color: #8f98d4;" />
+          </a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+<router-outlet></router-outlet>
+
+<danphe-qr-billing *ngIf="qrService.showBilling">
+
+</danphe-qr-billing>

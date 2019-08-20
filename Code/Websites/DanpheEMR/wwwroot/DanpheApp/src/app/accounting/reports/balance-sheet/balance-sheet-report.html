@@ -1,0 +1,208 @@
+<div>
+  <div class="row">
+    <div class="form-body">
+      <div class="caption">
+        <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
+        <span class="caption-subject font-red-sunglo bold uppercase">Balance Sheet</span>
+      </div>
+      <div class="col-md-2 col-xs-12">
+        <div class="input-group">
+          <div class="icheck-inline">
+            <label class="mt-checkbox mt-checkbox-outline" style="font-weight:bold;color:green;">
+              <input name="isledgerlevel" type="checkbox" value="Ledger Level" [(ngModel)]="isLedgerLevel">
+              <span></span> Detail View
+            </label>
+          </div>
+        </div>
+      </div>
+      <!--<div class="col-md-8">
+          <div class="col-md-6">
+              <div class="form-group">
+                  <label class="control-label">From Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                  <div>
+                      <danphe-date-picker [(ngModel)]="fromDate" [ngModelOptions]="{standalone: true}" ngDefaultControl [CalendarTypes]="'np,en'">
+                      </danphe-date-picker>
+                  </div>
+              </div>
+          </div>
+          <div class="col-md-6">
+              <div class="form-group">
+                  <label class="control-label">To Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                  <div>
+                      <danphe-date-picker [(ngModel)]="toDate" [ngModelOptions]="{standalone: true}" ngDefaultControl [CalendarTypes]="'np,en'">
+                      </danphe-date-picker>
+                  </div>
+              </div>
+          </div>
+      </div>-->
+      <!--<div class="col-md-2 col-xs-12">
+          <div class="form-group">
+              <button class="btn blue" type="button" (click)="LoadData()">
+                  <i class="fa fa-search"></i>
+                  Show Report
+              </button>
+          </div>
+      </div>-->
+    </div>
+  </div>
+  <div class="row" *ngIf="IsDataLoaded" style="padding-bottom:10px;">
+    <danphe-cust-date-reusable (onDateChange)="onDateChange($event)" [rangeType]="dateRange"></danphe-cust-date-reusable>
+  </div>
+  <customer-header style="display:none;padding:0px" id="headerForPrint" [header-title]="'Balance Sheet Report'"></customer-header>
+  <div class="row" *ngIf="showResult" id="printpage" style="padding-top:10px;">
+    <!--<div class="col-md-12">-->
+    <div class="row">
+      <div class="col-md-1"></div>
+      <div class="col-md-8">
+        <span>balance sheet as at : {{toDate}}</span>
+        <div>
+          <table border="1" style="background-color:initial;margin-top:10px">
+            <thead>
+              <tr style="background-color: #599be0;color: white;">
+                <th colspan="3" style="text-align:center;font-size:16px" width="70%"><b>Particulars</b></th>
+                <!--<th style="text-align:center;font-size:16px" width="50%"><b>Schedule</b></th>-->
+                <th style="text-align:center;font-size:16px" width="10%"><b>Amount</b></th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <ng-container *ngFor="let row of DisplayData">
+                <tr *ngIf="row.Style == 'BoldCategory'">
+                  <td *ngIf="row.Style == 'BoldCategory'"><b><a (click)="ShowChild(row,'COA')" style="color:blue;">{{row.Name}}</a></b></td>
+                  <td *ngIf="row.Style == 'BoldCategory'"></td>
+                  <td *ngIf="row.Style == 'BoldCategory'"></td>
+                  <td *ngIf="row.Style == 'BoldCategory'" style="color:blue;"><span *ngIf="row.Amount!=0"><b>{{row.Amount | Currency}}</b></span></td>
+                </tr>
+                <tr *ngIf="row.Style == 'ledgerGroupLevel' && (isLedgerLevel==true || row.ShowLedgerGroup == true)">
+                  <td *ngIf="row.Style == 'ledgerGroupLevel' && (isLedgerLevel==true || row.ShowLedgerGroup == true)"><a (click)="ShowChild(row,'LedgerGroup')" style="padding-left:25px;color:gray;"><b>{{row.Name}}</b></a></td>
+                  <td *ngIf="row.Style == 'ledgerGroupLevel' && (isLedgerLevel==true || row.ShowLedgerGroup == true)"></td>
+                  <td *ngIf="row.Style == 'ledgerGroupLevel' && (isLedgerLevel==true || row.ShowLedgerGroup == true)" style="color:gray;"><span *ngIf="row.Amount!=0"><b>{{row.Amount | Currency}}</b></span></td>
+                  <td *ngIf="row.Style == 'ledgerGroupLevel' && (isLedgerLevel==true || row.ShowLedgerGroup == true)"></td>
+                </tr>
+                <tr *ngIf="row.Style == 'ledgerLevel' && (isLedgerLevel==true || row.ShowLedger == true)">
+                  <td *ngIf="row.Style == 'ledgerLevel' && (isLedgerLevel==true || row.ShowLedger == true)" style="color:green;padding-left:20px;">
+                    <i>
+                      <a (click)="SwitchViews(row)" title="Click to view detail" style="color:green;"><b>{{row.Name}}</b></a>
+                      <span *ngFor="let Deta of row.Details" style="font-size:12px;color:green;padding-left:50px;">
+                        <span *ngIf="Deta.Cr > 0 || Deta.Dr > 0" style="text-align:left;"><br />{{Deta.Name}}  </span>
+                        <span>
+                          <span *ngIf="Deta.Dr > 0">{{Deta.Dr | Currency}}</span>
+                          <span *ngIf="Deta.Cr > 0">{{Deta.Cr | Currency}}</span>
+                        </span>
+                      </span>
+                    </i>
+                  </td>
+                  <td *ngIf="row.Style == 'ledgerLevel' && (isLedgerLevel==true || row.ShowLedger == true)" style="color:green;"><span *ngIf="row.Amount!=0"><i><b>{{row.Amount | Currency}}</b></i></span> </td>
+                  <td *ngIf="row.Style == 'ledgerLevel' && (isLedgerLevel==true || row.ShowLedger == true)" style="color:green;"></td>
+                  <td *ngIf="row.Style == 'ledgerLevel' && (isLedgerLevel==true || row.ShowLedger == true)" style="color:green;"></td>
+                </tr>
+                <tr *ngIf="row.Style == 'BoldTotal'">
+                  <td *ngIf="row.Style == 'BoldTotal'" style="background-color: #dddddd;color:black;"><b>{{row.Name}}</b></td>
+                  <td *ngIf="row.Style == 'BoldTotal'" style="background-color: #dddddd;"></td>
+                  <td *ngIf="row.Style == 'BoldTotal'" style="background-color: #dddddd;"></td>
+                  <td *ngIf="row.Style == 'BoldTotal'" style="background-color: #dddddd;color:black;"><b>{{row.Amount | Currency}}</b></td>
+                </tr>
+                <tr *ngIf="row.Style == 'BlankEntry'">
+                  <td *ngIf="row.Style == 'BlankEntry'"></td>
+                  <td *ngIf="row.Style == 'BlankEntry'"></td>
+                  <td *ngIf="row.Style == 'BlankEntry'"></td>
+                  <td *ngIf="row.Style == 'BlankEntry'"></td>
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <!--<div class="col-md-10">
+        <span>balance sheet as at : {{toDate}}</span>
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover" style="background-color:initial;margin-top:10px">
+                <thead>
+                    <tr style="background-color: #599be0;color: white;">
+                        <th colspan="4" style="text-align:center;font-size:16px"><b>Liabilities</b></th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr *ngFor="let row of LiabilitiesData">
+                        <td *ngIf="row.Style == 'BoldCategory'" colspan="3"><b>{{row.Name}}</b></td>
+                        <td *ngIf="row.Style == 'BoldCategory'"><b>{{row.Amount | ParseAmount  | Currency}}</b></td>
+                        <td *ngIf="row.Style == 'ledgerGroupLevel'">&nbsp;</td>
+                        <td *ngIf="row.Style == 'ledgerGroupLevel'"><b>{{row.Name}}</b></td>
+                        <td *ngIf="row.Style == 'ledgerGroupLevel'"><b>{{row.Amount | ParseAmount  | Currency}}</b></td>
+                        <td *ngIf="row.Style == 'ledgerGroupLevel'"></td>
+                        <td *ngIf="row.Style == 'ledgerLevel'&& isLedgerLevel==true">&nbsp;</td>
+                        <td *ngIf="row.Style == 'ledgerLevel'&& isLedgerLevel==true"><i>{{row.Name}}</i></td>
+                        <td *ngIf="row.Style == 'ledgerLevel'&& isLedgerLevel==true"><i>{{row.Amount | ParseAmount  | Currency}}</i></td>
+                        <td *ngIf="row.Style == 'ledgerLevel'&& isLedgerLevel==true"></td>
+                        <td *ngIf="row.Style == 'BoldTotal'" colspan="3"><b>{{row.Name}}</b></td>
+                        <td *ngIf="row.Style == 'BoldTotal'"><b>{{row.Amount | ParseAmount  | Currency}}</b></td>
+                    </tr>
+                    <tr>
+                        <td style="margin:0px !important" colspan="3"><b>{{'Total'}}</b></td>
+                        <td style="margin:0px !important"><b>{{liabilitiesTotal | ParseAmount  | Currency}}</b></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="col-md-10">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover" style="background-color:initial;margin-top:10px">
+                <thead>
+                    <tr style="background-color: #599be0;color: white;">
+                        <th colspan="4" style="text-align:center;font-size:16px"><b>Assets</b></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let row of AssetsData">
+                        <td *ngIf="row.Style == 'BoldCategory'" colspan="3"><b>{{row.Name}}</b></td>
+                        <td *ngIf="row.Style == 'BoldCategory'"><b>{{row.Amount | ParseAmount  | Currency}}</b></td>
+                        <td *ngIf="row.Style == 'ledgerGroupLevel'">&nbsp;</td>
+                        <td *ngIf="row.Style == 'ledgerGroupLevel'"><b>{{row.Name}}</b></td>
+                        <td *ngIf="row.Style == 'ledgerGroupLevel'"><b>{{row.Amount | ParseAmount  | Currency}}</b></td>
+                        <td *ngIf="row.Style == 'ledgerGroupLevel'"></td>
+                        <td *ngIf="row.Style == 'ledgerLevel' && isLedgerLevel==true">&nbsp;</td>
+                        <td *ngIf="row.Style == 'ledgerLevel'&& isLedgerLevel==true"><i>{{row.Name}}</i></td>
+                        <td *ngIf="row.Style == 'ledgerLevel'&& isLedgerLevel==true"><i>{{row.Amount | ParseAmount  | Currency}}</i></td>
+                        <td *ngIf="row.Style == 'ledgerLevel' && isLedgerLevel==true"></td>
+                        <td *ngIf="row.Style == 'BoldTotal'" colspan="3"><b>{{row.Name}}</b></td>
+                        <td *ngIf="row.Style == 'BoldTotal'"><b>{{row.Amount | ParseAmount  | Currency}}</b></td>
+                        <td *ngIf="row.Style == 'BlankEntry'" colspan="4">&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td colspan="3"><b>{{'Total'}}</b></td>
+                        <td><b>{{assetTotal | ParseAmount  | Currency}}</b></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>-->
+    <!--<div class="col-lg-12 col-sm-12">
+        <div class="col-lg-6" *ngFor="let coa of balanceSheetData">
+            <b style="font-size:16px">{{coa.COA}}</b><br />
+            <div class="col-lg-12" style="padding:10px 0px" *ngFor="let type of coa.TypeList">
+                <b>{{type.Type}}</b>
+                <div class="col-lg-12" *ngFor="let ledger of type.LedgersList">
+                    <span class="left">{{ledger.LedgerName}}</span>
+                    <span class="right">{{ledger.Amount}}</span>
+                </div>
+                <b class="left">Total {{type.Type}}</b>
+                <b class="right" style="padding-right:15px">{{type.TotalAmount}}</b>
+            </div>
+            <b class="left" style="font-size:20px">Total {{coa.COA}}</b>
+            <b class="right" style="padding-right:15px;font-size:16px">{{coa.OverAllTotal}}</b>
+        </div>
+    </div>-->
+    <br /> <br />
+  </div>
+  <div class="col-md-12" *ngIf="showResult" style="padding-bottom: 18px;">
+    <div class="form-actions">
+      <button class="btn btn-primary hidden-print" (click)="Print()" value="Print" title="print page">Print<i class="glyphicon glyphicon-print" style="margin-left:10px;"></i></button>
+      <button class="btn btn-primary hidden-print" (click)="ExportToExcel('printpage')" value="" title="export to excel">Export<i class="fa fa-file-excel-o" style="margin-left:10px;"></i></button>
+    </div>
+  </div>
+</div>
+<ledger-report-reusable *ngIf="showLedgerDetail" [showLedgerDetail]="showLedgerDetail" [fromDate]="fromDate" [toDate]="toDate" [ledgerId]="ledgerId" [ledgerName]="ledgerName" (callback-add)="ShowReport($event)"></ledger-report-reusable>

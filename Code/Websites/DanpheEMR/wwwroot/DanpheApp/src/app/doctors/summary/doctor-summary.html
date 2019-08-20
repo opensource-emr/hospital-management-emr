@@ -1,0 +1,90 @@
+﻿<style>
+    .td-body {
+        max-width: 100px;
+    }
+    .td-head{
+        max-width:200px;
+    }
+</style>
+<danphe-cust-date (onDateChange)="onDateChange($event)" [rangeType]="dateRange"></danphe-cust-date>
+<br /> <br /><hr />
+<div class="row">
+    <div class="col-md-12">
+        <div class="col-md-3">
+            <div class="table-scrollable">
+                <table class="table table-bordered table-hover">
+                    <tbody>
+                        <tr>
+                            <td class="active .td-head"> OPD :</td>
+                            <td class="td-body"><b> {{docSummary.OPD}} </b></td>
+                        </tr>
+                        <tr>
+                            <td class="success .td-head"> Referral :</td>
+                            <td class="td-body"><b>{{docSummary.Referral}} </b></td>
+                        </tr>
+                        <tr>
+                            <td class="active .td-head"> Follow Up :</td>
+                            <td class="td-body"><b> {{docSummary.FollowUp}} </b></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="table-scrollable">
+                <table class="table table-bordered table-hover">
+                    <tbody>
+                        <tr>
+                            <td class="active .td-head"> USG :</td>
+                            <td class="td-body"><b>{{docSummary.USG}} </b></td>
+                        </tr>
+                        <tr>
+                            <td class="success .td-head"> Ortho Procedures : </td>
+                            <td class="td-body"><b> {{docSummary.OrthoProcedures}} </b></td>
+                        </tr>
+                        <tr>
+                            <td class="active .td-head"> CT Scan : </td>
+                            <td class="td-body"><b>{{docSummary.CT}}</b></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="table-scrollable">
+                <table class="table table-bordered table-hover">
+                    <tbody>
+                        <tr>
+                            <td class="active .td-head"> General Surgery : </td>
+                            <td class="td-body"><b>{{docSummary.GeneralSurgery}} </b></td>
+                        </tr>
+                        <tr>
+                            <td class="success .td-head"> Gyn Surgery :</td>
+                            <td class="td-body"><b> {{docSummary.GynSurgery}} </b></td>
+                        </tr>
+                        <tr>
+                            <td class="active .td-head"> ENT :</td>
+                            <td class="td-body"><b>  {{docSummary.ENT}} </b></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="table-scrollable">
+                <table class="table table-bordered table-hover">
+                    <tbody>
+                        <tr>
+                            <td class="active .td-head"> Dental :</td>
+                            <td class="td-body"><b>{{docSummary.Dental}}</b> </td>
+                        </tr>
+                        <tr>
+                            <td class="success .td-head"> OT :</td>
+                            <td class="td-body"><b>  {{docSummary.OT}} </b></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

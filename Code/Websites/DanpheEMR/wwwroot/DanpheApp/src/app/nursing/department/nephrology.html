@@ -1,0 +1,973 @@
+
+<danphe-grid [grid-colDefaults]="nurNephGridColumn" [grid-data]="patList" (grid-actions)="NurNephGridActions($event)">
+</danphe-grid>
+
+
+<style>
+  label.mt-checkbox.mt-checkbox-outline {
+    text-indent: 5px;
+  }
+
+  @@media print {
+    button {
+      visibility: hidden;
+      display: none;
+    }
+
+    #print-good-reciept {
+      background-color: white !important;
+      height: 100% !important;
+      width: 100% !important;
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      margin: 0 !important;
+      padding: 15px !important;
+      font-size: 14px !important;
+      line-height: 18px !important;
+    }
+
+
+    @@page {
+      size: auto !important;
+      margin: 0 !important;
+    }
+  }
+
+
+
+
+
+  .printStyle {
+    border: dotted 1px;
+    margin: 10px 50px;
+  }
+
+  .print-border-top {
+    border-top: dotted 1px;
+  }
+
+  .print-border-bottom {
+    border-bottom: dotted 1px;
+  }
+
+  .print-border {
+    border: dotted 1px;
+  }
+
+  .center-style {
+    text-align: center;
+  }
+
+  .border-up-down {
+    border-top: dotted 1px;
+    border-bottom: dotted 1px;
+  }
+</style>
+
+<!--Model Box Starting Here-->
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showHemoBox">
+  <div class="portlet-body form">
+    <!--Model Box Body Start-->
+    <div class="form-body">
+      <div class="col-md-12 modelbox-div" style="width: 95%;left: 3%;right:5%; padding-bottom: 10px;">
+        <i class="btn btn-danger" style="float: right;margin-top:15px;margin-right:15px" (click)="Close()" title="close window">X</i>
+        <br />
+        <table class="table table-striped table-bordered table-hover">
+          <tr>
+            <th><b>{{globalPatient.ShortName}}-({{globalPatient.Gender}})-({{globalPatient.Age}})</b></th>
+          </tr>
+        </table>
+        <div class="row">
+          <div class="col-md-12" *ngIf="showLastHemoReport">
+            <div class="caption">
+              <span class="col-md-7 caption-subject font-blue-sharp bold uppercase">
+                Last Submitted Reports
+              </span>
+            </div>
+            <div class="table-responsive col-md-12">
+              <table class="table table-bordered table-hover table-condensed" style="background-color:initial;margin-top:10px;">
+                <thead>
+                  <tr>
+                    <td>Date Added</td>
+                    <td>Diagnosis</td>
+                    <td>Complete</td>
+                    <td>Actions</td>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let r of hemoReportList; let i=index;">
+                    <td>{{r.CreatedOn}}</td>
+                    <td>{{r.Diagnosis}}</td>
+                    <td>{{r.IsSubmitted}}</td>
+                    <td>
+                      <button class="btn-danger" (click)="printThisReport(i)" *ngIf="r.IsSubmitted">Print This Report</button>
+                      <button class="btn-success" (click)="editThisReport(i)" *ngIf="!r.IsSubmitted">Edit This Report</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <form class="form-horizontal">
+            <div class="form-body">
+              <!-- # Region  Treatment Data From Last Dialysis -->
+              <!-- <div class="col-md-12" *ngIf="showLastHemoReport">
+                <div class="caption">
+                  <span class="col-md-7 caption-subject font-blue-sharp bold uppercase">
+                    TREATMENT DATA FROM LAST DIALYSIS
+                  </span>
+                </div>
+                <div class="table-responsive col-md-12">
+                  <table class="table table-bordered table-hover table-condensed" id="exportTable" style="background-color:initial;margin-top:10px">
+                    <tbody>
+                      <tr>
+                        <td style="font-weight:bold;">
+                          Pre Weight
+                        </td>
+                        <td>
+                          {{lastHemoReport.TreatmentData_PreWeight}}
+                        </td>
+
+                        <td style="font-weight:bold;">
+                          Post Weight
+                        </td>
+                        <td>
+                          {{lastHemoReport.TreatmentData_PostWeight}}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="font-weight:bold;">
+                          Pre Stand BP
+                        </td>
+                        <td>{{lastHemoReport.TreatmentData_PreStandBp}}</td>
+                        <td style="font-weight:bold;">
+                          Post Stand BP
+                        </td>
+                        <td>{{lastHemoReport.TreatmentData_PostStandBp}}</td>
+                      </tr>
+                      <tr>
+                        <td style="font-weight:bold;">
+                          Pre Sit BP
+                        </td>
+                        <td>{{lastHemoReport.TreatmentData_PreSitBp}}</td>
+                        <td style="font-weight:bold;">
+                          Post Sit BP
+                        </td>
+                        <td>{{lastHemoReport.TreatmentData_PostSitBp}}</td>
+                      </tr>
+                      <tr>
+                        <td style="font-weight:bold;">
+                          Pre Pulse
+                        </td>
+                        <td>{{lastHemoReport.TreatmentData_PrePulse}}</td>
+                        <td style="font-weight:bold;">
+                          Post Pulse
+                        </td>
+                        <td>{{lastHemoReport.TreatmentData_PostPulse}}</td>
+                      </tr>
+                      <tr>
+                        <td style="font-weight:bold;">
+                          Pre Temp
+                        </td>
+                        <td>{{lastHemoReport.TreatmentData_PreTemperature}}</td>
+                        <td style="font-weight:bold;">
+                          Post Temp
+                        </td>
+                        <td>{{lastHemoReport.TreatmentData_PostTemperature}}</td>
+                      </tr>
+                      <tr>
+                        <td style="font-weight:bold;">
+                          Treatment Time
+                        </td>
+                        <td>{{lastHemoReport.TreatmentData_TimeOn-lastHemoReport.TreatmentData_TimeOff}}</td>
+                        <td style="font-weight:bold;">
+                          B.t/Epo
+                        </td>
+                        <td></td>
+                      </tr>
+                      <tr>
+                        <td style="font-weight:bold;">
+                          Last UF
+                        </td>
+                        <td>{{lastHemoReport.TreatmentData_UfGoal}} ml</td>
+                        <td style="font-weight:bold;">
+                          Hb%PCV
+                        </td>
+                        <td>{{lastHemoReport.TreatmentData_Hb_PcV}}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div> -->
+              <div class="col-md-12" *ngIf="showNewForm">
+                <!-- -->
+                  <div class="form-group" style="margin:22px 0;">
+                  <label class="control-label col-md-4">Diagnosis<b style="float:right;">:</b></label>
+                  <div class="col-md-6">
+                    <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.Diagnosis" [ngModelOptions]="{standalone: true}">
+                  </div>
+                </div>
+                <div class="form-group" style="margin:22px 0;">
+                  <label class="control-label col-md-4">Schedule<b style="float:right;">:</b></label>
+                  <div class="col-md-6">
+                    <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.Schedule" [ngModelOptions]="{standalone: true}">
+                  </div>
+                </div>
+                <div class="form-group" style="margin:22px 0;">
+                  <label class="control-label col-md-4">Next HD<b style="float:right;">:</b></label>
+                  <div class="col-md-6">
+                    <input type="date" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.NextHD" [ngModelOptions]="{standalone: true}">
+                  </div>
+                </div>
+                <div class="form-group" style="margin:22px 0;">
+                  <label class="control-label col-md-4">Date<b style="float:right;">:</b></label>
+                  <div class="col-md-6">
+                    <input type="date" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.CurrentHdDate" [ngModelOptions]="{standalone: true}">
+                  </div>
+                </div>
+                <div class="form-group" style="margin:22px 0;">
+                  <label class="control-label col-md-4">I.D. No.<b style="float:right;">:</b></label>
+                  <div class="col-md-6">
+                    <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.IdNo" [ngModelOptions]="{standalone: true}">
+                  </div>
+                </div>
+                <div class="form-group" style="margin:22px 0;">
+                  <label class="control-label col-md-4">H.D.No.<b style="float:right;">:</b></label>
+                  <div class="col-md-6">
+                    <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.HdNo" [ngModelOptions]="{standalone: true}">
+                  </div>
+                </div>
+                <!-- # Region Treatment Orders -->
+                 <!-- <div class="col-md-6 col-xs-12" style="margin-right: 24px;">
+                  
+                  <div class="caption">
+                    <span class="caption-subject font-blue-sharp bold uppercase">
+                      TREATMENT ORDERS
+                    </span>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Dry Weight<b style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.TreatmentOrder_DryWeight" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Dialysis Flow(300/500/800ml/min<b style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.TreatmentOrder_DialysisFlow" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Blood(ml/min)<b style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.TreatmentOrder_Blood" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Time(min)<b style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.TreatmentOrder_TimeInMin" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Used No.<b style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.TreatmentOrder_UsedNo" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Blood Transfusion<b style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.TreatmentOrder_BloodTransfusion" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="col-md-12">
+                    <label class="control-label col-md-4">Heparin/Saline</label>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Circulation<b style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.TreatmentOrder_HeparineSaline_Circulation" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Bolus<b style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.TreatmentOrder_HeparineSaline_Bolus" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Continuous<b style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.TreatmentOrder_HeparineSaline_Continuous" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Signature</label>
+                    <div class="col-md-8">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.SignatoryName_1" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                </div> -->
+                <!-- #region Vascular Access -->
+                <div class="col-md-5 col-xs-12">
+                  <div class="caption">
+                    <span class="caption-subject font-blue-sharp bold uppercase">
+                      Vascular Access: Rt/Lt
+                    </span>
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label class="control-label col-md-8">AVF/AFG</label>
+                    <div class="col-md-2">
+                      <input type="checkbox" class=" cstm-form-control" [(ngModel)]="newHemoReport.VascularAccess_AVF" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label class="control-label col-md-8">Subclavian</label>
+                    <div class="col-md-2">
+                      <input type="checkbox" class=" cstm-form-control" [(ngModel)]="newHemoReport.VascularAccess_Subclavian" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label class="control-label col-md-8">Jugular</label>
+                    <div class="col-md-2">
+                      <input type="checkbox" class=" cstm-form-control" [(ngModel)]="newHemoReport.VascularAccess_Jugular" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label class="control-label col-md-8">Femoral Catheter</label>
+                    <div class="col-md-2">
+                      <input type="checkbox" class=" cstm-form-control" [(ngModel)]="newHemoReport.VascularAccess_FemoralCatheter" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label class="control-label col-md-8">Perm-Cath</label>
+                    <div class="col-md-2">
+                      <input type="checkbox" class=" cstm-form-control" [(ngModel)]="newHemoReport.VascularAccess_PermCath" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <!-- #Region Blood Transfusion -->
+                  <!-- <div class="caption col-md-12">
+                    <span class="caption-subject font-blue-sharp bold uppercase">
+                      Blood Transfusion
+                    </span>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Blood group<b style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                      <select [(ngModel)]="newHemoReport.BloodTrans_BloodGroup" [ngModelOptions]="{standalone: true}" class="form-control">
+                        <option value="A positive">A+</option>
+                        <option value="A negative">A-</option>
+                        <option value="B positive">B+</option>
+                        <option value="B negative">B-</option>
+                        <option value="O positive">O+</option>
+                        <option value="O negative">O-</option>
+                        <option value="AB positive">AB+</option>
+                        <option value="AB negative">AB-</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Today<b style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                      <input type="date" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.BloodTrans_Today" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Bag No.<b style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                      <input type="number" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.BloodTrans_BagNo" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Plan BT next H.D.<b style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                      <select [(ngModel)]="newHemoReport.BloodTrans_NextBT" [ngModelOptions]="{standalone: true}" class="form-control">
+                        <option value=true>Yes</option>
+                        <option value=false>No</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Collection Date<b style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                      <input type="date" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.BloodTrans_CollectionDate" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Exp. Date<b style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                      <input type="date" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.BloodTrans_ExpDate" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Checked by<b style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.CheckedByName" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Verified by<b style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.VerifiedByName" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div> -->
+
+                </div>
+                
+                <!-- <div class="caption col-md-12 col-xs-12">
+                  <span class="caption-subject font-blue-sharp bold uppercase">
+                    TREATMENT DATA FOR TODAY
+                  </span>
+                </div>
+                <div class="col-md-4 col-xs-12">
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Pre Weight<b style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.TreatmentData_PreWeight" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Pre Temperature<b style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.TreatmentData_PreTemperature" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Pre Pulse<b style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.TreatmentData_PrePulse" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Pre Stand BP<b style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.TreatmentData_PreStandBp" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Pre Sit BP<b style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.TreatmentData_PreSitBp" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+
+                  <div class="form-group" style="margin-top:10px;">
+                    <label class="control-label col-md-3">Time on<b style="float:right;">:</b></label>
+                    <div class="col-md-3">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.TreatmentData_TimeOn" [ngModelOptions]="{standalone: true}">
+                    </div>
+                    <label class="control-label col-md-3">By<b style="float:right;">:</b></label>
+                    <div class="col-md-3">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.TreatmentData_TimeOn_By" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-3">Time off<b style="float:right;">:</b></label>
+                    <div class="col-md-3">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.TreatmentData_TimeOff" [ngModelOptions]="{standalone: true}">
+                    </div>
+                    <label class="control-label col-md-3">By<b style="float:right;">:</b></label>
+                    <div class="col-md-3">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.TreatmentData_TimeOff_By" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-md-4 col-xs-12">
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Post Weight<b style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.TreatmentData_PostWeight" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Post Temperature<b style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.TreatmentData_PostTemperature" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Post Pulse<b style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.TreatmentData_PostPulse" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Post Stand BP<b style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.TreatmentData_PostStandBp" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Post Sit BP<b style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.TreatmentData_PostSitBp" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">UF Goal<b style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.TreatmentData_UfGoal" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+
+                </div>
+
+                <div class="col-md-4 col-xs-12">
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Machine No.<b style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.TreatmentData_MachineNo" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Conductivity<b style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.TreatmentData_Machine_Conductivity" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Temperature<b style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.TreatmentData_Machine_Temperature" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Machine Check<b style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.TreatmentData_Machine_MachineCheck" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Initials<b style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.TreatmentData_Initials" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-3">Pre Lab<b style="float:right;">:</b></label>
+                    <div class="col-md-3">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.TreatmentData_PreLab" [ngModelOptions]="{standalone: true}">
+                    </div>
+                    <label class="control-label col-md-3">Post Lab<b style="float:right;">:</b></label>
+                    <div class="col-md-3">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.TreatmentData_PostLab" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Hb/PCV<b style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.TreatmentData_Hb_PcV" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Blood Sugar<b style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.TreatmentData_BloodSugar" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-md-6 col-xs-12">
+                  <div class="caption">
+                    <span class="caption-subject font-blue-sharp bold uppercase">
+                      ON EXAMINATION
+                    </span>
+                  </div>
+                  <div>
+                    <div class="form-group col-md-6">
+                      <label class="control-label col-md-7">Pallor<b style="float:right;">:</b></label>
+                      <div class="col-md-3">
+                        <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.OnExamination_Pallor" [ngModelOptions]="{standalone: true}">
+                      </div>
+                    </div>
+                    <div class="form-group col-md-6">
+                      <label class="control-label col-md-7">Chest<b style="float:right;">:</b></label>
+                      <div class="col-md-3">
+                        <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.OnExamination_Chest" [ngModelOptions]="{standalone: true}">
+                      </div>
+                    </div>
+                    <div class="form-group col-md-6">
+                      <label class="control-label col-md-7">Ictercus<b style="float:right;">:</b></label>
+                      <div class="col-md-3">
+                        <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.OnExamination_Ictercus" [ngModelOptions]="{standalone: true}">
+                      </div>
+                    </div>
+                    <div class="form-group col-md-6">
+                      <label class="control-label col-md-7">CVS<b style="float:right;">:</b></label>
+                      <div class="col-md-3">
+                        <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.OnExamination_CVS" [ngModelOptions]="{standalone: true}">
+                      </div>
+                    </div>
+                    <div class="form-group col-md-6">
+                      <label class="control-label col-md-7">JVP<b style="float:right;">:</b></label>
+                      <div class="col-md-3">
+                        <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.OnExamination_JVP" [ngModelOptions]="{standalone: true}">
+                      </div>
+                    </div>
+                    <div class="form-group col-md-6">
+                      <label class="control-label col-md-7">P/A<b style="float:right;">:</b></label>
+                      <div class="col-md-3">
+                        <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.OnExamination_PA" [ngModelOptions]="{standalone: true}">
+                      </div>
+                    </div>
+                    <div class="form-group col-md-6">
+                      <label class="control-label col-md-7">Rash<b style="float:right;">:</b></label>
+                      <div class="col-md-3">
+                        <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.OnExamination_Rash" [ngModelOptions]="{standalone: true}">
+                      </div>
+                    </div>
+                    <div class="form-group col-md-6">
+                      <label class="control-label col-md-7">SPO2<b style="float:right;">:</b></label>
+                      <div class="col-md-3">
+                        <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.OnExamination_SPo2" [ngModelOptions]="{standalone: true}">
+                      </div>
+                    </div>
+                    <div class="form-group col-md-6">
+                      <label class="control-label col-md-7">Lymphnode<b style="float:right;">:</b></label>
+                      <div class="col-md-3">
+                        <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.OnExamination_Lymphnode" [ngModelOptions]="{standalone: true}">
+                      </div>
+                    </div>
+                    <div class="form-group col-md-6">
+                      <label class="control-label col-md-7">Others<b style="float:right;">:</b></label>
+                      <div class="col-md-3">
+                        <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.OnExamination_Others" [ngModelOptions]="{standalone: true}">
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <span class="caption-subject font-blue-sharp bold uppercase">
+                      COMMENTS/DRUGS
+                    </span>
+                  </div>
+                  <div class="form-group">
+                    <input style="height:77px;" type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.Comments_Drugs" [ngModelOptions]="{standalone: true}">
+                  </div>
+                  <div>
+                    <span class="caption-subject font-blue-sharp bold uppercase">
+                      POST DIALYSIS ASSESSMENT
+                    </span>
+                  </div>
+                  <div class="form-group">
+                    <input style="height:77px;" type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.PostDialysisAssesment" [ngModelOptions]="{standalone: true}">
+                  </div>
+                </div>
+
+                <div class="col-md-5 col-xs-12">
+                  <div class="caption">
+                    <span class="caption-subject font-blue-sharp bold uppercase">
+                      CHIEF COMPLAINT
+                    </span>
+                  </div>
+                  <div class="form-group">
+                    <input style="height:160px;" type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.ChiefComplaint" [ngModelOptions]="{standalone: true}">
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-8">Total Blood Volume<b style="float:right;">:</b></label>
+                    <div class="col-md-3">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.TotalBloodVolume" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-8">Total Heparin/Saline<b style="float:right;">:</b></label>
+                    <div class="col-md-3">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.TotalHeparin_Saline" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-8">Total Fluid Removed<b style="float:right;">:</b></label>
+                    <div class="col-md-3">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.TotalFluidRemoved" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-8">Weight Difference<b style="float:right;">:</b></label>
+                    <div class="col-md-3">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.WeightDifference" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group col-md-8">
+                    <label class="control-label col-md-9">Pt Sent to Hospital<b style="float:right;">:</b></label>
+                    <div class="col-md-3">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.PtSentToHospital" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+                  <div class="form-group col-md-4">
+                    <label class="control-label col-md-7">Home<b style="float:right;">:</b></label>
+                    <div class="col-md-5">
+                      <input type="text" class="form-control cstm-form-control" [(ngModel)]="newHemoReport.PtSentToHome" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="control-label col-md-8">Dialyzer Discard<b style="float:right;">:</b></label>
+                    <div class="col-md-3">
+                      <select [(ngModel)]="newHemoReport.IsDialyzerDiscard" [ngModelOptions]="{standalone: true}" class="form-control">
+                        <option value=true>Yes</option>
+                        <option value=false>No</option>
+                      </select>
+                    </div>
+                  </div>
+                </div> -->
+
+              </div>
+              <div style="text-align:center" *ngIf="showNewForm">
+                <button style="margin-right: 12px;" class="btn btn-primary" (click)="temporarySave()">Save</button>
+                <button class="btn btn-success" (click)="Warning()">Submit & Print</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="popup-static portlet box portlet-fullscreen" style="display:flex;align-items:center;justify-content:center;" *ngIf="showWarningBox">
+  <div class="portlet-body form" style="background-color:white !important;text-align:center;">
+    <div class="bold" style="padding:10px;">
+      Warning! Further Changes will not be allowed.<br />
+      The Confirm button will save the report permanently.<br />
+    </div>
+    <button class="btn btn-primary" (click)="closeWarningPage()">Cancel</button>
+    <button class="btn btn-danger" (click)="Submit()">Confirm</button>
+  </div>
+</div>
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showPrintPage">
+  <div class="portlet-body form" style="background-color:white">
+    <!--Model Box Body Start-->
+    <div class="form-body">
+      <div class="col-md-12">
+        <div class="col-md-1 hidden-xs hidden-sm noPrint" style="margin-right: 24px;">
+        </div>
+        <div class="col-md-10 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+          <div class="col-md-12 noPrint">
+            <div class="caption" style="color:blue; margin-top:10px;">
+            </div>
+            <a style="float:right;  margin-top:-13px;" class="btn btn-danger" (click)="ClosePrintPage()" title="Cancel">X</a>
+            <hr />
+          </div>
+          <div id="print-hemo-report" class="row printStyle print-border">
+            <div>
+              <div class="col-md-12">
+                <print-header></print-header>
+                <div class="left" style="text-align:left;">
+                  <p>Patient's Name:<b>{{globalPatient.ShortName}}</b></p>
+                  <p>Age/Sex:<b> {{globalPatient.Age}}/{{globalPatient.Gender}}</b> </p>
+                  <p>Diagnosis:<b> {{newHemoReport.Diagnosis}}</b></p>
+                </div>
+                <div class="right" style="text-align:right;">
+                  <p>Schedule :<b> {{newHemoReport.Schedule}}</b></p>
+                  <p>Next HD :<b>{{newHemoReport.NextHD || Date}}</b></p>
+                  <p>Date :<b>{{newHemoReport.CurrentHdDate || date}}</b>
+                  <p>I.D. No. :<b>{{newHemoReport.IdNo}}</b>
+                  <p>H.D. No. :<b>{{newHemoReport.HdNo}}</b>
+                </div>
+                <div class="clear"></div>
+                <p class="text-center btm-pad border-up-down"><b> H.D. Treatment Record </b></p>
+                <div class="clear"></div>
+                <div class="clear footer"></div>
+
+                <!-- #Region  Treatment Orders -->
+                <!-- <div style="width: 100%;float: left;">
+                  <div class="col-md-4 col-xs-12">
+                    <p><strong>TREATMENT ORDERS</strong></p>
+                    <p>Dry Weight :<b>{{newHemoReport.TreatmentOrder_DryWeight}}</b></p>
+                    <p>Dialysis Flow :<b>{{newHemoReport.TreatmentOrder_DialysisFlow}}</b></p>
+                    <p>Blood :<b>{{newHemoReport.TreatmentOrder_Blood}}</b></p>
+                    <p>Time(min) :<b>{{newHemoReport.TreatmentOrder_TimeInMin}}</b></p>
+                    <p>Used No. :<b>{{newHemoReport.TreatmentOrder_UsedNo}}</b></p>
+                    <p>Blood Transfusion :<b>{{newHemoReport.TreatmentOrder_BloodTransfusion}}</b></p>
+                    <p>Heparin/Saline</p>
+                    <p>    Circulation :<b>{{newHemoReport.TreatmentOrder_HeparineSaline_Circulation}}</b></p>
+                    <p>    Bolus :<b>{{newHemoReport.TreatmentOrder_HeparineSaline_Bolus}}</b></p>
+                    <p>    Continuous :<b>{{newHemoReport.TreatmentOrder_HeparineSaline_Continuous}}</b></p>
+                  </div>
+                  <div class="col-md-8 col-xs-12">
+                    <p style="padding-left: 15px;"><strong>TREATMENT DATA FROM LAST DIALYSIS</strong><b>{{lastHemoReport.CurrentHdDate}}</b></p>
+                    <div class="col-md-6">
+                      <p>Pre Weight :<b> {{lastHemoReport.TreatmentData_PreWeight}}</b></p>
+                      <p>Pre Stand BP :<b> {{lastHemoReport.TreatmentData_PreStandBp}}</b></p>
+                      <p>Pre Sit BP :<b> {{lastHemoReport.TreatmentData_PreSitBp}}</b></p>
+                      <p>Pre Pulse :<b> {{lastHemoReport.TreatmentData_PrePulse}}</b></p>
+                      <p>Pre Temp :<b> {{lastHemoReport.TreatmentData_PreTemperature}}</b></p>
+                      <p>Treatment Time :<b> {{lastHemoReport.TreatmentData_TimeOff - lastHemoReport.TreatmentData_TimeOn}}</b></p>
+                      <p>Last UF :<b> {{lastHemoReport.TreatmentData_UfGoal}}</b></p>
+                    </div>
+                    <div class="col-md-6">
+                      <p>Post Weight :<b> {{lastHemoReport.TreatmentData_PostWeight}}</b></p>
+                      <p>Post Stand BP :<b> {{lastHemoReport.TreatmentData_PostStandBp}}</b></p>
+                      <p>Post Sit BP :<b> {{lastHemoReport.TreatmentData_PostSitBp}}</b></p>
+                      <p>Post Pulse :<b> {{lastHemoReport.TreatmentData_PostPulse}}</b></p>
+                      <p>Post Temp :<b> {{lastHemoReport.TreatmentData_PostTemperature}}</b></p>
+                      <p>B.T/Epo :<b></b></p>
+                      <p>Hb%PCV :<b>{{lastHemoReport.TreatmentData_Hb_PcV}}</b></p>
+                    </div>
+                  </div>
+                </div> -->
+
+                <div style="width: 100%;float: left;">
+
+                  <div class="col-md-12 col-xs-12">
+                    <p><strong>Vascular Access: Rt/Lt</strong></p>
+                    <div class="col-md-6" style="padding-left: 0px;">
+                      <p>AVF/AFG :<b>{{newHemoReport.VascularAccess_AVF}}</b></p>
+                      <p>Subclavian :<b>{{newHemoReport.VascularAccess_Subclavian}}</b></p>
+                      <p>Jugular :<b>{{newHemoReport.VascularAccess_Jugular}}</b></p>
+                    </div>
+                    <div class="col-md-6">
+                      <p>Femoral Catheter :<b>{{newHemoReport.VascularAccess_FemoralCatheter}}</b></p>
+                      <p>Perm-Cath :<b>{{newHemoReport.VascularAccess_PermCath}}</b></p>
+                    </div>
+                  </div>
+
+                  <!-- #Region Blood Transfusion  -->
+                  <!-- <div class="col-md-12 col-xs-12">
+                    <p><strong>BLOOD TRANSFUSION</strong></p>
+                    <div class="col-md-6" style="padding-left: 0px;">
+                      <p>Blood Group :<b>{{newHemoReport.BloodTrans_BloodGroup}}</b></p>
+                      <p>Today :<b>{{newHemoReport.BloodTrans_Today}}</b></p>
+                      <p>Bag No. :<b>{{newHemoReport.BloodTrans_BagNo}}</b></p>
+                    </div>
+                    <div class="col-md-6">
+                      <p>Next BT planned :<b>{{newHemoReport.BloodTrans_NextBT}}</b></p>
+                      <p>Collection Date :<b>{{newHemoReport.BloodTrans_CollectionDate}}</b></p>
+                      <p>Exp. Date :<b>{{newHemoReport.BloodTrans_ExpDate}}</b></p>
+                    </div>
+                  </div> -->
+                </div>
+
+
+                <!-- <div style="width: 100%; float: left; margin-top: 45px;">
+                  <table style="width: 100%;">
+                    <tr>
+                      <td style="width: 33%;text-align: center;">{{newHemoReport.SignatoryName_1}}</td>
+                      <td style="width: 33%;text-align: center;">{{newHemoReport.CheckedByName}}</td>
+                      <td style="width: 33%;text-align: center;">{{newHemoReport.VerifiedByName}}</td>
+                    </tr>
+                    <tr>
+                      <td style="width: 33%;text-align: center;">Signature</td>
+                      <td style="width: 33%;text-align: center;">Checked By</td>
+                      <td style="width: 33%;text-align: center;">Verified by</td>
+                    </tr>
+                  </table>
+                </div>
+
+                <hr />
+                <div style="width: 100%; float: left;">
+                  <div class="col-md-12">
+                    <p>
+                      <strong>TREATMENT DATA FOR TODAY</strong>
+                    </p>
+                    <div class="col-md-4 col-xs-12">
+                      <p>Pre Weight :<b>{{newHemoReport.TreatmentData_PreWeight}}</b></p>
+                      <p>Pre Temperature :<b>{{newHemoReport.TreatmentData_PreTemperature}}</b></p>
+                      <p>Pre Pulse :<b>{{newHemoReport.TreatmentData_PrePulse}}</b></p>
+                      <p>Pre Stand BP :<b>{{newHemoReport.TreatmentData_PreStandBp}}</b></p>
+                      <p>Pre Sit BP :<b>{{newHemoReport.TreatmentData_PreSitBp}}</b></p>
+                      <p>Time on :<b>{{newHemoReport.TreatmentData_TimeOn}}</b><span> By :</span><b>{{newHemoReport.TreatmentData_TimeOn_By}}</b></p>
+                      <p>Time off :<b>{{newHemoReport.TreatmentData_TimeOff}}</b><span> By :</span><b>{{newHemoReport.TreatmentData_TimeOff_By}}</b></p>
+                    </div>
+                    <div class="col-md-4 col-xs-12">
+                      <p>Post Weight :<b>{{newHemoReport.TreatmentData_PostWeight}}</b></p>
+                      <p>Post Temperature :<b>{{newHemoReport.TreatmentData_PostTemperature}}</b></p>
+                      <p>Post Pulse :<b>{{newHemoReport.TreatmentData_PostPulse}}</b></p>
+                      <p>Post Stand BP :<b>{{newHemoReport.TreatmentData_PostStandBp}}</b></p>
+                      <p>Post Sit BP :<b>{{newHemoReport.TreatmentData_PostSitBp}}</b></p>
+                      <p>UF Goal :<b>{{newHemoReport.TreatmentData_UfGoal}}</b></p>
+                    </div>
+                    <div class="col-md-4 col-xs-12">
+                      <p>Machine No. :<b>{{newHemoReport.TreatmentData_MachineNo}}</b></p>
+                      <p>Conductivity :<b>{{newHemoReport.TreatmentData_Machine_Conductivity}}</b></p>
+                      <p>Temperature :<b>{{newHemoReport.TreatmentData_Machine_Temperature}}</b></p>
+                      <p>Machine Check :<b>{{newHemoReport.TreatmentData_Machine_MachineCheck}}</b></p>
+                      <p>Initials :<b>{{newHemoReport.TreatmentData_Initials}}</b></p>
+                      <p>Pre Lab/Post Lab :<b>{{newHemoReport.TreatmentData_PreLab}}/{{newHemoReport.TreatmentData_PostLab}}</b></p>
+                      <p>Hb/PCV :<b>{{newHemoReport.TreatmentData_Hb_PcV}}</b></p>
+                      <p>Blood Sugar :<b>{{newHemoReport.TreatmentData_BloodSugar}}</b></p>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="width: 100%; float: left;">
+                  <div class="col-md-4 col-xs-12">
+                    <div class="bold border-up-down">On Examination</div>
+                    <table class="table table-responsive">
+                      <tr>
+                        <td>Pallor</td>
+                        <td>{{newHemoReport.OnExamination_Pallor}}</td>
+                        <td>Chest</td>
+                        <td>{{newHemoReport.OnExamination_Chest}}</td>
+                      </tr>
+                      <tr>
+                        <td>Ictercus</td>
+                        <td>{{newHemoReport.OnExamination_Ictercus}}</td>
+                        <td>CVS</td>
+                        <td>{{newHemoReport.OnExamination_CVS}}</td>
+                      </tr>
+                      <tr>
+                        <td>JVP</td>
+                        <td>{{newHemoReport.OnExamination_JVP}}</td>
+                        <td>P/A</td>
+                        <td>{{newHemoReport.OnExamination_PA}}</td>
+                      </tr>
+                      <tr>
+                        <td>Rash</td>
+                        <td>{{newHemoReport.OnExamination_Rash}}</td>
+                        <td>SPO2</td>
+                        <td>{{newHemoReport.OnExamination_SPo2}}</td>
+                      </tr>
+                      <tr>
+                        <td>Lymphnode</td>
+                        <td>{{newHemoReport.OnExamination_Lymphnode}}</td>
+                        <td>Others</td>
+                        <td>{{newHemoReport.OnExamination_Others}}</td>
+                      </tr>
+                    </table>
+                  </div>
+                  <div class="col-md-8" style="min-height:150px;">
+                    <p class="bold" style="margin: 0;">Chief Complaint</p>
+                    <p>{{newHemoReport.ChiefComplaint}}</p>
+                  </div>
+                </div>
+
+                <div style="width: 100%; float: left;">
+                  <div class="col-md-6" style="height:120px;">
+                    <p class="bold">Comments/Drugs</p>
+                    <p>{{newHemoReport.Comments_Drugs}}</p>
+                    <p class="bold">Post Dialysis Assessment</p>
+                    <p>{{newHemoReport.PostDialysisAssesment}}</p>
+                  </div>
+                  <div class="col-md-6">
+                    <p class="bold">Total Blood Volume :<b>{{newHemoReport.TotalBloodVolume}}</b></p>
+                    <p class="bold">Total Heparin/Saline :<b>{{newHemoReport.TotalHeparin_Saline}}</b></p>
+                    <p class="bold">Total Fluid Removed :<b>{{newHemoReport.TotalFluidRemoved}}</b></p>
+                    <p class="bold">Weight Difference :<b>{{newHemoReport.WeightDifference}}</b></p>
+                    <p class="bold">Pt Sent to Hospital :<b>{{newHemoReport.PtSentToHospital}}</b><span class="bold"> Home :</span><b>{{newHemoReport.PtSentToHome}}</b></p>
+                    <p class="bold">Dialyzer Discard :<b>{{newHemoReport.IsDialyzerDiscard}}</b></p>
+                  </div>
+                </div> -->
+
+                <div style="width: 100%; float: left; margin-top: 35px;">
+                  <div class="col-md-12" style="text-align:center">
+                    <p>{{newHemoReport.SignatoryName_2}}</p>
+                    <p class="bold">Signature</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="text-align: center;margin-bottom: 20px;">
+            <button (click)="printHemoReport()" class="btn  btn-small btn-info">Print This Page</button>
+          </div>
+        </div>
+        <div class="col-md-1 hidden-xs hidden-sm" style="margin-right: 24px;">
+        </div>
+      </div>
+    </div>
+    <!--</form>-->
+    <!--Model Box Body End-->
+  </div>
+</div>

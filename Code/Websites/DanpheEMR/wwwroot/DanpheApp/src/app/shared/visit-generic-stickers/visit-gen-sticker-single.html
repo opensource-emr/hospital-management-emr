@@ -1,0 +1,20 @@
+<style>
+    /*!IMPORTANT! : below classes area not used for Printing.. */
+    .gen-sticker-barcode {
+        float:left;
+    }
+</style>
+
+<div class="gen-sticker-wrapper" style="width: 184px;height: 101px;margin:0px 2px;display:block;font-family:sans-serif;font-size: 10px;padding-top:7px; padding-bottom:0px;" *ngIf="visitStickerInfo">
+    <div class="gen-sticker-inner-wrapper" style="padding: 2px 15px 0px 10px;">
+        <span> Hosp. No: <b style="font-size:12px;"> {{visitStickerInfo.HospitalNo}} </b></span> <br>
+        <b style="font-size:12px;">{{visitStickerInfo.PatientFullName}}</b> <b style="font-size:12px;"> {{visitStickerInfo.AgeSex}}</b><br />
+        <span *ngIf="visitStickerInfo.VisitType=='inpatient'">Ward/Bed:  {{visitStickerInfo.Ward_Bed}}<br /></span>
+        Consultant: {{visitStickerInfo.DoctorName}}
+    </div>
+    <div style="width: 100%;padding-left: 10px;" class="gen-sticker-barcode">
+        <danphe-bar-code [barcode-number]="visitStickerInfo.HospitalNo" [height]="20" [barcode-margin]="1" [show-value]="false">
+        </danphe-bar-code>
+
+    </div>
+</div>

@@ -1,0 +1,13 @@
+﻿<div class="row" style="margin-top:10px;margin-bottom:10px">
+    <div class="col-lg-12 col-sm-12">
+        <a class="btn blue bordered " name="name" value="" (click)="NewPatientAppointment()"><span class="glyphicon glyphicon-plus"> </span> New Patient</a>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="AppointmentpatientGridColumns" [grid-data]="patients" (grid-actions)="AppointmentPatientGridActions($event)"
+        [show-ServerSideSearch]="true"
+        [api-type]="patGirdDataApi">
+        </danphe-grid>
+    </div>
+</div>

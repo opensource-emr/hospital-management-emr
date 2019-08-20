@@ -1,0 +1,98 @@
+
+<style>
+    .componentjson-table > tbody > tr > td, .componentjson-table > tbody > tr > th, .componentjson-table > tfoot > tr > td, .componentjson-table > tfoot > tr > th, .componentjson-table > thead > tr > td, .componentjson-table > thead > tr > th {
+        padding: 3px !important;
+    }
+    .range-holder{width: 100px;float: left;}
+</style>
+
+
+<div class="col-md-12">
+  <div class="row margin-15-bt">
+    <label class="control-label col-md-4">Module Name<b class="color-red">*</b></label>
+    <div class="col-md-8">
+      <input class="form-control"
+             [ngModelOptions]="{standalone: true}"
+             [(ngModel)]="labLookUpComponent.ModuleName"
+             disabled
+             max-num-list="10"
+             onClick="this.select();" />
+    </div>
+  </div>
+  <div class="row margin-15-bt managetxt">
+    <label for="lookUpName" class="control-label col-md-4">Look Up Name<b class="color-red">*</b></label>
+    <div class="col-md-8">
+      <input class="form-control"
+             type="text"
+             placeholder="Look Up Name"
+             id="lookUpName"
+             [ngModelOptions]="{standalone: true}"
+             [(ngModel)]="labLookUpComponent.LookUpName"
+             max-num-list="100"
+             onClick="this.select();" />
+    </div>
+  </div>
+  <div class="row margin-15-bt">
+    <label for="lookUpDescription" class="control-label col-md-4">Description</label>
+    <div class="col-md-8">
+      <input id="lookUpDescription" class="form-control"
+             type="text"
+             placeholder="Description"
+             [ngModelOptions]="{standalone: true}"
+             [(ngModel)]="labLookUpComponent.Description"
+             max-num-list="100"
+             onClick="this.select();" />
+    </div>
+  </div>
+  <div class="row margin-15-bt">
+    <div class="col-md-8">
+      <div class="table-responsive form-group" style="background: whitesmoke;">
+        <table class="table table-striped table-hover componentjson-table padding-15-all" style="background-color:initial;margin-top:10px">
+          <thead>
+            <tr>
+              <th></th>
+              <th><b>Look Up Data</b></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of lookUpData; let i = index;trackBy:customTrackBy">
+              <td style="width: 40px;">
+                <a (click)="AddRowRequest()"><i style="padding: 4px 8px;" class="glyphicon glyphicon-plus btn btn-primary"></i></a>
+              </td>
+              <td class="align-vertical-middle" style="width:75%;">
+                <div>
+                  <input type="text" class="form-control"
+                         placeholder="Add Data"
+                         [(ngModel)]="lookUpData[i]"
+                         name="row" />
+                </div>
+              </td>
+
+              <td class="align-vertical-middle"  *ngIf="lookUpData.length > 1" style="width: 40px;"><button class="btn btn-danger" style="padding: 4px 8px;" (click)="DeleteRow(i)">X</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="col-md-4"></div>
+  </div>
+  <div class="row">
+    <div class="modelbox-footer">
+      <div class="all-buttons text-right">
+        <button [disabled]="loading" *ngIf="!update" class="btn btn-primary btn-sm margin-7-hr" (click)="loading=true;AddNewLookUp()">Add</button>
+        <button [disabled]="loading" *ngIf="update" class="btn btn-primary btn-sm margin-7-hr" (click)="loading=true;UpdateLookUp()">Update</button>
+
+        <button type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="closePopUpBox()">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+

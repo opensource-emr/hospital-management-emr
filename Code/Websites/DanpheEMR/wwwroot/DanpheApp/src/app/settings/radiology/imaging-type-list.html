@@ -1,0 +1,21 @@
+﻿
+
+<!--<div class="caption">
+    <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
+    <span class="caption-subject font-blue bold uppercase">Manage Imaging Type</span>
+</div>
+<br />-->
+<input type="button" class="btn btn-primary" (click)="AddImgType()" value="Add Imaging Type" />
+<img-type-add [showAddPage]="showAddPage"
+              [selectedImgType]="selectedImgType"
+              (callback-add)="CallBackAdd($event)"></img-type-add>
+
+<div *ngIf="showImgTypeList" class="row">
+    <div class="col-md-6 col-xs-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="imgTypeGridColumns" [grid-data]="imgTypeList" (grid-actions)="ImgTypeGridActions($event)">
+        </danphe-grid>
+    </div>
+</div>
+
+
+

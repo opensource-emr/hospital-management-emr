@@ -1,0 +1,105 @@
+
+<!-- START LABEL STATS -->
+<div class="row">
+    <div class="col-lg-4 col-md-3 col-sm-6 col-xs-12">
+        <div class="dashboard-stat dashboard-stat-v2 blue">
+            <div class="visual">
+                <i class="fa fa-flask"></i>
+            </div>
+            <div class="details">
+                <div class="number">
+                    <span data-counter="counterup">{{stats.TotalAvailableTest}}</span>
+                </div>
+                <div class="desc"> Total Available Test </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-3 col-sm-6 col-xs-12">
+        <div class="dashboard-stat dashboard-stat-v2 red">
+            <div class="visual">
+                <i class="fa fa-calendar"></i>
+            </div>
+            <div class="details" style="color: white;width: 100%;padding-left: 42px;font-size:15px;">
+                <div style="text-align: center;font-weight: bold;font-size: 17px;margin-bottom:10px;margin-top:5px;">
+                    Test Requests Today : {{stats.TestRequisitedToday}}
+                </div>
+                <div>
+                    <div class="left">
+                        <span routerLink="../Requisition" [routerLinkActive]="'link3-active'">New : {{stats.SamplePendingToday}} </span><br />
+                        <span routerLink="../PendingLabResults" [routerLinkActive]="'link3-active'">Result Pending : {{stats.AddResultsPendingToday}} </span><br />
+                        <span>Completed : {{stats.CompletedToday}} </span><br />
+                    </div>
+                    <div class="right">
+                        <span>Cancelled : {{stats.CancelledTestsToday}} </span><br />
+                        <span>Returned : {{stats.ReturnedTestsToday}} </span><br />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-3 col-sm-6 col-xs-12">
+        <div class="dashboard-stat dashboard-stat-v2 green">
+            <div class="visual">
+                <i class="fa fa-tasks"></i>
+            </div>
+            <div class="details" style="color: white;width: 100%;padding-left: 42px;font-size:15px;">
+                <div style="text-align: center;font-weight: bold;font-size: 17px;margin-bottom:10px;margin-top:5px;">
+                    Test Requests Till Date : {{stats.TestRequisitedTillDate}}
+                </div>
+                <div>
+                    <div class="left">
+                        <span routerLink="../Requisition" [routerLinkActive]="'link3-active'">New : {{stats.SamplePendingTillDate}} </span><br />
+                        <span routerLink="../PendingLabResults" [routerLinkActive]="'link3-active'">Result Pending : {{stats.AddResultsPendingTillDate}} </span><br />
+                        <span>Completed : {{stats.CompletedTillDate}} </span><br />
+                    </div>
+                    <div class="right">
+                        <span>Cancelled : {{stats.CancelledTestsTillDate}} </span><br />
+                        <span>Returned : {{stats.ReturnedTestsTillDate}} </span><br />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="clearfix"></div>
+<!-- END LABEL STATS -->
+<div class="row">
+    <div class="col-lg-6 col-md-6">
+        <div class="portlet light bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="icon-bar-chart font-green-haze"></i>
+                    <span class="caption-subject bold uppercase font-green-haze">Trending Lab Tests (Top 10)</span>
+                    <span class="caption-helper"></span>
+                </div>
+                <div class="tools">
+                    <a href="javascript:;" class="collapse" data-original-title="" title=""> </a>
+                    <a href="javascript:;" class="fullscreen" data-original-title="" title=""> </a>
+                    <a href="javascript:;" class="remove" data-original-title="" title=""> </a>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div id="dvLabTestTrends" class="CSSAnimationChart" style="height:400px;"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6 col-xs-12 col-sm-12">
+        <div class="portlet light bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="icon-bar-chart font-green-haze"></i>
+                    <span class="caption-subject bold uppercase font-green-haze">Tests completed today </span>
+                    <span class="caption-helper"></span>
+                </div>
+                <div class="tools">
+                    <a href="javascript:;" class="collapse" data-original-title="" title=""> </a>
+                    <a href="javascript:;" class="fullscreen" data-original-title="" title=""> </a>
+                    <a href="javascript:;" class="remove" data-original-title="" title=""> </a>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div id="dvLabTestCompleted" class="CSSAnimationChart" style="height:400px;"></div>
+            </div>
+        </div>
+    </div>
+</div>

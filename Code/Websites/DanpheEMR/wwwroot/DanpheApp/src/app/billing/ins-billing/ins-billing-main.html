@@ -1,0 +1,27 @@
+
+
+<div class="row">
+  <ul class="nav nav-tabs" *ngIf="validRoutes != undefined">
+    <li *ngFor="let route of validRoutes">
+      <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'a-tab-active'">{{route.DisplayName}}<i class="{{route.Css}}"></i></a>
+    </li>
+  </ul>
+</div>
+<router-outlet></router-outlet>
+
+<!--<div class="row">
+  <ul class="nav nav-tabs">
+    <li>
+      <a [routerLink]="'PatientList'" [routerLinkActive]="'a-tab-active'">INS Patients</a>
+    </li>
+    <li>
+      <a [routerLink]="'InsProvisional'" [routerLinkActive]="'a-tab-active'"> Provisional List</a>
+    </li>
+    <li>
+      <a [routerLink]="'Claims'" [routerLinkActive]="'a-tab-active'"> Claims</a>
+    </li>
+    <li>
+      <a [routerLink]="'InsBillingTransaction'" [routerLinkActive]="'a-tab-active'">Billing Transaction</a>
+    </li>
+  </ul>
+</div>-->

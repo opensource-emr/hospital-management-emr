@@ -1,0 +1,76 @@
+﻿<div *ngIf="showSocialHistoryBox && CurrentSocialHistory && CurrentSocialHistory.SocialHistoryValidator" class="prob-entry" style="padding: 10px; background: #006687;">
+    <form [formGroup]="CurrentSocialHistory && CurrentSocialHistory.SocialHistoryValidator" class="form-horizontal">
+        <div style="margin-right: 15px;" class="cstm-close" (click)="CloseSocialHistoryBox()">
+            <a><i class="fa fa-close"></i> </a>
+        </div>
+        <h3 class="cstm-add-heading">{{CurrentSocialHistory.SocialHistoryId ? 'Update' : 'Add'}} Social History</h3>
+        <div class="form-group">
+            <label class="control-label col-md-4" style="color:white">Smoking History<b style="float:right;">:</b></label>
+            <div class="col-md-8">
+                <textarea id="chkSmokingHistory" type="text" class="form-control"
+                          [ngModelOptions]="{standalone: true}"
+                          [(ngModel)]="CurrentSocialHistory.SmokingHistory"></textarea>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-4" style="color:white">Alcohol History<b style="float:right;">:</b></label>
+            <div class="col-md-8">
+                <textarea id="chkAlcoholHistory" type="text" class="form-control"
+                          [ngModelOptions]="{standalone: true}"
+                          [(ngModel)]="CurrentSocialHistory.AlcoholHistory"></textarea>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-4" style="color:white">Drug History<b style="float:right;">:</b></label>
+            <div class="col-md-8">
+
+                <textarea id="chkDrugHistory" type="text" class="form-control"
+                          [ngModelOptions]="{standalone: true}"
+                          [(ngModel)]="CurrentSocialHistory.DrugHistory"></textarea>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-4" style="color:white">Occupation<b class="color-red">  *</b><b style="float:right;">:</b></label>
+            <div class="col-md-8">
+                <input type="text" class="form-control" maxlength="50"
+                       formControlName="Occupation"
+                       [(ngModel)]="CurrentSocialHistory.Occupation" />
+                <span class="font-sm color-red" style="color:red" *ngIf="CurrentSocialHistory.IsDirty('Occupation')" [hidden]="CurrentSocialHistory.IsValidCheck('Occupation','required')">
+                    Occupation name is required.
+                </span>
+                <span class="font-sm color-red" style="color:red" *ngIf="CurrentSocialHistory.IsDirty('Occupation')" [hidden]="CurrentSocialHistory.IsValidCheck('Occupation','maxlength')">
+                    Occupation name should not exceed 50 characters.
+                </span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-4" style="color:white">Family Support<b style="float:right;">:</b></label>
+            <div class="col-md-8">
+                <input type="text" class="form-control"
+                       [ngModelOptions]="{standalone: true}"
+                       [(ngModel)]="CurrentSocialHistory.FamilySupport" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-4" style="color:white">Note<b class="color-red"></b><b style="float:right;">:</b></label>
+            <div class="col-md-8">
+               
+                <textarea type="text" style="width:320px;height:115px" maxlength="1000"
+                          [(ngModel)]="CurrentSocialHistory.Note" [ngModelOptions]="{standalone: true}"></textarea>
+                <!--<span class="color-red font-sm"
+                      *ngIf="CurrentSocialHistory.IsDirty('Note')"
+                      [hidden]="CurrentSocialHistory.IsValidCheck('Note','required')">
+                    Note is required.
+                </span><span class="color-red font-sm"
+                      *ngIf="CurrentSocialHistory.IsDirty('Note')"
+                      [hidden]="CurrentSocialHistory.IsValidCheck('Note','maxlength')">
+                    Note should not exceed 200 characters.
+                </span>-->
+
+            </div>
+        </div>
+        <div>
+            <button (click)="SaveSocialHistory()" [disabled]="loading" class="btn btn-primary">{{CurrentSocialHistory.SocialHistoryId ? 'Update' : 'Add' }}</button>
+        </div>
+    </form>
+</div>

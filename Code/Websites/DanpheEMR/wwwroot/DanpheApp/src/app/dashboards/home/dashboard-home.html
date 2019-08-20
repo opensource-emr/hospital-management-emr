@@ -1,0 +1,132 @@
+
+<div class="row" style="margin-top: -22px;">
+
+    <div class="col-lg-4 col-md-3 col-sm-6 col-xs-12">
+      <div class="dashboard-stat dashboard-stat-v2 blue point-cursor">
+        <div class="visual">
+          <i class="fa fa-shopping-cart"></i>
+        </div>
+        <div class="details" style="color: white;width: 100%;padding-left: 42px;font-size:15px;">
+          <div style="text-align: center;font-weight: bold;font-size: 17px;margin-bottom:10px;margin-top:5px;">
+            Registered Patient :
+          </div>
+          <div>
+            <div class="left">
+              <span>Today : {{dsbStats.TodayPatient}} </span><br />
+              <span>Yesterday : {{dsbStats.YestardayPatient}} </span><br />
+            </div>
+            <div class="right">
+              <span>Total Patient : {{dsbStats.TotalPatient}} </span><br />
+            </div>
+          </div>
+        </div>
+      </div>
+            
+    </div>
+
+    <div class="col-lg-4 col-md-3 col-sm-6 col-xs-12">
+
+
+
+        <div class="dashboard-stat dashboard-stat-v2 red">
+            <div class="visual">
+                <i class="fa fa-user-md"></i>
+            </div>
+            <div class="details" style="color: white;width: 100%;padding-left: 42px;font-size:15px;">
+                <div style="text-align: center;font-weight: bold;font-size: 17px;margin-bottom:10px;margin-top:5px;">
+                    Total Doctors : {{dsbStats.TotalDoctorsCount}}
+                </div>
+                <div>
+                    <div class="left">
+                        <span>Consultants : {{dsbStats.ConsultantsCount}} </span><br />
+                        <span>Medical Officers: {{dsbStats.MedicalOfficersCount}} </span><br />
+                    </div>
+                    <div class="right">
+                        <span>Anaesthetists: {{dsbStats.AnaesthetistsCount}} </span><br />
+                    </div>
+                </div>
+            </div>
+            <!--<div class="details">
+        <div class="number">
+            <span data-counter="counterup" data-value="12,5">{{dsbStats.TotalDoctors}}</span>
+        </div>
+        <div class="desc"> Total Doctors </div>
+    </div>-->
+        </div>
+    </div>
+
+    <div class="col-lg-4 col-md-3 col-sm-6 col-xs-12">
+        <a class="dashboard-stat dashboard-stat-v2 green">
+            <div class="visual">
+                <i class="fa fa-shopping-cart"></i>
+            </div>
+            <div class="details" style="color: white;width: 100%;padding-left: 42px;font-size:15px;">
+                <div style="text-align: center;font-weight: bold;font-size: 17px;margin-bottom:10px;margin-top:5px;">
+                    Today's Appointments : {{dsbStats.TotalAppts}}
+                </div>
+                <div>
+                    <div class="left">
+                        <span>New : {{dsbStats.NewAppts}} </span><br/>
+                        <span>Follow up : {{dsbStats.FollowUpAppts}} </span><br />
+                        <span>Referrals : {{dsbStats.ReferralAppts}} </span><br />
+                    </div>
+                    <div class="right">
+                        <span>Cancelled : {{dsbStats.CancelAppts}} </span><br />
+                        <span>Returned : {{dsbStats.ReturnAppts}} </span><br />
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+<div class="clearfix"></div>
+<!-- END DASHBOARD STATS 1-->
+<div class="row">
+    <!-- <div class="col-lg-6 col-md-6">
+        <div class="portlet light bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="icon-bar-chart font-green-haze"></i>
+                    <span class="caption-subject bold uppercase font-green-haze"> patient distribution (zone wise) </span>
+                    <span class="caption-helper"></span>
+                </div>
+                <div class="tools">
+                    <a href="javascript:;" class="collapse" data-original-title="" title=""> </a>
+                    <a href="javascript:;" class="fullscreen" data-original-title="" title=""> </a>
+                    <a href="javascript:;" class="remove" data-original-title="" title=""> </a>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div id="dvZoneWisePatientMap" class="CSSAnimationChart" style="height:400px;"></div>
+            </div>
+        </div>
+    </div> -->
+    <div class="col-lg-6 col-xs-12 col-sm-12">
+        <div class="portlet light bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="icon-bar-chart font-green-haze"></i>
+                    <span class="caption-subject bold uppercase font-green-haze"> department wise appointment count on {{currentDate}} </span>
+                    <span class="caption-helper"></span>
+                </div>
+                <div class="tools">
+                    <a href="javascript:;" class="collapse" data-original-title="" title=""> </a>
+                    <a href="javascript:;" class="fullscreen" data-original-title="" title=""> </a>
+                    <a href="javascript:;" class="remove" data-original-title="" title=""> </a>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div id="dvPieChart" class="CSSAnimationChart" style="height:300px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="clearfix"></div>
+<div class="row">
+
+    <div class="col-lg-6 col-xs-12 col-sm-12">
+
+    </div>
+</div>
+

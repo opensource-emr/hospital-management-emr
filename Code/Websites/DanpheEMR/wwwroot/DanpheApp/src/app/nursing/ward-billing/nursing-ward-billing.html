@@ -1,0 +1,84 @@
+<style>
+    table tr th, table tr td {
+        padding: 5px;
+    }
+</style>
+
+<div class="col-md-12">
+
+    <div class="caption" style="color:#2c8e1a;width: 100%; display:table;">
+        <h4 style="display: inline-block; float: left;margin: 0;line-height: 32px;"><b>Orders List for {{currentPatient.ShortName}}</b></h4>
+        <a class="btn blue" style="display:inline-block; float: right;" (click)="AddNewIpRequest()">Add New IP Billing Request</a>
+        <a class="btn blue" style="display: inline-block; float: right; margin-right: 5px;" (click)="showsummary()">Summary Details</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover" style="width: 100%;margin-top: 15px;">
+            <thead *ngIf="currPatVisitContext">
+                <tr style="background: #006687; color: #fff;">
+                    <td colspan="2">Ward: {{currPatVisitContext.Current_WardBed}}</td>
+                    <td colspan="3">Admitting Docor: {{currPatVisitContext.ProviderName}}</td>
+                    <td colspan="2" *ngIf="currPatVisitContext.AdmissionDate">Admitted On: {{currPatVisitContext.AdmissionDate  | DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'}}</td>
+                </tr>
+            </thead>
+            <thead>
+                <tr style="background-color:lightgray">
+                    <th style="width: 120px;">Date</th>
+                    <th style="width: 180px;">Department</th>
+                    <th style="width: 380px;">Item Name</th>
+                    <th style="padding-right: 5px !important;">Qty.</th>
+                    <th style="padding-right: 5px !important;">User</th>
+                    <th style="padding-right: 5px !important;">Cancel Remarks</th>
+                    <th style="padding-right: 5px !important;">Action</th>
+                </tr>
+            </thead>
+
+            <tr *ngFor="let row of provisionalItemsDetails;let i = index">
+                <td style="font-size: 12px;font-weight: bold;">{{row.RequisitionDate | DanpheDateTime:'format':'YY/MM/DD HH:mm'}}</td>
+                <td>{{row.ServiceDepartment.ServiceDepartmentName}}</td>
+                <td>
+                    <div>{{row.ItemName}}</div>
+                    <div *ngIf="row.ProviderId">
+                        <span style="font-size: 12px;font-weight: bold;">
+                            ({{row.ProviderName}})
+                        </span>
+                    </div>
+                </td>
+                <td>{{row.Quantity}}</td>
+
+                <td title="Department:{{row.RequestingUserDept}}">{{row.RequestingUserName}}</td>
+                <td><textarea [disabled]="!row.AllowCancellation" [(ngModel)]="row.CancelRemarks"></textarea></td>
+                <td *ngIf="row.AllowCancellation"><button class="btn btn-danger" (click)="loading=true;cancelRequest(row, i)">Cancel</button></td>
+                <td *ngIf="!row.AllowCancellation"><b>Report Generated(Cannot Cancel)</b></td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showDischargeBill">
+    <div class="portlet-body form" style="text-align: center;">
+        <div class="modelbox-div" style="width:90%;display: inline-block;">
+            <div style="width: 100%; float: left;background: #fff;">
+                <i class="btn btn-danger" style="float: right" (click)="CloseRecieptView()">X</i>
+                <discharge-bill-main [ipVisitId]="inPatientVisitId"
+                                     [patientId]="inPatientId"
+                                     [billType]="'estimation'"
+                                     [billStatus]="'provisional'"></discharge-bill-main>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="popup-static portlet box portlet-fullscreen"  *ngIf="showNewIpRequestPopup">
+    <div class="portlet-body form">
+        <div class="modelbox-div" style="width:90%; margin: 0 auto;">
+            <div style="width: 100%; float: left;background: #fff;height: 550px;">
+                <i class="btn btn-danger" style="float: right" (click)="CloseOrderView()">X</i>
+                <ward-billitem-request [counterId]="nursingCounterId" [billItems]="allBillItems"
+                                       [visitType]="'emergency'" [billingType]="'outpatient'"
+                                       [patientId]="currentPatient.PatientId" [visitId]="currentVisit.PatientVisitId"
+                                       (emit-billItemReq)="OnNewIpRequestClosed()"></ward-billitem-request>
+            </div>
+        </div>
+    </div>
+</div>

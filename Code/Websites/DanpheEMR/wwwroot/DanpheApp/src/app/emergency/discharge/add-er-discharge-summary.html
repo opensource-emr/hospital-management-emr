@@ -1,0 +1,191 @@
+﻿<style>
+    th, td {
+        border: 1px solid black;
+        padding: 0px 7px;
+    }
+    .no-border th, .no-border td{border: none !important;}
+    .equal-width td {
+        width: 50%;
+        vertical-align: top;
+    }
+    p.discharg-hd{font-weight: 700; text-decoration: underline;}
+    textarea{width: 100%;}
+</style>
+<div class="row" style="position: relative;margin-top: 12px;">
+
+    <div *ngIf="ERpatientSummary.DischargeSummary && ERpatientSummary.DischargeSummary.ERDischargeSummaryId" style="position: absolute; right: 15px; top: -46px;">
+        <button class="btn btn-blue blue" (click)="BackToView()">Back to View Discharge Summary</button>
+    </div>
+
+    <div class="col-md-12">        
+        <table style="width: 100%; border-collapse: collapse; border: 1px solid;">
+            <thead>
+                <tr>
+                    <th colspan="2" style="text-align: center;background: #ececec;"><p style="font-weight: 700;">Discharge Summary</p></th>
+                </tr>
+                <tr>
+                    <td colspan="2"><strong>Name: {{ERpatientSummary.EmergencyPatient.FullName}}</strong></td>
+                </tr>
+                <tr class="equal-width">
+                    <td colspan="1"><strong>Age: {{ERpatientSummary.EmergencyPatient.Age}}</strong></td>
+                    <td colspan="1"><strong>Sex: {{ERpatientSummary.EmergencyPatient.Gender}}</strong></td>
+                </tr>
+                <tr class="equal-width">
+                    <td colspan="1"><strong>Address: {{ERpatientSummary.EmergencyPatient.Address}}</strong></td>
+                    <td colspan="1"><strong>Brought by: {{ERpatientSummary.EmergencyPatient.CareOfPerson}}</strong></td>
+                </tr>
+                <tr>
+                    <td colspan="2"><strong>Mobile No.: {{ERpatientSummary.EmergencyPatient.ContactNo}}</strong></td>
+                </tr>               
+            </thead>
+            <tbody>
+                <tr *ngIf="ERpatientSummary.Vitals">
+                    <td colspan="2">
+                        <!--*ngIf="ERpatientSummary.Vitals"-->
+
+                        <p style="text-align: center; width: 100%;"><span style="font-weight: 700;text-decoration: underline;">Vitals on Arrival</span></p>
+
+                        <table style="width: 100%; border-collapse: collapse; border: 1px solid;margin-bottom: 10px;">
+                            <tr>
+                                <td *ngIf="ERpatientSummary.Vitals.BPSystolic">BP: {{ERpatientSummary.Vitals.BPSystolic}}/{{ERpatientSummary.Vitals.BPDiastolic}} mmHg</td>
+                                <td *ngIf="ERpatientSummary.Vitals.RespiratoryRatePerMin">RR: {{ERpatientSummary.Vitals.RespiratoryRatePerMin}}/Min</td>
+                                <td *ngIf="ERpatientSummary.Vitals.Pulse">Pulse: {{ERpatientSummary.Vitals.Pulse}}/Min</td>
+                                <td *ngIf="ERpatientSummary.Vitals.Temperature">T: {{ERpatientSummary.Vitals.Temperature}}{{ERpatientSummary.TemperatureUnit}}</td>
+                                <td *ngIf="ERpatientSummary.Vitals.SpO2">SPO<sub>2</sub>: {{ERpatientSummary.Vitals.SpO2}}%</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr class="equal-width">
+                    <td colspan="1">
+                        <table class="no-border" style="width: 100%; border-collapse: collapse;">
+                            <tr>
+                                <!--Chief Complaint-->
+                                <td>
+                                    <p class="discharg-hd">Chief Complaints:</p>
+                                    <textarea  rows="5" [(ngModel)]="DischargeSummary.ChiefComplaints"></textarea>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <p class="discharg-hd">O/E:</p>
+                                    <textarea rows="5" [(ngModel)]="DischargeSummary.OnExamination"></textarea>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                    <td colspan="1">
+                        <table class="no-border" style="width: 100%; border-collapse: collapse;">
+                            <tr>
+                                <td>
+                                    <p class="discharg-hd">Investigations:</p>
+                                    <div style="padding-left: 8px;">
+                                        <strong>Lab:</strong> &nbsp;
+                                        <span *ngFor="let laborder of LabOrdersList; let i= index;" style="display: inline-block;height: 36px; line-height: 27px;margin-right: 10px;">
+                                            <label style="cursor: pointer;" for="{{laborder.InvestigationName}}">{{laborder.InvestigationName}}</label>
+                                            <input id="{{laborder.InvestigationName}}" class="zoomcheckbox pull-left" [(ngModel)]="laborder.IsSelected" name="laborder.InvestigationName" width="100" type="checkbox" ng-checked="laborder.InvestigationName=true" />
+                                        </span>
+                                    </div>
+                                    <div style="padding-left: 8px;">
+                                        <strong>Imaging:</strong> &nbsp;
+                                            <span *ngFor="let radorder of RadOrderList; let i= index;" style="display: inline-block;height: 36px; line-height: 27px;margin-right: 10px;">
+                                                <label style="cursor: pointer;" for="{{radorder.InvestigationName}}">{{radorder.InvestigationName}}</label>
+                                                <input id="{{radorder.InvestigationName}}" class="zoomcheckbox pull-left" [(ngModel)]="radorder.IsSelected" name="radorder.InvestigationName" width="100" type="checkbox" ng-checked="radorder.InvestigationName=true" />
+                                            </span>
+                                    </div>
+                                    <div style="padding-left: 8px;">
+                                        <p class="discharg-hd">Other Tests:</p>
+                                        <div style="margin-bottom: 10px;" *ngFor="let other of OthersList; let j = index;">
+                                            <button style="padding: 0 5px;" (click)="AlterOthersListRow(j,0)" class="btn btn-danger delBtn" title="Click to remove this"><i class=" fa fa-cross">X</i></button>
+                                            <span>{{j+1}} &nbsp;</span><input style="width: 75%;" type="text" placeholder="Advice on Discharge" [(ngModel)]="other.InvestigationName" />
+                                            <button style="padding: 0 5px;" (click)="AlterOthersListRow(j,1)" class="btn btn-success delBtn" title="Click to add new row"><i class="fa fa-plus"></i></button>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <p class="discharg-hd">Treatment in ER:</p>
+                                    <textarea  rows="5" [(ngModel)]="DischargeSummary.TreatmentInER"></textarea>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <p class="discharg-hd">Advice on discharge:</p>
+                                    <div style="margin-bottom: 4px;" *ngFor="let adv of allAdvice; let j = index;">
+                                        <button style="padding: 0 5px;" (click)="AlterAdviceRow(j,0)" class="btn btn-danger delBtn" title="Click to remove this advice"><i class=" fa fa-cross">X</i></button>
+                                        <span>{{j+1}} &nbsp;</span><input style="width: 75%;" type="text" placeholder="Advice on Discharge" [(ngModel)]="adv.value" /><!--<span>{{j+1}}</span> <input type="text" value="adv" [(ngModel)]="adv" />-->
+                                        <button style="padding: 0 5px;"  (click)="AlterAdviceRow(j,1)" class="btn btn-success delBtn" title="Click to add new advice"><i class="fa fa-plus"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr class="equal-width">
+                    <td colspan="1">                        
+                        <p class="discharg-hd">Provisional Diagnosis:</p>
+                        <textarea rows="5" [(ngModel)]="DischargeSummary.ProvisionalDiagnosis"></textarea>
+                    </td>
+                    <td colspan="1">
+                    </td>
+
+                </tr>
+                <tr class="equal-width">
+                    <td colspan="1">
+                        Discharge Type:
+                        <span *ngIf="ERpatientSummary.EmergencyPatient.FinalizedStatus=='lama'">LAMA</span>
+                        <span *ngIf="ERpatientSummary.EmergencyPatient.FinalizedStatus=='admitted'">Admitted</span>
+                        <span *ngIf="ERpatientSummary.EmergencyPatient.FinalizedStatus=='transferred'">Transferred</span>
+                        <span *ngIf="ERpatientSummary.EmergencyPatient.FinalizedStatus=='discharged'">Discharged</span>
+                        <span *ngIf="ERpatientSummary.EmergencyPatient.FinalizedStatus=='death'">Death</span>
+                    </td>
+                    <td colspan="1">
+                        <!--Time:-->
+                    </td>
+                </tr>
+                <tr class="equal-width">
+                    <td colspan="1">
+                        <p style="display: inline-block;width: auto;">Doctor Name: </p>
+                        <div style="display: inline-block; width: 75%;">
+                            <input class="form-control cstm-form-control" danphe-auto-complete title="Doctor Name"
+                                   autocomplete="off"
+                                   [(ngModel)]="DischargeSummary.DoctorSelected"
+                                   [list-formatter]="DoctorListFormatter"
+                                   [source]="doctorsList"
+                                   placeholder="Enter Doctor Name"
+                                   display-property-name="FullName"
+                                   value-property-name=null
+                                   style="width:100%"
+                                   max-num-list="15"
+                                   onClick="this.select();" />
+                        </div>
+                        
+                    </td>
+                    <td colspan="1">
+                        <p style="display: inline-block;width: auto;">
+                            DMO:</p>
+                            <div style="display: inline-block; width: 75%;">
+                                <input class="form-control cstm-form-control" danphe-auto-complete title="Medical Officer"
+                                       [(ngModel)]="DischargeSummary.MedicalOfficerSelected"
+                                       [list-formatter]="DoctorListFormatter"
+                                       [source]="doctorsList"
+                                       placeholder="Enter Medical Officer"
+                                       display-property-name="FullName"
+                                       value-property-name=null
+                                       style="width:100%"
+                                       max-num-list="15"
+                                       onClick="this.select();" />
+                            </div>
+</td>
+                </tr>
+            </tbody>
+        </table>
+
+    </div>
+    <div class="col-md-12" style="margin-top: 15px;text-align: center;">
+        <button *ngIf="!update" [disabled]="loading" style="width: 200px;" class="btn btn-blue blue" (click)="loading=true;AddDischargeSummary()">Save</button>
+        <button *ngIf="update" [disabled]="loading" style="width: 200px;" class="btn btn-blue blue" (click)="loading=true;UpdateDischargeSummary()">Update</button>
+    </div>
+</div>
