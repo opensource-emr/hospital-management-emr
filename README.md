@@ -60,9 +60,9 @@ Download Angular 7 from [here](https://cli.angular.io/)
 We need 3 databases for running DanpheEMR. So, we have .bak files into DanpheEMR/Database/ folder.
 
 **Create Database with below steps**
-1. Go to DanpheEMR/Database/
+1. Go to hospital-management-emr/Database/
 2. Restore DanpheAdmin.bak database. 
-3. Restore DanpheEMR.bak database.
+3. first unzip the DanpheEMR.rar file and then restore DanpheEMR.bak database.
 4. Restore Danphe_PACS database.
 
 
@@ -73,7 +73,7 @@ We need 3 databases for running DanpheEMR. So, we have .bak files into DanpheEMR
 
 To Install and Run angular project go through below steps:
 
-Step 1: Go to **DanpheEMR\Code\Websites\DanpheEMR\wwwroot\DanpheApp** path and copy.
+Step 1: Go to **hospital-management-emr\Code\Websites\DanpheEMR\wwwroot\DanpheApp** path and copy.
 
 Step 2: Open Your Node.js Command Prompt paste the copied path and execute **npm install** command.
 
@@ -87,7 +87,7 @@ Step 3: Once the **npm install** done successfully than execute **ng build --wat
  
  ## DanpheEMR Basic Changes, Build and Run Project
  
- Step 1: Go to **DanpheEMR\DanpheEMR\Code\Solutions** path and double click on solution file to open project in Visual Studio 2017.
+ Step 1: Go to **hospital-management-emr\Code\Solutions** path and double click on solution file to open project in Visual Studio 2017.
  
  Step 2: Open Solution Explorer and find **appsetting.json** file into DanpheEMR Web Application and change the **connectionstring**   properties as per database and server name.
  
