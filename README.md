@@ -6,10 +6,13 @@ The system is mainly designed for Hospitals and aimed to provide total digital s
 
 #### DanpheEMR Basic Module
 * Registration
+![alt text](https://i.postimg.cc/d3C0P4ts/Register.png)
 * Appointment
+![alt text](https://i.postimg.cc/1XQkXHr5/Appointment.png)
 * Patient
 * Scheduling
 * Billing
+![alt text](https://i.postimg.cc/rFYfYjR0/Billing.png)
 * Outpatient
 * Government Statutory Reports/ Basic Report
 * Enquiry
@@ -17,6 +20,7 @@ The system is mainly designed for Hospitals and aimed to provide total digital s
 #### Danphe ERP Modules
 * Financial Accounting
 * Inventory & Store Management
+![alt text](https://i.postimg.cc/283wvW9z/Inventory.png)
 * Fixed Assets
 * Reporting & Dashboard
 
@@ -25,6 +29,7 @@ The system is mainly designed for Hospitals and aimed to provide total digital s
 * Radiology
 * Admission, Discharge, Transfer(ADT)
 * Pharmacy
+![alt text](https://i.postimg.cc/RhWH37Sy/Pharmacy.png)
 * Emergency
 * Bed & Ward Management
 * Departments(Onchology)
