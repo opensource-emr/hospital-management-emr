@@ -1,6 +1,11 @@
 # hospital-management-emr
 Health care EMR
 
+## You can see the demo of the EMR from the below link
+
+
+https://www.youtube.com/watch?v=IANSTkIAHsA
+
 ## Getting Started
 The system is mainly designed for Hospitals and aimed to provide total digital solution for hospital management. It features to provide automated and digital solution for all the process hospital has to encounter. It contains different modules Like
 
