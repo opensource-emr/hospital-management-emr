@@ -6,7 +6,9 @@ import { BalanceSheetReportVMModel } from "../shared/balance-sheet-reportVM.mode
 import { FiscalYearModel } from '../../settings/shared/fiscalyear.model';
 import * as moment from 'moment/moment';
 import { CommonFunctions } from '../../../shared/common.functions';
+import { CoreService } from '../../../core/shared/core.service';
 
+import { AccountingService } from "../../shared/accounting.service";
 @Component({
   selector: 'my-app',
   templateUrl: "./balance-sheet-report.html"
@@ -33,41 +35,66 @@ export class BalanceSheetReportComponent {
   public ledgerName: string = '';
   public dateRange: string = null;
   public IsDataLoaded: boolean = false;
-
+  public showExportbtn: boolean = false;
+  public ledgerCode: any;
+  public todaysDate: string = "";
   constructor(
     public messageBoxService: MessageboxService,
-    public accReportBLService: AccountingReportsBLService) {
-    this.fromDate = moment().format('YYYY-MM-DD');
+    public coreservice: CoreService,
+    public accReportBLService: AccountingReportsBLService, public accountingService: AccountingService) {
+    this.fromDate = moment().format('YYYY-MM-DD');//default fromdate=today, it'll later be changed from loadfiscalyearlist function. 
     this.toDate = moment().format('YYYY-MM-DD');
+    this.todaysDate = moment().format('YYYY-MM-DD');
+
     this.loadFiscalYearList();
     this.dateRange = "today";
+    this.showExport();
+
+    this.onDateChange();//Load today's data by default..
+
+  }
+  public selectedDate: string = "";
+	public fiscalYearId:number=null; 
+  public validDate:boolean=true;
+  selectDate(event){
+    if (event) {
+      this.selectedDate = event.selectedDate;
+      this.fiscalYearId = event.fiscalYearId;
+      this.validDate =true;
+    } 
+    else {
+      this.validDate =false;
+    }     
   }
   //event onDateChange
-  onDateChange($event) {
+  onDateChange() {
     this.showResult = false;
-    this.fromDate = $event.fromDate;
-    this.toDate = $event.toDate;
-    var type = $event.type;
-    this.checkDateValidation();
+    //this.fromDate = this.toDate;//sud:14June'20--fromdate is now set as start of fiscal year from loadFiscalyearList function.
+
     this.DisplayData = null;
-    if (type != "custom") {
-      this.LoadData();
-    }
+
+    this.LoadData();
+
   }
   //Load balance sheet data
   LoadData() {
-    if (this.checkDateValidation() && this.checkValidFiscalYear()) {
+    // if (this.checkDateValidation() && this.checkValidFiscalYear()) {
+      if (this.checkDateValidation() &&	this.selectedDate !=null && this.fiscalYearId !=null) {
       try {
-        this.accReportBLService.GetBalanceSheetReportData(this.fromDate, this.toDate)
+        this.accReportBLService.GetBalanceSheetReportData(this.selectedDate, this.fiscalYearId)
           .subscribe(res => {
             if (res.Status == 'OK') {
-              this.balanceSheetData = res.Results;
-              let ProfitLossData = this.balanceSheetData.filter(a => a.PrimaryGroup == "Revenue" || a.PrimaryGroup == "Expenses");
-              this.calNetProfitLoss(ProfitLossData);
-              this.balanceSheetData = this.balanceSheetData.filter(a => a.PrimaryGroup == "Assets" || a.PrimaryGroup == "Liabilities");
+              this.balanceSheetData = null;
+              this.DisplayData = null;
+              this.netProfitLoss = 0;
+              this.balanceSheetData = res.Results.result;
+              this.netProfitLoss = res.Results.netProfit;
+              let ProfitLossData = this.balanceSheetData.filter(a => a.PrimaryGroup == this.accountingService.getnamebyCode("001") || a.PrimaryGroup == this.accountingService.getnamebyCode("002"));
+              //this.calNetProfitLoss(ProfitLossData);
+              this.balanceSheetData = this.balanceSheetData.filter(a => a.PrimaryGroup == this.accountingService.getnamebyCode("008") || a.PrimaryGroup == this.accountingService.getnamebyCode("009")); //  "Assets" "Liabilities"
               this.CalculateTotalAmounts();
-              this.LiabilityList = this.balanceSheetData.find(a => a.PrimaryGroup == "Liabilities");
-              this.AssetList = this.balanceSheetData.find(a => a.PrimaryGroup == "Assets");
+              this.LiabilityList = this.balanceSheetData.find(a => a.PrimaryGroup == this.accountingService.getnamebyCode("009"));
+              this.AssetList = this.balanceSheetData.find(a => a.PrimaryGroup == this.accountingService.getnamebyCode("008"));
               this.formatDataforDisplay();
               this.showResult = true;
             }
@@ -82,16 +109,25 @@ export class BalanceSheetReportComponent {
     }
   }
   checkDateValidation() {
+    if(!this.validDate){
+      this.messageBoxService.showMessage("error", ['Select proper date']);
+      return false;
+    }
     let flag = true;
-    flag = moment(this.fromDate, "YYYY-MM-DD").isValid() == true ? flag : false;
+    //flag = moment(this.fromDate, "YYYY-MM-DD").isValid() == true ? flag : false;
     flag = moment(this.toDate, "YYYY-MM-DD").isValid() == true ? flag : false;
-    flag = (this.toDate >= this.fromDate) == true ? flag : false;
+    var momentA = moment(this.toDate).format("YYYY-MM-DD");
+    var momentB = moment().format("YYYY-MM-DD");
+    flag = (momentA > momentB) ? false : true;
+    //flag = (this.toDate >= this.fromDate) == true ? flag : false;
     if (!flag) {
-      this.messageBoxService.showMessage("error", ['select proper date(FromDate <= ToDate)']);
+      this.messageBoxService.showMessage("error", ['select proper date']);
     }
     return flag;
   }
   checkValidFiscalYear() {
+    return true;
+    //NBB-for now we are not considering from date 
     var frmdate = moment(this.fromDate, "YYYY-MM-DD");
     var tdate = moment(this.toDate, "YYYY-MM-DD");
     var flag = false;
@@ -129,7 +165,7 @@ export class BalanceSheetReportComponent {
         var tAmt = 0;
         for (var k = 0; k < listData[i].COAList[j].LedgerGroupList.length; k++) {
           for (var l = 0; l < listData[i].COAList[j].LedgerGroupList[k].LedgerList.length; l++)
-            if (listData[i].PrimaryGroup == "Expenses") {
+            if (listData[i].PrimaryGroup == this.accountingService.getnamebyCode("002")) {
               tAmt = tAmt + listData[i].COAList[j].LedgerGroupList[k].LedgerList[l].DRAmount - listData[i].COAList[j].LedgerGroupList[k].LedgerList[l].CRAmount;
             }
             else {
@@ -138,8 +174,8 @@ export class BalanceSheetReportComponent {
         }
         overallTotal = overallTotal + tAmt;
       }
-      expenseAmt = listData[i].PrimaryGroup == "Expenses" ? overallTotal : expenseAmt;
-      revenueAmt = listData[i].PrimaryGroup == "Revenue" ? overallTotal : revenueAmt;
+      expenseAmt = listData[i].PrimaryGroup == this.accountingService.getnamebyCode("002") ? overallTotal : expenseAmt;
+      revenueAmt = listData[i].PrimaryGroup == this.accountingService.getnamebyCode("001") ? overallTotal : revenueAmt;
     }
     this.netProfitLoss = revenueAmt - expenseAmt;
   }
@@ -156,15 +192,19 @@ export class BalanceSheetReportComponent {
         for (var k = 0; k < this.balanceSheetData[i].COAList[j].LedgerGroupList.length; k++) {
           var LedgerGroupAmount = 0;
 
-          if (this.balanceSheetData[i].COAList[j].COA == "Capital and Equity") {
-            this.balanceSheetData[i].COAList[j].LedgerGroupList[k].LedgerList.push({ "LedgerId": 0, "LedgerName": "Net Profit and Loss", "LedgerGroupAmount": this.netProfitLoss });
+          if (this.balanceSheetData[i].COAList[j].COA == this.accountingService.getnamebyCode("010")) { // "Capital and Equity"
+
+            if (this.balanceSheetData[i].COAList[j].LedgerGroupList[k].LedgerGroupName == this.accountingService.getnamebyCode("015")) {
+              this.balanceSheetData[i].COAList[j].LedgerGroupList[k].LedgerList.push({ "LedgerId": 0, "LedgerName": "Net Profit and Loss", "LedgerGroupAmount": this.netProfitLoss });
+
+            }
           }
           for (var l = 0; l < this.balanceSheetData[i].COAList[j].LedgerGroupList[k].LedgerList.length; l++) {
             var LedgerAmount = 0; var temp = 0;
             /// calculating amount..if assets then debit - credit , else liablities then credit - debit
             if (this.balanceSheetData[i].COAList[j].LedgerGroupList[k].LedgerList[l].LedgerName != "Net Profit and Loss") {
 
-              if (this.balanceSheetData[i].PrimaryGroup == "Assets") {
+              if (this.balanceSheetData[i].PrimaryGroup == this.accountingService.getnamebyCode("008")) {
                 temp = this.balanceSheetData[i].COAList[j].LedgerGroupList[k].LedgerList[l].DRAmount - this.balanceSheetData[i].COAList[j].LedgerGroupList[k].LedgerList[l].CRAmount
                   + this.balanceSheetData[i].COAList[j].LedgerGroupList[k].LedgerList[l].OpeningBalanceDr - this.balanceSheetData[i].COAList[j].LedgerGroupList[k].LedgerList[l].OpeningBalanceCr;
               }
@@ -183,17 +223,18 @@ export class BalanceSheetReportComponent {
               LedgerGroupAmount = LedgerGroupAmount + this.netProfitLoss;
             }
           }
-          this.balanceSheetData[i].COAList[j].LedgerGroupList[k].Amount = CommonFunctions.parseAmount(LedgerGroupAmount);
+          this.balanceSheetData[i].COAList[j].LedgerGroupList[k].Amount = LedgerGroupAmount;// CommonFunctions.parseAmount(LedgerGroupAmount);
           COAAmount = COAAmount + LedgerGroupAmount;
         }
-        this.balanceSheetData[i].COAList[j].Amount = CommonFunctions.parseAmount(COAAmount);
+        this.balanceSheetData[i].COAList[j].Amount = COAAmount;// CommonFunctions.parseAmount(COAAmount);
         overallTotal = overallTotal + COAAmount;
 
       }
-      this.balanceSheetData[i].Amount = CommonFunctions.parseAmount(overallTotal);
+      this.balanceSheetData[i].Amount = overallTotal;// CommonFunctions.parseAmount(overallTotal);
     }
 
   }
+
 
 
 
@@ -203,6 +244,15 @@ export class BalanceSheetReportComponent {
         this.fiscalYears = res.Results;
         //this.currentFiscalYear = this.fiscalYears.find(x => x.IsActive == true);
         this.IsDataLoaded = true;
+
+        //sud:14June'20--to assign Correct FromDate(fiscYearStartDate), otherwise it's not showing anytingin Reusable-Ledger Popup.
+        let todayDate_Obj = moment(this.todaysDate);//taking from same variable, but we need moment() object for comparision.. so 
+        //that year where 
+        let currFiscYr = this.fiscalYears.find(x => x.IsActive == true && moment(x.StartDate) <= todayDate_Obj && todayDate_Obj <= moment(x.EndDate));
+        if (currFiscYr) {
+          this.fromDate = moment(currFiscYr.StartDate).format('YYYY-MM-DD');
+        }
+
       }
       else {
         this.messageBoxService.showMessage("failed", [res.ErrorMessage]);
@@ -235,13 +285,13 @@ export class BalanceSheetReportComponent {
       //        }
       //    });
       //}
-      if (a.COA == "Capital and Equity") {
+      if (a.COA == this.accountingService.getnamebyCode("010")) {
         totAmt = a.Amount;
-        this.DisplayData = this.pushToList(this.DisplayData, a.COA, "", "BoldCategory", 0, []);
+        this.DisplayData = this.pushToList(this.DisplayData, a.COA, "", "BoldCategory", 0, [], 0);
         a.LedgerGroupList.forEach(b => {
-          this.DisplayData = this.pushToList(this.DisplayData, b.LedgerGroupName, b.Amount, "ledgerGroupLevel", 0, []);
+          this.DisplayData = this.pushToList(this.DisplayData, b.LedgerGroupName, b.Amount, "ledgerGroupLevel", 0, [], 0);
           b.LedgerList.forEach(c => {
-            this.DisplayData = this.pushToList(this.DisplayData, c.LedgerName, c.Amount, "ledgerLevel", c.LedgerId, c.Details);
+            this.DisplayData = this.pushToList(this.DisplayData, c.LedgerName, c.Amount, "ledgerLevel", c.LedgerId, c.Details, c.Code);
           });
         });
       }
@@ -249,73 +299,73 @@ export class BalanceSheetReportComponent {
 
     //push Long Term Liabilities
     this.LiabilityList.COAList.forEach(a => {
-      if (a.COA == "Long Term Liabilities") {
+      if (a.COA == this.accountingService.getnamebyCode("013")) { // "Long Term Liabilities"
         totAmt += a.Amount;
-        this.DisplayData = this.pushToList(this.DisplayData, a.COA, "", "BoldCategory", 0, []);
+        this.DisplayData = this.pushToList(this.DisplayData, a.COA, "", "BoldCategory", 0, [], 0);
         a.LedgerGroupList.forEach(b => {
-          this.DisplayData = this.pushToList(this.DisplayData, b.LedgerGroupName, b.Amount, "ledgerGroupLevel", 0, []);
+          this.DisplayData = this.pushToList(this.DisplayData, b.LedgerGroupName, b.Amount, "ledgerGroupLevel", 0, [], 0);
           b.LedgerList.forEach(c => {
-            this.DisplayData = this.pushToList(this.DisplayData, c.LedgerName, c.Amount, "ledgerLevel", c.LedgerId, c.Details);
+            this.DisplayData = this.pushToList(this.DisplayData, c.LedgerName, c.Amount, "ledgerLevel", c.LedgerId, c.Details, c.Code);
           });
         });
       }
     });
     //push total amount of Capital & Equity's + Long Term Liabilities
-    this.DisplayData = this.pushToList(this.DisplayData, "Total", totAmt, "BoldTotal", 0, []);
+    this.DisplayData = this.pushToList(this.DisplayData, "Total", totAmt, "BoldTotal", 0, [], 0);
     //blank entry
     //this.DisplayData = this.pushToList(this.DisplayData, "", 0, "BlankEntry",0);
 
     //Assets
-    this.DisplayData = this.pushToList(this.DisplayData, "Assets", "", "BoldCategory", 0, []);
+    this.DisplayData = this.pushToList(this.DisplayData, this.accountingService.getnamebyCode("008"), "", "BoldCategory", 0, [], 0);
     //push non current assets
 
-    this.DisplayData = this.pushToList(this.DisplayData, "Non Current Assets", 0, "BoldCategory", 0, []);
+    this.DisplayData = this.pushToList(this.DisplayData, this.accountingService.getnamebyCode("014"), 0, "BoldCategory", 0, [], 0); // "Non Current Assets"
     this.AssetList.COAList.forEach(a => {
-      if (a.COA == "Non Current Assets") {
+      if (a.COA == this.accountingService.getnamebyCode("014")) {
         nonCurrentAssetsAmount = a.Amount;
         a.LedgerGroupList.forEach(b => {
-          this.DisplayData = this.pushToList(this.DisplayData, b.LedgerGroupName, b.Amount, "ledgerGroupLevel", 0, []);
+          this.DisplayData = this.pushToList(this.DisplayData, b.LedgerGroupName, b.Amount, "ledgerGroupLevel", 0, [], 0);
           b.LedgerList.forEach(c => {
-            this.DisplayData = this.pushToList(this.DisplayData, c.LedgerName, c.Amount, "ledgerLevel", c.LedgerId, c.Details);
+            this.DisplayData = this.pushToList(this.DisplayData, c.LedgerName, c.Amount, "ledgerLevel", c.LedgerId, c.Details, c.Code);
           });
         });
       }
     });
     //total non current asstes
-    this.DisplayData = this.pushToList(this.DisplayData, "Total Non Current Assets", nonCurrentAssetsAmount, "BoldTotal", 0, []);
+    this.DisplayData = this.pushToList(this.DisplayData, "Total Non Current Assets", nonCurrentAssetsAmount, "BoldTotal", 0, [], 0);
     //blank entry
     //this.DisplayData = this.pushToList(this.DisplayData, "", 0, "BlankEntry",0);
 
     //push current assets
-    this.DisplayData = this.pushToList(this.DisplayData, "Current Assets", 0, "BoldCategory", 0, []);
+    this.DisplayData = this.pushToList(this.DisplayData, this.accountingService.getnamebyCode("011"), 0, "BoldCategory", 0, [], 0); // "Current Assets"
     this.AssetList.COAList.forEach(a => {
-      if (a.COA == "Current Assets") {
+      if (a.COA == this.accountingService.getnamebyCode("011")) {
         currentAssetsAmount = a.Amount;
         a.LedgerGroupList.forEach(b => {
           if (b.Amount != 0) {
-            this.DisplayData = this.pushToList(this.DisplayData, b.LedgerGroupName, b.Amount, "ledgerGroupLevel", 0, []);
+            this.DisplayData = this.pushToList(this.DisplayData, b.LedgerGroupName, b.Amount, "ledgerGroupLevel", 0, [], 0);
             b.LedgerList.forEach(c => {
-              this.DisplayData = this.pushToList(this.DisplayData, c.LedgerName, c.Amount, "ledgerLevel", c.LedgerId, c.Details);
+              this.DisplayData = this.pushToList(this.DisplayData, c.LedgerName, c.Amount, "ledgerLevel", c.LedgerId, c.Details, c.Code);
             });
           }
         });
       }
     });
     //total current assets
-    this.DisplayData = this.pushToList(this.DisplayData, "Total Current Assets", currentAssetsAmount, "BoldTotal", 0, []);
+    this.DisplayData = this.pushToList(this.DisplayData, "Total Current Assets", currentAssetsAmount, "BoldTotal", 0, [], 0);
     //blank entry
     //this.DisplayData = this.pushToList(this.DisplayData, "", 0, "BlankEntry",0);
 
     //less current liabiliteis
     this.LiabilityList.COAList.forEach(a => {
-      if (a.COA == "Current Liabilities") {
+      if (a.COA == this.accountingService.getnamebyCode("012")) { // "Current Liabilities"
         lessLiabilitiesAmount = a.Amount
-        this.DisplayData = this.pushToList(this.DisplayData, a.COA, 0, "BoldCategory", 0, []);
+        this.DisplayData = this.pushToList(this.DisplayData, a.COA, 0, "BoldCategory", 0, [], 0);
         a.LedgerGroupList.forEach(b => {
           if (b.Amount != 0) {
-            this.DisplayData = this.pushToList(this.DisplayData, b.LedgerGroupName, b.Amount, "ledgerGroupLevel", 0, []);
+            this.DisplayData = this.pushToList(this.DisplayData, b.LedgerGroupName, b.Amount, "ledgerGroupLevel", 0, [], 0);
             b.LedgerList.forEach(c => {
-              this.DisplayData = this.pushToList(this.DisplayData, c.LedgerName, c.Amount, "ledgerLevel", c.LedgerId, c.Details);
+              this.DisplayData = this.pushToList(this.DisplayData, c.LedgerName, c.Amount, "ledgerLevel", c.LedgerId, c.Details, c.Code);
             });
           }
         });
@@ -323,18 +373,18 @@ export class BalanceSheetReportComponent {
     });
 
     //total Current Liabilities
-    this.DisplayData = this.pushToList(this.DisplayData, "Total Current Liabilities", lessLiabilitiesAmount, "BoldTotal", 0, []);
+    this.DisplayData = this.pushToList(this.DisplayData, "Total Current Liabilities", lessLiabilitiesAmount, "BoldTotal", 0, [], 0);
     //blank entry
     //this.DisplayData = this.pushToList(this.DisplayData, "", 0, "BlankEntry",0);
 
     //net current assets =(current assets) - (current liabilities)
     let netAmt = currentAssetsAmount - lessLiabilitiesAmount;
-    this.DisplayData = this.pushToList(this.DisplayData, "Net Current Assets", netAmt, "BoldTotal", 0, []);
+    this.DisplayData = this.pushToList(this.DisplayData, "Net Current Assets", netAmt, "BoldTotal", 0, [], 0);
     //blank entry
     //this.DisplayData = this.pushToList(this.DisplayData, "", 0, "BlankEntry",0);
 
     //total =(non current asstes + net current)
-    this.DisplayData = this.pushToList(this.DisplayData, "Total", nonCurrentAssetsAmount + netAmt, "BoldTotal", 0, []);
+    this.DisplayData = this.pushToList(this.DisplayData, "Total", nonCurrentAssetsAmount + netAmt, "BoldTotal", 0, [], 0);
     //blank entry
     //this.DisplayData = this.pushToList(this.DisplayData, "", 0, "BlankEntry",0);
 
@@ -342,13 +392,13 @@ export class BalanceSheetReportComponent {
 
   //common function for foramtting
   //it takes source list, name, amount and style string then return by attaching obj to it.
-  pushToList(list, name, amt, style, ledgerId, Details) {
+  pushToList(list, name, amt, style, ledgerId, Details, code) {
     let Obj = new Object();
     Obj["Name"] = name;
     Obj["Amount"] = amt;
     Obj["Style"] = style;
     Obj["LedgerId"] = ledgerId;
-    Obj["ShowLedgerGroup"] = false;
+    Obj["ShowLedgerGroup"] = true;
     Obj["ShowLedger"] = false;
     if (Details != undefined) {
       for (let i = 0; i < Details.length; i++) {
@@ -363,6 +413,7 @@ export class BalanceSheetReportComponent {
       }
     }
     Obj["Details"] = Details;
+    Obj["Code"] = code;
     list.push(Obj);
 
     return list;
@@ -370,14 +421,15 @@ export class BalanceSheetReportComponent {
   Print() {
     let popupWinindow;
     var headerContent = document.getElementById("headerForPrint").innerHTML;
-    var printContents = '<b>Report Date Range: ' + this.fromDate + ' To ' + this.toDate + '</b>';
+    var printContents = ""; // '<b>Report Date Range: ' + this.fromDate + ' To ' + this.toDate + '</b>';
     printContents += '<style> table { border-collapse: collapse; border-color: black; } th { color:black; background-color: #599be0; } </style>';
-    printContents += document.getElementById("printpage").innerHTML;
+    printContents += document.getElementById("printpage_balanceSheet").innerHTML;
     popupWinindow = window.open('', '_blank', 'width=600,height=700,scrollbars=no,menubar=no,toolbar=no,location=no,status=no,titlebar=no');
     popupWinindow.document.open();
     let documentContent = "<html><head>";
-    documentContent += '<link rel="stylesheet" type="text/css" media="print" href="../../themes/theme-default/DanphePrintStyle.css"/>';
-    documentContent += '<link rel="stylesheet" type="text/css" href="../../themes/theme-default/DanpheStyle.css"/>';
+    //documentContent += '<link rel="stylesheet" type="text/css" media="print" href="../../themes/theme-default/DanphePrintStyle.css"/>';
+    // documentContent += '<link rel="stylesheet" type="text/css" href="../../themes/theme-default/DanpheStyle.css"/>';
+    documentContent += '<link rel="stylesheet" type="text/css" href="../../themes/theme-default/PrintStyle.css"/>';
     documentContent += '<link rel="stylesheet" type="text/css" href="../../../assets/global/plugins/bootstrap/css/bootstrap.min.css"/>';
     documentContent += '</head>';
     documentContent += '<body onload="window.print()">' + headerContent + printContents + '</body></html>'
@@ -401,6 +453,7 @@ export class BalanceSheetReportComponent {
     if (row.Name != 'Net Profit and Loss') {
       this.ledgerId = row.LedgerId;
       this.ledgerName = row.Name;
+      this.ledgerCode = row.Code;
       this.showLedgerDetail = true;
     }
   }
@@ -414,7 +467,11 @@ export class BalanceSheetReportComponent {
         if (level == 'COA') {
           this.DisplayData[i].ShowLedgerGroup = (this.DisplayData[i].ShowLedgerGroup == true) ? false : true;
           if (this.DisplayData[i].ShowLedgerGroup == false) {
-            this.DisplayData[i + 1].ShowLedger = false;
+            //set showledger=false for next item/row-- ShowLedger undefined issue was coming earlier.
+            if (this.DisplayData[i + 1]) {
+              this.DisplayData[i + 1].ShowLedger = false;
+            }
+
           }
           if (this.DisplayData[i].Style == 'BoldCategory') {
             break;
@@ -430,6 +487,17 @@ export class BalanceSheetReportComponent {
       if (this.DisplayData[i] == row) {
         flag = 0;
       }
+    }
+  }
+
+  showExport() {
+
+    let exportshow = this.coreservice.Parameters.find(a => a.ParameterName == "AllowOtherExport" && a.ParameterGroupName == "Accounting").ParameterValue;
+    if (exportshow == "true") {
+      this.showExportbtn = true;
+    }
+    else {
+      this.showExportbtn = false;
     }
   }
 }

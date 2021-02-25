@@ -1,0 +1,46 @@
+<style>
+    ul.cstm-nav-tab > li > a{padding: 10px 5px;}
+</style>
+<div class="sub-navtab fixed-subnavtab">
+  <ul class="nav nav-tabs cstm-nav-tab">
+    <li *ngFor="let route of validRoutes">
+      <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'a-tab-active'">{{route.DisplayName}}<i class="{{route.Css}}"></i></a>
+    </li>
+    <li><a [routerLink]="'TermsList/'+TermsApplicationId" [routerLinkActive]="'a-tab-active'">Terms</a></li>
+    <!--<li>
+      <a routerLink="InvoiceHeader/Pharmacy" [routerLinkActive]="'a-tab-active'">Invoice Header</a>
+    </li>-->
+    <!-- <li>
+      <a routerLink="CompanyManage" [routerLinkActive]="'a-tab-active'">Company Manage</a>
+    </li>
+    <li>
+      <a routerLink="CategoryManage" [routerLinkActive]="'a-tab-active'">Category Manage</a>
+    </li>
+    <li>
+      <a routerLink="UnitOfMeasurementManage" [routerLinkActive]="'a-tab-active'">UnitOfMeasurement Manage</a>
+    </li>
+    <li>
+      <a routerLink="ItemTypeManage" [routerLinkActive]="'a-tab-active'">ItemType Manage</a>
+    </li>
+    <li>
+      <a routerLink="ItemManage" [routerLinkActive]="'a-tab-active'">Item Manage</a>
+    </li>
+    <li>
+      <a routerLink="TAXManage" [routerLinkActive]="'a-tab-active'">TAX Manage</a>
+    </li>
+    <li>
+      <a routerLink="GenericManage" [routerLinkActive]="'a-tab-active'">Generic Manage</a>
+    </li>
+    <li>
+      <a routerLink="StockTxnItemManage" [routerLinkActive]="'a-tab-active'">Item MRP</a>
+    </li>
+    <li>
+      <a routerLink="Dispensary" [routerLinkActive]="'a-tab-active'">Dispensary</a>
+    </li>
+    <li>
+      <a routerLink="RackSetting" [routerLinkActive]="'a-tab-active'">Rack</a>
+    </li> -->
+  </ul>
+</div>
+<router-outlet>
+</router-outlet>

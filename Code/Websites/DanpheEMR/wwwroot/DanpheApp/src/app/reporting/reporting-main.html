@@ -24,7 +24,7 @@
 <base href="/">
 
 
-<div class="page-bar">
+<div class="page-bar fixed-top-bar">
     <ul class="page-breadcrumb" *ngIf="validRoutes != undefined">
  
     <!--Start: Primary Menu Items -->
@@ -49,6 +49,7 @@
                   <i class="{{route.Css}}"></i>
                   </a>
               </li>
+              
           </ul>
         </li>
       <!--End: Secondary Menu Items-->
@@ -58,5 +59,3 @@
     
 </div>
 <router-outlet></router-outlet>
-
-

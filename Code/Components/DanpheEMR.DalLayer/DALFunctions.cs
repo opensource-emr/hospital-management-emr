@@ -83,6 +83,21 @@ namespace DanpheEMR.DalLayer
         }
         #endregion
 
+        //this function shoud be replaced later with Execute Scalar of Ado.Net.
+
+        public static int ExecuteStoredProcedure(string storedProcName, List<SqlParameter> ipParams, DbContext dbContext)
+        {
+            try
+            {
+                DataSet ds = DALFunctions.GetDatasetFromStoredProc(storedProcName, ipParams, dbContext);
+                return 1;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         //Function to convert LINQ query result to Datatable
         public static DataTable LINQResultToDataTable<T>(IEnumerable<T> Linqlist)
         {

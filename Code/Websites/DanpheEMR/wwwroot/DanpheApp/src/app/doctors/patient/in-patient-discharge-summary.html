@@ -1,0 +1,15 @@
+<div class="col-md-12" *ngIf="showDischargeSummaryAdd" style="margin-top:50px !important;">
+  <discharge-summary-add [selectedDischarge]="selectedPatient"
+                         [showDischargeSummary]="showDischargeSummaryAdd"
+                         [fromClinical]="false">
+
+  </discharge-summary-add>
+</div>
+
+<div class="col-md-12" *ngIf="showDischargeSummaryView" style="margin-top:50px !important;">
+  <discharge-summary-view [selectedADT]="selectedPatient"
+                          [showSummaryView]="showDischargeSummaryView">
+
+  </discharge-summary-view>
+</div>
+

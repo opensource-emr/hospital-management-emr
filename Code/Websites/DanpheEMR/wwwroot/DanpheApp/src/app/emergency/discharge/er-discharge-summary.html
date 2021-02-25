@@ -1,5 +1,5 @@
-﻿
+
 <div>
-    <add-discharge-summary  *ngIf="showAddUpdate" [patientSummary]="PatientSummary" (callBackToMain)="CallBackFromAddUpdate($event)"></add-discharge-summary>
-    <view-discharge-summary *ngIf="viewSummary" [patientSummary]="PatientSummary" (callBackToMain)="CallBackFromView($event)"></view-discharge-summary>
+    <add-er-discharge-summary  *ngIf="showAddUpdate" [patientSummary]="PatientSummary" (callBackToMain)="CallBackFromAddUpdate($event)"></add-er-discharge-summary>
+    <view-er-discharge-summary *ngIf="viewSummary" [patientSummary]="PatientSummary" (callBackToMain)="CallBackFromView($event)"></view-er-discharge-summary>
 </div>

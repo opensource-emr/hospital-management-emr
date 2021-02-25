@@ -11,7 +11,7 @@ import * as moment from 'moment/moment';
 import * as _ from 'lodash';
 import { CoreService } from "../../core/shared/core.service";
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
-import { DischargeSummary } from '../../admission/shared/discharge-summary.model';
+import { DischargeSummary } from '../../adt/shared/discharge-summary.model';
 import { DischargeSummaryDLService } from './discharge-summary.dl.service';
 import { PatientCertificate } from './patient-certificate.model';
 
@@ -22,7 +22,6 @@ export class DischargeSummaryBLService {
   constructor(public coreService: CoreService,
     public msgBoxServ: MessageboxService,
     public dischargeSummaryDLService: DischargeSummaryDLService,
-    public visitDLService: VisitDLService,
     public imagingDLService: ImagingDLService,
     public labsDLService: LabsDLService,
     public billingDLService: BillingDLService) {
@@ -104,10 +103,10 @@ export class DischargeSummaryBLService {
     var tempMedicines: any = tempVisitModel.DischargeSummaryMedications.map(itm => {
       return _.omit(itm, ['DischargeSummaryMedicationValidator']);
     });
-    var babies: any = tempVisitModel.BabyBirthDetails.map(itm => {
-      return _.omit(itm, ['BabyBirthDetailsValidator']);
-    });
-    tempVisitModel.BabyBirthDetails = babies;
+    //var babies: any = tempVisitModel.BabyBirthDetails.map(itm => {
+    //  return _.omit(itm, ['BabyBirthDetailsValidator']);
+    //});
+    //tempVisitModel.BabyBirthDetails = babies;
     tempVisitModel.DischargeSummaryMedications = tempMedicines;
     return this.dischargeSummaryDLService.PostDischargeSummary(tempVisitModel)
       .map(res => res)
@@ -122,12 +121,12 @@ export class DischargeSummaryBLService {
     var tempMedicines: any = tempVisitModel.DischargeSummaryMedications.map(itm => {
       return _.omit(itm, ['DischargeSummaryMedicationValidator']);
     });
-    if(tempVisitModel.BabyBirthDetails){
-    var babies: any = tempVisitModel.BabyBirthDetails.map(itm => {
-      return _.omit(itm, ['BabyBirthDetailsValidator']);
-    });
-    tempVisitModel.BabyBirthDetails = babies;
-  }
+  //  if(tempVisitModel.BabyBirthDetails){
+  //  var babies: any = tempVisitModel.BabyBirthDetails.map(itm => {
+  //    return _.omit(itm, ['BabyBirthDetailsValidator']);
+  //  });
+  //  tempVisitModel.BabyBirthDetails = babies;
+  //}
     tempVisitModel.DischargeSummaryMedications = tempMedicines;
     return this.dischargeSummaryDLService.PutDischargeSummary(tempVisitModel)
       .map(res => { return res });

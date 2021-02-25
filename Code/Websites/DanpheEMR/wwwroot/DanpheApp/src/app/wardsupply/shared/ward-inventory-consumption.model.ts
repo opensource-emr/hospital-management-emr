@@ -13,12 +13,16 @@ export class WardInventoryConsumptionModel {
   public ItemId: number = 0;
   public ItemName: string = '';
   public Quantity: number = 0;
+  public Code: string = '';
+  public UOMName: string = '';
   public Remark: string = '';
   public UsedBy: string = null;
   public CreatedBy: number = 0;
   public CreatedOn: string = '';
+  public ConsumptionDate: string = '';
   public CounterId: number = 0;
   public StockId: number = 0;
+  public StoreId: number = 0;
   public ConsumeQuantity: number = 1;
 
   public ConsumptionValidator: FormGroup = null;

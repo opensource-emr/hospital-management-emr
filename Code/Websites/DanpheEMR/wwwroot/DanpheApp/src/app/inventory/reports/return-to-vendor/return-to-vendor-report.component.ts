@@ -10,7 +10,7 @@ import { InventoryBLService } from '../../shared/inventory.bl.service';
 import { ReturnToVendorReport } from '../shared/return-to-vendor-report.model';
 @Component({
   //selector: 'my-app',
-  templateUrl: "../../../view/inventory-view/Reports/ReturnToVendor.html"  
+  templateUrl: "../../../view/inventory-view/Reports/ReturnToVendor.html"
 })
 export class ReturnToVendorComponent implements OnInit {
 
@@ -38,7 +38,7 @@ export class ReturnToVendorComponent implements OnInit {
   ngOnInit() {
     this.LoadVendorList();
     this.ShowReturnToVendorReport();
-    this.loadReport();
+    //this.loadReport();
   }
 
   gridExportOptions = {
@@ -90,6 +90,7 @@ export class ReturnToVendorComponent implements OnInit {
   }
 
   ShowReturnToVendorReport() {
+    this.filteredReturnToVendorReport = null;    
 
     this.inventoryBLService.ShowReturnToVendor(this.CurrentVendor.VendorId)
       .map(res => res)
@@ -100,18 +101,21 @@ export class ReturnToVendorComponent implements OnInit {
     this.msgBoxServ.showMessage("error", [err]);
   }
   Success(res) {
-    if (res.Status == "OK") {
-
+    if (res.Status == "OK" && res.Results.length > 0 ) {
       this.ReturnToVendorReportColumns = this.reportServ.reportGridCols.ReturnToVendorReport;
       this.ReturnToVendorReportData = res.Results;
       this.filteredReturnToVendorReport = this.ReturnToVendorReportData;
 
+    }  
+    else if (res.Status == "OK" && res.Results.length == 0) {
+      this.msgBoxServ.showMessage("Error", ["There is no data available."]);
     }
     else {
       this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
     }
 
   }
+  // ShowReturnToVendorReport
   loadReport() {
     if (this.fromDate && this.toDate) {
       this.filteredReturnToVendorReport = [];
@@ -123,6 +127,9 @@ export class ReturnToVendorComponent implements OnInit {
           this.filteredReturnToVendorReport.push(rep);
         }
       });
+      if (this.filteredReturnToVendorReport.length == 0) {
+        this.msgBoxServ.showMessage("Error", ["There is no data available."]);
+      }
     }
     else {
       this.filteredReturnToVendorReport = this.ReturnToVendorReportData;

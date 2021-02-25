@@ -1,4 +1,4 @@
-﻿import { Injectable, Directive } from '@angular/core';
+import { Injectable, Directive } from '@angular/core';
 import { CoreDLService } from './core.dl.service';
 
 
@@ -35,6 +35,24 @@ export class CoreBLService {
     public GetCounter() {
         return this.coreDLService.GetCounter()
             .map(res => res);
-    }
+  }
 
+     public GetCodeDetails() {
+         return this.coreDLService.GetCodeDetails()
+             .map(res => res);
+     }
+     public GetFiscalYearList() {
+        return this.coreDLService.GetFiscalYearList()
+            .map(res => res);
+    }
+     public GetsectionList() {
+        return this.coreDLService.GetsectionList()
+            .map(res => { return res});
+    }
+    //START: VIKAS:22 Apr 2020: get user level date preference
+    public getCalenderDatePreference() {
+        return this.coreDLService.getCalenderDatePreference()
+            .map(res => { return res});
+    }
+    //END:VIKAS :22 Apr 2020: get user level date preference
 }

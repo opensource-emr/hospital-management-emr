@@ -18,5 +18,6 @@ namespace DanpheEMR.Services
         PurchaseOrderModel AddPOAndPOItemsByGRId(GoodsReceiptModel model);
         //this function exist to update the good receipt
         int UpdateGoodsReceipt(GoodsReceiptModel GoodsReceipt);
+        bool AddtoInventoryStock(GoodsReceiptItemsModel item);
     }
 }

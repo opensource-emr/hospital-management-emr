@@ -1,0 +1,82 @@
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showAddPage">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-4 col-md-offset-4">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3> <span *ngIf="!update">Add Bed Feature</span> <span *ngIf="update">Update  Bed Feature</span> </h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a> </div>
+          <form [formGroup]="CurrentBedFeature.BedFeatureValidator" class="form-horizontal hm-form">
+            <div class="form-body">
+              <div class="form-group">
+                <label class="control-label col-md-4">Feature Name<sup>*</sup><b>:</b></label>
+                <div class="col-md-8">
+                  <input class="form-control" maxlength="100" type="text" id="BedFeatureName"
+										   [(ngModel)]="CurrentBedFeature.BedFeatureName"
+										   formControlName="BedFeatureName"
+										   [attr.disabled]="update ? '' : null"
+										   value="" placeholder="Enter Bed Feature Name" />
+                  <span class="color-red font-sm" [hidden]="CurrentBedFeature.IsValidCheck('BedFeatureName','required') || !(CurrentBedFeature.IsDirty('BedFeatureName'))">Bed Feature Name is required</span>
+                  <div class="color-red font-sm" *ngIf="CurrentBedFeature.IsDirty('BedFeatureName')" [hidden]="CurrentBedFeature.IsValidCheck('BedFeatureName','maxlength')"> Length is not proper</div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-4">Feature Full Name<b>:</b></label>
+                <div class="col-md-8">
+                  <input class="form-control" maxlength="100" type="text" id="BedFeatureFullName"
+														   [(ngModel)]="CurrentBedFeature.BedFeatureFullName"
+														   formControlName="BedFeatureFullName"
+														   value="" placeholder="Enter Bed Feature Full Name" />
+                  <div class="color-red font-sm" *ngIf="CurrentBedFeature.IsDirty('BedFeatureFullName')" [hidden]="CurrentBedFeature.IsValidCheck('BedFeatureFullName','maxlength')"> Length is not proper</div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-4">Price<sup>*</sup><b>:</b></label>
+                <div class="col-md-8">
+                  <input type="number" name="" class="form-control" maxlength="30"
+														   [(ngModel)]="CurrentBedFeature.BedPrice" id="Price"
+														   placeholder="Enter Bed Price" formControlName="BedPrice" />
+                  <br />
+                  <div class="color-red font-sm" *ngIf="CurrentBedFeature.IsDirty('BedPrice')" [hidden]="CurrentBedFeature.IsValidCheck('BedPrice','required')"> Enter Price</div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-4">Is Tax Applicable <b>:</b> </label>
+                <div class="col-md-8">
+                  <div class="input-group">
+                    <div class="icheck-inline">
+                      <label class="mt-checkbox mt-checkbox-outline">
+                        <input id="isTaxApplicable" name="isTaxApplicable" type="checkbox" value=""
+																	   [(ngModel)]="CurrentBedFeature.TaxApplicable"
+																	   [ngModelOptions]="{standalone: true}">
+                        <span></span> </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-4">Is Active <b>:</b> </label>
+                <div class="col-md-8">
+                  <div class="input-group">
+                    <div class="icheck-inline">
+                      <label class="mt-checkbox mt-checkbox-outline">
+                        <input id="isActive" name="isActive" type="checkbox" value=""
+																	   [(ngModel)]="CurrentBedFeature.IsActive"
+																	   [ngModelOptions]="{standalone: true}">
+                        <span></span> </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+            </div>
+			  <div class="panel-footer">
+                <input type="button" class="btn btn-primary" *ngIf="!update" (click)="Add()" value="Add" />
+                <input type="button" class="btn btn-primary" *ngIf="update" (click)="Update()" value="Update" />
+              </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

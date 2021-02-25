@@ -1,4 +1,4 @@
-﻿import { Component, Input, Output, EventEmitter, ChangeDetectorRef, ViewChild } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { PatientsBLService } from '../shared/patients.bl.service';
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import * as moment from 'moment/moment';

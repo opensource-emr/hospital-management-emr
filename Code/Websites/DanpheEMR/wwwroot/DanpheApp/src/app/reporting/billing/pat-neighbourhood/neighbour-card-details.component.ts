@@ -5,6 +5,7 @@ import * as moment from 'moment/moment';
 import { DLService } from "../../../shared/dl.service"
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
+import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from '../../../shared/danphe-grid/NepaliColGridSettingsModel';
 
 @Component({
   templateUrl: "./neighbour-card-details.html"
@@ -18,11 +19,13 @@ export class RPT_BIL_PatNeighbourCardReportComponent {
   PatientNeighbourhoodCardDetailsData: Array<any> = new Array<RPT_BIL_NeighbourCardModel>();
   public currentneighbourcard: RPT_BIL_NeighbourCardModel = new RPT_BIL_NeighbourCardModel();
   dlService: DLService = null;
+  public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
 
   constructor(_dlService: DLService, public msgBoxServ: MessageboxService, public reportServ: ReportingService) {
     this.dlService = _dlService;
     this.currentneighbourcard.FromDate = moment().format('YYYY-MM-DD');
     this.currentneighbourcard.ToDate = moment().format('YYYY-MM-DD');
+    this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail("IssuedDate", false));
   }
 
 
@@ -31,11 +34,15 @@ export class RPT_BIL_PatNeighbourCardReportComponent {
   };
 
   Load() {
-    this.dlService.Read("/BillingReports/PatientNeighbourhoodCardDetail?FromDate="
-      + this.currentneighbourcard.FromDate + "&ToDate=" + this.currentneighbourcard.ToDate)
-      .map(res => res)
-      .subscribe(res => this.Success(res),
-        res => this.Error(res));
+    if (this.currentneighbourcard.FromDate != null && this.currentneighbourcard.ToDate != null) {
+      this.dlService.Read("/BillingReports/PatientNeighbourhoodCardDetail?FromDate="
+        + this.currentneighbourcard.FromDate + "&ToDate=" + this.currentneighbourcard.ToDate)
+        .map(res => res)
+        .subscribe(res => this.Success(res),
+          res => this.Error(res));
+    } else {
+      this.msgBoxServ.showMessage("error", ['Dates Provided is not Proper']);
+    }  
 
   }
   Error(err) {
@@ -79,5 +86,12 @@ export class RPT_BIL_PatNeighbourCardReportComponent {
   ErrorMsg(err) {
     this.msgBoxServ.showMessage("error", ["Sorry!!! Not able export the excel file."]);
     console.log(err.ErrorMessage);
+  }
+
+  //Anjana:11June'20--reusable From-ToDate-In Reports..
+  OnFromToDateChange($event) {
+    this.currentneighbourcard.FromDate = $event.fromDate;
+    this.currentneighbourcard.ToDate =  $event.toDate;
+
   }
 }

@@ -127,6 +127,12 @@ namespace DanpheEMR.ServerModel
         public bool? IsInsurance { get; set; }
 
         public int? DiscountSchemeId { get; set; } //Yubraj 30th July '19
+        [NotMapped]
+        public bool? IsSelected { get; set; } // Rajesh: 7Aug19
+        [NotMapped]
+        public string ModifiedByName { get; set; }
+
+        public string OrderStatus { get; set; }//pratik:7Aug2020
 
     }
 }

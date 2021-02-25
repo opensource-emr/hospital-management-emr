@@ -1,26 +1,28 @@
-﻿<base href="/Clinical/">
+<base href="/Clinical/">
 <div id="homeMedicationSection">
-    <div class="col-md-12">
-        <div class="row">
-            <div class="col-md-8 col-xs-12">
+    <div class="row">
+        <div class="col-md-12">
+          <div class="form-body">
+            <div class="col-md-8 col-xs-12" style="padding-left: 0px;">
                 <div class="portlet cstm-portlet portlet-with-collapse">
                     <div class="portlet-title cstm-pt-title">
                         <div class="cstm-portlet-caption">
-                            Home Medication List
+                            Medication List
                         </div>
                         <div class="cstm-action">
                             <a class="cstm-add" (click)="AddNewHomeMedication()">
-                                <i class="fa fa-plus-circle"></i> Add New
+                                <i class="fa fa-plus-circle"></i> Add
                             </a>
                         </div>
                     </div>
 
                     <div class="cstm-portlet-body">
                         <div class="table-responsive">
-                            <table class="table table-bordered table-striped table-condensed flip-content" style="margin-bottom: 0px;">
+                            <table class="table doc-tbl flip-content" style="margin-bottom: 0px;">
                                 <thead class="flip-content">
                                     <tr>
                                         <th>Medication Name</th>
+                                        <th>Type</th>
                                         <th>Dose</th>
                                         <th>Route</th>
                                         <th>Last Taken</th>
@@ -32,13 +34,12 @@
                                 <tbody>
                                     <tr *ngFor="let add of homemedications; let i=index">
                                         <td>{{add.MedicationName}}</td>
+                                        <td>{{add.MedicationType | uppercase}}</td>
                                         <td>{{add.Dose}}</td>
                                         <td>{{add.Route}}</td>
                                         <td>{{add.LastTaken  | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
                                         <td>{{add.Frequency}}</td>
                                         <td>{{add.Comments}}</td>
-
-
                                         <td>
                                             <a (click)="EditHomeMedication(add,i)" class="bs-glyphicon-class btn yello"><span class="glyphicon glyphicon-edit"></span>Edit</a>
                                         </td>
@@ -61,6 +62,7 @@
                                      (callback-addupdate)="CallBackAddUpdate($event)"></home-medication-add>
             </div>
         </div>
+    </div>
     </div>
 </div>
 

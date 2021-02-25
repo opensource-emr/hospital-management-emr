@@ -1,0 +1,6 @@
+<select class="margin-15-lft cstm-select" [(ngModel)]="selImgType" (ngModelChange)="ImagingTypeDropdownOnChange()">
+  <option *ngIf="showAll" value="-1"> --All-- </option>
+  <ng-container *ngFor="let typ of imagingTypes">
+    <option *ngIf="typ.validToSelect" value="{{typ.ImagingTypeId}}"> {{typ.ImagingTypeName}} </option>
+  </ng-container>
+</select>

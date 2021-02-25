@@ -17,5 +17,6 @@ namespace DanpheEMR.Services.Pharmacy.Rack
         void DeleteRack(int id);
         List<RackViewModel> GetParentRack();
         List<PHRMItemMasterModel> GetDrugList(int rackId);
+        string GetStoreRackNameByItemId(int itemId);
     }
 }

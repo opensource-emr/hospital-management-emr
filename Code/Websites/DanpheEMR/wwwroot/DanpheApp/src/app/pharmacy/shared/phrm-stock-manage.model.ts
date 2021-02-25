@@ -11,6 +11,7 @@ import * as moment from 'moment/moment';
 export class PHRMStockManageModel {
   public StockManageId: number = 0;
   public ItemId: number = null;
+  public StockId: number = null;
   public ItemName: string = "";
   public BatchNo: string = "";
   public Quantity: number = 0;
@@ -32,7 +33,7 @@ export class PHRMStockManageModel {
   constructor() {
     var _formBuilder = new FormBuilder();
     this.StockManageValidator = _formBuilder.group({
-      'UpdatedQty': ['', Validators.compose([this.positiveNumberValdiator])],
+      'UpdatedQty': ['', Validators.compose([this.positiveNumberValdiator,this.wholeNumberRequired])],
       //'Price': ['', Validators.compose([this.positiveNumberValdiator])]
       'Remark': ['', Validators.required],
       'InOut': ['', Validators.required]
@@ -60,5 +61,12 @@ export class PHRMStockManageModel {
     }
 
   }
+  wholeNumberRequired(control: FormControl): { [key: string]: boolean } {
+    if (control.value) {
+        if (control.value % 1 != 0) return { 'wrongDecimalValue': true };
+    }
+    else
+    return { 'wrongDecimalValue': true };
+}
 
 }

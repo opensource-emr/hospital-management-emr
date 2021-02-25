@@ -4,11 +4,12 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Audit.EntityFramework;
 using DanpheEMR.ServerModel;
 
 namespace DanpheEMR.DalLayer
 {
-    public class VisitDbContext : DbContext
+    public class VisitDbContext : AuditDbContext
     {
         public DbSet<VisitModel> Visits { get; set; }
         public DbSet<EmployeeModel> Employees { get; set; }
@@ -26,6 +27,7 @@ namespace DanpheEMR.DalLayer
         public DbSet<CountryModel> Countries { get; set; }//sud:14May'18
 
         public DbSet<ServiceDepartmentModel> ServiceDepartments { get; set; }
+        public List<VitalsModel> Vitals { get; set; }
 
         public VisitDbContext(string conn) : base(conn)
         {
@@ -71,6 +73,7 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<CountrySubDivisionModel>().ToTable("MST_CountrySubDivision");//added sud: 14May
 
             modelBuilder.Entity<CountryModel>().ToTable("MST_Country");//added: sud:3June'18
+            modelBuilder.Entity<VitalsModel>().ToTable("CLN_PatientVitals");
 
         }
         public DbSet<PatientModel> Patients { get; set; }

@@ -1,7 +1,19 @@
 ﻿<style>
     .full-header {
-        background: #3d4957;
-        color: #fff;
+        background: #eaeaea;
+        color: #3d4957;
+    }
+    .table-bordered, .table-bordered>tbody>tr>td, .table-bordered>tbody>tr>th, .table-bordered>tfoot>tr>td, .table-bordered>tfoot>tr>th, .table-bordered>thead>tr>td, .table-bordered>thead>tr>th {
+        border: 1px solid #cccccc;
+    }
+    .doc-pagecontent label {
+        margin: 0 5px;
+    }
+    .doc-pagecontent input {
+        margin-top: 0;
+    }
+    .doc-pagecontent td {
+        vertical-align: middle;
     }
 </style>
 
@@ -11,7 +23,7 @@
         <div class="table-responsive">
             <div style="margin-top: 5px;">
                 <table class="table table-striped table-hover table-bordered" *ngIf="labRequisitions.length != 0">
-                    <thead style="border-left: 1px solid #3d4957;border-right: 1px solid #3d4957;border-top: 1px solid #3d4957;">
+                    <thead style="border-left: 1px solid #3d4957;border-right: 1px solid #3d4957;border-top: 1px solid #d8d5d5;">
                         <tr style="border-collapse: separate;border-spacing: 0 25em;">
                             <th colspan="3" class="full-header" style="text-align: center;">Lab Order</th>
                         </tr>

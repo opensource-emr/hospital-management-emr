@@ -15,10 +15,7 @@
         background-image: url('/themes/theme-default/images/nav/schedule.PNG');
     }
 
-    .left-nav-active, .page-sidebar .page-sidebar-menu > li > a:hover {
-        background-color: #36c6d3 !important;
-        color: white !important;
-    }
+    
 
     .help-about {
         color: #fdefef !important;
@@ -75,20 +72,23 @@
     }
 
     .page-sidebar .page-sidebar-menu > li > a {
-        background: #006687;
-        color: navajowhite;
+        background: #fff;
+        color: #555;
     }
 
     .page-sidebar .page-sidebar-menu > li > a, .page-sidebar-closed.page-sidebar-fixed .page-sidebar:hover .page-sidebar-menu > li > a {
         padding: 7px 15px 7px 8px;
     }
-
+    .form-control {
+    background-color: #fbfbfb;
+    border: 1px solid rgba(0,0,0,.2);
+    }
 </style>
 
 <body class="page-header-fixed page-sidebar-closed-hide-logo page-content-white">
     <div class="page-wrapper">
         <!-- BEGIN HEADER -->
-        <div *ngIf="navService.showTopNav" class="page-header navbar navbar-fixed-top" style="box-shadow: 0px 0px 2px #45484c;">
+        <div *ngIf="navService.showTopNav" class="page-header navbar navbar-fixed-top">
             <!-- BEGIN HEADER INNER -->
             <div class="page-header-inner ">
                 <!-- BEGIN LOGO -->
@@ -148,7 +148,7 @@
                         <li class="dropdown dropdown-user">
                             <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown" data-close-others="true">
                                 <img alt="" class="img-circle" *ngIf="currentUsr.Profile.ImageLocation!=''" src="{{currentUsr.Profile.ImageLocation}}" />
-                                <span class="username username-hide-on-mobile" style="color: white;font-weight: bold;"> @currUser.UserName </span>
+                                <span class="username username-hide-on-mobile" style="color: white; font-weight: bold;"> @currUser.UserName </span>
                                 <i class="fa fa-angle-down"></i>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-default">

@@ -3,7 +3,7 @@ import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from "@angu
 import { SecurityService } from '../../../security/shared/security.service';
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 import { DischargeSummaryBLService } from '../discharge-summary.bl.service';
-import { BabyBirthDetails } from '../../../admission/shared/baby-birth-details.model';
+import { BabyBirthDetails } from '../../../adt/shared/baby-birth-details.model';
 import { VisitService } from '../../../appointments/shared/visit.service';
 import * as moment from 'moment/moment';
 import { PatientCertificate } from '../patient-certificate.model';
@@ -16,7 +16,7 @@ import { Router } from "@angular/router";
   templateUrl: './generate-birth-certificate.html',
 })
 
-export class BirthCertificateComponent {
+export class BirthCertificateGenerateComponent {
  public showBirthCertificate: boolean;
 
  @Input("selectedBaby")

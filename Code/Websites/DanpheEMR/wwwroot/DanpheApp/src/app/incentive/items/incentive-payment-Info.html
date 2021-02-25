@@ -1,0 +1,261 @@
+<style>
+  .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+    padding: 10px !important;
+  }
+
+  .custom_table b {
+    margin: 0;
+  }
+
+  .padLess_table th, .padLess_table td {
+    padding: 8px 10px !important;
+  }
+</style>
+<div class="row">
+  <div class="form-horizontal">
+    <div class="form-body">
+      <div class="col-md-12">
+        <div class="caption custom-caption">
+          <i class="glyphicon glyphicon-asterisk"></i>
+          <span class="caption-subject">Payment Detail</span>
+        </div>
+        <div class="row">
+          <div class="col-md-7">
+            <from-to-date-select (on-change)="OnDateRangeChange($event)"></from-to-date-select>
+
+            <!-- <div class="col-md-6">
+              <label class="control-label"> From <b class="color-red"> *</b> :</label>
+              <div class="date-with-label">
+                <danphe-date-picker [(ngModel)]="FromDate" ngDefaultControl [CalendarTypes]="calType" (ngModelChange)="DateValidCheck()">
+                </danphe-date-picker>
+                <span class="color-red font-sm" [hidden]="IsDateValid"> Enter Valid Date</span>
+
+              </div>
+            </div>
+            <div class="col-md-6">
+
+              <label class="control-label"> To <b class="color-red"> *</b> :</label>
+              <div class="date-with-label">
+                <danphe-date-picker [(ngModel)]="ToDate" ngDefaultControl [CalendarTypes]="calType" (ngModelChange)="DateValidCheck()">
+                </danphe-date-picker>
+                <span class="color-red font-sm" [hidden]="IsDateValid"> Enter Valid Date</span>
+              </div>
+            </div> -->
+          </div>
+          <div class="col-md-3 col-xs-12" style="margin-top: -15px;">
+            <div *ngIf="showDocSelect" class="form-group">
+              <label class="control-label"> Select Doctor <b class="color-red"> *</b> :</label>
+              <div class="doctor-select-opt">
+                <!--<select [(ngModel)]="employeeId" class="form-control" [ngModelOptions]="{standalone: true}" (change)="getLedgInfoByEmpId()">
+                  <option value="0">---Select---</option>
+                  <option *ngFor="let Doc of allDocterList" value="{{Doc.EmployeeId}}">
+                    {{Doc.FullName}}&nbsp;
+                    <i *ngIf="Doc.IsExternal">(External)</i><i *ngIf="!Doc.IsExternal">(Internal)</i>
+                  </option>
+                </select>-->
+                <input danphe-auto-complete [(ngModel)]="DocObj" [list-formatter]="EmployeeListFormatter"
+                       [source]="allDocterList" placeholder="Search Doctor Name" display-property-name="FullName"
+                       value-property-name=null onclick="this.select()" [ngModelOptions]="{standalone: true}"
+                       max-num-list="10" (ngModelChange)="ChangeDocter(DocObj)" />
+              </div>
+              <div>
+                <p *ngIf="selectedEmpLedger && selectedEmpLedger.LedgerId">
+                  <strong><em>Ledger: {{selectedEmpLedger.LedgerName}}({{selectedEmpLedger.LedgerCode}})</em></strong>
+                </p>
+                <p *ngIf="!(selectedEmpLedger && selectedEmpLedger.LedgerId) && employeeId ">
+                  <i class="fa fa-plus-circle" (click)="CreateNewLedger()" matTooltip="Click to Create New Ledger"
+                     style="color: blue;cursor: pointer;">
+                    <strong style="color: orange;font-family: 'Quicksand', 'Open Sans', sans-serif;font-weight: 600;margin-left: 6px;">Create ledger for selected doctor</strong>
+                  </i>
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-2 col-xs-12" style="margin-top: -15px;">
+            <div class="form-group">
+              <label class="control-label invisible">Action</label>
+              <div class="cstm-show-report-btn-holder">
+                <button class="btn blue" type="button" (click)="LoadDocItemSummary()">
+                  <i class="fa fa-search"></i>
+                  Search
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-container *ngIf="showReport">
+  <div class="row">
+    <div class="col-md-12">
+      <!--<button class="blue btn right non-printable" type="button" (click)="ExportToExcel('itmSummaryPrintPage')">
+        <i class="fa fa-file-excel-o"></i>
+        Excel
+      </button>-->
+      <div id="itmSummaryPrintPage">
+        <div class="row margin-8-bt">
+          <div class="col-md-12">
+            <div class="row">
+              <div class="col-md-3"><span>From Date: {{FromDate}} &nbsp; to &nbsp; {{ToDate}}</span></div>
+              <div class="col-md-6 text-right">
+                <span>Doctor Name: <b *ngIf="allReportData && allReportData[0]">{{allReportData[0].IncentiveReceiverName}} </b></span>
+              </div>
+
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <div class="doc-inctv-tblholder table-wrapper">
+              <table class="inctv-table table-striped table-hover table-bordered custom_table padLess_table table-bordered">
+                <thead style="background-color:whitesmoke">
+                  <tr>
+                    <th width="8%"><b>Date</b></th>
+                    <th width="15%"><b>Invoice No.</b></th>
+                    <th width="18%"><b>Patient</b></th>
+                    <th width="19%"><b>Item Name</b></th>
+                    <th width="12%"><b>Incentive Amt.</b></th>
+                    <th width="8%"><b>TDS Amt.</b></th>
+                    <th width="12%"><b>Net Payable</b></th>
+                    <th width="8%"><b>Paid Amt.</b></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of allReportData;let i=index">
+                    <td width="8%">{{row.TransactionDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                    <td width="15%">{{row.InvoiceNoFormatted}}</td>
+                    <td width="18%">{{row.PatientName}}</td>
+                    <td width="19%">{{row.ItemName}}</td>
+                    <td width="12%">{{row.IncentiveAmount.toFixed(2)}}</td>
+                    <td width="8%">{{row.TDSAmount.toFixed(2)}}</td>
+                    <td width="12%">{{row.NetPayableAmt.toFixed(2)}}</td>
+                    <td width="8%">0</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row margin-15-tp">
+    <div class="col-md-12 mb20">
+      <div class="row margin-15-bt">
+        <div class="col-md-6"></div>
+        <div class="col-md-2">
+          <span><b>Total Incentive:</b> &nbsp;{{summary.tot_InctvAmt.toFixed(2)}}</span>
+        </div>
+        <div class="col-md-2">
+          <span><b>TDS Amount:</b> &nbsp;{{summary.tot_TDSAmt.toFixed(2)}}</span>
+        </div>
+        <div class="col-md-2">
+          <span><b>Net Payable:</b> &nbsp;{{summary.tot_NetPayable.toFixed(2)}}</span>
+        </div>
+      </div>
+      <hr />
+      <div class="row margin-15-bt">
+        <div class="col-md-4"><span><b>Payment Voucher</b></span></div>
+        <div class="col-md-4"></div>
+        <div class="col-md-4"><span>Voucher Date: {{currentDate}}</span></div>
+      </div>
+      <div class="row margin-8-bt">
+        <div class="col-md-6">
+          <div class="row">
+            <div class="col-md-4 cstm-amt-label">Payment From: <span style="color: red;">*</span></div>
+            <div class="col-md-8">
+              <input class="form-control cstm-form-control" danphe-auto-complete [(ngModel)]="selectedLedger"
+                     [source]="allLedgerList"
+                     placeholder="Ledger Name"
+                     display-property-name="LedgerName"
+                     value-property-name="LedgerName"
+                     [list-formatter]="LedgerListFormatter"
+                     max-num-list="15"
+                     [grid-sort]="'LedgerName'"
+                     onClick="this.select();" />
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 col-md-offset-2">
+          <div class="row">
+            <div class="col-md-5 cstm-amt-label">Voucher Amount:</div>
+            <div class="col-md-7">
+              <input (wheel)="coreService.PreventNumberChangeOnScroll($event)" [(ngModel)]="totalAmt"
+                     class="form-control cstm-amt-input" type="number" name="txtAmount" style="font-weight:bold;" />
+            </div>
+            <div class="col-md-12" *ngIf="totalAmt" style="color:green;">
+              ( In Words: {{totalAmt | NumberInWords | CapitalFirstLetter}} )
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="row">
+            <div class="col-md-4">Narration: <span style="color: red;">*</span></div>
+            <div class="col-md-8">
+              <textarea [(ngModel)]="narration" rows="5" style="border-radius: 5px !important;
+    border-color: #ccc; width: 100%;"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 col-md-offset-2">
+          <div class="row">
+            <div class="col-md-5"><p>Adjustable Amount</p></div>
+            <div class="col-md-7"><p>{{totalAmt - summary.tot_NetPayable | number}}</p></div>
+          </div>
+          <div class="row">
+            <div class="col-md-12 text-right"><button class="btn blue" (click)="loading=true;MakePayment()" [disabled]="loading">Make Payment</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<div class="row" *ngIf="showMakePaymentButton">
+  <div class="col-md-12 margin-15-tp">
+    <div style="font-size:25px;">
+      <!--text-align:center-->
+      <b>Payment Info</b>
+
+    </div>
+    <table class="table-striped table-hover table-bordered margin-8-tp" style="background-color:whitesmoke;">
+      <!--margin: auto;-->
+      <tr>
+        <td><b>Total Bill Amount : </b></td>
+        <td style="text-align:center"><b>{{summary.tot_AssignInctvAmt + summary.tot_RefInctvAmt}}</b></td>
+      </tr>
+      <tr>
+        <td><b>TDS Amount : </b></td>
+        <td style="text-align:center"><b>{{summary.tot_RefTDSAmt + summary.tot_AssignTDSAmt}}</b></td>
+      </tr>
+      <tr>
+        <td><b>Net Payable : </b></td>
+        <td style="text-align:center"><b>{{summary.tot_AssignNetPayable + summary.tot_RefNetPayable}}</b></td>
+      </tr>
+      <!--<tr>
+        <td><strong> Total Bill Amount : </strong>{{summary.tot_AssignInctvAmt + summary.tot_RefInctvAmt}}</td>
+        <td><strong>TDS Amount : </strong>{{summary.tot_RefTDSAmt + summary.tot_AssignTDSAmt}}</td>
+        <td><strong>Net Payable : </strong>{{summary.tot_AssignNetPayable + summary.tot_RefNetPayable}}</td>
+      </tr>-->
+    </table>
+  </div>
+  <div class="col-md-12 margin-15-tp">
+    <button class="blue btn" type="button" (click)="MakePaymentToDoc()" [disabled]="IsAllPaymentMade">
+      <i class="fa fa-money"></i>
+      Make Payment
+    </button>
+  </div>
+</div>
+
+<transaction-view [voucherNumber]="voucherNumber" [FiscalYearId]="fiscalYearId"></transaction-view>
+
+<ng-container *ngIf="showAddLedgerBox">
+
+  <ledger-create-shared [show-add-ledger-page]="showAddLedgerBox" [ledger-type]="ledgerType" [reference-id]="ledReferenceId"
+                        (callback-add)="OnNewLedgerAdded($event)"></ledger-create-shared>
+</ng-container>

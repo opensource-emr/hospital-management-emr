@@ -1,0 +1,22 @@
+
+
+
+
+<!--<div class="caption">
+    <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
+    <span class="caption-subject font-blue bold uppercase">Manage Department</span>
+</div>
+<br />-->
+<a feature="button" class="btn blue bordered" (click)="AddDepartment()"><i class="fa fa-plus"></i>Add Department</a>
+<department-add *ngIf="showAddPage" [selectedDepartment]="selectedDepartment"
+                (callback-add)="CallBackAdd($event)"></department-add>
+
+<div class="row">
+    <div class="col-md-12 col-xs-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="deptGridColumns" [grid-data]="departmentList" (grid-actions)="DeptGridActions($event)"
+                     [show-print-button]="false">
+        </danphe-grid>
+    </div>
+</div>
+
+

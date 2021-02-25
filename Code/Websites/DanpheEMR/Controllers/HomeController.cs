@@ -71,7 +71,7 @@ namespace DanpheEMR.Controllers
 
         public FileStreamResult GetUserManual()
         {
-            FileStream usrManual = new FileStream("wwwroot\\DanpheApp\\src\\app\\fileuploads\\DanpheEMR_UserManual.pdf", FileMode.Open);
+            FileStream usrManual = new FileStream("wwwroot\\fileuploads\\DanpheEMR_UserManual.pdf", FileMode.Open);
             return new FileStreamResult(usrManual,"application/pdf");
         }
 

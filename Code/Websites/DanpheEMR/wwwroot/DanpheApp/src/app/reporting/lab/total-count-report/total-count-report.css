@@ -1,0 +1,33 @@
+table.cat-tbl,
+table.item-tbl {
+  border: 1px solid #dbd3d3;
+}
+.item-tbl thead tr th,
+.cat-tbl thead tr th,
+.item-tbl tbody tr td,
+.cat-tbl tbody tr td {
+  padding: 5px;
+  font-size: 12px;
+}
+.cat-tbl tbody tr td,
+.cat-tbl tbody tr td a,
+.item-tbl tbody tr td,
+.item-tbl tbody tr td a {
+  font-weight: normal;
+  color: #000;
+}
+.cat-tbl-holder,
+.itm-tbl-holder {
+  margin-top: 15px;
+}
+.table-responsive {
+  max-height: 450px;
+  overflow-y: auto;
+}
+.lft-ttx {
+  line-height: 3;
+}
+.ctr-txt {
+  font-size: 24px;
+  line-height: 36px;
+}

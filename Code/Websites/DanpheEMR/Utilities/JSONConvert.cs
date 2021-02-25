@@ -7,10 +7,12 @@ using Newtonsoft.Json;
 namespace DanpheEMR.Utilities
 {
     public class DanpheJSONConvert
-    {
+    {              
         public static string SerializeObject(object input, bool ignoreLoop = true)
         {
+           
             var jsonmappings = new JsonSerializerSettings();
+            jsonmappings.Formatting = Formatting.Indented;
             if (ignoreLoop)
             {
                 jsonmappings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;

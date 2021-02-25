@@ -27,13 +27,15 @@ import { BillingFiscalYear } from "../shared/billing-fiscalyear.model";
 import { CoreService } from "../../core/shared/core.service";
 import { Patient } from "../../patients/shared/patient.model";
 import { DanpheHTTPResponse } from "../../shared/common-models";
+import { ENUM_InvoiceType } from "../../shared/shared-enums";
 @Component({
   templateUrl: "./bill-return-request.html" // "/BillingView/BillReturnRequest"
 })
 export class BillReturnRequestComponent {
 
   public selReceiptNo: number = 0;
-  public billingReceipt: BillingReceiptModel;
+  public billingReceipt: BillingReceiptModel = new BillingReceiptModel();
+  public billTXNForNewReceipt: BillingTransaction = new BillingTransaction();
   public invoiceDetails: any = null;
   public displayReciept: boolean = false;
   public showReturnBtn: boolean = false;
@@ -53,6 +55,15 @@ export class BillReturnRequestComponent {
   public showNormalReceipt: boolean = false;
   public doctorsList: Array<any> = [];
   public isInsuranceReceipt: boolean = true;
+  public showReturnIPBill: boolean = false;
+  public showPartialReturnedInvoice: boolean = false;
+  public showReturnedInvoice: boolean = false;
+
+  public showSelectCheckBox: boolean = true; //Rajesh:7Sept19
+  public showPartialInvoiceNo: boolean = false; //Rajesh:9Sept19
+  public enablePartialBillReturn: boolean = false; // Rajesh:12Sept19
+
+  public ShowPrintCount: boolean = false;
 
   constructor(public BillingBLService: BillingBLService,
     public billingService: BillingService,
@@ -81,65 +92,107 @@ export class BillReturnRequestComponent {
   }
 
   GetInvoiceByReceiptNo(receiptNo: number) {
-    this.returnRemarks = ""; //to show remark box empty on each click for search invoice --yub 30th Aug '18
-    let recptNo = parseInt(receiptNo.toString());
-    this.showReturnBtn = false;
-    let getVisitInfo = true;
-    this.isReturnSuccessfull = false;
-    this.BillingBLService.GetInvoiceByReceiptNo(recptNo, this.selFiscYrId, getVisitInfo, this.isInsuranceReceipt)
-      .subscribe(res => {
-        if (res.Status == "OK" && res.Results) {
-          //let receipt = res.Results;
-          this.invoiceDetails = res.Results;
-          this.billingReceipt = BillingReceiptModel.GetReceiptForDuplicate(this.invoiceDetails);
+    if (receiptNo != 0) {
+      this.returnRemarks = ""; //to show remark box empty on each click for search invoice --yub 30th Aug '18
+      let recptNo = parseInt(receiptNo.toString());
+      this.showReturnBtn = false;
+      let getVisitInfo = true;
+      this.isReturnSuccessfull = false;
+      this.loading = true;
+      this.BillingBLService.GetInvoiceByReceiptNo(recptNo, this.selFiscYrId, getVisitInfo, this.isInsuranceReceipt)
+        .subscribe(res => {
+          if (res.Status == "OK" && res.Results) {
+            //let receipt = res.Results;
+            this.loading = false;
+            this.selReceiptNo = 0;
+            this.showPartialReturnedInvoice = false;
+            this.invoiceDetails = res.Results;
+            this.billingReceipt = BillingReceiptModel.GetReceiptForDuplicate(this.invoiceDetails);
+            this.billTXNForNewReceipt = BillingReceiptModel.GetReceiptForGenerateNewReceipt(this.invoiceDetails);
 
-          if (this.billingReceipt.IsInsuranceBilling) {
-            this.billingService.BillingFlow = 'insurance';
+            if (this.billingReceipt.IsInsuranceBilling) {
+              this.billingService.BillingFlow = 'insurance';
+            }
+
+            for (let i = 0; i < this.billingReceipt.BillingItems.length; i++) {
+              if (this.billingReceipt.BillingItems[i].RequestedBy) {
+                let doctor = this.doctorsList.find(a => a.EmployeeId == this.billingReceipt.BillingItems[i].RequestedBy);
+                if (doctor)
+                  this.billingReceipt.BillingItems[i].RequestedByName = doctor.FullName;
+              }
+            }
+
+            if (!this.invoiceDetails.Transaction.ReturnStatus) {
+              this.showReturnPanel = true;
+              this.CheckDischargeHrsValidReturn();
+              this.displayReciept = false;
+            }
+            else {
+              this.showReturnPanel = false;
+              this.billingReceipt.IsReturned = true;
+              this.displayReciept = true;
+              this.enablePartialBillReturn = false;
+            }
+
+            //Hom 15 Dec' 2019
+            if (this.invoiceDetails.Transaction.TransactionType.toLowerCase() == "inpatient" && this.invoiceDetails.Transaction.InvoiceType != ENUM_InvoiceType.inpatientPartial) {
+              this.showIPReceipt = true;
+              this.showNormalReceipt = false;
+            }
+            else {
+              this.showIPReceipt = false;
+              this.showNormalReceipt = true;
+            }
+            if (this.billingReceipt.PartialReturnTxnId !== null) {
+              this.showPartialInvoiceNo = true;
+            } else {
+              this.showPartialInvoiceNo = false;
+            }
+
+          }
+          else {
+            //add messagebox here..
+            this.msgBoxServ.showMessage("error", ["unable to fetch duplicate bill details. Pls try again later.."]);
+            console.log(res.ErrorMessage);
+            this.displayReciept = false;
+            this.showReturnPanel = false;
+            this.returnRemarks = "";
+            this.loading = false;
+            this.selReceiptNo = 0;
+            //alert("unable to fetch duplicate bill details. Pls try again later..");
           }
 
-          for (let i = 0; i < this.billingReceipt.BillingItems.length; i++) {
-            if (this.billingReceipt.BillingItems[i].RequestedBy) {
-              let doctor = this.doctorsList.find(a => a.EmployeeId == this.billingReceipt.BillingItems[i].RequestedBy);
-              if (doctor)
-                this.billingReceipt.BillingItems[i].RequestedByName = doctor.FullName;
+          if (this.invoiceDetails.Transaction.ReturnStatus == true) {
+            this.showSelectCheckBox = false;
+          } else {
+            this.showSelectCheckBox = true;
+          }
+          this.showPrintBtn = true;
+          if (this.displayReciept != true) {
+            //Rajesh:Logic for parameterized bill partial or full
+            let enablePartialReturn = this.coreService.Parameters.find(a => a.ParameterGroupName == "BILL" &&
+              a.ParameterName == "EnablePartialBillReturn").ParameterValue;
+            if (enablePartialReturn == "true") {
+              this.enablePartialBillReturn = true;
+              this.changeDetector.detectChanges();
+              this.showPartialReturnedInvoice = true;
+            } else {
+              this.enablePartialBillReturn = false;
+              this.displayReciept = true;
+              this.showSelectCheckBox = false;
             }
           }
-
-          if (!this.invoiceDetails.Transaction.ReturnStatus) {
-            this.showReturnPanel = true;
-            this.CheckDischargeHrsValidReturn();
-          }
-          else {
-            this.showReturnPanel = false;
-            this.billingReceipt.IsReturned = true;
-          }
-
-          this.displayReciept = true;
-          //Hom 15 Dec' 2019
-          if (this.invoiceDetails.Transaction.TransactionType.toLowerCase() == "inpatient") {
-            this.showIPReceipt = true;
-            this.showNormalReceipt = false;
-          }
-          else {
-            this.showIPReceipt = false;
-            this.showNormalReceipt = true;
-          }
-        }
-        else {
-          //add messagebox here..
-          this.msgBoxServ.showMessage("error", ["unable to fetch duplicate bill details. Pls try again later.."]);
-          console.log(res.ErrorMessage);
-          this.displayReciept = false;
-          this.showReturnPanel = false;
-          this.returnRemarks = "";
-          //alert("unable to fetch duplicate bill details. Pls try again later..");
-        }
-      },
-        err => {
-          //add messagebox here..
-          alert("unable to fetch duplicate bill details. Pls try again later..");
-          console.log(err);
-        });
+        },
+          err => {
+            //add messagebox here..
+            alert("unable to fetch duplicate bill details. Pls try again later..");
+            console.log(err);
+            this.loading = false;
+            this.selReceiptNo = 0;
+          });
+    } else {
+      this.msgBoxServ.showMessage('Failed', ["Your Receipt Number is not proper."]);
+    }
   }
 
   public GetDoctorsList() {
@@ -162,6 +215,7 @@ export class BillReturnRequestComponent {
 
   CheckDischargeHrsValidReturn() {
     this.isMaxDischargeHours = false;
+    console.log(this.invoiceDetails)
     if (this.invoiceDetails.VisitInfo && this.invoiceDetails.VisitInfo.LastDischargedDate) {
       let dischargeTimeParameter = this.coreService.Parameters.find(par => par.ParameterGroupName == "BILL" && par.ParameterName == "BillReturnAfterDischargeHrs").ParameterValue;
       if (dischargeTimeParameter) {
@@ -171,9 +225,12 @@ export class BillReturnRequestComponent {
         var _admissionDate = moment(this.invoiceDetails.VisitInfo.LastAdmissionDate).format('YYYY-MM-DD HH:mm');
         var _invoiceDate = moment(this.invoiceDetails.Transaction.CreatedOn).format('YYYY-MM-DD HH:mm');
         //moment(_invoiceDate).diff(_admissionDate) > 0
-        if (moment(_dischargeDate).diff(_invoiceDate) >= 0
-          && moment(_currDate).diff(_dischargeDate, 'hours') > this.maxValidDischargeHrs)
-          this.isMaxDischargeHours = true;
+        if(moment(_invoiceDate) < moment(_admissionDate)){
+          this.isMaxDischargeHours = false;
+        }else if (moment(_dischargeDate).diff(_invoiceDate) >= 0
+          && moment(_currDate).diff(_dischargeDate, 'hours') > this.maxValidDischargeHrs){
+            this.isMaxDischargeHours = true;
+        }
       }
       else {
         this.msgBoxServ.showMessage("failed", ["Please set core parameter for max discharge hours for valid bill return."]);
@@ -187,8 +244,15 @@ export class BillReturnRequestComponent {
       this.loading = false;
       if (!this.loading) {
         this.loading = true;
+
+        if (this.enablePartialBillReturn != true) {
+          this.billingReceipt.BillingItems.forEach(itm => {
+            itm.IsSelected = true;
+          });
+        }
+
         //ashim: 22Aug2018 : moved MappingLogic to BillingBLService.
-        this.BillingBLService.PostReturnReceipt(this.billingReceipt, this.returnRemarks)
+        this.BillingBLService.PostReturnReceipt(this.billingReceipt, this.billTXNForNewReceipt, this.returnRemarks)
           .subscribe(res => {
             if (res.Status == "OK") {
 
@@ -201,10 +265,18 @@ export class BillReturnRequestComponent {
               this.billingReceipt.Remarks = res.Results.Remarks;
               this.billingReceipt.IsReturned = true;
               this.billingReceipt.BillingUser = this.securityService.GetLoggedInUser().UserName;
+              this.billingReceipt.PartialReturnTxnId = res.Results.OnPartiaBilInvNo;
+              if (this.billingReceipt.PartialReturnTxnId !== null) {
+                this.showPartialInvoiceNo = true;
+              }
               this.showReturnPanel = false;
               this.showPrintBtn = true;
+              this.showSelectCheckBox = false;
+              this.billingReceipt.CreditNoteNumber = res.Results.BillingReturnedData.CreditNoteNumber;
+              this.billingReceipt.Remarks = this.returnRemarks;//for show return remark on the invoice.
+
               this.returnRemarks = "";
-              console.log("CreditNoteNumber is: " + res.Results.CreditNoteNumber);
+              console.log("CreditNoteNumber is: " + res.Results.BillingReturnedData.CreditNoteNumber);
               this.changeDetector.detectChanges();
               this.msgBoxServ.showMessage("success", ["Bill returned successfully.."]);
               this.isReturnSuccessfull = true;
@@ -240,6 +312,9 @@ export class BillReturnRequestComponent {
       //we were not getting validation instance when assigned directly.
       let billItem = new BillingTransactionItem();
       billItem = Object.assign(billItem, item);
+      //sud:10Nov'19-- need to set BillingTransaction to null else it'll create new invoices--
+      //when user creates provisional receipt(from billingtransaction page) after copy - earlier items.
+      billItem.BillingTransaction = null;
       billItem.BillingTransactionItemId = 0;
       billItem.BillingTransactionId = null;
       billItem.ReturnQuantity = null;
@@ -271,6 +346,13 @@ export class BillReturnRequestComponent {
   }
 
   ShowReturnChkOnClick() {
+    if (this.showIPReceipt == true) {
+      this.msgBoxServ.showMessage("NOTE!!! This is Discharged Receipt", ["Go To ADT for DISCHARGE CANCEL to return this receipt"]);
+      this.showReturnIPBill = true;
+    }
+    else
+      this.showReturnIPBill = false;
+
     this.showReturnBtn = !this.showReturnBtn;
     //if (this.showReturnBtn) {
     //}
@@ -293,7 +375,7 @@ export class BillReturnRequestComponent {
     this.BillingBLService.GetCurrentFiscalYear()
       .subscribe((res: DanpheHTTPResponse) => {
         if (res.Status == "OK") {
-          let fiscYr:BillingFiscalYear = res.Results;
+          let fiscYr: BillingFiscalYear = res.Results;
           if (fiscYr) {
             this.selFiscYrId = fiscYr.FiscalYearId;
           }

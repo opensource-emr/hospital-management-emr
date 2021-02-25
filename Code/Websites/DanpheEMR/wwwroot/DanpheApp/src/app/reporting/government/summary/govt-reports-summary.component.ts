@@ -94,4 +94,14 @@ export class RPT_GOVT_GovReportSummaryComponent {
     popupWindow.document.write('<html><head><link rel="stylesheet" type="text/css" href="../../../themes/theme-default/DanpheStyle.css" /></head><style type="text/css">.Selected {border-collapse: collapse; border-spacing: 5px; border: 1px solid black;padding: 5px;}</style><body onload="window.print()">' + printContents + '</body></html>');
     popupWindow.document.close();
   }
+
+
+  //Anjana:11June'20--reusable From-ToDate-In Reports..
+  OnFromToDateChange($event) {
+    this.fromDate = $event ? $event.fromDate : this.fromDate;
+    this.toDate = $event ? $event.toDate : this.toDate;
+
+    //this.currentdepartmentsales.fromDate = this.fromDate;
+    //this.currentdepartmentsales.toDate = this.toDate;
+  }
 }

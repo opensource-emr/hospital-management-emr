@@ -37,7 +37,8 @@ export class BillingSearchPatientComponent {
   public showPatRegistration: boolean = false;
   public showAddNewOpPopUp: boolean = false;
   public currentCounter: number = null;
-
+  public searchText: string = '';
+  public enableServerSideSearch: boolean = false;
   constructor(public patientService: PatientService,
     public billingBLService: BillingBLService,
     public changeDetector: ChangeDetectorRef,
@@ -47,18 +48,24 @@ export class BillingSearchPatientComponent {
     public coreService: CoreService,
     public securityService: SecurityService,
     public callbackService: CallbackService) {
-    this.LoadPatientList();
+    this.getParamter();
+    this.LoadPatientList("");
     this.patientGridColumns = GridColumnSettings.BillPatientSearch;
-    this.patGirdDataApi = APIsByType.BillingPatient;
+    // this.patGirdDataApi = APIsByType.BillingPatient;
     this.showPatRegistration = this.coreService.AllowPatientRegistrationFromBilling();
+    this.currentCounter = this.securityService.getLoggedInCounter().CounterId;
+    if(this.currentCounter <1){
+      this.callbackService.CallbackRoute = '/Billing/SearchPatient'
+      this.router.navigate(['/Billing/CounterActivate']);
+    }
   }
 
   ngAfterViewInit() {
     document.getElementById('quickFilterInput').focus();
   }
 
-  LoadPatientList(): void {
-    this.billingBLService.GetPatientsWithVisitsInfo()
+  LoadPatientList(searchTxt): void {
+    this.billingBLService.GetPatientsWithVisitsInfo(searchTxt)
       .subscribe(res => {
         if (res.Status == "OK") {
           this.allPatients = res.Results;
@@ -76,6 +83,16 @@ export class BillingSearchPatientComponent {
           console.log(res.ErrorMessage);
         }
       });
+  }
+  serverSearchTxt(searchTxt) {
+    this.searchText = searchTxt;
+    //this.GetPendingReportList(this.fromDate, this.toDate, this.searchText);
+    this.LoadPatientList(searchTxt);
+  }
+  getParamter() {
+    let parameterData = this.coreService.Parameters.find(p => p.ParameterGroupName == "Common" && p.ParameterName == "ServerSideSearchComponent").ParameterValue;
+    var data = JSON.parse(parameterData);
+    this.enableServerSideSearch = data["BillingSearchPatient"];
   }
   GetResults($event) {
     this.allPatients = $event;
@@ -185,14 +202,18 @@ export class BillingSearchPatientComponent {
     //this.LoadMembershipTypePatient(globalPat.PatientId);
 
     globalPat.PatientCode = ipData.PatientCode;
-    globalPat.FirstName = ipData.FirstName;
-    globalPat.LastName = ipData.LastName;
-    globalPat.MiddleName = ipData.MiddleName;
+    globalPat.FirstName = ipData.FirstName.trim();
+    globalPat.LastName = ipData.LastName.trim();
+    globalPat.MiddleName = ipData.MiddleName ? ipData.MiddleName.trim() : ipData.MiddleName;
     globalPat.PhoneNumber = ipData.PhoneNumber;
     globalPat.Gender = ipData.Gender;
+    globalPat.Age = ipData.Age;
+    globalPat.CountryName = ipData.CountryName;
+    globalPat.CountryId = ipData.CountryId;
     globalPat.ShortName = ipData.ShortName;
     globalPat.DateOfBirth = ipData.DateOfBirth;
     globalPat.Address = ipData.Address;
+    globalPat.CountrySubDivisionId = ipData.CountrySubDivisionId;
     globalPat.CountrySubDivisionName = ipData.CountrySubDivisionName;
     globalPat.PANNumber = ipData.PANNumber;
     globalPat.Admissions = ipData.Admissions;
@@ -254,7 +275,7 @@ export class BillingSearchPatientComponent {
     if ($event.close) {
       this.showAddNewOpPopUp = false;
       if ($event.action && $event.action == "register-only") {
-        this.LoadPatientList();
+        this.LoadPatientList("");
       }
       else if ($event.action && $event.action == "register-and-billing") {
         var data = $event.data;

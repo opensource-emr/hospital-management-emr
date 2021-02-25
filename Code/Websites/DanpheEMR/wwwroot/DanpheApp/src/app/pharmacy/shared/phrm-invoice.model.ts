@@ -7,15 +7,17 @@ import {
     ReactiveFormsModule
 } from '@angular/forms'
 import * as moment from 'moment/moment';
+import { PharmacyOpPatientVM } from '../sale/op-patient-add/phrm-op-patient.model';
 
 import { PHRMInvoiceItemsModel } from './phrm-invoice-items.model';
 import { PHRMNarcoticRecordModel } from './phrm-narcotic-record';
 import { PHRMPatient } from "./phrm-patient.model";
 export class PHRMInvoiceModel {
     public InvoiceId: number = 0;
-    public InvoicePrintId: number = 0; 
+    public InvoicePrintId: number = 0;
     public PatientId: number = null;
     public IsOutdoorPat: boolean = true;
+    public PatientType: string = "";
     public CounterId: number = null;
     public TotalQuantity: number = null;
     public SubTotal: number = 0;
@@ -40,15 +42,18 @@ export class PHRMInvoiceModel {
     public DepositAmount: number = 0;
     public DepositBalance: number = 0;
     public PaymentMode: string = "cash";
-   
-    public FiscalYear:string="";
+    public IsSelected: boolean = false; //Rajesh22Aug : Only in client side
+    public InvoiceCode: string = "PHRM";
+    public FiscalYear: string = "";
+    public ProvisionalTotal: number = 0;
+    public OrganizationId: number = null; //Shankar22May
+    public CreditOrganizationName: string = null; //Shankar22May
     //only for read purpose
     public selectedPatient: PHRMPatient = new PHRMPatient();
-
+    //public selectedOPatient:PharmacyOpPatientVM = new PharmacyOpPatientVM();
     //only for show in list
     public PatientName: string = "";
-
-
+    public payment:any;
     public InvoiceValidator: FormGroup = null;
     //Constructor of class
     constructor() {
@@ -65,18 +70,31 @@ export class PHRMInvoiceModel {
             return this.InvoiceValidator.controls[fieldName].dirty;
     }
 
- 
-    public IsValid():boolean
-    {if(this.InvoiceValidator.valid)
-         {
-            return true;}else{return false;
-          }
+
+    public IsValid(): boolean {
+        if (this.InvoiceValidator.valid) {
+            return true;
+        } else {
+            return false;
+        }
     }
-    
+
     public IsValidCheck(fieldName, validator): boolean {
         if (fieldName == undefined)
             return this.InvoiceValidator.valid;
         else
             return !(this.InvoiceValidator.hasError(validator, fieldName));
+    }
+
+    public EnableControl(formControlName: string, enabled: boolean) {
+        let currCtrol = this.InvoiceValidator.controls[formControlName];
+        if (currCtrol) {
+            if (enabled) {
+                currCtrol.enable();
+            }
+            else {
+                currCtrol.disable();
+            }
+        }
     }
 }

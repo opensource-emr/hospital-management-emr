@@ -96,7 +96,7 @@ export class RequestForQuotationItemsComponent {
       this.showAddItemPopUp = false;
       var item = $event.item;
       this.ItemList.push({
-        "ItemId": item.ItemId, "ItemName": item.ItemName, StandardRate: item.StandardRate, VAT: item.VAT
+        "ItemId": item.ItemId, "ItemName": item.ItemName, StandardRate: item.StandardRate, VAT: item.VAT,"Code":item.Code, "UOMName":item.UOMName
       });
       let currentGRItem = new GoodsReceiptItems();
       currentGRItem.ReceivedQuantity = 1;
@@ -133,6 +133,8 @@ export class RequestForQuotationItemsComponent {
           if (a == index) {
             this.ReqForQuotation.ReqForQuotationItems[index].ItemId = Item.ItemId;
             this.ReqForQuotation.ReqForQuotationItems[index].ItemName = Item.ItemName;
+            this.ReqForQuotation.ReqForQuotationItems[index].Code = Item.Code;
+            this.ReqForQuotation.ReqForQuotationItems[index].UOMName = Item.UOMName;
             this.ReqForQuotation.ItemId = Item.ItemId;
           }
         }

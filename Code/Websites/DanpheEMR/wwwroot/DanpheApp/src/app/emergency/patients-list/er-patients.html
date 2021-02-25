@@ -1,4 +1,4 @@
-﻿<style>
+<style>
         .er-patient-grid{
     
         }
@@ -18,16 +18,16 @@
         <div *ngIf="showAddVitals" (click)="ParentOfPopUpClicked($event)" class="cstm-popup-holder" style="padding: 55px;">
             <div id="cstmSlideFromTop" class="cstm-slidefromtop">
                 <div style="width: 100%; height: auto;">
-                    <vitals-add [showVitalList]="showVitalsList"  [visitIdfromADT]="visitId" [showVitalAddBox]="showAddVitals" (callback-add)="ReturnFromAllERPatientActions($event)"></vitals-add>               
+                    <vitals-add [showVitalList]="showVitalsList"  [visitIdfromADT]="visitId"  (callback-add)="ReturnFromAllERPatientActions($event)"></vitals-add>               
                 </div>
             </div>
         </div>
     
     
-        <div *ngIf="showERPatRegistration" (click)="ParentOfPopUpClicked($event)" class="cstm-popup-holder" style="padding: 55px;">
+        <div *ngIf="showERPatRegistration" (click)="ParentOfPopUpClicked($event)" class="cstm-popup-holder cstm-er-popup-holder">
             <div id="cstmSlideFromTop" class="cstm-slidefromtop">
                 <div style="width: 100%; height: auto;">
-                    <er-patient-registration (sendBackERPatientData)="ReturnFromAllERPatientActions($event)" [currentPatientToEdit]="selectedERPatientToEdit"
+                    <er-patient-registration *ngIf="showERPatRegistration" (sendBackERPatientData)="ReturnFromAllERPatientActions($event)" [currentPatientToEdit]="selectedERPatientToEdit"
                                              [selectionFromExisting]="existingPatientSelected"></er-patient-registration>
                 </div>
             </div>
@@ -35,24 +35,24 @@
     
         <div style="display: table;padding: 5px 0px;width: 100%;">
             <div class="row">
-                <div class="col-md-6">
-                    <a class="btn blue bordered btn-sm" style="font-size: 14px;" name="name" (click)="NewERPatientRegistration()">
-                        <span class="glyphicon glyphicon-plus"></span>New Registration
-                    </a>
-                </div>
-                <div *ngIf="showSearchPatient" class="col-md-4 col-md-offset-2">
-                    <!--<input type="text"  name="Existing Patient Name" placeholder="Patient Name" />-->
-                    <input danphe-auto-complete
-                           class="form-control"
-                           [(ngModel)]="selectedExistingPatient"
-                           [list-formatter]="patientListFormatter"
-                           [source]="allPatients"
-                           placeholder="Existing Patient Name"
-                           display-property-name="ShortName"
-                           value-property-name=null
-                           (valueChanged)="AddCurrentExistingPatient()"
-                           onClick="this.select();"
-                           max-num-list="10" />
+              <div class="col-md-4">
+                <!--<input type="text"  name="Existing Patient Name" placeholder="Patient Name" />-->
+                <input danphe-auto-complete
+                       class="form-control"
+                       [(ngModel)]="selectedExistingPatient"
+                       [list-formatter]="patientListFormatter"
+                       [source]="allPatients"
+                       placeholder="Existing Patient Name"
+                       display-property-name="ShortName"
+                       value-property-name=null
+                       (valueChanged)="AddCurrentExistingPatient()"
+                       onClick="this.select();"
+                       max-num-list="10" />
+              </div>
+                <div *ngIf="showSearchPatient" class="col-md-4 col-md-offset-4" style="text-align: right;">
+                  <a class="btn blue bordered btn-sm" style="font-size: 14px;" name="name" (click)="NewERPatientRegistration()">
+                    <span class="glyphicon glyphicon-plus"></span>New Registration
+                  </a>                  
                 </div>
             </div>
         </div>

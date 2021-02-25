@@ -1,4 +1,4 @@
-﻿import {
+import {
     NgForm,
     FormGroup,
     FormControl,
@@ -20,6 +20,7 @@ export class ledgerGroupModel {
     public ModifiedOn: string = null;
     public Name: string = "";
     public LedgerGroupValidator: FormGroup = null;
+    public COAId: number = 0;
     constructor() {
         var _formBuilder = new FormBuilder();
         this.LedgerGroupValidator = _formBuilder.group({

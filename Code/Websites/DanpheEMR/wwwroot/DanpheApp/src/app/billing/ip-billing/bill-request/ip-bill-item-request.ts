@@ -11,14 +11,14 @@ import { BillingBLService } from "../../../billing/shared/billing.bl.service";
 import { BillingService } from "../../../billing/shared/billing.service";
 import { DanpheHTTPResponse } from "../../../shared/common-models";
 import { PatientBillingContextVM } from "../../../billing/shared/patient-billing-context-vm";
-import { LabsBLService } from "../../../labs/shared/labs.bl.service";
 import { ServiceDepartmentVM } from "../../../shared/common-masters.model";
 import { CoreService } from "../../../core/shared/core.service";
 import { CurrentVisitContextVM } from '../../../appointments/shared/current-visit-context.model';
 import { BillingReceiptModel } from "../../shared/billing-receipt.model";
-import { PatientService } from "../../../patients/shared/patient.service";
 import { Router } from "@angular/router";
-import { MembershipType } from "../../../patients/shared/membership-type.model";
+import { ENUM_BillingStatus } from "../../../shared/shared-enums";
+import { ENUM_OrderStatus } from "../../../shared/shared-enums";
+
 @Component({
   selector: 'ip-bill-item-request',
   templateUrl: './ip-bill-item-request.html'
@@ -27,25 +27,27 @@ export class IpBillItemRequest implements OnInit {
 
   @Input("patientInfo")
   public patientInfo: Patient;
-  @Input("showPatientSearch")
-  public showPatientSearch: boolean = false;
+
   @Input("patientId")
   public patientId: number;
   @Input("visitId")
   public visitId: number;
   @Output("emit-billItemReq")
   public emitBillItemReq: EventEmitter<Object> = new EventEmitter<Object>();
-  public showIpBillRequest: boolean = true;
 
   @Input("department")
   public department: string = null;
+
+  @Input("past-tests")
+  public pastTests: Array<any> = [];
+
   //master data
   public billItems: Array<any>;
   public billItemsComplete: Array<any>;
   public serviceDeptList: Array<ServiceDepartmentVM>;
   public doctorsList: Array<any> = [];
   public showIpBillRequestSlip: Boolean = false;
-  public billingTransaction: BillingTransaction;
+  public billingTransaction: BillingTransaction = new BillingTransaction();;
   public IpBillRequestDetails: BillingReceiptModel;
   //seleted items
   public selectedItems = [];
@@ -53,7 +55,6 @@ export class IpBillItemRequest implements OnInit {
   public selectedAssignedToDr: Array<any> = [];
   public selectedRequestedByDr: Array<any> = [];
 
-  public inpatientList: Array<Patient>;
   public visitList: Array<any>;
 
   public billingType = "inpatient";
@@ -69,37 +70,44 @@ export class IpBillItemRequest implements OnInit {
   public DiscountPercentSchemeValid: boolean = true;
   public memTypeSchemeId: number = null;
 
-  constructor(public labBLService: LabsBLService,
+  public searchByItemCode: boolean = true; //for items search
+  public allRequestedData: any = null;
+
+  constructor(
     public msgBoxServ: MessageboxService,
     public securityService: SecurityService,
     public changeDetectorRef: ChangeDetectorRef,
     public billingBLService: BillingBLService,
     public billingService: BillingService,
-    public patientService: PatientService,
     public router: Router,
     public coreService: CoreService) {
-    //this.GetInpatientlist();
-    this.GetBillingItems();
-    this.GetDoctorsList();
-    this.GetMembershipType();
+
+    this.searchByItemCode = this.coreService.UseItemCodeItemSearch();
+    this.SetBillingItemsNPrices();
+    this.BillRequestDoubleEntryWarningTimeHrs = this.coreService.LoadIPBillRequestDoubleEntryWarningTimeHrs();
+
   }
 
   ngOnInit() {
     this.ResetVariables();
+
+    //sud:2May'20: moving doctorsList-Set after ResetVariables is called since this function later uses page variable and which should be loaded first.
+    this.SetDoctorsList();
+
     this.serviceDeptList = this.coreService.Masters.ServiceDepartments;
     this.serviceDeptList = this.serviceDeptList.filter(a => a.ServiceDepartmentName != "OPD");
-    this.ShowLabRequisition();
-    //this.GetMembershipType();
-  }
 
-  public ShowLabRequisition() {
     if (this.patientId) {
-      //this.ResetVariables();
       this.GetPatientVisitList(this.patientId);
       this.LoadPatientBillingContext(this.patientId);
       this.GetVisitContext(this.patientId, this.visitId);
     }
+
+    this.ItemsListFormatter = this.ItemsListFormatter.bind(this);//to use global variable in list formatter auto-complete
+
+    this.PastTest(this.pastTests);
   }
+
 
   ResetVariables() {
     this.selectedItems = [];
@@ -112,7 +120,6 @@ export class IpBillItemRequest implements OnInit {
     this.taxDetail.taxId = this.billingService.taxId;
     this.taxDetail.taxPercent = this.billingService.taxPercent;
     this.groupDiscountPercent = 0;
-
   }
 
   ItemGroupDiscount() {
@@ -225,6 +232,7 @@ export class IpBillItemRequest implements OnInit {
       }
     }
   }
+
   PrintBillRequestSlip() {
     if (this.CheckValidations()) {
       this.SubmitBillingTransaction();
@@ -233,6 +241,7 @@ export class IpBillItemRequest implements OnInit {
       this.loading = false;
     }
   }
+
   printInvoice() {
     let txnReceipt = BillingReceiptModel.GetReceiptFromTxnItems(this.billingTransaction.BillingTransactionItems);
     txnReceipt.Patient = Object.create(this.patientInfo);
@@ -244,7 +253,6 @@ export class IpBillItemRequest implements OnInit {
     this.IpBillRequestDetails = txnReceipt;
     this.showIpBillRequestSlip = true;
 
-    // this.router.navigate(['Billing/ReceiptPrint']); 
   }
 
   SetBillingTxnDetails() {
@@ -260,7 +268,7 @@ export class IpBillItemRequest implements OnInit {
       txnItem.RequestingDeptId = this.currBillingContext ? this.currBillingContext.RequestingDeptId : null;
       txnItem.BillingType = this.billingService.BillingType;
       txnItem.VisitType = this.billingService.BillingType.toLowerCase();
-      txnItem.BillStatus = "provisional";
+      txnItem.BillStatus = ENUM_BillingStatus.provisional;// "provisional";
 
       txnItem.CreatedOn = moment().format("YYYY-MM-DD HH:mm:ss");
       txnItem.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
@@ -268,6 +276,8 @@ export class IpBillItemRequest implements OnInit {
       txnItem.CounterId = this.securityService.getLoggedInCounter().CounterId;
       txnItem.CounterDay = moment().format("YYYY-MM-DD");
       txnItem.DiscountSchemeId = this.DiscountSchemaId;
+      txnItem.OrderStatus = ENUM_OrderStatus.Active;//'active'
+
     });
   }
   CheckValidations(): boolean {
@@ -306,6 +316,7 @@ export class IpBillItemRequest implements OnInit {
 
     return isFormValid;
   }
+
   public CheckSelectionFromAutoComplete(): boolean {
     if (this.billingTransaction.BillingTransactionItems.length) {
       for (let itm of this.billingTransaction.BillingTransactionItems) {
@@ -341,16 +352,19 @@ export class IpBillItemRequest implements OnInit {
       .subscribe(
         res => {
           if (res.Status == "OK") {
-            this.CloseLabRequestsPage();
+
+            this.allRequestedData = res.Results;
             this.loading = false;
             this.msgBoxServ.showMessage("success", ["Item added successfully"]);
+            console.log(this.PostSuccessBool);
             if (this.PostSuccessBool) {
               this.billingTransaction.FiscalYear = res.Results[0].ProvFiscalYear;
               this.billingTransaction.InvoiceNo = res.Results[0].ProvisionalReceiptNo;
-
               this.printInvoice();
+            } else {
+              this.emitBillItemReq.emit({ newItems: this.allRequestedData });
             }
-            this.emitBillItemReq.emit({ newItems: res.Results });
+
           }
           else {
             this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
@@ -375,55 +389,25 @@ export class IpBillItemRequest implements OnInit {
         }
       });
   }
-  public GetBillingItems() {
-    this.billingBLService.GetBillItemList()
-      .subscribe(res => {
-        if (res.Status == 'OK') {
-          if (res.Results.length) {
-            this.billItemsComplete = res.Results;
-            this.billItems = this.billItemsComplete.filter(item => item.ServiceDepartmentName != "OPD");
-            if (this.billingTransaction.BillingTransactionItems && this.billingTransaction.BillingTransactionItems.length > 0
-              && (!this.billingTransaction.BillingTransactionItems[0].ItemList)) {
-              this.billingTransaction.BillingTransactionItems[0].ItemList = this.billItems;
-            }
-          }
-          else {
-            this.msgBoxServ.showMessage('Failed', ["unable to get items for searchbox.. check logs for more details."]);
-            console.log(res.ErrorMessage);
-          }
-        }
-      },
-        err => {
-          console.log(err.ErrorMessage);
 
-        });
+  public SetBillingItemsNPrices() {
+    this.billItemsComplete = this.billingService.allBillItemsPriceList;
+    this.billItems = this.billItemsComplete.filter(item => item.ServiceDepartmentName != "OPD");
+    if (this.billingTransaction.BillingTransactionItems && this.billingTransaction.BillingTransactionItems.length > 0
+      && (!this.billingTransaction.BillingTransactionItems[0].ItemList)) {
+      this.billingTransaction.BillingTransactionItems[0].ItemList = this.billItems;
+    }
+
   }
 
-  GetInpatientlist() {
-    this.billingBLService.GetInpatientList()
-      .subscribe(res => {
-        if (res.Status == "OK") {
-          this.inpatientList = res.Results;
-        }
-        else {
-          this.msgBoxServ.showMessage("failed", ["Unable to get lab items."]);
-        }
-      });
-  }
+
   public GetPatientVisitList(patientId) {
     this.billingBLService.GetPatientVisitsProviderWise(patientId)
       .subscribe(res => {
         if (res.Status == 'OK') {
           if (res.Results.length) {
             this.visitList = res.Results;
-            //assign doctor of latest visit as requestedby by default to the first billing item.
-            if (this.showPatientSearch) {
-              this.visitId = this.visitList[0].PatientVisitId;
-            }
-
             this.AssignDoctorsToFirstBillItem();
-
-            
             this.GetVisitContext(this.patientId, this.visitList[0].PatientVisitId);
           }
           else {
@@ -440,7 +424,7 @@ export class IpBillItemRequest implements OnInit {
 
 
   public AssignDoctorsToFirstBillItem() {
-    if (this.doctorsList && this.doctorsList.length > 0) {
+    if (this.doctorsList && this.doctorsList.length > 0 && this.visitList && this.visitList.length > 0) {
       let doc = this.doctorsList.find(a => a.EmployeeId == this.visitList[0].ProviderId);
       if (doc) {
         this.selectedRequestedByDr[0] = doc.FullName;
@@ -467,29 +451,24 @@ export class IpBillItemRequest implements OnInit {
 
   }
 
-  public GetDoctorsList() {
-    this.billingBLService.GetDoctorsList()
-      .subscribe(res => {
-        if (res.Status == 'OK') {
-          if (res.Results.length) {
-            this.doctorsList = res.Results;
-            let Obj = new Object();
-            Obj["EmployeeId"] = null; //change by Yub -- 23rd Aug '18
-            Obj["FullName"] = "SELF";
-            this.doctorsList.push(Obj);
+  public SetDoctorsList() {
+    //reuse the doctor's list coming from billing service to avoid server calls.//sud:2May'20
+    this.doctorsList = this.billingService.GetDoctorsListForBilling();
 
-            this.AssignDoctorsToFirstBillItem();
-          }
-          else {
-            console.log(res.ErrorMessage);
-          }
-        }
-      },
-        err => {
-          this.msgBoxServ.showMessage('Failed', ["unable to get Doctors list.. check log for more details."]);
-          console.log(err.ErrorMessage);
-        });
+    let Obj = new Object();
+    Obj["EmployeeId"] = null; //change by Yub -- 23rd Aug '18
+    Obj["FullName"] = "SELF";
+    this.doctorsList.push(Obj);
+
+
+    if (this.billingTransaction && this.billingTransaction.BillingTransactionItems && this.billingTransaction.BillingTransactionItems.length > 0) {
+      this.billingTransaction.BillingTransactionItems[0].AssignedDoctorList = this.doctorsList;
+      this.AssignDoctorsToFirstBillItem();
+    }
+
+
   }
+
   GetServiceDeptNameById(servDeptId: number): string {
     if (this.serviceDeptList) {
       let srvDept = this.serviceDeptList.find(a => a.ServiceDepartmentId == servDeptId);
@@ -556,12 +535,17 @@ export class IpBillItemRequest implements OnInit {
         this.FilterBillItems(index);
         this.CheckItemProviderValidation(index);
         this.Calculationforall();
+        this.ResetDoctorListOnItemChange(item, index);
       }
       else
         this.billingTransaction.BillingTransactionItems[index].IsValidSelItemName = false;
       if (!item && !this.selectedServDepts[index]) {
         this.billingTransaction.BillingTransactionItems[index].ItemList = this.billItems;
       }
+      this.CheckForDoubleEntry();
+    }else{
+      this.billingTransaction.BillingTransactionItems[index].IsDoubleEntry_Past = false;
+      this.billingTransaction.BillingTransactionItems[index].IsDoubleEntry_Now = false;
     }
   }
 
@@ -609,16 +593,7 @@ export class IpBillItemRequest implements OnInit {
       this.billingTransaction.BillingTransactionItems[index].IsValidSelRequestedByDr = true;
   }
 
-  public PatientChanged() {
-    if (this.selectedPatient && this.selectedPatient.PatientId) {
-      this.patientId = this.selectedPatient.PatientId;
-      this.GetPatientVisitList(this.selectedPatient.PatientId);
-      this.LoadPatientBillingContext(this.selectedPatient.PatientId);
-    }
-    else {
-      this.msgBoxServ.showMessage("notice-message", ["Please select patient from the list"]);
-    }
-  }
+
 
   //assigns service department id and filters item list
   ServiceDeptOnChange(index) {
@@ -681,8 +656,8 @@ export class IpBillItemRequest implements OnInit {
   //end: autocomplete assign functions  and item filter logic
 
 
-  CloseLabRequestsPage() {
-    this.emitBillItemReq.emit({ action: "close" });
+  CloseThisPage() {
+    this.emitBillItemReq.emit({ action: "close", newItems: this.allRequestedData });
   }
 
   //----start: add/delete rows-----
@@ -692,9 +667,11 @@ export class IpBillItemRequest implements OnInit {
     this.billingTransaction.BillingTransactionItems[index] = this.NewBillingTransactionItem();
     this.Calculationforall();
   }
+
   AddNewBillTxnItemRow(index = null) {    //method to add the row
     let billItem = this.NewBillingTransactionItem();
     this.billingTransaction.BillingTransactionItems.push(billItem);
+    billItem.AssignedDoctorList = this.doctorsList;
     if (index != null) {
       let new_index = this.billingTransaction.BillingTransactionItems.length - 1;
       this.selectedRequestedByDr[new_index] = this.selectedRequestedByDr[index];
@@ -721,81 +698,11 @@ export class IpBillItemRequest implements OnInit {
       this.changeDetectorRef.detectChanges();
     }
     this.Calculationforall();
+
+    this.CheckForDoubleEntry();
   }
   //----end: add/delete rows-----
 
-  //----end: add/delete rows-----
-
-  ////start: mandatory doctor validations
-  /////sudarshan/dinesh: 28June2017-- for Dynamic validation according to current service department and their items
-  ////Create a Map of service departments with its mandatory/nonmandatory attribute and its exclusion items..
-  //srvDeptValidationMap = [{ ServDeptName: "USG", IsMandatory: true, ExcludedItems: [] },
-  //{ ServDeptName: "CT Scan", IsMandatory: true, ExcludedItems: [] },
-  //{
-  //    ServDeptName: "Dental", IsMandatory: false,
-  //    ExcludedItems: ['[1] IOPAR (x-Ray)', '[2A] Dental extractions (Permanent)', '[4A] Scaling and Polishing (Gross)', '[4B] Scaling and Polishing (Deep)']
-  //},
-  //{ ServDeptName: "ULTRASOUND", IsMandatory: true, ExcludedItems: [] },
-  //{ ServDeptName: "ULTRASOUND COLOR DOPPLER", IsMandatory: true, ExcludedItems: [] },
-  //{ ServDeptName: "NON INVASIVE CARDIO VASCULAR INVESTIGATIONS", IsMandatory: true, ExcludedItems: [] },
-  //{ ServDeptName: "PHYSIOTHERAPY", IsMandatory: true, ExcludedItems: [] },
-
-  //{ ServDeptName: "General Surgery Charges", IsMandatory: false, ExcludedItems: ['PAC'] },
-  //{ ServDeptName: "Lab", IsMandatory: false, ExcludedItems: ['PAP Smear'] },
-  //{ ServDeptName: "Ortho Procedures", IsMandatory: false, ExcludedItems: ['Plaster A (lower Extremity)', 'Injection Steroid'] },
-  //{ ServDeptName: "Biopsy", IsMandatory: false, ExcludedItems: ['B 5-10 blocks', 'C Single Block Gallbladder,small lumps'] },
-  //{ ServDeptName: "OBS/GYN Surgery", IsMandatory: false, ExcludedItems: ['Hydrotobation'] },
-  //{ ServDeptName: "OT", IsMandatory: true, ExcludedItems: ['OT Theatre Charge'] },//ot theater charge goes to hospital.. 
-  //{
-  //    ServDeptName: "Other", IsMandatory: false,
-  //    ExcludedItems: ['Dressing Charge (Large)'
-  //        , 'Dressing Charge (Medium)'
-  //        , 'Dressing Charge (Small)'
-  //        , 'Endoscopy'
-  //        , 'General Round Charge'
-  //        , 'ICU  Round Charge (New)'
-  //        , 'ICU Round Charge'
-  //        , 'Procedure Charge'
-  //        , 'Suture out'
-  //        , 'Sututre In (Large)'
-  //        , 'Sututre In (small)'
-  //        , 'Colonoscopy'
-  //        , 'Intubation Charge'
-  //    ]
-  //}
-
-  //];
-  ////returns whether doctor is mandatory for current combination of serv-dept and it's item.
-  //IsDoctorMandatory(serviceDeptName: string, itemName: string): boolean {
-  //    let isDocMandatory = false;
-  //    let dptItmMap = this.srvDeptValidationMap;
-  //    //go inside only when serviceDeptName is provided.
-  //    if (serviceDeptName) {
-  //        //check if provided serviceDeptName is present in our map--default is false.
-  //        let curMap = dptItmMap.find(s => s.ServDeptName == serviceDeptName);
-  //        if (curMap) {
-  //            //check if serviceDeptName is in mandatory map or non-mandatory map.
-  //            if (curMap.IsMandatory) {
-  //                isDocMandatory = true;//default true for Mandatory srv-depts
-  //                //false when provided item is excluded from mandatory service department
-  //                if (curMap.ExcludedItems.find(itm => itm == itemName)) {
-  //                    isDocMandatory = false;
-  //                }
-  //            }
-  //            else if (curMap.IsMandatory == false) {
-  //                isDocMandatory = false;//default false for NON-Mandatory srv-depts
-  //                //true when provided item is excluded from non-mandatory service department
-  //                if (curMap.ExcludedItems.find(itm => itm == itemName)) {
-  //                    isDocMandatory = true;
-  //                }
-  //            }
-  //        }
-  //        else {
-  //            isDocMandatory = false;
-  //        }
-  //    }
-  //    return isDocMandatory;
-  //}
 
   CheckItemProviderValidation(index: number) {
     //let srvDeptId = this.billingTransaction.BillingTransactionItems[index].ServiceDepartmentId;
@@ -814,12 +721,25 @@ export class IpBillItemRequest implements OnInit {
   //end: mandatory doctor validations
 
   //start: list formatters
-
   ItemsListFormatter(data: any): string {
-    let html: string = data["ServiceDepartmentShortName"] + "-" + data["BillItemPriceId"] + "&nbsp;&nbsp;" + "<font color='blue'; size=03 >" + data["ItemName"] + "</font>" + "&nbsp;&nbsp;";
-    html += "(<i>" + data["ServiceDepartmentName"] + "</i>)" + "&nbsp;&nbsp;" + "RS." + "<b>" + data["Price"] + "</b>";
+    let html: string = "";
+    if (data.SrvDeptIntegrationName != "OPD") {
+      if (this.searchByItemCode) {
+        html = data["ServiceDepartmentShortName"] + "-" + data["ItemCode"] + "&nbsp;&nbsp;" + "<font color='blue'; size=03 >" + data["ItemName"] + "</font>" + "&nbsp;&nbsp;";
+      }
+      else {
+        html = data["ServiceDepartmentShortName"] + "-" + data["BillItemPriceId"] + "&nbsp;&nbsp;" + "<font color='blue'; size=03 >" + data["ItemName"] + "</font>" + "&nbsp;&nbsp;";
+      }
+      html += "(<i>" + data["ServiceDepartmentName"] + "</i>)" + "&nbsp;&nbsp;" + "RS." + "<b>" + data["Price"] + "</b>";
+    }
+    else {
+      let docName = data.Doctor ? data.Doctor.DoctorName : "";
+      html = data["ServiceDepartmentShortName"] + "-" + data["BillItemPriceId"] + "&nbsp;&nbsp;" + data["ItemName"] + "&nbsp;&nbsp;";
+      html += "(<i>" + docName + "</i>)" + "&nbsp;&nbsp;" + "RS." + data["Price"];
+    }
     return html;
   }
+
 
   DoctorListFormatter(data: any): string {
     return data["FullName"];
@@ -835,107 +755,129 @@ export class IpBillItemRequest implements OnInit {
   CloseIpBillRequestSlip($event) {
     this.showIpBillRequestSlip = false;
     this.loading = false;
+    this.CloseThisPage();
   }
 
-  public MembershipTypeList: Array<MembershipType> = new Array<MembershipType>();
   public DiscountSchemaId: number = null;
   public currMemDiscountPercent: number = 0;
   public discountApplicable: boolean = true;
 
-  GetMembershipType() {
-    this.billingBLService.GetMembershipType()
-      .subscribe(res => {
-        if (res.Status == 'OK') {
-          this.MembershipTypeList = res.Results;
-          this.LoadMembershipTypePatient();
-        } else {
-          this.msgBoxServ.showMessage("error", [res.ErrorMessage]);
-        }
-      },
-        err => {
-          this.msgBoxServ.showMessage("failed", ["failed get membership Types. please check log for details."]);
 
-        });
-  }
 
-  LoadMembershipTypePatient(): void {
-    let PatientId = this.patientId;
-    this.billingBLService.GetPatientMembershipInfo(PatientId)
-      .subscribe(res => {
-        if (res.Status == "OK") {
-          this.billingTransaction.DiscountPercent = res.Results.DiscountPercent;
-          let MembershipTypeName = res.Results.MembershipTypeName;
 
-          let currPatMemTypeObj = this.MembershipTypeList.find(i => i.MembershipType == MembershipTypeName);
-          if (currPatMemTypeObj) {
-            this.DiscountScheme = currPatMemTypeObj.MembershipTypeName;
-            this.memTypeSchemeId = currPatMemTypeObj.MembershipTypeId;
-            this.currMemDiscountPercent = currPatMemTypeObj.DiscountPercent;
+  OnPriceCategoryChange($event) {
+    let billingPropertyName = $event.propertyName;
+    let billingCategoryName = $event.categoryName;
 
-            this.billingTransaction.BillingTransactionItems[0].DiscountPercent = this.currMemDiscountPercent;
-            this.groupDiscountPercent = this.currMemDiscountPercent;
-            this.DiscountSchemaId = currPatMemTypeObj.MembershipTypeId;
+    if (this.billItems != null && this.billItems.length > 0) {
+      this.billItems.forEach(itm => {
+        itm.Price = itm[billingPropertyName] ? itm[billingPropertyName] : 0;
+        itm.PriceCategory = billingCategoryName;
+      });
+    }
 
-          }
-
-          this.DiscountPercentSchemeValid = true;
-        }
-        else {
-          this.msgBoxServ.showMessage("failed", ["Failed to load Membership type"]);
+    if (this.billingTransaction.BillingTransactionItems && this.billingTransaction.BillingTransactionItems.length > 0) {
+      this.billingTransaction.BillingTransactionItems.forEach(txnItm => {
+        let currBillItem = this.billItems.find(billItem => billItem.ItemId == txnItm.ItemId && billItem.ServiceDepartmentId == txnItm.ServiceDepartmentId);
+        if (currBillItem) {
+          txnItm.Price = currBillItem[billingPropertyName] ? currBillItem[billingPropertyName] : 0;
+          txnItm.PriceCategory = billingCategoryName;
         }
       });
+    }
   }
 
-  OnDiscountSchemeChange() {
-    //this.DiscountScheme;
-    let discSchemeType = null;
-
-    if (this.DiscountScheme == "") {
-      this.DiscountPercentSchemeValid = false;
-      return;
-    }
-    if (this.DiscountScheme) {
-      if (typeof (this.DiscountScheme) == 'string') {
-        discSchemeType = this.MembershipTypeList.find(a => a.MembershipTypeName == this.DiscountScheme);
-      }
-      else if (typeof (this.DiscountScheme) == 'object') {
-        discSchemeType = this.DiscountScheme;
-      }
-      if (discSchemeType) {
-        this.DiscountPercentSchemeValid = true;
-        this.currMemDiscountPercent = discSchemeType.DiscountPercent;
-        this.DiscountSchemaId = discSchemeType.MembershipTypeId;
-      } else {
-        this.DiscountPercentSchemeValid = false;
-        return;
+  ResetDoctorListOnItemChange(item, index) {
+    if (item) {
+      let docArray = null;
+      let currItemPriceCFG = this.billItemsComplete.find(a => a.ItemId == item.ItemId && a.ServiceDepartmentId == item.ServiceDepartmentId);
+      if (currItemPriceCFG) {
+        let docJsonStr = currItemPriceCFG.DefaultDoctorList;
+        if (docJsonStr) {
+          docArray = JSON.parse(docJsonStr);
+        }
       }
 
-
-      let billItem = this.billingTransaction.BillingTransactionItems;
-
-      billItem.forEach(a => {
-        a.DiscountPercent = this.currMemDiscountPercent;
-      })
-      this.groupDiscountPercent = this.currMemDiscountPercent;
-      //Check for Null, if ItemName is null give selected discount-schema from dropdown
-      if (billItem[0].ItemName == null) {
-        billItem[0].DiscountPercent = this.currMemDiscountPercent;
-      } else {
-        billItem.forEach(a => {
-          var ItemDetails = this.billItemsComplete.find(b => a.ItemId == b.ItemId && a.ItemName == b.ItemName);
-          this.discountApplicable = ItemDetails.DiscountApplicable;
-          if (!this.discountApplicable) {
-            a.DiscountPercent = 0;
-          }
-          else {
-            a.DiscountPercent = this.currMemDiscountPercent;
+      if (docArray && docArray.length > 1) {
+        this.billingTransaction.BillingTransactionItems[index].AssignedDoctorList = [];
+        this.selectedAssignedToDr[index] = null;
+        docArray.forEach(docId => {
+          let currDoc = this.doctorsList.find(d => d.EmployeeId == docId);
+          if (currDoc) {
+            this.billingTransaction.BillingTransactionItems[index].AssignedDoctorList.push(currDoc);
           }
         });
       }
+      else if (docArray && docArray.length == 1) {
+
+        let currDoc = this.doctorsList.find(d => d.EmployeeId == docArray[0]);
+        if (currDoc) {
+          this.selectedAssignedToDr[index] = currDoc.FullName;
+          this.AssignSelectedDoctor(index);
+        }
+      }
+      else {
+        this.selectedAssignedToDr[index] = null;
+        this.billingTransaction.BillingTransactionItems[index].AssignedDoctorList = this.doctorsList;
+      }
     }
   }
 
-  MembershipTypeListFormatter(data: any): string {
-    return data["MembershipTypeName"];
+  public BillRequestDoubleEntryWarningTimeHrs: number = 0;
+  public PastTestList: any = [];
+  public PastTestList_ForDuplicate: any = [];
+
+  PastTest($event) {
+    this.PastTestList = $event;
   }
+
+  HasDoubleEntryInPast() {
+    if (this.PastTestList && this.PastTestList.length > 0) {
+      var currDate = moment().format("YYYY-MM-DD HH:mm:ss");
+      if (this.BillRequestDoubleEntryWarningTimeHrs && this.BillRequestDoubleEntryWarningTimeHrs != 0) {
+        this.PastTestList.forEach(a => {
+          //var diff = moment.duration(a.CreatedOn.diff(currDate));
+          if (this.DateDifference(currDate, a.CreatedOn) < this.BillRequestDoubleEntryWarningTimeHrs) {
+            this.PastTestList_ForDuplicate.push(a);
+          }
+        });
+      }
+
+
+    }
+  }
+
+  CheckForDoubleEntry() {
+    this.billingTransaction.BillingTransactionItems.forEach(itm => {
+
+      if (this.billingTransaction.BillingTransactionItems.filter(a => a.ServiceDepartmentId == itm.ServiceDepartmentId && a.ItemId == itm.ItemId).length > 1) {
+        itm.IsDoubleEntry_Now = true;
+        //this.msgBoxServ.showMessage('warning', ["This item is already entered"]);
+      }
+      else {
+        itm.IsDoubleEntry_Now = false;
+      }
+      this.HasDoubleEntryInPast();
+      if (this.PastTestList_ForDuplicate && this.PastTestList_ForDuplicate.find(a => a.ServiceDepartmentId == itm.ServiceDepartmentId && a.ItemId == itm.ItemId)) {
+        itm.IsDoubleEntry_Past = true;
+        //this.msgBoxServ.showMessage('warning', ["This item is already entered"]);
+      }
+      else {
+        itm.IsDoubleEntry_Past = false;
+      }
+    });
+
+  }
+
+  public DateDifference(currDate, startDate): number {
+    //const diffInMs = Date.parse(currDate) - Date.parse(startDate);
+    //const diffInHours = diffInMs / 1000 / 60 / 60;
+
+    //return diffInHours;
+
+
+    var diffHrs = moment(currDate, "YYYY/MM/DD HH:mm:ss").diff(moment(startDate, "YYYY/MM/DD HH:mm:ss"), 'hours');
+    return diffHrs;
+  }
+
 }

@@ -29,11 +29,11 @@ export class AppointmentsMainComponent {
     this.secondaryNavItems = this.validRoutes.filter(a => a.IsSecondaryNavInDropdown == 1);
     //sud: this will load all necessary masters into visit service's variables
     this.LoadDoctorAndDeptPricesToVisitService();
+    this.LoadAllBillingItems();
 
   }
 
-
-  LoadDoctorAndDeptPricesToVisitService() {
+   async LoadDoctorAndDeptPricesToVisitService() {
 
     if (this.visitService.DocFollowupPrices && this.visitService.DocFollowupPrices.length == 0) {
       this.visitBLService.GetDoctorFollowupItems()
@@ -80,9 +80,23 @@ export class AppointmentsMainComponent {
         }
       });
 
+     this.visitBLService.GetDepartment()
+       .subscribe((res: DanpheHTTPResponse) => {
+         if (res.Status == "OK") {
+           this.visitService.ApptApplicableDepartmentList = res.Results;
+           this.visitService.ApptApplicableDepartmentList =  this.coreService.Masters.Departments.filter(d => d.IsAppointmentApplicable == true && d.IsActive == true).map(d => {
+             return {
+               DepartmentId: d.DepartmentId,
+               DepartmentName: d.DepartmentName
+             };
+           });
+         }
+
+       });
 
     //DepartmentData is already available, so re-use it..
-    this.visitService.ApptApplicableDepartmentList = this.coreService.Masters.Departments.filter(d => d.IsAppointmentApplicable == true && d.IsActive == true).map(d => {
+    
+     this.visitService.ApptApplicableDepartmentList = await this.coreService.Masters.Departments.filter(d => d.IsAppointmentApplicable == true && d.IsActive == true).map(d => {
       return {
         DepartmentId: d.DepartmentId,
         DepartmentName: d.DepartmentName
@@ -96,13 +110,21 @@ export class AppointmentsMainComponent {
           this.visitService.ApptApplicableDoctorsList = res.Results;
         }
       });
-
-
-
-
-
   }
 
+  //we have to load all billing items into service variable, which will be used across this module. 
+  public LoadAllBillingItems() {
+    this.visitBLService.GetBillItemList()
+      .subscribe((res: DanpheHTTPResponse) => {
+        if (res.Status == "OK") {
+          console.log("bill item prices are loaded successfully (appointment-main).");
+          this.visitService.LoadAllBillItemsPriceList(res.Results);
+        }
+        else {
+          console.log("Couldn't load bill item prices. (appointment-main)");
+        }
+      });
+  }
 
 }
 

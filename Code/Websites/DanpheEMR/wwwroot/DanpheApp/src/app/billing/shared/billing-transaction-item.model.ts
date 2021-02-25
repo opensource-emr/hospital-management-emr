@@ -1,6 +1,4 @@
-/// <reference path="../../patients/shared/patient.model.ts" />
-
-import { BillingItem } from './billing-item.model';
+import { BillItemPriceVM } from './billing-view-models';
 import { Patient } from '../../patients/shared/patient.model';
 import {
   NgForm,
@@ -8,8 +6,12 @@ import {
   FormControl,
   Validators,
   FormBuilder,
-  ReactiveFormsModule
+  ReactiveFormsModule,
+  ValidationErrors,
+  ValidatorFn
 } from '@angular/forms'
+import { BillingTransaction } from './billing-transaction.model';
+import { CommonValidators } from '../../shared/common-validator';
 
 export class BillingTransactionItem {
 
@@ -29,6 +31,7 @@ export class BillingTransactionItem {
   public Price: number = 0;
   public SAARCCitizenPrice: number = 0; //Yubraj: 16th May '19
   public ForeignerPrice: number = 0; //Yubraj: 16th May '19
+  public InsForeignerPrice: number = 0;
   public Quantity: number = null;
   public SubTotal: number = null;
   public DiscountPercent: number = 0;
@@ -48,7 +51,7 @@ export class BillingTransactionItem {
   public CreatedBy: number = 0;
   public CreatedOn: string = null;
   public CancelRemarks: string = null;
-  public ItemList: Array<BillingItem> = new Array<BillingItem>();  // array to map the items from different department
+  public ItemList: Array<BillItemPriceVM> = new Array<BillItemPriceVM>();  // array to map the items from different department
   public TaxPercent: number = 0;
   public CancelledBy: number = null;//add cancelled-on also if needed. which is now done from server side.
   public BillingPackageId: number = null;
@@ -117,6 +120,28 @@ export class BillingTransactionItem {
   public IsInsurance: boolean = false;//Yubraj 3rd July '19
   public DiscountSchemeId: number = null; //Yubraj 30th July '19
 
+  public DiscountApplicable: boolean = true;//sud:4Sept'19--only in client side
+
+  //in cas of discount edit, if we have to cancel the edit then we should take oldDiscountPerecent.
+  public OldDiscountPercent: number = 0;//sud:6Sept'19--Only in client side.
+
+  public DisableAssignedDrField: boolean = false;//sud:1Oct'19--Only in client side.
+
+  public AllowMultipleQty: boolean = true;
+  public BillingTransaction: BillingTransaction = null;//sud: 10Nov'19--to be used in billreturn+copy earlier items.
+  public AssignedDoctorList: Array<any> = [];
+
+  //pratik: 17Apr'20-- only for client side, to compare and show warning in billingtransaction page for double entry.
+  public IsDoubleEntry_Now: boolean = false;
+  public IsDoubleEntry_Past: boolean = false;
+
+  public CreatedByObj = { EmployeeId: null, FullName: null, DepartmentName: null, };//Client side only
+  public ModifiedByObj = { EmployeeId: null, FullName: null, DepartmentName: null, };//Client side only
+  public DocObj: any = { EmployeeId: null, FullName: '' };//only for client side.
+
+  public OrderStatus: string = null;//pratik: 7 Aug 2020
+  public AllowCancellation: boolean = null;//Anish: 14 Aug 2020
+
   constructor() {
     var _formBuilder = new FormBuilder();
     this.BillingTransactionItemValidator = _formBuilder.group({
@@ -126,10 +151,11 @@ export class BillingTransactionItem {
       //'RequestedBy': ['', Validators.compose([])],  //for biling order.
       'ProviderId': ['', Validators.compose([])],//there will be no validation for providerid at the begining. it is conditional validation.
       'Price': ['', Validators.compose([this.positiveNumberValdiator])],
-      'Quantity': ['', Validators.compose([this.positiveNumberValdiator])],
+      'Quantity': ['', Validators.compose([])],//its validator are conditional, and gets composed at runtime.
       'DiscountPercent': ['', Validators.compose([this.discountPercentValidator])],
     });
   }
+
   public IsDirty(fieldName): boolean {
     if (fieldName == undefined)
       return this.BillingTransactionItemValidator.dirty;
@@ -169,15 +195,42 @@ export class BillingTransactionItem {
     else {
       validator = Validators.compose([]);
     }
-    //if (formControlName == "ProviderId")
-    //    this.BillingTransactionItemValidator.controls['ProviderId'].validator = validator;
-
-    //this.BillingTransactionItemValidator.controls['ProviderId'].updateValueAndValidity();
 
     this.BillingTransactionItemValidator.controls[formControlName].validator = validator;
     this.BillingTransactionItemValidator.controls[formControlName].updateValueAndValidity();
 
   }
+
+
+  ////dynamically sets ON and OFF the validation on ProviderId controlname.
+  //public ComposeValidators(formControlName: string, validatorTypes: Array<string>) {
+
+  //  let validator = null;
+
+  //  let validatorArr: Array<ValidatorFn> = [];
+
+  //  if (validatorTypes && validatorTypes.length > 0) {
+
+  //    validatorTypes.forEach(curValTypeName => {
+  //      if (curValTypeName == "required") {
+  //        validatorArr.push(Validators.required);
+  //      }
+  //      if (curValTypeName == "multipleQty") {
+  //        validatorArr.push(this.multipleQtyValidator);
+  //      }
+  //      if (curValTypeName == "positiveNumber") {
+  //        validatorArr.push(this.positiveNumberValdiator);
+  //      }
+  //    });
+
+  //  }
+
+  //  validator = Validators.compose(validatorArr);
+
+  //  this.BillingTransactionItemValidator.controls[formControlName].validator = validator;
+  //  this.BillingTransactionItemValidator.controls[formControlName].updateValueAndValidity();
+
+  //}
 
   ///2017-07-19--For Quick Bug fix... Make proper implementation of it later..
   public static GetClone(ipBilTxnItm: BillingTransactionItem): BillingTransactionItem {
@@ -192,6 +245,7 @@ export class BillingTransactionItem {
     retObject.ServiceDepartment = null;
     return retObject;
   }
+
   positiveNumberValdiator(control: FormControl): { [key: string]: boolean } {
     if (control) {
       if (control.value <= 0)
@@ -199,6 +253,16 @@ export class BillingTransactionItem {
     }
 
   }
+
+  multipleQtyValidator(control: FormControl): { [key: string]: boolean } {
+    if (control) {
+      if (control.value > 1)
+        return { 'invalidQty': true };
+    }
+
+  }
+
+
   discountPercentValidator(control: FormControl): { [key: string]: boolean } {
     if (control.value) {
       if (control.value < 0 || control.value > 100)

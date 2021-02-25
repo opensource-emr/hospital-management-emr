@@ -38,8 +38,9 @@ export class WriteOffComponent implements OnInit {
 
   ngOnInit() {
     this.LoadItemList();
+    //this.loadReport();
     this.ShowWriteOffReport();
-    this.loadReport();
+
   }
 
   gridExportOptions = {
@@ -90,6 +91,7 @@ export class WriteOffComponent implements OnInit {
   }
 
   ShowWriteOffReport() {
+    this.filteredWriteOffReport =null; 
 
     this.inventoryBLService.ShowWriteOffReport(this.CurrentWriteOff.ItemId)
       .map(res => res)
@@ -100,17 +102,19 @@ export class WriteOffComponent implements OnInit {
     this.msgBoxServ.showMessage("error", [err]);
   }
   Success(res) {
-    if (res.Status == "OK") {
+    if (res.Status == "OK" && res.Results.length > 0) {
 
       this.WriteOffReportColumns = this.reportServ.reportGridCols.WriteOffReport;
       this.WriteOffReportData = res.Results;
       this.filteredWriteOffReport = this.WriteOffReportData;
-
     }
+    else if (res.Status == "OK" && res.Results.length == 0) {
+      this.msgBoxServ.showMessage("Error", ["There is no data available."]);
+    }
+
     else {
       this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
     }
-
   }
   loadReport() {
     if (this.fromDate && this.toDate) {
@@ -123,11 +127,12 @@ export class WriteOffComponent implements OnInit {
           this.filteredWriteOffReport.push(rep);
         }
       });
+      if (this.filteredWriteOffReport.length == 0) {
+        this.msgBoxServ.showMessage("Error", ["There is no data available."]);
+      }
     }
     else {
       this.filteredWriteOffReport = this.WriteOffReportData;
     }
-
   }
-
 }

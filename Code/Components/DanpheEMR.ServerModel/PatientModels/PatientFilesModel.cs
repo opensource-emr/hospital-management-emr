@@ -19,7 +19,7 @@ namespace DanpheEMR.ServerModel
         public DateTime UploadedOn  { get; set; }
         public int UploadedBy { get; set; }
         public string Description { get; set; }
-        public byte[] FileBinaryData { get; set; }
+        //public byte[] FileBinaryData { get; set; }
         public int FileNo { get; set; }
         public string FileName { get; set; }
         public string FileExtention { get; set; }

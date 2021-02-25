@@ -9,6 +9,7 @@ import { ProfitLossReportComponent } from './profit-loss/profit-loss-report.comp
 import { DailyTransactionReportComponent } from './daily-transaction/daily-transaction-report.component';
 import { CashFlowReportComponent } from './Cash-Flow/cash-flow-report.component';
 import { DaywiseVoucherReportComponent } from './daywise-voucher-report/daywise-voucher-report.component';
+import { SystemAuditReportComponent } from './system-audit/system-audit-report.component';
 
 @NgModule({
     imports: [
@@ -23,7 +24,8 @@ import { DaywiseVoucherReportComponent } from './daywise-voucher-report/daywise-
             { path: 'ProfitLossReport', component: ProfitLossReportComponent },
             { path: 'DailyTransactionReport', component: DailyTransactionReportComponent },
             { path: 'CashFlowReport', component: CashFlowReportComponent },
-            { path: 'DaywiseVoucherReport', component: DaywiseVoucherReportComponent }
+            { path: 'DaywiseVoucherReport', component: DaywiseVoucherReportComponent },
+            { path: 'SystemAuditReport', component: SystemAuditReportComponent }
         ])
     ],
     exports: [

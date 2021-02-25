@@ -24,7 +24,7 @@ namespace DanpheEMR.DalLayer
         public DbSet<EmployeePreferences> EmployeePreferences { get; set; }
         public DbSet<VisitModel> PatientVisits { get; set; }
         public DbSet<LabReportModel> LabReports { get; set; }
-                
+
         public DbSet<BillItemPrice> BillItemPrice { get; set; }
         public DbSet<BillingTransactionItemModel> BillingTransactionItems { get; set; }
         public DbSet<ServiceDepartmentModel> ServiceDepartment { get; set; }
@@ -34,6 +34,13 @@ namespace DanpheEMR.DalLayer
         public DbSet<LabTestComponentMapModel> LabTestComponentMap { get; set; }
         public DbSet<LabTestJSONComponentModel> LabTestComponents { get; set; }
         public DbSet<CoreCFGLookupModel> LabLookUps { get; set; }
+        public DbSet<LabRunNumberSettingsModel> LabRunNumberSettings { get; set; }
+        public DbSet<LabTestCategoryModel> LabTestCategory { get; set; }
+        public DbSet<LabTestMasterSpecimen> LabTestSpecimen { get; set; }
+        public DbSet<LabGovReportItemModel> LabGovReport { get; set; }
+        public DbSet<LabGovReportMappingModel> LabGovReportMapping { get; set; }
+
+        public DbSet<CountrySubDivisionModel> CountrySubdivisions { get; set; }
 
         public LabDbContext(string conn) : base(conn)
         {
@@ -43,6 +50,8 @@ namespace DanpheEMR.DalLayer
         }
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<LabGovReportItemModel>().ToTable("Lab_Mst_Gov_Report_Items");
+            modelBuilder.Entity<LabGovReportMappingModel>().ToTable("Lab_Gov_Report_Mapping");
             modelBuilder.Entity<AdminParametersModel>().ToTable("CORE_CFG_Parameters");
             modelBuilder.Entity<LabRequisitionModel>().ToTable("LAB_TestRequisition");
             modelBuilder.Entity<EmployeeModel>().ToTable("EMP_Employee");
@@ -74,6 +83,15 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<LabTestComponentMapModel>().ToTable("Lab_MAP_TestComponents");
             modelBuilder.Entity<LabTestJSONComponentModel>().ToTable("Lab_MST_Components");
             modelBuilder.Entity<CoreCFGLookupModel>().ToTable("CORE_CFG_LookUps");
+            modelBuilder.Entity<LabRunNumberSettingsModel>().ToTable("Lab_MST_RunNumberSettings");
+            modelBuilder.Entity<LabTestCategoryModel>().ToTable("LAB_TestCategory");
+            modelBuilder.Entity<LabTestMasterSpecimen>().ToTable("LAB_MST_TestSpecimen");
+            modelBuilder.Entity<CountrySubDivisionModel>().ToTable("MST_CountrySubDivision");
+        }
+
+        public void Attach(LabGovReportMappingModel dbComp)
+        {
+            throw new NotImplementedException();
         }
     }
 }

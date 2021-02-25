@@ -46,7 +46,7 @@ export class RPT_BIL_CustomReportComponent {
       this.currentCustomReport.CustomReportValidator.controls[i].markAsDirty();
       this.currentCustomReport.CustomReportValidator.controls[i].updateValueAndValidity();
     }
-    if (this.currentCustomReport.IsValidCheck(undefined, undefined)) {
+    if (this.currentCustomReport.fromDate != null && this.currentCustomReport.toDate != null) {
       this.fromDate = this.currentCustomReport.fromDate;
       this.toDate = this.currentCustomReport.toDate;
       this.reportName = this.currentCustomReport.reportName;
@@ -129,5 +129,14 @@ export class RPT_BIL_CustomReportComponent {
   ErrorMsg(err) {
     this.msgBoxServ.showMessage("error", ["Sorry!!! Not able export the excel file."]);
     console.log(err.ErrorMessage);
+  }
+
+  //Anjana:11June'20--reusable From-ToDate-In Reports..
+  OnFromToDateChange($event) {
+    this.fromDate = $event ? $event.fromDate : this.fromDate;
+    this.toDate = $event ? $event.toDate : this.toDate;
+
+    this.currentCustomReport.fromDate = this.fromDate;
+    this.currentCustomReport.toDate = this.toDate;
   }
 }

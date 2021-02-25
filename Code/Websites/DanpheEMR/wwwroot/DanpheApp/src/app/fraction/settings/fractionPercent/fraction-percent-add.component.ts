@@ -7,7 +7,7 @@ import { SecurityService } from "../../../security/shared/security.service";
 import { FractionPercentModel } from "../../shared/fraction-percent.model";
 import { FractionPercentService } from "../../shared/Fraction-Percent.service";
 import { CoreService } from "../../../core/shared/core.service";
-import { Department } from "../../../settings/shared/department.model";
+import { Department } from "../../../settings-new/shared/department.model";
 import { FractionPercentViewModel } from "../../shared/fractionpercent.viewmodel";
 
 

@@ -22,6 +22,7 @@ export class ItemCategoryAddComponent {
     @Output("callback-add")
     callbackAdd: EventEmitter<Object> = new EventEmitter<Object>();
     public update: boolean = false;
+    public loading: boolean = false;
 
     public CurrentItemCategory: ItemCategoryModel;
     public completeitemcategorylist: Array<ItemCategoryModel> = new Array<ItemCategoryModel>();
@@ -56,15 +57,18 @@ export class ItemCategoryAddComponent {
             this.CurrentItemCategory.ItemCategoryValidator.controls[i].updateValueAndValidity();
         }
         if (this.CurrentItemCategory.IsValidCheck(undefined, undefined)) {
+            this.loading = true;
             this.invSettingBL.AddItemCategory(this.CurrentItemCategory)
                 .subscribe(
                 res => {
                     this.showMessageBox("success", "ItemCategory Added");
                     this.CurrentItemCategory = new ItemCategoryModel();
                     this.CallBackAddItemCategory(res)
+                    this.loading = false;
                 },
                 err => {
                     this.logError(err);
+                    this.loading = false;
                 });
         }
     }
@@ -76,15 +80,18 @@ export class ItemCategoryAddComponent {
             this.CurrentItemCategory.ItemCategoryValidator.controls[i].updateValueAndValidity();
         }
         if (this.CurrentItemCategory.IsValidCheck(undefined, undefined)) {
+            this.loading = true;
             this.invSettingBL.UpdateItemCategory(this.CurrentItemCategory)
                 .subscribe(
                 res => {
                     this.showMessageBox("success", "ItemCategory List Updated");
                     this.CurrentItemCategory = new ItemCategoryModel();
                     this.CallBackAddItemCategory(res)
+                    this.loading = false;
                 },
                 err => {
                     this.logError(err);
+                    this.loading = false;
                 });
         }
     }

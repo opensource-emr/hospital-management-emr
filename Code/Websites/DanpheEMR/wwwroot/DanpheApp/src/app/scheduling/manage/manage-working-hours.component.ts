@@ -1,4 +1,4 @@
-﻿import { Component, ChangeDetectorRef } from "@angular/core";
+import { Component, ChangeDetectorRef } from "@angular/core";
 
 import GridColumnSettings from '../../shared/danphe-grid/grid-column-settings.constant';
 import { GridEmitModel } from "../../shared/danphe-grid/grid-emit.model";
@@ -185,8 +185,8 @@ export class ManageWorkingHours {
     }
 
     Save() {
-        let CheckIsValid = true;
-        for (var index in this.currentEmpWH.Shifts) {
+          let CheckIsValid = true;
+          for (var index = 0; index < this.currentEmpWH.Shifts.length; index++) {
             if (!this.currentEmpWH.Shifts[index].IsDefault) {
                 for (var i in this.currentEmpWH.Shifts[index].ShiftValidator.controls) {
                     this.currentEmpWH.Shifts[index].ShiftValidator.controls[i].markAsDirty();

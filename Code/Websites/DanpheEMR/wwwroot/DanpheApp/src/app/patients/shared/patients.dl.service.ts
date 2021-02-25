@@ -11,15 +11,15 @@ export class PatientsDLService {
     this.http = _http;
   }
   // getting the patient
-  public GetPatients() {
+  public GetPatients(searchTxt) {
     //return this.http.get<any>("/api/Patient", this.options); 
-    return this.http.get<any>("/api/Patient?reqType=patient-search-by-text", this.options);
+    return this.http.get<any>("/api/Patient?reqType=patient-search-by-text&search=" + searchTxt, this.options);
 
   }
 
   // getting the patient
-  public GetPatientsWithVisitsInfo() {
-    return this.http.get<any>("/api/Patient?reqType=patientsWithVisitsInfo", this.options);
+  public GetPatientsWithVisitsInfo(searchTxt) {
+    return this.http.get<any>("/api/Patient?reqType=patientsWithVisitsInfo&search=" + searchTxt, this.options);
   }
 
 
@@ -80,13 +80,15 @@ export class PatientsDLService {
 
   }
   //Get Matching Patient Details by FirstName,LastName,PhoneNumber for showing registered matching patient on Visit Creation time
-  public GetExistedMatchingPatientList(FirstName, LastName, PhoneNumber, IsInsurance , IMISCode) {
+  public GetExistedMatchingPatientList(FirstName, LastName, PhoneNumber, Age, Gender, IsInsurance, IMISCode) {
     return this.http.get<any>("/api/Patient?reqType=GetMatchingPatList&FirstName="
       + FirstName +
       "&LastName=" + LastName +
-      "&PhoneNumber=" + PhoneNumber+
+      "&PhoneNumber=" + PhoneNumber +
+      "&Age=" + Age +
+      "&Gender=" + Gender +
       "&IsInsurance=" + IsInsurance +
-      "&IMISCode=" + IMISCode ,
+      "&IMISCode=" + IMISCode,
       this.options);
   }
 

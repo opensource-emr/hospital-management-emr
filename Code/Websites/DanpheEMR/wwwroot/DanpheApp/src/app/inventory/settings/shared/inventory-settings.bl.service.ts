@@ -35,12 +35,17 @@ export class InventorySettingBLService {
     return this.invSettingDLservice.GetAccountHeadList()
       .map(res => { return res });
   }
-  public GetTermsConditions() {
-    return this.invSettingDLservice.GetTermsConditions()
+  public GetTermsConditions(TermsApplicationId) {
+    return this.invSettingDLservice.GetTermsConditions(TermsApplicationId)
       .map(res => { return res });
   }
   public GetAccountHead(ShowIsActive: boolean) {
     return this.invSettingDLservice.GetAccountHead(ShowIsActive)
+      .map(res => { return res });
+  }
+  //getMappedledgerlist
+  public getMappedledgerlist(ledgerType) {
+    return this.invSettingDLservice.getMappedledgerlist(ledgerType)
       .map(res => { return res });
   }
   public GetCurrency() {

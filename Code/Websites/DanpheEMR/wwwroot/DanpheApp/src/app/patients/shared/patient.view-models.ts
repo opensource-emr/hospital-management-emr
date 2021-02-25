@@ -9,7 +9,7 @@ import {
 import * as moment from 'moment/moment';
 
 import { Visit } from "../../appointments/shared/visit.model";
-import { Admission } from '../../admission/shared/admission.model';
+import { Admission } from '../../adt/shared/admission.model';
 
 
 export class PatientWithVisitInfoVM {
@@ -22,6 +22,8 @@ export class PatientWithVisitInfoVM {
   public PatientNameLocal: string = "";
   public Age: string = null;
   public Gender: string = null;
+  public CountryName: string = null;
+  public CountryId: number = 0;
   public PhoneNumber: string = "";
   public DateOfBirth: string = null;
   public Address: string = null;

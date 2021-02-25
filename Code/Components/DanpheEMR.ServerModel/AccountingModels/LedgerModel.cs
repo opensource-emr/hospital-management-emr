@@ -32,5 +32,43 @@ namespace DanpheEMR.ServerModel
         public string COA { get; set; }
         [NotMapped]
         public string LedgerGroupName { get; set; }
+        public string Code { get; set; }
+        public string PANNo { get; set; }
+        public string Address { get; set; }
+        public string MobileNo { get; set; }
+	    public int? CreditPeriod { get; set; }
+	    public decimal? TDSPercent { get; set; }
+        public string LandlineNo { get; set; }
+
+        [NotMapped]
+        public int? EmployeeId { get; set; }
+        [NotMapped]
+        public string EmployeeName { get; set; }      
+        [NotMapped]
+        public string DepartmentName { get; set; }
+        [NotMapped]
+        public string SupplierName { get; set; }
+        [NotMapped]
+        public int? SupplierId { get; set; }
+        [NotMapped]
+        public string VendorName { get; set; }
+        [NotMapped]
+        public int? VendorId { get; set; }
+        [NotMapped]
+        public string SubCategoryName { get; set; }
+        [NotMapped]
+        public int? SubCategoryId { get; set; }
+        [NotMapped]
+        public string OrganizationName { get; set; }
+        [NotMapped]
+        public int? OrganizationId { get; set; }
+
+        //sud-nagesh: 20June'20-- for Acc-Hospital Separation.
+        public int? HospitalId { get; set; }
+
+        [NotMapped]
+        public bool? IsMapLedger { get; set; }
+
     }
+    
 }

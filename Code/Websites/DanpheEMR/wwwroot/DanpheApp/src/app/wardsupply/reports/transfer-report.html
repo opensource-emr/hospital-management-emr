@@ -1,62 +1,52 @@
-<div class="row">
-    <div class="form-body">
-        <div class="col-md-12">
-            <div class="caption">
-                <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
-                <span class="caption-subject font-red-sunglo bold uppercase">Transfer&nbsp;  Report</span>
+<div class="wrapper">
+  <div class="form-body">
+    <div class="caption lb-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Transfer Report</span> </div>
+    <div class="row">
+      <div class="col-md-5 col-xs-12">
+        <div class="form-group">
+          <div class="row">
+            <label class="control-label col-md-3">From Date<b class="color-red"> *</b><b style="float:right;">:</b></label>
+            <div class="col-md-9">
+              <danphe-date-picker [(ngModel)]="wardReports.FromDate" ngDefaultControl [CalendarTypes]="'en,np'" [ngModelOptions]="{standalone: true}"> </danphe-date-picker>
             </div>
-
-            <div class="col-md-5 col-xs-12">
-                <div class="form-group">
-                    <label class="control-label col-md-5">From Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
-                    <div class="col-md-7">                   
-                        <danphe-date-picker [(ngModel)]="wardReports.FromDate" ngDefaultControl [CalendarTypes]="'en,np'" [ngModelOptions]="{standalone: true}">
-                        </danphe-date-picker>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-5 col-xs-12">
-                <div class="form-group">
-                    <label class="control-label col-md-4">To Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
-                    <div class="col-md-8">                     
-                        <danphe-date-picker [(ngModel)]="wardReports.ToDate" ngDefaultControl [CalendarTypes]="'en,np'" [ngModelOptions]="{standalone: true}">
-                        </danphe-date-picker>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-12" style="margin-top:10px;">
-                <div class="col-md-5 col-xs-12" style="padding-left: 0px;">
-                    <div class="form-group">
-                        <label class="control-label col-md-5">Transfer Type<b style="float:right;">:</b></label>
-                        <div class="col-md-7">
-                            <select [(ngModel)]="wardReports.Status" [ngModelOptions]="{standalone: true}">
-                                <option value="1">Ward To Ward Transfer</option>
-                                <option value="0">Pharmacy Transfer</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-5 col-xs-12">
-                    <div class="col-md-2 col-xs-12">
-                        <div class="form-group">
-                            <button class="btn blue" type="button" (click)="Load()">
-                                <i class="fa fa-search"></i>
-                                Show Report
-                            </button>
-                        </div>
-                    </div>
-                </div>
+          </div>
         </div>
-        
+      </div>
+      <div class="col-md-5 col-xs-12">
+        <div class="form-group">
+          <div class="row">
+            <label class="control-label col-md-3">To Date<b class="color-red"> *</b><b style="float:right;">:</b></label>
+            <div class="col-md-9">
+              <danphe-date-picker [(ngModel)]="wardReports.ToDate" ngDefaultControl [CalendarTypes]="'en,np'" [ngModelOptions]="{standalone: true}"> </danphe-date-picker>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!--<div class="col-md-5 col-xs-12" style="padding-left: 0px;">
+          <div class="form-group">
+              <label class="control-label col-md-5">Transfer Type<b style="float:right;">:</b></label>
+              <div class="col-md-7">
+                  <select [(ngModel)]="wardReports.Status" [ngModelOptions]="{standalone: true}">
+                    <option value="null" selected>ALL</option>
+                      <option value="1">Ward To Ward Transfer</option>
+                      <option value="0">Store Transfer</option>
+                  </select>
+              </div>
+          </div>
+      </div>-->
+      <div class="col-md-2 col-xs-12">
+        <div class="form-group">
+          <button class="btn blue" type="button" (click)="Load()"> <i class="fa fa-search"></i> Show Report </button>
+        </div>
+      </div>
     </div>
-
-</div>
-<div class="row">
+  </div>
+  <div class="row">
     <div class="col-lg-12 col-sm-12">
-        <danphe-grid [grid-colDefaults]="WardTransferReportColumn"
-                     [grid-data]="WardTransferData"
-                     [grid-exportOptions]="gridExportOptions" [grid-showExport]="true">
-        </danphe-grid>
+      <danphe-grid [grid-colDefaults]="WardTransferReportColumn"
+                 [grid-data]="WardTransferData"
+                 [grid-exportOptions]="gridExportOptions" [grid-showExport]="true"> </danphe-grid>
     </div>
+  </div>
 </div>

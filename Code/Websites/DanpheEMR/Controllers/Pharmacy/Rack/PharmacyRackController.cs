@@ -5,6 +5,8 @@ using DanpheEMR.Services.Pharmacy.Rack;
 using DanpheEMR.ViewModel.Pharmacy;
 using DanpheEMR.Core.Configuration;
 using Microsoft.Extensions.Options;
+using System.Threading.Tasks;
+using DanpheEMR.CommonTypes;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -34,6 +36,25 @@ namespace DanpheEMR.Controllers.Pharmacy
         public IActionResult Get(int id)
         {
             return Ok(rackService.GetRack(id));
+        }
+
+        [HttpGet]
+        [Route("~/api/Rack/GetStoreRackNameByItemId/{ItemId}")]
+        public IActionResult GetStoreRackNameByItemId([FromRoute] int ItemId)
+        {
+            var responseData = new DanpheHTTPResponse<object>();
+            try
+            {
+                responseData.Status = "OK";
+                responseData.Results = rackService.GetStoreRackNameByItemId(ItemId);
+            }
+            catch (System.Exception)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = "Failed to load Rack";
+                return BadRequest(responseData);
+            }
+            return Ok(responseData);
         }
 
         // POST api/values

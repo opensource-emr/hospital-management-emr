@@ -10,6 +10,7 @@ import { GridEmitModel } from "../../shared/danphe-grid/grid-emit.model";
 import { Patient } from "../../patients/shared/patient.model";
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { APIsByType } from '../../shared/search.service';
+import { CoreService } from '../../core/shared/core.service';
 
 @Component({
     templateUrl: "./search-patient.html"
@@ -25,14 +26,18 @@ export class PatientSearchComponent {
     //start: for angular-grid
     AppointmentpatientGridColumns: Array<any> = null;
     //start: for angular-grid
+    searchText:string='';
+    public showInpatientMessage: boolean = false;
+    public enableServerSideSearch:boolean=false;
+    public wardBedInfo: string = null;
     constructor(
         public _patientservice: PatientService,
         public appointmentService: AppointmentService,
         public router: Router, public appointmentBLService: AppointmentBLService,
-        public msgBoxServ: MessageboxService
+        public msgBoxServ: MessageboxService,public coreService:CoreService
     ) {
-
-        this.Load();
+        this.getParamter();
+        this.Load("");
         this._patientservice.CreateNewGlobal();
         this.appointmentService.CreateNewGlobal();
         this.AppointmentpatientGridColumns = GridColumnSettings.AppointmentPatientSearch;
@@ -44,8 +49,17 @@ export class PatientSearchComponent {
         document.getElementById('quickFilterInput').focus();
     }
 
-    Load(): void {
-        this.appointmentBLService.GetPatients()
+    serverSearchTxt(searchTxt) {
+        this.searchText = searchTxt;
+        this.Load(this.searchText);
+    }
+    getParamter(){
+        let parameterData = this.coreService.Parameters.find(p => p.ParameterGroupName == "Common" && p.ParameterName == "ServerSideSearchComponent").ParameterValue;
+        var data= JSON.parse(parameterData);
+        this.enableServerSideSearch = data["PatientSearchPatient"];
+      }
+    Load(searchText): void {
+        this.appointmentBLService.GetPatients(searchText)
             .subscribe(res => {
                 if (res.Status == 'OK') {
                     this.patients = res.Results;
@@ -122,7 +136,13 @@ export class PatientSearchComponent {
         switch ($event.Action) {
             case "appoint":
                 {
-                    this.SelectPatient(null, $event.Data)
+                    if($event.Data.IsAdmitted){
+                        this.wardBedInfo = $event.Data.WardBedInfo;
+                        this.showInpatientMessage = true;
+                    }else{
+                        this.SelectPatient(null, $event.Data)
+                    }
+                    
                 }
                 break;
             //case "edit":

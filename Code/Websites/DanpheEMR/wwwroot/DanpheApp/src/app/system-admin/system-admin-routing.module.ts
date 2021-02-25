@@ -9,6 +9,7 @@ import { SalesBookReportComponent } from "./sales-book/sales-book-report.compone
 import { PHRMSalesBookComponent } from './sales-book/phrm-sales-book-report.component'
 import { AuthGuardService } from '../security/shared/auth-guard.service';
 import { AuditTrailComponent } from './audit-trail/audit-trail.component';
+import { PageNotFound } from '../404-error/404-not-found.component';
 
 
 @NgModule({
@@ -23,9 +24,12 @@ import { AuditTrailComponent } from './audit-trail/audit-trail.component';
                   { path: 'DatabaseAudit', component: DatabaseAuditComponent, canActivate: [AuthGuardService]  },
                   { path: 'InvoiceDetails', component: InvoiceDetailsComponent, canActivate: [AuthGuardService]  },
                   { path: 'SalesBook', component: SalesBookReportComponent, canActivate: [AuthGuardService] },
-                  { path: 'AuditTrail', component: AuditTrailComponent }
+                  { path: 'AuditTrail', component: AuditTrailComponent },
+                  { path: "**", component: PageNotFound }
+
                 ]
-            }
+          },
+          { path: "**", component: PageNotFound }
         ])
     ],
     exports: [

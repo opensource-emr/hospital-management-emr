@@ -1,4 +1,4 @@
-﻿import { Component, Directive, ViewChild } from '@angular/core';
+import { Component, Directive, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
 import { AccountingReportsBLService } from "../shared/accounting-reports.bl.service";
@@ -6,6 +6,7 @@ import { FiscalYearModel } from '../../settings/shared/fiscalyear.model';
 import * as moment from 'moment/moment';
 import { CommonFunctions } from '../../../shared/common.functions';
 import { style } from "@angular/animations";
+import { CoreService } from '../../../core/shared/core.service';
 @Component({
     selector: 'my-app',
     templateUrl: "./cashflow-report.html"
@@ -20,21 +21,50 @@ export class CashFlowReportComponent {
     public OutflowData: any;
     public showResult: boolean = false;
     public IsLedgerLevel: boolean = true;
+    public showExportbtn : boolean=false;
     //public data = new ModelData();
     
+    public showPrint: boolean = false;
+    public printDetaiils: any;
+    
     constructor(
+        public coreservice : CoreService,
         public messageBoxService: MessageboxService,
-        public accReportBLService: AccountingReportsBLService) {
+        public accReportBLService: AccountingReportsBLService,
+        private changeDetector:ChangeDetectorRef ) {
         this.fromDate = moment().format('YYYY-MM-DD');
         this.toDate = moment().format('YYYY-MM-DD');
         this.loadFiscalYearList();
+        this.showExport();   
+        //this.LoadCalendarTypes();         
+        this.calType = this.coreservice.DatePreference;
     }
-
+    public fiscalYearId:number=null;    
+    public validDate:boolean=true;
+    selectDate(event){
+        if (event) {
+            this.fromDate = event.fromDate;
+            this.toDate = event.toDate;
+            this.fiscalYearId = event.fiscalYearId;
+            this.validDate = true;
+          } 
+          else {
+            this.validDate =false;
+        } 
+    }
+    public calType: string = ""; 
+    //loads CalendarTypes from Paramter Table (database) and assign the require CalendarTypes to local variable.
+    LoadCalendarTypes() {
+       let Parameter = this.coreservice.Parameters;
+       Parameter = Parameter.filter(parms => parms.ParameterName == "CalendarTypes");
+       let calendarTypeObject = JSON.parse(Parameter[0].ParameterValue);
+       this.calType = calendarTypeObject.AccountingModule;
+     }
     //Load cash flow data
     LoadData() {
         if (this.ValidDateCheck()) {
             try {                
-                this.accReportBLService.GetCashFlowReportData(this.fromDate, this.toDate)               
+                this.accReportBLService.GetCashFlowReportData(this.fromDate, this.toDate,this.fiscalYearId)               
                 .subscribe( res=> {
                         //this.data=Object.assign(this.data,res);                                       
                         if (res.Status == 'OK') {
@@ -148,51 +178,47 @@ export class CashFlowReportComponent {
         this.cashflowData.forEach(a => {
             a.COAList.forEach(b => {
                 if (b.TypeCrTotal > 0) {
-                    this.OutflowData = this.pushToList(this.OutflowData, b.COA, b.TypeCrTotal, "BoldCategory");
+                    this.OutflowData = this.pushToList(this.OutflowData, b.COA, b.TypeCrTotal, "BoldCategory",0);
                     b.LedgerGroupList.forEach(b => {
-                        this.OutflowData = this.pushToList(this.OutflowData, b.LedgerGroupName, b.TypeLedgerGroupCrTotal, "LedgerGroup");
+                        this.OutflowData = this.pushToList(this.OutflowData, b.LedgerGroupName, b.TypeLedgerGroupCrTotal, "LedgerGroup",0);
                         b.LedgersList.forEach(c => {
                           //  if (c.LedgerGroupName != "Cash" && c.Amountcr > 0)
-                                this.OutflowData = this.pushToList(this.OutflowData, c.LedgerName, CommonFunctions.parseAmount(c.Amountcr), "LedgerLevel");
+                                this.OutflowData = this.pushToList(this.OutflowData, c.LedgerName, CommonFunctions.parseAmount(c.Amountcr), "LedgerLevel",c.Code);
                         });
                     });
                 }
             });
             a.COAList.forEach(b => {
                 if (b.TypeDrTotal > 0) {
-                    this.InflowData = this.pushToList(this.InflowData, b.COA, b.TypeDrTotal, "BoldCategory");
+                    this.InflowData = this.pushToList(this.InflowData, b.COA, b.TypeDrTotal, "BoldCategory",0);
                     b.LedgerGroupList.forEach(b => {
-                        this.InflowData = this.pushToList(this.InflowData, b.LedgerGroupName, b.TypeLedgerGroupDrTotal, "LedgerGroup");
+                        this.InflowData = this.pushToList(this.InflowData, b.LedgerGroupName, b.TypeLedgerGroupDrTotal, "LedgerGroup",0);
                           b.LedgersList.forEach(c => {
                            // if (c.LedgerGroupName != "Cash" && c.Amountdr > 0)
-                              this.InflowData = this.pushToList(this.InflowData, c.LedgerName, CommonFunctions.parseAmount(c.Amountdr), "LedgerLevel");
+                              this.InflowData = this.pushToList(this.InflowData, c.LedgerName, CommonFunctions.parseAmount(c.Amountdr), "LedgerLevel",c.Code);
 
                         });
                     });
                 }
             });
         });
-        this.cashflowData = this.pushToList(this.cashflowData, "Net Inflow", this.cashflowData.Netinflow, "BoldCategory");
-        this.cashflowData = this.pushToList(this.cashflowData, "Opening Balance", this.cashflowData.OpeningBalance, "BoldCategory");
-        this.cashflowData = this.pushToList(this.cashflowData, "Closing Balance", this.cashflowData.ClosingBalance, "BoldCategory");
-        this.InflowData = this.pushToList(this.InflowData, "Total",  this.cashflowData.InTotalAmt, "BoldTotal");
-        this.OutflowData = this.pushToList(this.OutflowData, "Total", this.cashflowData.OutTotalAmt, "BoldTotal");
+        this.cashflowData = this.pushToList(this.cashflowData, "Net Inflow", this.cashflowData.Netinflow, "BoldCategory",0);
+        this.cashflowData = this.pushToList(this.cashflowData, "Opening Balance", this.cashflowData.OpeningBalance, "BoldCategory",0);
+        this.cashflowData = this.pushToList(this.cashflowData, "Closing Balance", this.cashflowData.ClosingBalance, "BoldCategory",0);
+        this.InflowData = this.pushToList(this.InflowData, "Total",  this.cashflowData.InTotalAmt, "BoldTotal",0);
+        this.OutflowData = this.pushToList(this.OutflowData, "Total", this.cashflowData.OutTotalAmt, "BoldTotal",0);
 
     }
     Print() {
-        let popupWinindow;
+
         var printContents = '<b>Report Date Range: ' + this.fromDate + ' To ' + this.toDate + '</b>';
         printContents += document.getElementById("printpage").innerHTML;
-        popupWinindow = window.open('', '_blank', 'width=600,height=700,scrollbars=no,menubar=no,toolbar=no,location=no,status=no,titlebar=no');
-        popupWinindow.document.open();
-        let documentContent = "<html><head>";
-        documentContent += '<link rel="stylesheet" type="text/css" media="print" href="../../themes/theme-default/DanphePrintStyle.css"/>';
-        documentContent += '<link rel="stylesheet" type="text/css" href="../../themes/theme-default/DanpheStyle.css"/>';
-        documentContent += '<link rel="stylesheet" type="text/css" href="../../../assets/global/plugins/bootstrap/css/bootstrap.min.css"/>';
-        documentContent += '</head>';
-        documentContent += '<body onload="window.print()">' + printContents + '</body></html>'
-        popupWinindow.document.write(documentContent);
-        popupWinindow.document.close();
+        this.showPrint = false;
+        this.printDetaiils = null;
+        this.changeDetector.detectChanges();
+        this.showPrint = true;
+        this.printDetaiils =  printContents ; //document.getElementById("printpage");
+    
     }
 
     ExportToExcel(tableId) {
@@ -209,15 +235,27 @@ export class CashFlowReportComponent {
     }
     //common function for foramtting
     //it takes source list, name, amount and style string then return by attaching obj to it.
-    pushToList(list, name,  amt,  style) {
+    pushToList(list, name,  amt,  style,code) {
         let Obj = new Object();
         Obj["Name"] = name;
         Obj["Amount"] = amt;
         Obj["Style"] = style;
+        Obj["Code"] = code;
         list.push(Obj);
 
         return list;
     }
+
+    showExport(){
+
+        let exportshow = this.coreservice.Parameters.find(a => a.ParameterName =="AllowOtherExport" && a.ParameterGroupName == "Accounting").ParameterValue;
+            if ( exportshow== "true"){
+              this.showExportbtn =true;     
+            }
+            else{
+                this.showExportbtn = false;
+            }
+          }
 
 
 }

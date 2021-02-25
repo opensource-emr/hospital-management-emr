@@ -1,6 +1,13 @@
 <style>
-  .labBarCodeSticker{margin: 0 auto;}
-  .test-list{max-height: 250px;min-height: 175px;}
+  .labBarCodeSticker {
+    margin: 0 auto;
+  }
+
+  .test-list {
+    max-height: 250px;
+    /*min-height: 175px;*/
+  }
+
   .lbl-rotate {
     height: 20px;
     width: 70px;
@@ -15,9 +22,17 @@
     z-index: 2;
     text-align: center;
   }
+  .btn-print {
+    background: #ff841b;
+    color: #fff;
+  }
+  select:focus{border: none;}
+  .table-sticker-det tr th, .table-sticker-det tr td {
+    font-size: 11px;
+  }
 </style>
 
-<div class="lab-sticker" *ngIf="showlabsticker">
+<div class="wrapper"><div class="lab-sticker" *ngIf="showlabsticker">
   <div [ngClass]="allLabRequisitions && allLabRequisitions.length > 0 ? 'row':''">
     <div [ngClass]="allLabRequisitions && allLabRequisitions.length > 0 ? 'col-md-8':''" *ngIf="allLabRequisitions && allLabRequisitions.length > 0">
       <div class="row">
@@ -30,39 +45,51 @@
           <!--<p><strong>{{allLabRequisitions.length}}</strong></p>-->
         </div>
       </div>
-      <div class="table-responsive scroll-vertical test-list margin-15-tp">        
-        <table class="table table-bordered">
-          <thead>  
+      <div class="table-responsive scroll-vertical test-list margin-15-tp">
+        <table class="table table-bordered table-sticker-det">
+          <thead>
             <tr>
               <th>Test Name</th>
-              <th>Requested On</th>
-              <th>Referred By</th>
+              <th *ngIf="!fromLabRequisition">Requested On</th>
+              <th *ngIf="!fromLabRequisition">Referred By</th>
+              <th *ngIf="fromLabRequisition">Run Number</th>
+              <th *ngIf="fromLabRequisition">BarCodeNumber</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let req of allLabRequisitions;">
               <td>{{req.LabTestName}}</td>
-              <td>{{req.OrderDateTime  | DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'}}</td>
-              <td>{{req.ProviderName}}</td>
+              <td *ngIf="!fromLabRequisition">{{req.OrderDateTime  | DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'}}</td>
+              <td *ngIf="!fromLabRequisition">{{req.ProviderName}}</td>
+              <td *ngIf="fromLabRequisition">{{patientinfos.SampleCodeFormatted}}</td>
+              <td *ngIf="fromLabRequisition">{{patientinfos.BarCodeNumber}}</td>
             </tr>
           </tbody>
         </table>
       </div>
+
     </div>
-    <div [ngClass]="allLabRequisitions && allLabRequisitions.length > 0 ? 'col-md-4':''" class="sticker-holder">
+    <div *ngIf="showLabStickerPrintOption" [ngClass]="allLabRequisitions && allLabRequisitions.length > 0 ? 'col-md-4':''" class="sticker-holder">
       <div id="LabSticker">
-        <div class="labBarCodeSticker" style="width: 180px;position: relative;display:block;font-family:sans-serif;font-size: 11px;padding: 0px;border: 1px dashed;">
-          <div style="width:100%;display:inline-block; font-size:12px;">
-            Hosp. No: <b> {{patientinfos.HospitalNumber}} &nbsp;<span>{{patientinfos.VisitType}}</span></b>
+        <div class="labBarCodeSticker" style="width: 180px;text-align: center;position: relative;display:block;font-family:sans-serif;font-size: 10px;padding: 0px;border: 1px dashed;">
+          <div style="width:100%;display:inline-block; font-size:10px;margin-top: 6px;">
+            Hospital No:  {{patientinfos.HospitalNumber}} &nbsp;<span>{{patientinfos.VisitType}}</span>
             <br />
-            <b style="padding-right: 20px;display: inline-block;">{{patientinfos.PatientName}} {{patientinfos.AgeSex}}</b>
+            <div style="font-size:10px;">
+              <span style="display: inline-block; ">
+                {{patientinfos.PatientName}} &nbsp;{{patientinfos.AgeSex}}
+              </span>
+
+            </div>
           </div>
-          <div style="width:100%;margin-top: -3px;">
-            <danphe-bar-code [barcode-number]="patientinfos.BarCodeNumber" [width]="1.5" [height]="25" [barcode-margin]="3" [text-margin]="0">
+          <div style="width:100%;">
+            <!--<danphe-bar-code [barcode-number]="patientinfos.BarCodeNumber" [width]="1.5" [height]="25" [barcode-margin]="3" [text-margin]="0">
+            </danphe-bar-code>-->
+            <danphe-bar-code [barcode-number]="patientinfos.BarCodeNumber" [width]="1.2" [height]="15" [font-size]="11" [barcode-margin]="1" [text-margin]="0">
             </danphe-bar-code>
           </div>
-          <div class="lbl-rotate">
-            {{patientinfos.SampleCodeFormatted}}
+          <div style="font-size:12px;font-weight: bold; margin-top: 3px;">
+            RN: {{patientinfos.SampleCodeFormatted}}
           </div>
         </div>
       </div>
@@ -76,6 +103,7 @@
               <!--print from server if showServerSidePrinting is true.-->
               <button *ngIf="showServerSidePrinting" [disabled]="loading" (click)="loading = true;PrintLabSticker_Server(numberOfPrint);" class="btn blue" id="printBarCOde" style="padding: 3px 15px;"><i class="fa fa-print"></i>&nbsp;Print</button>
 
+              <button (click)="PrintLabSticker_Client(numberOfPrint);" class="btn btn-print" style="padding: 3px 15px;margin-left: 8px;"><i class="fa fa-print"></i>&nbsp;Br. Print</button>
               <!--else print from browser-->
               <button *ngIf="!showServerSidePrinting" (click)="PrintLabSticker_Client(numberOfPrint);" class="btn blue" id="printBarCOde" style="padding: 3px 15px;"><i class="fa fa-print"></i>&nbsp;Print</button>
             </div>
@@ -84,6 +112,25 @@
       </div>
     </div>
   </div>
-</div>
+
+  <div class="clearfix"></div>
+
+  <div *ngIf="showServerSidePrinting && showLabStickerPrintOption">
+    <div class="padding-15-bt padding-15-tp" *ngIf="showStickerChange && allLabprinterName && allLabprinterName.length > 1">
+      <label style="display: block; padding-left: 7px;"><b>Select Sticker Printer</b></label>
+      <select class="margin-7-hr" [(ngModel)]="printerNameSelected">
+        <option *ngFor="let location of allLabprinterName" [value]="location.Name">{{location.Name}}</option>
+      </select>
+      <div class="padding-15-tp margin-7-hr">
+        <button class="btn btn-small btn-cancel" (click)="ChangePrinterLocationName()">Select</button>
+      </div>
+    </div>
+    <div class="padding-15-bt padding-15-tp padding-7-hr" *ngIf="!showStickerChange && allLabprinterName && allLabprinterName.length > 1">
+      <div><label>Selected Printer: <b>{{printerName}}</b></label></div>
+      <div><a (click)="ShowStickerLocationChange()">Change Sticker Printer</a></div>
+    </div>
+  </div>
+
+</div></div>
 
 

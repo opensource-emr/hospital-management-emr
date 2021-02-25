@@ -1,132 +1,114 @@
-<style>
-  /*this page is used pop up in BillingTransaciton*/
-  /*below css is to maintain the size of text box in both full page and pop up box*/
-  .form-group {
-    max-width: 600px;
-  }
-
-  .colon {
-    float: right;
-    margin-right: 6px;
-    margin-left: 4px;
-  }
-
-  .neg-amt {
-    color: red;
-  }
-</style>
-<div *ngIf="showReceipt">
-  <deposit-receipt [deposit]="deposit"
+<div class="wrapper">
+  <div *ngIf="showReceipt">
+    <deposit-receipt [deposit]="deposit"
                    [showReceipt]="showReceipt"></deposit-receipt>
-</div>
-<div class="row" style="margin-top:20px;">
-  <div *ngIf="!showReceipt" class="form-horizontal form-body">
-
-    <!--Class col-md-12 and col-md-6 are based on condition, while coming from Transaction page, we've to use col-md-12 so that it'll show properly-->
-
-    <div [ngClass]="isAddDepositFrmBillTxn ? 'col-md-12' : 'col-md-6'" style="margin-right: 24px;">
-      <div class="col-md-12">
-        <div class="form-group" *ngIf="!isAddDepositFrmBillTxn">
-          <label class="control-label col-md-4">Deposit Type<b style="float:right;">:</b></label>
-          <div class="col-md-8">
-            <select [(ngModel)]="deposit.DepositType" class="form-control" placeholder="Deposit Type" name="deposittype" type="text">
-              <option value="Deposit">Deposit</option>
-              <option *ngIf="deposit.DepositBalance > 0" value="ReturnDeposit">Return Deposit</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="control-label col-md-4">Amount<b style="float:right;">:</b></label>
-          <div class="col-md-8">
-            <input [(ngModel)]="deposit.Amount" class="form-control" placeholder="Amount" name="amount" type="number" value="">
-            <span class="control-label col-md-12" style="font-weight:bold" *ngIf="deposit.Amount > 0">
-              ( In words: {{deposit.Amount | NumberInWords}} only )
-            </span>
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="control-label col-md-4">Remarks<b style="float:right;">:</b></label>
-          <div class="col-md-8">
-            <input [(ngModel)]="deposit.Remarks" class="form-control" placeholder="Remarks" name="remarks" type="text">
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="control-label col-md-4">Care of Person<b style="float:right;">:</b></label>
-          <div class="col-md-8">
-            <input [(ngModel)]="deposit.CareOf" class="form-control" placeholder="Care of Person Name" name="Care taker name" type="text">
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="control-label col-md-4">Payment Mode<b style="float:right;">:</b></label>
-          <div class="col-md-8">
-            <select [(ngModel)]="deposit.PaymentMode" style="width:100px" name="pay_mode" id="pay_mode">
-              <option value="cash">Cash</option>
-              <option value="cheque">Cheque</option>
-              <option *ngIf="deposit.DepositType=='Deposit'" value="card">Smart Card</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-group" *ngIf="deposit.PaymentMode!='cash'">
-          <label class="control-label col-md-2">Payment Details:<b style="float:right;">:</b></label>
-          <div class="col-md-4">
-            <textarea [(ngModel)]="deposit.PaymentDetails"></textarea>
-          </div>
-        </div>
-        <div class="form-group">
-          <div class="col-md-6" *ngIf="!isAddDepositFrmBillTxn">
-            <input type="button" class="btn blue fa" style="float:right" (click)="SubmitBillingDeposit(true)" [disabled]="loading"
-                   value="{{deposit.DepositType == 'Deposit' ? 'Add Deposit' : 'Return Deposit' }} and Print" />
-          </div>
-          <div class="col-md-6">
-            <input type="button" class="btn blue fa" [style.float]="isAddDepositFrmBillTxn ? 'right' : left" (click)="SubmitBillingDeposit(false)" [disabled]="loading"
-                   value="{{deposit.DepositType == 'Deposit' ? 'Add Deposit' : 'Return Deposit' }}" />
-          </div>
-          <div class="col-md-6" *ngIf="isAddDepositFrmBillTxn">
-            <input type="button" class="btn red fa" (click)="EmitDeposit(false)" [disabled]="loading"
-                   value="Cancel" />
-          </div>
-        </div>
-        <div class="form-group">
-          <h3 style="color:blue">Deposit Balance: <b style="color:red">{{currencyUnit}} {{deposit.DepositBalance}}</b></h3>
-        </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12" *ngIf="!showReceipt">
+      <div class="caption custom-caption">
+        <h3><span><i class="fa fa-file-text-o"></i>Billing Deposit</span></h3>
       </div>
     </div>
-    <div class="col-md-5 col-xs-12" *ngIf="!isAddDepositFrmBillTxn">
-      <div class="col-md-12">
-        <div style="border: 1px solid blue;padding:5px;border-radius: 15px !important;" *ngIf="patBillHistory.IsLoaded">
-          <div style="padding:0px 10px 0px 10px;margin-bottom: 2px;border-bottom: 1px solid green;text-align:center">
-            <h4><b>Billing History</b></h4>
+    <div *ngIf="!showReceipt" class="form-horizontal form-body hm-form">       
+      <!--Class col-md-12 and col-md-6 are based on condition, while coming from Transaction page, we've to use col-md-12 so that it'll show properly-->
+      
+      <div [ngClass]="isAddDepositFrmBillTxn ? 'col-md-12' : 'col-md-6'">
+        <div class="page-bar">
+          <div class="col-md-12 p-0">
+            <div class="form-group" *ngIf="!isAddDepositFrmBillTxn">
+              <label class="control-label col-md-4">Deposit Type<b>:</b></label>
+              <div class="col-md-8">
+                <select [(ngModel)]="deposit.DepositType" class="form-control" placeholder="Deposit Type" name="deposittype" type="text">
+                  <option value="Deposit">Deposit</option>
+                  <option *ngIf="deposit.DepositBalance > 0" value="ReturnDeposit">Return Deposit</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-md-4">Amount<b>:</b></label>
+              <div class="col-md-8">
+                <input [(ngModel)]="deposit.Amount" class="form-control" placeholder="Amount" name="amount" type="number" value=""
+                   (wheel)="coreService.PreventNumberChangeOnScroll($event)">
+                <span class="control-label col-md-12" style="font-weight:bold" *ngIf="deposit.Amount > 0"> ( In words: {{deposit.Amount | NumberInWords}} only ) </span> </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-md-4">Remarks<b>:</b></label>
+              <div class="col-md-8">
+                <input [(ngModel)]="deposit.Remarks" class="form-control" placeholder="Remarks" name="remarks" type="text">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-md-4">Care of Person<b>:</b></label>
+              <div class="col-md-8">
+                <input [(ngModel)]="deposit.CareOf" class="form-control" placeholder="Care of Person Name" name="Care taker name" type="text">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-md-4">Payment Mode<b>:</b></label>
+              <div class="col-md-8">
+                <select [(ngModel)]="deposit.PaymentMode" style="width:100px" name="pay_mode" id="pay_mode">
+                  <option value="cash">Cash</option>
+                  <option value="cheque">Cheque</option>
+                  <option *ngIf="deposit.DepositType=='Deposit'" value="card">Smart Card</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group" *ngIf="deposit.PaymentMode!='cash'">
+              <label class="control-label col-md-4">Payment Details:<b>:</b></label>
+              <div class="col-md-4">
+                <textarea [(ngModel)]="deposit.PaymentDetails"></textarea>
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="col-md-4"></div>
+              <div class="col-md-8">
+                <input type="button" class="btn blue fa" (click)="SubmitBillingDeposit(true)" [disabled]="loading" *ngIf="!isAddDepositFrmBillTxn"
+                   value="{{deposit.DepositType == 'Deposit' ? 'Add Deposit' : 'Return Deposit' }} and Print" />
+                &nbsp;
+                <input type="button" class="btn blue fa" [style.float]="isAddDepositFrmBillTxn ? 'none' : left" (click)="SubmitBillingDeposit(false)" [disabled]="loading"
+                   value="{{deposit.DepositType == 'Deposit' ? 'Add Deposit' : 'Return Deposit' }}" />
+                &nbsp; 
+                
+                <!-- Sud 3-Apr-2020: cancel button not needed since we have close button on popup mode --> 
+                <!-- <input *ngIf="isAddDepositFrmBillTxn" type="button" class="text-muted" (click)="EmitDeposit(false)" [disabled]="loading"
+                   value="Cancel" /> --> 
+              </div>
+            </div>
+            <div class="deposit-title">
+              <h3 class="header inner-header" align="center"><i class="fa fa-money"></i>Deposit Balance: <b style="color:#555">{{currencyUnit}} {{deposit.DepositBalance}}</b></h3>
+            </div>
           </div>
-          <table>
-            <tr>
-              <td>Credit <b class="colon">:</b></td>
-              <td>{{currencyUnit}} {{patBillHistory.CreditAmount}}</td>
-            </tr>
-            <tr>
-              <td>Provisional Amount <b class="colon">:</b></td>
-              <td style="text-decoration:underline;">{{currencyUnit}} {{patBillHistory.ProvisionalAmt}}</td>
-            </tr>
-            <tr>
-              <td>Total Due<b class="colon">:</b></td>
-              <td>{{currencyUnit}} {{patBillHistory.TotalDue}}</td>
-            </tr>
-            <tr>
-              <td>Deposit Balance <b class="colon">:</b> </td>
-              <td>{{currencyUnit}} {{patBillHistory.DepositBalance}}</td>
-            </tr>
-            <tr>
-              <td>Balance Amount <b class="colon">:</b></td>
-              <td style="font-weight: bold;color: blue;font-size: 17px;">
-                <span [ngClass]="{'neg-amt': patBillHistory.BalanceAmount < 0}">
-                  {{currencyUnit}} {{patBillHistory.BalanceAmount}}
-                </span>
-              </td>
-            </tr>
-          </table>
         </div>
+      </div>
+      <div class="col-md-4 col-xs-12" *ngIf="!isAddDepositFrmBillTxn">        
+          <div class="page-bar" *ngIf="patBillHistory.IsLoaded">
+            <div class="text-left">
+              <h4 class="header-sm inner-header-sm"><b>Billing History</b></h4>
+            </div>
+            <table class="summary-tbl">
+              <tr>
+                <td><i class="fa fa-arrow-circle-o-right "></i>Credit <b class="colon">:</b></td>
+                <td>{{currencyUnit}} {{patBillHistory.CreditAmount}}</td>
+              </tr>
+              <tr>
+                <td><i class="fa fa-arrow-circle-o-right "></i>Provisional Amount <b class="colon">:</b></td>
+                <td>{{currencyUnit}} {{patBillHistory.ProvisionalAmt}}</td>
+              </tr>
+              <tr>
+                <td><i class="fa fa-arrow-circle-o-right "></i>Total Due<b class="colon">:</b></td>
+                <td>{{currencyUnit}} {{patBillHistory.TotalDue}}</td>
+              </tr>
+              <tr>
+                <td><i class="fa fa-arrow-circle-o-right "></i>Deposit Balance <b class="colon">:</b></td>
+                <td>{{currencyUnit}} {{patBillHistory.DepositBalance}}</td>
+              </tr>
+              <tr>
+                <td><i class="fa fa-arrow-circle-o-right "></i>Balance Amount <b class="colon">:</b></td>
+                <td class="text-primary"><span [ngClass]="{'neg-amt': patBillHistory.BalanceAmount < 0}"> {{currencyUnit}} {{patBillHistory.BalanceAmount}} </span></td>
+              </tr>
+            </table>
+          </div>       
       </div>
     </div>
   </div>
-
- 
 </div>

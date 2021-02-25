@@ -1,4 +1,5 @@
-﻿using SendGrid;
+﻿using DanpheEMR.ServerModel.RadiologyModels;
+using SendGrid;
 using SendGrid.Helpers.Mail;
 using System;
 using System.Collections.Generic;
@@ -9,15 +10,14 @@ using System.Threading.Tasks;
 namespace DanpheEMR.Services
 {
     public class EmailService : IEmailService
-    {
-        protected const String API_KEY = "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";
-
-        public async Task SendEmail(string senderAddress, List<string> emailList, string nameOfSender, string subject, 
-            string plainText, string htmlContent)
+    { 
+       
+        public async Task<string> SendEmail(string senderAddress, List<string> emailList, string nameOfSender, string subject, 
+            string plainText, string htmlContent, string apiKey)
         {
             List<EmailAddress> toSenderList = new List<EmailAddress>();
 
-            var client = new SendGridClient(API_KEY);
+            var client = new SendGridClient(apiKey);
             var from = new EmailAddress(senderAddress, nameOfSender);
 
             foreach (var email in emailList)
@@ -28,15 +28,24 @@ namespace DanpheEMR.Services
 
             var msg = MailHelper.CreateSingleEmailToMultipleRecipients(from, toSenderList, subject, plainText, htmlContent);
             var response = await client.SendEmailAsync(msg);
+            if (response.StatusCode == System.Net.HttpStatusCode.Accepted)
+            {
+                return "OK";
+            }
+            else
+            {
+                return "Error";
+            }
         }
 
 
-        public async Task SendEmail(string senderAddress, List<string> emailList, string nameOfSender, 
-            string subject, string plainText, string htmlContent, string base64string, string fileName)
+        public async Task<string> SendEmail(string senderAddress, List<string> emailList, string nameOfSender, 
+            string subject, string plainText, string htmlContent, string pdfBase64string, string fileName, 
+            List<ImageAttachmentModel> imageAttachments, string apiKey)
         {
             List<EmailAddress> toSenderList = new List<EmailAddress>();
 
-            var client = new SendGridClient(API_KEY);
+            var client = new SendGridClient(apiKey);
             var from = new EmailAddress(senderAddress, nameOfSender);
 
             foreach (var email in emailList)
@@ -46,12 +55,50 @@ namespace DanpheEMR.Services
             }
 
             var msg = MailHelper.CreateSingleEmailToMultipleRecipients(from, toSenderList, subject, plainText, htmlContent);
-            if(fileName != null && base64string != null)
+
+            var attachmentList = new List<Attachment>();
+            //Check for Image Attachments
+            if (imageAttachments != null && imageAttachments.Count > 0)
             {
-                msg.AddAttachment(fileName, base64string, ".pdf");
+                
+                foreach (var imgAttach in imageAttachments)
+                {
+                    Attachment singleAttachment = new Attachment();
+                    singleAttachment.Content = imgAttach.ImageBase64;
+                    singleAttachment.ContentId = imgAttach.ImageName;
+                    singleAttachment.Filename = imgAttach.ImageName + ".jpeg";
+                    singleAttachment.Type = "image/jpeg";
+                    singleAttachment.Disposition = "attachment";
+                    attachmentList.Add(singleAttachment);
+                }
+               
             }
 
+            if (fileName != null && pdfBase64string != null)
+            {
+                Attachment singleAttachment = new Attachment();
+                singleAttachment.Content = pdfBase64string;
+                singleAttachment.ContentId = fileName;
+                singleAttachment.Filename = fileName + ".pdf";
+                singleAttachment.Type = "application/pdf";
+                singleAttachment.Disposition = "attachment";
+                attachmentList.Add(singleAttachment);
+            }
+
+
+            if (attachmentList != null && attachmentList.Count > 0)
+            {
+                msg.AddAttachments(attachmentList.AsEnumerable());
+            }    
+
             var response = await client.SendEmailAsync(msg);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Accepted)            {
+                return "OK";
+            } else
+            {
+              return "Error";
+            }
         }
     }
 }

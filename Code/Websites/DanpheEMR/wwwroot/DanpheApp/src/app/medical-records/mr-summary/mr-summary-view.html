@@ -1,0 +1,282 @@
+<div class="popup-static portlet box portlet-fullscreen">
+  <div class="portlet-body form">
+    <!--Model Box Body Start-->
+    <div class="col-md-12">
+      <div class="modelbox-div">
+
+        <div class="modelbox-header">
+          <h4 class="margin-0-vr text-center"><strong>Medical Record of {{patientDetail.Name}}</strong></h4>
+        </div>
+
+        <div id="patMrRecordDetail" class="modelbox-body">
+          <div class="flex-container margin-8-bt">
+            <div style="width: 100%;" class="no-print">
+              <button *ngIf="allDataLoaded" [disabled]="loading" type="button" class="btn btn-primary btn-sm margin-7-lft pull-right" (click)="loading=true;EditRecord()">Edit Record</button>
+            </div>
+          </div>
+          <div class="mr-view-holder">
+            <div style="width: 100%;">
+              <div style="width: 100%;padding: 5px 15px;border: 1px solid #808080">
+                <div class="flex-container">
+                  <div class="flex-1">
+                    <p class="patient-hdr-label">
+                      <b>Name</b>&nbsp;:&nbsp;{{patientDetail.Name}}
+                      <!--&nbsp;&nbsp;-->
+                    </p>
+                  </div>
+                  <div class="flex-1">
+                    <p class="patient-hdr-label">
+                      <b>InPatient ID</b>&nbsp;:
+                      {{patientDetail.VisitCode}}
+                    </p>
+                  </div>
+                  <div class="flex-1">
+                    <p class="patient-hdr-label">
+                      <b>
+                        Ward
+                      </b>&nbsp;:&nbsp;{{patientDetail.BedInformation.Ward}}
+                    </p>
+                  </div>
+                </div>
+                <div class="flex-container">
+                  <div class="flex-1">
+                    <p class="patient-hdr-label">
+                      <b>Hospital No.</b>&nbsp;:
+                      {{patientDetail.PatientCode}}
+                    </p>
+                  </div>
+                  <div class="flex-1">
+                    <p class="patient-hdr-label">
+                      <b>Department</b>&nbsp;:
+                      {{patientDetail.Department}}
+                    </p>
+                  </div>
+                  <div class="flex-1">
+                    <p class="patient-hdr-label">
+                      <b>Room Type</b>&nbsp;: {{patientDetail.BedInformation.BedFeature}}
+                    </p>
+                  </div>
+                </div>
+                <div class="flex-container">
+                  <div class="flex-1">
+                    <p class="patient-hdr-label">
+                      <b>File No.</b>&nbsp;:
+                      {{RecordSummary.FileNumber}}
+                    </p>
+                  </div>
+                  <div class="flex-1">
+                    <p class="patient-hdr-label">
+                      <b>Doctor Name</b>&nbsp;:
+                      {{patientDetail.AdmittingDoctorName}}
+                    </p>
+                  </div>
+                  <div class="flex-1">
+                    <p class="patient-hdr-label">
+                      <b>Bed No.</b>&nbsp;:
+                      {{patientDetail.BedInformation.BedNumber}}
+                    </p>
+                  </div>
+                </div>
+                <div class="flex-container">
+                  <div class="flex-1">
+                    <p class="patient-hdr-label">
+                      <b>Age/Sex</b>&nbsp;:
+                      {{patientDetail.DateOfBirth | DanpheDateTime:'age' }}/{{patientDetail.Gender}}
+                    </p>
+                  </div>
+                  <div class="flex-1">
+                    <p class="patient-hdr-label">
+                      <b>IsDischarge</b>&nbsp;:
+                      Yes
+                    </p>
+                  </div>
+                  <div class="flex-1">
+
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="!allDataLoaded">
+               <div style="width: 100%;padding: 5px 15px;">
+                  <div class="flex-container mr-loader-holder">
+                    <div class="flex-1">
+                      <div class="flex-container justify-center">
+                        <img class="img-responsive mr-loader" src="../../../../../themes/theme-default/images/loading-child.gif" alt="Alternate Text" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+            </div>
+            <div *ngIf="allDataLoaded" class="medical-record-data" style="width: 100%;">
+              <div style="width: 100%;padding: 5px 15px;">
+                <div class="flex-container">
+                  <div class="flex-1">
+                    <div class="flex-container">
+                      <div class="flex-1"><p><b>Inpatient Date</b></p></div>
+                      <div class="flex-2"><p>{{patientDetail.AdmittedDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</p></div>
+                    </div>
+                    <div class="flex-container">
+                      <div class="flex-1"><p><b>Discharged Date</b></p></div>
+                      <div class="flex-2"><p>{{patientDetail.DischargedDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</p></div>
+                    </div>
+                    <div class="flex-container">
+                      <div class="flex-1"><p><b>Discharge Type</b></p></div>
+                      <div class="flex-2"><p>{{allTypeName.DischargeTypeName}}</p></div>
+                    </div>
+                    <div *ngIf="allTypeName.DischargeConditionName" class="flex-container">
+                      <div class="flex-1"><p><b>Discharge Condition</b></p></div>
+                      <div class="flex-2"><p>{{allTypeName.DischargeConditionName}}</p></div>
+                    </div>
+                    <div *ngIf="allTypeName.DeliveryTypeName" class="flex-container">
+                      <div class="flex-1"><p><b>Delivery Type</b></p></div>
+                      <div class="flex-2"><p>{{allTypeName.DeliveryTypeName}}</p></div>
+                    </div>
+                    <div *ngIf="allTypeName.BabyBirthConditionName" class="flex-container">
+                      <div class="flex-1"><p><b>Condition at Birth</b></p></div>
+                      <div class="flex-2"><p>{{allTypeName.BabyBirthConditionName}}</p></div>
+                    </div>
+                    <div *ngIf="allTypeName.DeathPeriodTypeName && RecordSummary.ShowDeathCertDetail" class="flex-container">
+                      <div class="flex-1"><p><b>Death Period</b></p></div>
+                      <div class="flex-2"><p>{{allTypeName.DeathPeriodTypeName}}</p></div>
+                    </div>
+                    <div *ngIf="allTypeName.GravitaName && RecordSummary.ShowBirthCertDetail" class="flex-container">
+                      <div class="flex-1"><p><b>Gravita</b></p></div>
+                      <div class="flex-2"><p>{{allTypeName.GravitaName}}</p></div>
+                    </div>
+                    <div *ngIf="RecordSummary.GestationalWeek && RecordSummary.ShowBirthCertDetail" class="flex-container">
+                      <div class="flex-1"><p><b>Gestational Week</b></p></div>
+                      <div class="flex-2"><p>{{RecordSummary.GestationalWeek}}</p></div>
+                    </div>
+                  </div>
+                  <div class="flex-1">
+                    <ng-container *ngIf="allTypeName.OperationTypeName">
+                      <div class="flex-container">
+                        <div class="flex-1"><p><b>Operation Type</b></p></div>
+                        <div class="flex-2"><p>{{allTypeName.OperationTypeName}}</p></div>
+                      </div>
+                      <div class="flex-container">
+                        <div class="flex-1"><p><b>Operation Doctor</b></p></div>
+                        <div class="flex-2"><p>{{allTypeName.OperatedByDoctorName}}</p></div>
+                      </div>
+                      <div class="flex-container">
+                        <div class="flex-1"><p><b>Operation Date</b></p></div>
+                        <div class="flex-2"><p>{{RecordSummary.OperationDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</p></div>
+                      </div>
+                    </ng-container>
+                  </div>
+                </div>
+
+                <div *ngIf="RecordSummary.ShowBirthCertDetail" class="flex-container">
+                  <div *ngFor="let brth of RecordSummary.BabyBirthDetails" class="flex-1">
+                    <h2 class="mr-cert-head"><b>Birth Detail</b></h2>
+                    <div class="flex-container">
+                      <div class="flex-1"><p><b>Certificate No.</b></p></div>
+                      <div class="flex-2"><p>{{brth.CertificateNumber}}</p></div>
+                    </div>
+                    <div class="flex-container">
+                      <div class="flex-1"><p><b>Sex</b></p></div>
+                      <div class="flex-2"><p>{{brth.Sex}}</p></div>
+                    </div>
+                    <div class="flex-container">
+                      <div class="flex-1"><p><b>Weight</b></p></div>
+                      <div class="flex-2"><p>{{brth.WeightOfBaby}}</p></div>
+                    </div>
+                    <div class="flex-container">
+                      <div class="flex-1"><p><b>No. Of Babies</b></p></div>
+                      <div class="flex-2"><p>{{brth.NumberOfBabies}}</p></div>
+                    </div>
+                    <div class="flex-container">
+                      <div class="flex-1"><p><b>Father Name</b></p></div>
+                      <div class="flex-2"><p>{{brth.FathersName}}</p></div>
+                    </div>
+                    <div class="flex-container">
+                      <div class="flex-1"><p><b>Birth Date</b></p></div>
+                      <div class="flex-2"><p>{{brth.BirthDate}}</p></div>
+                    </div>
+                    <div class="flex-container">
+                      <div class="flex-1"><p><b>Birth Time</b></p></div>
+                      <div class="flex-2"><p>{{brth.BirthTime}}</p></div>
+                    </div>
+                  </div>
+                  <div *ngIf="RecordSummary.BabyBirthDetails && RecordSummary.BabyBirthDetails.length == 1" class="flex-1">
+
+                  </div>
+                </div>
+
+
+                <div *ngIf="RecordSummary.ShowDeathCertDetail" class="flex-container">
+                  <div class="flex-1">
+                    <h2 class="mr-cert-head"><b>Death Detail</b></h2>
+                    <div class="flex-container">
+                      <div class="flex-1"><p><b>Certificate No.</b></p></div>
+                      <div class="flex-2"><p>{{RecordSummary.DeathDetail.CertificateNumber}}</p></div>
+                    </div>
+                    <div class="flex-container">
+                      <div class="flex-1"><p><b>Death Date</b></p></div>
+                      <div class="flex-2"><p>{{RecordSummary.DeathDetail.DeathDate}}</p></div>
+                    </div>
+                    <div class="flex-container">
+                      <div class="flex-1"><p><b>Operation Date</b></p></div>
+                      <div class="flex-2"><p>{{RecordSummary.DeathDetail.DeathTime}}</p></div>
+                    </div>
+                  </div>
+                  <div class="flex-1">
+
+                  </div>
+                </div>
+
+
+                <div *ngIf="RecordSummary.AllTestList && RecordSummary.AllTestList.length > 0" class="flex-container margin-15-tp">
+                  <div class="flex-1">
+                    <p><b>Investigations</b></p>
+                  </div>
+                  <div class="flex-5">
+                    <p>
+                      <span *ngFor="let tst of RecordSummary.AllTestList; let i=index;">
+                        {{tst.TestName}} <span *ngIf="i+1 < RecordSummary.AllTestList.length">,</span>
+                      </span>
+                    </p>
+                  </div>
+                </div>
+                <div *ngIf="RecordSummary.ICDCodeList && RecordSummary.ICDCodeList.length > 0" class="flex-container margin-15-tp">
+                  <div class="flex-1">
+                    <p><b>ICD10</b></p>
+                  </div>
+                  <div class="flex-5">
+                    <p><span *ngFor="let icd of RecordSummary.ICDCodeList; let j=index;">
+                      ({{icd.ICD10Code}})&nbsp;{{icd.ICD10Description}} <span *ngIf="j+1 < RecordSummary.ICDCodeList.length">,</span>
+                    </span></p>
+                  </div>
+                </div>
+                <div *ngIf="RecordSummary.Remarks" class="flex-container margin-15-tp">
+                  <div class="flex-1">
+                    <p><b>Remarks</b></p>
+                  </div>
+                  <div class="flex-5">
+                    <p><span>{{RecordSummary.Remarks}}</span></p>
+                  </div>
+                </div>
+
+
+              </div>
+            </div>
+          </div>  
+        </div>
+
+        <div class="modelbox-footer">
+          <div class="all-buttons text-right">
+            <button *ngIf="allDataLoaded" [disabled]="loading" type="button" class="btn btn-primary btn-sm margin-7-hr" (click)="loading=true;PrintRecord()">Print Record</button>
+            <button *ngIf="allDataLoaded" [disabled]="loading" type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="CloseMRViewPopUp()">Close</button>
+          </div>
+        </div>
+
+        <div class="close-modelbox">
+          <button class="btn btn-danger" (click)="CloseMRViewPopUp()">X</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+

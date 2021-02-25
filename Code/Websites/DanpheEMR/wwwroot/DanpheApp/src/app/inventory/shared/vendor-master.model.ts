@@ -11,4 +11,5 @@ export class VendorMaster {
   public DefaultCurrencyId: number = 0;
   public CreditPeriod: number = 0;
   public IsTDSApplicable: boolean = false;
+  public DefaultItem: Array<number> = new Array<number>();
 }

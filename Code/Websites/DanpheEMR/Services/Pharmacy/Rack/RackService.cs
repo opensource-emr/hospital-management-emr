@@ -34,6 +34,8 @@ namespace DanpheEMR.Services.Pharmacy.Rack
                 ParentRackName = (from rack in db.PHRMRack
                                   where rack.RackId == model.ParentId
                                   select rack.Name).FirstOrDefault(),
+                ParentId = model.ParentId,
+                LocationId = model.LocationId,
                 Description = model.Description,
                 CreatedBy = model.CreatedBy,
                 CreatedOn = model.CreatedOn,
@@ -55,6 +57,8 @@ namespace DanpheEMR.Services.Pharmacy.Rack
             {
                 RackId = query.RackId,
                 Name = query.Name,
+                ParentId = query.ParentId,
+                LocationId = query.LocationId,
                 ParentRackName = (from rack in db.PHRMRack
                                   where rack.RackId == query.ParentId
                                   select rack.Name).FirstOrDefault(),
@@ -76,6 +80,7 @@ namespace DanpheEMR.Services.Pharmacy.Rack
                              RackId = rack.RackId,
                              ParentId=rack.ParentId,
                              ParentRackName = parentRack.Name,
+                             LocationId = rack.LocationId,
                              Name = rack.Name,
                              Description = rack.Description,
                              CreatedBy = rack.CreatedBy,
@@ -91,11 +96,13 @@ namespace DanpheEMR.Services.Pharmacy.Rack
             {
                 RackId = model.RackId,
                 Name = model.Name,
+                ParentId = model.ParentId,
+                LocationId = model.LocationId,
                 Description = model.Description,
-                CreatedBy = model.CreatedBy,
-                CreatedOn = model.CreatedOn
             };
             db.Entry(result).State = System.Data.Entity.EntityState.Modified;
+            db.Entry(result).Property(rack => rack.CreatedBy).IsModified = false;
+            db.Entry(result).Property(rack => rack.CreatedOn).IsModified = false;
             db.SaveChanges();
             return model;
         }
@@ -104,12 +111,13 @@ namespace DanpheEMR.Services.Pharmacy.Rack
         public List<RackViewModel> GetParentRack()
         {
             var list = (from rack in db.PHRMRack
-                        where rack.ParentId == 0
+                        where rack.ParentId == null
                         select new RackViewModel {
                              ParentId = rack.ParentId,
                              RackId = rack.RackId,
                              Description = rack.Description,
                              Name = rack.Name,
+                             LocationId = rack.LocationId,
                              CreatedBy = rack.CreatedBy,
                              CreatedOn = rack.CreatedOn
                         }).ToList();
@@ -118,10 +126,19 @@ namespace DanpheEMR.Services.Pharmacy.Rack
 
         public List<PHRMItemMasterModel> GetDrugList(int rackId)
         {
-            var list = (from drugItems in db.PHRMItemMaster
-                        where drugItems.Rack == rackId
-                        select drugItems ).ToList();
-            return list;
+            var LocationId = db.PHRMRack.Where(r => r.RackId == rackId).Select(r => r.LocationId).FirstOrDefault();
+            switch (LocationId)
+            {
+                case 1: return db.PHRMItemMaster.Where(i => i.Rack == rackId).ToList();
+                case 2: return db.PHRMItemMaster.Where(i => i.StoreRackId == rackId).ToList();
+                default: return null;
+            }
+        }
+
+        public string GetStoreRackNameByItemId(int itemId)
+        {
+            var rackId = db.PHRMItemMaster.Where(item => item.ItemId == itemId).Select(item => item.StoreRackId).FirstOrDefault();
+            return db.PHRMRack.Where(rack => rack.RackId == rackId).Select(rack => rack.Name).FirstOrDefault() ?? "N/A";
         }
     }
 }

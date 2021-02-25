@@ -11,13 +11,17 @@ import { CoreService } from "../../../core/shared/core.service";
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
 import { CoreBLService } from "../../../core/shared/core.bl.service"
 import { DanpheCache, MasterType } from '../../../shared/danphe-cache-service-utility/cache-services';
+import { SettingsBLService } from '../../../settings-new/shared/settings.bl.service';
+import { User } from '../../../security/shared/user.model';
+import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from '../../../shared/danphe-grid/NepaliColGridSettingsModel';
+import { NepaliCalendarService } from '../../../shared/calendar/np/nepali-calendar.service';
 @Component({
   templateUrl: "./user-collection-report.html"
 })
 export class RPT_BIL_UserCollectionReportComponent {
 
-  public fromDate: Date = null;
-  public toDate: Date = null;
+  public fromDate: string = null;
+  public toDate: string = null;
   public viewMode: string = "Show Summary View";
   public IsSummaryViewMode: boolean = false;
   public CounterId: number = 0;
@@ -25,6 +29,7 @@ export class RPT_BIL_UserCollectionReportComponent {
   public currentDate: string = null;
   public summaryGrandTotal: any = [];
   DailySalesReportColumns: Array<any> = null;
+  public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
   DailySalesReportData: Array<any> = new Array<RPT_BIL_UserCollectionReportModel>();
   dailySalesReportSummaryData: Array<any> = new Array<RPT_BIL_UserCollectionReportModel>();
   dynamicColumns: Array<string> = new Array<string>();
@@ -69,15 +74,17 @@ export class RPT_BIL_UserCollectionReportComponent {
   public gridExportOptions: any;
   constructor(
     _dlService: DLService,
+    public settingsBLService: SettingsBLService,
     public msgBoxServ: MessageboxService,
     public reportServ: ReportingService,
     public coreService: CoreService,
-    public coreBlService: CoreBLService) {
+    public coreBlService: CoreBLService, public nepCalendarService: NepaliCalendarService) {
     this.dlService = _dlService;
     this.currentdailysales.fromDate = this.currentDate = moment().format('YYYY-MM-DD');
     this.currentdailysales.toDate = moment().format('YYYY-MM-DD');
     this.LoadExportOptions();
     this.LoadCounter();
+    this.LoadUser();  //pratik:12Dec'19
   }
 
 
@@ -107,6 +114,7 @@ export class RPT_BIL_UserCollectionReportComponent {
       let data = JSON.parse(res.Results.JsonData);
       if (data.SalesData.length > 0) {
         this.DailySalesReportColumns = this.reportServ.reportGridCols.DailySalesReport;
+        this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('BillingDate', false));
         this.viewMode = "Show Summary";
         this.IsSummaryViewMode = false;
         this.DailySalesReportData = data.SalesData;
@@ -123,6 +131,7 @@ export class RPT_BIL_UserCollectionReportComponent {
         //this.summary.tot_TotalSales = CommonFunctions.parseAmount(this.summary.tot_NetTotal - (this.summary.dep_Received - this.summary.dep_Settled) + this.summary.tot_Credit);
         //sud:31Jan'18 -- Credit Received isn't sales, so subtracting it..
         //this.summary.tot_TotalSales = CommonFunctions.parseAmount(this.summary.tot_TotalSales - this.summary.tot_CreditReceived);
+
       }
       else {
         this.msgBoxServ.showMessage("notice-message", ['No Data is Available Between Selected Parameters...']);
@@ -268,7 +277,7 @@ export class RPT_BIL_UserCollectionReportComponent {
 
         result1.sort((a, b) => a.Date < b.Date ? -1 : a.Date > b.name ? 1 : 0);
 
-        console.log(result1);
+        //console.log(result1);
 
         //add settlement discount amount etc in this function.
         if (result1 && result1.length > 0 && settlementData && settlementData.length > 0) {
@@ -371,11 +380,29 @@ export class RPT_BIL_UserCollectionReportComponent {
 
   }
 
+  public datePreference: string = "np";
 
-  Print() {
+
+  Print(printId: string) {
+
+    this.datePreference = this.coreService.DatePreference;
+    let fromDate_string: string = "";
+    let toDate_string: string = "";
+    let calendarType: string = "BS";
+    if (this.datePreference == "en") {
+      fromDate_string = moment(this.fromDate).format("YYYY-MM-DD");
+      toDate_string = moment(this.toDate).format("YYYY-MM-DD");
+      calendarType = "(AD)";
+    }
+    else {
+      fromDate_string = this.nepCalendarService.ConvertEngToNepaliFormatted(this.fromDate, "YYYY-MM-DD");
+      toDate_string = this.nepCalendarService.ConvertEngToNepaliFormatted(this.fromDate, "YYYY-MM-DD");
+      calendarType = "(BS)";
+    }
+
     let popupWinindow;
-    var printContents = '<b>Report Date Range: ' + this.fromDate + ' To ' + this.toDate + '</b>';
-    printContents += document.getElementById("printPage").innerHTML;
+    var printContents = '<b>Date Range' + calendarType + ':  From:' + fromDate_string + '  To:' + toDate_string + '</b>';
+    printContents += document.getElementById(printId).innerHTML;
     popupWinindow = window.open('', '_blank', 'width=600,height=700,scrollbars=no,menubar=no,toolbar=no,location=no,status=no,titlebar=no');
     popupWinindow.document.open();
     let documentContent = "<html><head>";
@@ -400,4 +427,38 @@ export class RPT_BIL_UserCollectionReportComponent {
     }
   }
 
+  public userList: Array<User> = new Array<User>();
+
+  LoadUser() {
+
+    this.settingsBLService.GetUserList()
+      .subscribe(res => {
+        if (res.Status == "OK") {
+          this.userList = res.Results;
+          CommonFunctions.SortArrayOfObjects(this.userList, "EmployeeName");
+        }
+        else {
+          alert("Failed ! " + res.ErrorMessage);
+        }
+
+      });
+  }
+
+  UserListFormatter(data: any): string {
+    return data["EmployeeName"];
+  }
+
+  //sud:6June'20--reusable From-ToDate
+  OnFromToDateChange($event) {
+    this.fromDate = $event ? $event.fromDate : this.fromDate;
+    this.toDate = $event ? $event.toDate : this.toDate;
+
+    this.currentdailysales.fromDate = this.fromDate;
+    this.currentdailysales.toDate = this.toDate;
+  }
+
+  public IsLocalDate = true;
+  ChangeDateFormate() {
+    this.IsLocalDate = !this.IsLocalDate;
+  }
 }

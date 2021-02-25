@@ -22,7 +22,8 @@ export class RPT_BIL_DoctorwiseIncomeSummaryComponent {
     public reportData: Array<any> = new Array<any>();
     public doctorList: any;
     public providerId: number = 0;
-  public currentDrIncome: RPT_BIL_DoctorwiseIncomeSummaryModel = new RPT_BIL_DoctorwiseIncomeSummaryModel();
+    public selDoctor: any = "";
+    public currentDrIncome: RPT_BIL_DoctorwiseIncomeSummaryModel = new RPT_BIL_DoctorwiseIncomeSummaryModel();
     public summary: any = {
         tot_SubTotal: 0, tot_Discount: 0, tot_Refund: 0, tot_Provisonal: 0,
         tot_Cancel: 0, tot_Credit: 0, tot_NetTotal: 0, tot_SalesTotal: 0, tot_CashCollection: 0
@@ -48,7 +49,9 @@ export class RPT_BIL_DoctorwiseIncomeSummaryComponent {
             .map(res => res)
             .subscribe(res => {
                 if (res.Status == "OK") {
-                    this.doctorList = res.Results;
+                  this.doctorList = res.Results;
+                  var noDoctor = { "EmployeeId": 0, "FullName": "No Doctor" };
+                  this.doctorList.splice(0, 0, noDoctor);
                 }
             });
     }
@@ -57,8 +60,8 @@ export class RPT_BIL_DoctorwiseIncomeSummaryComponent {
         for (var i in this.currentDrIncome.DoctorwisIncomeSummaryReportValidator.controls) {
             this.currentDrIncome.DoctorwisIncomeSummaryReportValidator.controls[i].markAsDirty();
             this.currentDrIncome.DoctorwisIncomeSummaryReportValidator.controls[i].updateValueAndValidity();
-        }
-        if (this.currentDrIncome.IsValidCheck(undefined, undefined)) {
+      }
+      if (this.currentDrIncome.fromDate != null && this.currentDrIncome.toDate != null) {
             this.fromDate = this.currentDrIncome.fromDate;
             this.toDate = this.currentDrIncome.toDate;
             this.providerId = this.currentDrIncome.providerId;
@@ -71,7 +74,10 @@ export class RPT_BIL_DoctorwiseIncomeSummaryComponent {
             this.msgBoxServ.showMessage("notice-message", ["dates are not proper."]);
         }
     }
-
+    myListFormatter(data: any): string {
+    let html = data["FullName"];
+    return html;
+    }
     Success(res) {
         if (res.Status == "OK") {
             let data = JSON.parse(res.Results.JsonData);
@@ -146,6 +152,9 @@ export class RPT_BIL_DoctorwiseIncomeSummaryComponent {
     ErrorMsg(err) {
         this.msgBoxServ.showMessage("error", ["Sorry!!! Not able export the excel file."]);
         console.log(err.ErrorMessage);
+  }
+    doctorChanged() {
+      this.currentDrIncome.providerId = this.selDoctor ? this.selDoctor.EmployeeId : null;
     }
 
     CalculateSummaryAmounts() {
@@ -162,5 +171,13 @@ export class RPT_BIL_DoctorwiseIncomeSummaryComponent {
         this.summary.tot_Discount = CommonFunctions.parseAmount(this.summary.tot_Discount);
         this.summary.tot_Refund = CommonFunctions.parseAmount(this.summary.tot_Refund);
         this.summary.tot_NetTotal = CommonFunctions.parseAmount(this.summary.tot_NetTotal);
-    }
+  }
+  //Anjana:11June'20--reusable From-ToDate-In Reports..
+  OnFromToDateChange($event) {
+    this.fromDate = $event ? $event.fromDate : this.fromDate;
+    this.toDate = $event ? $event.toDate : this.toDate;
+
+    this.currentDrIncome.fromDate = this.fromDate;
+    this.currentDrIncome.toDate = this.toDate;
+  }
 }

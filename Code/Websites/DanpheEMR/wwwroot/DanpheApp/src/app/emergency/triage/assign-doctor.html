@@ -1,4 +1,4 @@
-﻿<style>
+<style>
     .btn-critc:hover {
         background: #f70a0a !important;
         color: #fff;
@@ -14,21 +14,23 @@
         color: #fff;
     }
 </style>
-<div style="width: 100%;position: relative;padding: 0px 0px 25px 0px;background: #000000e6;">
+<div class="cstm-pat-registration er-pat-registration">
     <div class="row">
         <div class="form-body">
             <div class="col-md-12">
                 <div class="form-group">
                     <div class="col-md-12">
-                        <a style="font-size: 16px; display: block; font-weight: 700; background: #0f1314;border-color: #fff;border: none;border-bottom: 1px solid #fff;" class="btn blue bordered btn-sm" name="Anonymous Patient" >
-                            <!-- ag7_mig_fix:(click)="RegisterNewERPatient()" not exist in component -->
-                        <span style="display: inline-block; margin-left: 5px;">Assign Doctor</span>
+                      <div class="row">
+                        <a class="btn blue bordered btn-sm cstm-pat-registration-hdr" name="Anonymous Patient">
+                          <!-- ag7_mig_fix:(click)="RegisterNewERPatient()" not exist in component -->
+                          <span style="display: inline-block; margin-left: 5px;">Assign Doctor</span>
                         </a>
+                      </div>                        
                     </div>
 
                     <div class="col-md-12">
                         <div class="table-responsive">
-                            <table class="table table-bordered" style="color: #fff;">
+                            <table class="table table-bordered tbl-er-pat-info">
                                 <thead>
                                     <tr>
                                         <th>Patient Name</th>

@@ -1,0 +1,164 @@
+<style>
+    .noPadding {
+        padding-left: 2px !important;
+        padding-right: 2px !important;
+    }
+
+    .childStyle {
+        margin-left: 20px !important;
+        color: green !important;
+        font-weight: normal !important;
+    }
+
+    .custom_table a {
+        font-family: 'Quicksand', 'Open Sans', sans-serif;
+        text-align: left;
+    }
+
+    .padLess_table th {
+        padding: 10px !important;
+    }
+
+    .padLess_table th b {
+        font-size: 13px;
+    }
+
+    .table-wrapper table {
+        background-color: #ffffff;
+    }
+
+    .table-wrapper table th {
+        position: sticky;
+        top: -1px;
+        background-color: #599be0 !important;
+        color: white;
+        z-index: 9;
+
+    }
+
+    .table-wrapper table tr+tr th {
+        top: 30px;
+        background-color: #f9f9f9 !important;
+        color: #555;
+
+    }
+
+    .trialbal-footer {
+        background-color: #dddddd !important;
+        position: sticky;
+        bottom: 0;
+    }
+	.control-label {
+		margin: 11px 0 0 0;
+	}
+	.control-label b {
+		font-weight: 600;
+	}
+	.row {
+		margin: 0 -5px;
+	}
+	div[class*="col-"] {
+		padding: 0 5px;
+	}
+	@media only screen and (max-width: 1080px) { 
+		.label-frm-to {
+			margin-left: 5px;
+		}
+	}
+</style>
+<div class="row">
+    <div class="col-md-4">
+        <div class="caption lb-caption">
+            <i class="fa fa-bar-chart"></i>
+            <span class="caption-subject">Purchase Summary Report  </span>
+        </div>     
+    </div>
+    <div class="col-md-8">
+      <div class="input-group pull-right padding-15-tp">
+        <div class="icheck-inline">
+          List by GR Category: &nbsp;
+         
+          <span *ngFor="let cat  of grCategoryList; index as i;">
+            <label class="mt-checkbox mt-checkbox-outline">
+            <input type="radio" checked (change)="onChangeGRCategory()"
+            name="GRCategory" [(ngModel)]="selectedGRCategory" value={{cat}} style="width:15px;height:15px" />
+            <span></span>{{cat}}
+          </label>
+        </span>                 
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-12 col-sm-12">
+      <danphe-grid [grid-colDefaults]="purchaseSummaryGridColumns"
+                   [grid-data]="purchaseSummaryRecordListFiltered"
+                   [rangeType]="dateRange"
+                   (onDateChange)="onDateChange($event)"
+                   [show-CustomDate]="true"
+                   (grid-actions)="GridAction($event)"
+                   [NepaliDateInGridParams]="NepaliDateInGridSettings"
+                   [grid-exportOptions]="GetGridExportOptions()"
+                   [grid-showExport]="true">
+      </danphe-grid>
+    </div>
+    <div class="col-lg-6 col-sm-12 col-md-6" style="margin-bottom: 10px !important;">
+        <div class="table-responsive table-wrapper" id="print_summary">
+            <table class="table table-bordered table-hover table-condensed custom_table padLess_table"
+                border="1">
+                <thead>          
+                    <tr>
+                        <th colspan="5" style="text-align: center; font-weight: bold; ">Purchase Summary {{selectedGRCategory}}</th>
+                    </tr>          
+                    <tr>
+                        <th><b></b></th>
+                        <th ><b>Sub Total</b></th>                   
+                        <th ><b>Discount</b></th>
+                        <th ><b>VAT</b></th>
+                        <th ><b>Total Amount</b></th>                        
+                    </tr>
+                </thead>
+                <tbody>      
+                    <ng-container *ngFor="let row of summaryOfReport">
+                    <tr>
+                        <td  style="font-weight:bold; color:blue">                                
+                            <span>{{row.Title}}</span>
+                        </td>
+                       
+                        <td style="text-align:right; ">
+                            <span >
+                                {{row.SubTotal | Currency}}
+                            </span>
+                        </td>
+                        <td style="text-align:right; ">
+                            <span >
+                                {{row.Discount | Currency}}
+                            </span>
+                        </td>
+                        <td style="text-align:right; ">
+                            <span >
+                                {{row.VAT | Currency}}
+                            </span>
+                        </td>
+                        <td style="text-align:right; ">
+                            <span >
+                                {{row.TotalAmount | Currency}}
+                            </span>
+                        </td>
+                    </tr>
+                    </ng-container>     
+                </tbody>
+            </table>   
+        </div>
+    </div>
+    <div class="col-lg-12 col-sm-12 col-md-12" style="margin-bottom: 25px !important;">
+        <button class="blue btn" type="button" (click)="Print('print_summary')"> <i class="fa fa-print"></i> Print </button>
+    </div>
+  </div> 
+
+  <div *ngIf="showGrDetail">
+    <gr-view  [GRId]="grId"></gr-view>
+</div>
+
+  

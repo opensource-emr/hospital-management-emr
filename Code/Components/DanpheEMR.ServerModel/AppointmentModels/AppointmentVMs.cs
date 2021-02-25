@@ -59,6 +59,10 @@ namespace DanpheEMR.ServerModel
         //public DateTime FirstParentVisitDate { get; set; }
 
         public PatientModel Patient { get; set; }
+
+        public bool IsValidForFollowup { get; set; }
+        
+        public ListVisitsVM TopParentVisit { get; set; }//this is referring to own class, used only in server side.
     }
 }
 

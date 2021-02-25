@@ -6,7 +6,7 @@ import GridColumnSettings from '../../shared/danphe-grid/grid-column-settings.co
 
 import { PatientService } from '../../patients/shared/patient.service';
 import { VisitService } from '../../appointments/shared/visit.service';
-import { ImagingItemReport } from '../shared/imaging-item-report.model';
+import { ImagingItemReport, RadiologyScanDoneDetail } from '../shared/imaging-item-report.model';
 import { Patient } from '../../patients/shared/patient.model';
 import { ImagingItemRequisition } from '../shared/imaging-item-requisition.model';
 import { ImagingBLService } from '../shared/imaging.bl.service';
@@ -18,6 +18,8 @@ import { CoreService } from "../../core/shared/core.service";
 //otherwise angular removes some css property from the DOM. 
 import { DomSanitizer } from '@angular/platform-browser';
 import { ImagingType } from "../shared/imaging-type.model";
+import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from "../../shared/danphe-grid/NepaliColGridSettingsModel";
+import { SecurityService } from "../../security/shared/security.service";
 
 @Component({
   templateUrl: "./imaging-requisition-list.html" //  "/RadiologyView/ImagingRequisitionList"
@@ -28,6 +30,7 @@ export class ImagingRequisitionListComponent {
   public imagingReports: Array<ImagingItemReport> = new Array<ImagingItemReport>();
   public imagingReportsFiltered: Array<ImagingItemReport> = new Array<ImagingItemReport>();
   public imagingReportsLight: Array<ImagingItemReport> = new Array<ImagingItemReport>();
+  //public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
   //enable preview is for success or error dialog box.
   public enablePreview: boolean = false;
   //showreport is for pop up add report page.
@@ -46,37 +49,68 @@ export class ImagingRequisitionListComponent {
   public imagingTypes: Array<ImagingType> = new Array<ImagingType>();
 
   //used to pass value to rangeType in custom-date
-  public dateRange: string = null;
-  public fromDate: string = null;
-  public toDate: string = null;
+  public dateRange: string = "last1Week";  //by default show last 1 week data.;
 
+
+  public fileFromDate: string = null;
+  public fileToDate: string = null;
+
+
+  public reqFromDate: string = null;
+  public reqToDate: string = null;
+
+  public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();//sud:1June'20
 
   //selected Imaging Type to  display in the grid.
-  public selImgType: string = "All";
+  public selImgType: any;
+  public allValidImgTypeList: Array<number> = new Array<number>();
+
+  public loadingGridData: boolean = false;
+  public showScanDone: boolean = false;
+  public scanDetail: RadiologyScanDoneDetail = new RadiologyScanDoneDetail();
+  public enableDoctorUpdateFromSignatory: boolean = false;
+
+
+
   constructor(public visitService: VisitService,
     public patientService: PatientService,
     public imagingBLService: ImagingBLService,
     public changeDetector: ChangeDetectorRef,
     public msgBoxServ: MessageboxService,
     public coreService: CoreService,
+    public securityService: SecurityService,
     public sanitizer: DomSanitizer) {
-    this.getImagingType();
+    //this.getImagingType();
     this.GetButtonBehavior();
-    this.imgReqListGridColumns = GridColumnSettings.ImagingRequisitionListSearch;
-    this.GetImagingReqsAndReportsByStatus();
-    this.dateRange = "today";
+    this.imgReqListGridColumns = this.getRadRequisitionListFilteredColumns(this.coreService.GetRadRequisitionListColmArr());   
+    this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('CreatedOn', true));
+    //this.GetImagingReqsAndReportsByStatus();//don't need this here since gridOnchange gets called automatically after loading.
+    this.enableDoctorUpdateFromSignatory = this.coreService.UpdateAssignedToDoctorFromAddReportSignatory();
   }
 
-  getImagingType() {
-    this.imagingBLService.GetImagingTypes()
-      .subscribe(res => {
-        if (res.Status == "OK") {
-          this.imagingTypes = res.Results;
+  getRadRequisitionListFilteredColumns(columnObj: any): Array<any> {
+    let cols = GridColumnSettings.ImagingRequisitionListSearch;
+    var filteredColumns = [];
+    if (columnObj) {
+      for (var prop in columnObj) {
+        if (columnObj[prop] == true || columnObj[prop] == 1) {
+          var headername: string = prop;
+          var ind = cols.find(val => val.headerName.toLowerCase().replace(/ +/g, "") == headername.toLowerCase().replace(/ +/g, ""));
+          if (ind) {
+            filteredColumns.push(ind);
+          }
         }
-        else {
-          this.msgBoxServ.showMessage('failed', ["failed to get Imaging Types " + res.ErrorMessage]);
-        }
-      });
+      }
+    }
+    else {
+      return cols;
+    }
+
+    if (filteredColumns.length) {
+      return filteredColumns;
+    } else {
+      return cols;
+    }   
   }
 
   //get property from parameter and set behavior or attach file button
@@ -88,28 +122,38 @@ export class ImagingRequisitionListComponent {
       this.CatchErrorLog(exception);
     }
   }
+
+
+  ImagingTypeDropdownOnChange($event) {
+    this.selImgType = $event.selectedType;
+    this.allValidImgTypeList = $event.typeList;
+    this.GetImagingReqsAndReportsByStatus(this.reqFromDate, this.reqToDate);
+  } 
+
   //gets active imaging request and pending imaging reports.
-  GetImagingReqsAndReportsByStatus(): void {
+  GetImagingReqsAndReportsByStatus(fromDate, toDate): void {
+    if ((this.selImgType > 0) || (this.selImgType == -1)) {
+      this.imagingBLService.GetImagingReqsAndReportsByStatus(fromDate, toDate, this.allValidImgTypeList)
+        .subscribe(res => {
+          if (res.Status == "OK") {
+            this.imagingReports = res.Results;
+            this.imagingReportsFiltered = res.Results;
+            //this.imagingReports.forEach(x => {
+            //  x.IsShowButton = this.isShowButton;
+            //  x.ProviderName= x.ProviderName ? x.ProviderName:'self';
+            //});
+            //if (this.selImgType == 'All') {
+            //  this.imagingReportsFiltered = this.imagingReports.filter(x => x.IsActive == true);
 
-
-    this.imagingBLService.GetImagingReqsAndReportsByStatus()
-      .subscribe(res => {
-        if (res.Status == "OK") {
-          this.imagingReports = res.Results;
-          this.imagingReports.forEach(x => {
-            x.IsShowButton = this.isShowButton;
-          });
-          if (this.selImgType == 'All') {
-            this.imagingReportsFiltered = this.imagingReports;
-
-          } else {
-            this.imagingReportsFiltered = this.imagingReports.filter(x => x.ImagingTypeName == this.selImgType);
+            //} else {
+            //  this.imagingReportsFiltered = this.imagingReports.filter(x => (x.ImagingTypeName == this.selImgType) && (x.IsActive == true));
+            //}
+            this.enablePreview = true;
           }
-          this.enablePreview = true;
-        }
-        else
-          this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
-      });
+          else
+            this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
+        });
+    }
   }
 
   //show add report pop up
@@ -142,17 +186,19 @@ export class ImagingRequisitionListComponent {
         //     $event.orderStatus = "pending";
         // }
 
+        
+
         if (selReport.ImagingReportId)
           isUpdate = true;
         let orderStatus: string = $event.orderStatus;
         if (filesToUpload.length || selReport) {
           this.loading = true;
           //filesToUpload,selReport,OrderStatus
-          this.imagingBLService.AddImgItemReport(filesToUpload, selReport, orderStatus)
+          this.imagingBLService.AddImgItemReport(filesToUpload, selReport, orderStatus, this.enableDoctorUpdateFromSignatory)
             .subscribe(res => {
               this.loading = false;
               if (res.Status == "OK") {
-                this.GetImagingReqsAndReportsByStatus();
+                this.GetImagingReqsAndReportsByStatus(this.reqFromDate, this.reqToDate);
                 this.selectedReport.ImagingReportId = res.Results.ImagingReportId;
 
                 if (res.Results.OrderStatus == "final") {
@@ -191,11 +237,56 @@ export class ImagingRequisitionListComponent {
           this.LoadScannedImageList($event.Data, $event.RowIndex);
         }
         break;
+      case "scan-done":
+        {
+          this.scanDetail = new RadiologyScanDoneDetail();
+          this.scanDetail.ScannedOn = moment().format("YYYY-MM-DD HH:mm");
+          this.scanDetail.ImagingRequisitionId = $event.Data.ImagingRequisitionId;
+          this.scanDetail.PatientCode = $event.Data.Patient.PatientCode;
+          this.scanDetail.ShortName = $event.Data.Patient.ShortName;
+          //let ind = this.imagingReports.findIndex(r => r.ImagingRequisitionId == reqId);
+          this.showScanDone = true;          
+        }
+        break;
 
       default:
         break;
     }
   }
+
+  SaveScanData() {
+    this.loadingGridData = true;
+    if (this.loading) {
+      this.imagingBLService.PutScannedDetails(this.scanDetail)
+        .subscribe(res => {
+          if (res.Status == "OK") {
+            this.changeDetector.detectChanges();
+            this.GetImagingReqsAndReportsByStatus(this.reqFromDate, this.reqToDate);
+            this.loadingGridData = false;
+            this.loading = false;
+            this.msgBoxServ.showMessage('success', ["Scan detail Updated"]);
+            this.showScanDone = false;
+          } else {
+            this.changeDetector.detectChanges();
+            this.loadingGridData = false;
+            this.loading = false;
+            this.msgBoxServ.showMessage('error', ["Sorry Scan detail cannot be Updated at this time"]);
+          }
+        },
+          err => {
+            this.changeDetector.detectChanges();
+            this.loadingGridData = false;
+            this.loading = false;
+            this.msgBoxServ.showMessage('error', ["Sorry Scan detail cannot be Updated at this time"]);
+          });
+    }
+  }
+
+  CancelScan() {
+    this.showScanDone = false;
+  }
+
+
   //get reportTExt and Images details from server  
   GetImagingReportContent(data: any, selIndex) {
     var selReport = new ImagingItemReport;
@@ -239,12 +330,12 @@ export class ImagingRequisitionListComponent {
   //fire event when custom date selection changed
   onDateChange($event) {
     try {
-      this.fromDate = $event.fromDate;
-      this.toDate = $event.toDate;
-      var fromDateCheckflag = moment(this.fromDate, 'YYYY-MM-DD HH:mm', true).isValid();
-      var toDateCheckflag = moment(this.toDate, 'YYYY-MM-DD HH:mm', true).isValid();
+      this.fileFromDate = $event.fileFromDate;
+      this.fileToDate = $event.fileToDate;
+      var fromDateCheckflag = moment(this.fileFromDate, 'YYYY-MM-DD HH:mm', true).isValid();
+      var toDateCheckflag = moment(this.fileFromDate, 'YYYY-MM-DD HH:mm', true).isValid();
       if (fromDateCheckflag == true && toDateCheckflag == true) {
-        this.imagingBLService.GetImgFileList(this.fromDate, this.toDate)
+        this.imagingBLService.GetImgFileList(this.fileFromDate, this.fileToDate)
           .subscribe(res => {
             if (res.Status == "OK") {
               this.imagingFileList = res.Results;
@@ -272,6 +363,19 @@ export class ImagingRequisitionListComponent {
       this.CatchErrorLog(exception);
     }
   }
+
+  onGridDateChange($event) {
+    this.reqFromDate = $event.fromDate;
+    this.reqToDate = $event.toDate;
+    if (this.reqFromDate != null && this.reqToDate != null) {
+      if (moment(this.reqFromDate).isBefore(this.reqToDate) || moment(this.reqFromDate).isSame(this.reqToDate)) {
+        this.GetImagingReqsAndReportsByStatus(this.reqFromDate, this.reqToDate)
+      } else {
+        this.msgBoxServ.showMessage("failed", ['Please enter valid From date and To date']);
+      }
+    }
+  }
+
   //Get scanned imaging files list for add to report
   LoadScannedImageList(selReport: ImagingItemReport, Index) {
     try {
@@ -323,6 +427,42 @@ export class ImagingRequisitionListComponent {
       this.CatchErrorLog(exception);
     }
   }
+
+  ////get list of report of the selected patient.
+  //GetPatientReportsByImagineType(frmDate: string, fileToDate: string): void {
+
+  //  this.imagingBLService.GetAllImagingReports(frmDate, fileToDate)
+  //    .subscribe(res => {
+  //      if ((res.Status == "OK") && (res.Results != null)) {
+  //        this.imagingReports = res.Results;
+  //        if (this.selImgType == 'All') {
+  //          this.imagingReportsFiltered = this.imagingReports;
+  //        } else {
+  //          this.imagingReportsFiltered = this.imagingReports.filter(x => x.ImagingTypeName == this.selImgType);
+  //        }
+
+  //        this.imagingReportsFiltered.forEach(val => {
+  //          if (val.Signatories) {
+  //            let signatures = JSON.parse(val.Signatories);
+  //            var name = '';
+  //            for (var i = 0; i < signatures.length; i++) {
+  //              if (signatures[i].EmployeeFullName) {
+  //                name = name + signatures[i].EmployeeFullName + ((i + 1 == signatures.length) ? '' : ' , ');
+  //              }
+  //            }
+  //            val.ReportingDoctorNamesFromSignatories = name;
+  //          } else {
+  //            val.ReportingDoctorNamesFromSignatories = '';
+  //          }
+  //        });
+  //        this.enablePreview = true;
+  //      }
+  //      else {
+  //        this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
+  //      }
+  //    });
+  //}
+
   //call back after imaging files attachment completed 
   CallBackPostImagingFile(res) {
     this.imagingReports[this.selIndex].PatientStudyId = res.PatientStudyId;
@@ -370,7 +510,7 @@ export class ImagingRequisitionListComponent {
   }
   GetBackOnClose($event) {
     if ($event.Submit) {
-      this.GetImagingReqsAndReportsByStatus();
+      this.GetImagingReqsAndReportsByStatus(this.reqFromDate, this.reqToDate);
     }
   }
   CatchErrorLog(exception) {

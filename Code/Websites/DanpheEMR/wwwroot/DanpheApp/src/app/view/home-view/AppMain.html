@@ -3,12 +3,6 @@
     background-image: url('/themes/theme-default/images/nav/schedule.PNG');
   }
 
-  .left-nav-active,
-  .page-sidebar .page-sidebar-menu > li > a:hover {
-    background-color: #36c6d3 !important;
-    color: white !important;
-  }
-
   .help-about {
     color: #fdefef !important;
     font-size: 19px !important;
@@ -23,27 +17,28 @@
   span.ad-sign:after {
     position: absolute;
     display: inline-block;
-    content: '\2013';
+    content: '\F107';
     right: 5px;
     top: 11px;
     text-align: center;
-    background: #536c7d;
+    background: transparent;
     z-index: 22;
     width: 24px;
     height: 24px;
     line-height: 20px;
     font-weight: bold;
-    color: #fff;
-    font-size: 20px;
+    color: #ddd;
+    font-size: 12px;
     transition: transform .25s linear;
     -webkit-transition: -webkit-transform .25s linear;
+    font-family: 'fontAwesome';
   }
 
   span.ad-sign.collapsed:after {
     line-height: 24px !important;
-    content: '+';
-    -webkit-transform: rotate(90deg);
-    transform: rotate(90deg);
+    content: '\F107';
+    -webkit-transform: rotate(00deg);
+    transform: rotate(00deg);
   }
 
   span.ad-sign:after {
@@ -59,76 +54,77 @@
     display: none;
   }
 
-  ul.page-sidebar-menu > li {
+  ul.page-sidebar-menu>li {
     position: relative;
   }
 
-  .page-sidebar .page-sidebar-menu > li > a {
-    border-top: 2px solid #3d4957 !important;
+  .page-sidebar {
+    box-shadow: 0px 0px 20px #eee;
   }
 
-  .page-sidebar .page-sidebar-menu > li > a {
-    background: #006687;
-    color: navajowhite;
-  }
-
-  .page-sidebar .page-sidebar-menu > li > a,
-  .page-sidebar-closed.page-sidebar-fixed .page-sidebar:hover .page-sidebar-menu > li > a {
-    padding: 7px 15px 7px 8px;
-  }
-
-  body > div.tooltip.fade.top.in {
+  body>div.tooltip.fade.top.in {
     display: none !important;
   }
 
   span.title {
-    font-weight: 400;
+    font-weight: normal;
   }
 </style>
 
 <div class="page-header-fixed page-sidebar-closed-hide-logo page-content-white">
   <div class="page-wrapper">
     <!-- BEGIN HEADER -->
-    <div *ngIf="navService.showTopNav" class="page-header navbar navbar-fixed-top"
-         style="box-shadow: 0px 0px 2px #45484c;">
+    <div *ngIf="navService.showTopNav" class="page-header navbar navbar-fixed-top">
       <!-- BEGIN HEADER INNER -->
       <div class="page-header-inner ">
         <!-- BEGIN LOGO -->
         <div class="page-logo">
           <a href="#">
 
-            <img src="../../../themes/theme-default/images/hospitals-logo/hospital-logo-landingpage.png"
-                 alt="logo" class="logo-default" style="width:155px;height:36px;margin-top:8px"
-                 title="Go to DanpheEMR-Home" />
+            <img src="../../../themes/theme-default/images/hospitals-logo/hospital-logo-landingpage.png" alt="logo"
+              class="logo-default" style="width:155px;height:36px;margin-top:8px" title="Go to DanpheEMR-Home" />
           </a>
           <div class="menu-toggler sidebar-toggler">
             <span></span>
           </div>
         </div>
-        <div style="display: inline-block;color:#f3e2e2;padding-left: 66px;font-size: 16px;">
-          <b>
-            {{PatService.globalPatient.ShortName}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <div class="patient-info-header" *ngIf="PatService.globalPatient.PatientCode != null">
+          <b class="header-sm">
+            <i class="fa fa-user"></i>{{PatService.globalPatient.ShortName}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             <span *ngIf="PatService.globalPatient.PatientCode != null">
-              Hospital No : {{PatService.globalPatient.PatientCode}}
+              <i class="fa fa-h-square"></i>Hospital No : {{PatService.globalPatient.PatientCode}}
             </span>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
           </b>
-
-          <b>
-            <span *ngIf="PatService.globalPatient.DateOfBirth != null">
-              Age/Sex : {{PatService.globalPatient.DateOfBirth | DanpheDateTime:'age' }}
+          <b class="header-sm">
+            <span *ngIf="PatService.globalPatient.PatientCode == null">
+              {{PatService.globalPatient.FirstName}}<span *ngIf="PatService.globalPatient.MiddleName !=null">
+                {{PatService.globalPatient.MiddleName}}
+              </span> {{PatService.globalPatient.LastName}}
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              <span *ngIf="PatService.globalPatient.DateOfBirth != null">
+                <i class="fa fa-male"></i>Age/Sex :
+                {{PatService.globalPatient.Age }}{{PatService.globalPatient.AgeUnit}}/{{PatService.globalPatient.Gender}}
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              </span>
             </span>
-            <span *ngIf="PatService.globalPatient.DateOfBirth != null">
+          </b>
+
+          <b class="header-sm">
+            <span *ngIf="PatService.globalPatient.DateOfBirth != null && PatService.globalPatient.PatientCode != null">
+              <i class="fa fa-male"></i>Age/Sex : {{PatService.globalPatient.DateOfBirth | DanpheDateTime:'age' }}
+            </span>
+            <span *ngIf="PatService.globalPatient.DateOfBirth != null && PatService.globalPatient.PatientCode != null">
               /
               {{PatService.globalPatient.Gender}}
             </span>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
           </b>
-          <br />
-          <b>
-            <span *ngIf="PatService.globalPatient.MembershipTypeId != null && 'MembershipTypeDiscount' | booleanParameter : 'Billing'">
+          <b class="header-sm">
+            <span
+              *ngIf="PatService.globalPatient.MembershipTypeId != null && 'MembershipTypeDiscount' | booleanParameter : 'Billing'">
               <span>
-                Membership Type : {{PatService.globalPatient.MembershipTypeName}}
+                <i class="fa fa-address-card-o"></i>Membership Type : {{PatService.globalPatient.MembershipTypeName}}
               </span>
               <span *ngIf="PatService.globalPatient.MembershipDiscountPercent != null">
                 /({{PatService.globalPatient.MembershipDiscountPercent}}%)
@@ -139,7 +135,7 @@
         <!-- END LOGO -->
         <!-- BEGIN RESPONSIVE MENU TOGGLER -->
         <a href="javascript:;" class="menu-toggler responsive-toggler" data-toggle="collapse"
-           data-target=".navbar-collapse">
+          data-target=".navbar-collapse">
           <span></span>
         </a>
         <!-- END RESPONSIVE MENU TOGGLER -->
@@ -147,6 +143,14 @@
         <div class="top-menu">
 
           <ul class="nav navbar-nav pull-right">
+            <li *ngIf="coreService.appVersionNum" style="background-color: yellow;">
+              <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown"
+                data-close-others="true">
+                <span class="username-hide-on-mobile" style="color: black;font-weight: bold !important;">
+                  {{coreService.appVersionNum}}
+                </span>
+              </a>
+            </li>
             <li title="My notifications">
               <notification-icon>
 
@@ -162,9 +166,9 @@
             <!-- DOC: Apply "dropdown-dark" class after below "dropdown-extended" to change the dropdown styte -->
             <li class="dropdown dropdown-user">
               <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown"
-                 data-close-others="true">
+                data-close-others="true">
                 <img alt="" class="img-circle" *ngIf="currentUsr.Profile.ImageLocation!=''"
-                     src="{{currentUsr.Profile.ImageLocation}}" />
+                  src="{{employeeService.ProfilePicSrcPath}}" />
                 <span class="username username-hide-on-mobile" style="color: white;font-weight: bold;">
                   {{currentUsr.UserName}}
                 </span>
@@ -176,7 +180,12 @@
                     <i class="icon-user"></i> My Profile
                   </a>
                 </li>
-
+                <li (click)="openShowDatePreference()">
+                  <a>
+                    <i class="fa fa-calendar"></i> Date : 
+                    <b> {{defaultCal}} </b> <i class="fa fa-edit"></i>
+                  </a> 
+                </li>
                 <li>
                   <!--<a href="/Account/Logout">
                     <i class="icon-key"></i> Log Out
@@ -192,12 +201,12 @@
             <li class="dropdown tooltip">
               <!-- @*sud:24Dec-to display application's current version information on tooltip*@-->
               <span *ngIf="coreService.appVersionNum" class="tooltiptext ttptextdown"
-                    style="width: 150px;margin-left: -75px;text-align: left;">
+                style="width: 150px;margin-left: -75px;text-align: left;">
                 <i class="fa fa-info"></i>
                 {{coreService.appVersionNum}}
               </span>
               <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown"
-                 data-close-others="true">
+                data-close-others="true">
                 <i class="fa fa-question-circle help-about"></i>
                 <i class="fa fa-angle-down"></i>
               </a>
@@ -241,21 +250,18 @@
           <ul class="menu-content out page-sidebar-menu cstm-sidebar" style="padding-top: 0px">
             <li *ngFor="let route of validRoutes">
               <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'left-nav-active'">
-                <img src="/themes/theme-default/images/nav/{{route.Css}}"
-                     style="height: 25px;width: 30px;" />
+                <img src="/themes/theme-default/images/nav/{{route.Css}}" style="height: 25px;width: 30px;" />
                 <span class="title">{{route.DisplayName}}</span>
                 <span class="selected"></span>
+                <span data-toggle="collapse" attr.data-target="#{{route.DisplayName}}" class="collapsed ad-sign"></span>
               </a>
-              <ng-container *ngIf="route.ChildRoutes !=null && route.ChildRoutesDefaultShowCount >0">
-                <span data-toggle="collapse" attr.data-target="#{{route.DisplayName}}"
-                      class="collapsed ad-sign"></span>
+              <ng-container *ngIf="route.ChildRoutes !=null && route.ChildRoutesDefaultShowCount >0">                
                 <ul class="sub-menu collapse" id={{route.DisplayName}}>
                   <ng-container *ngFor="let childroute of route.ChildRoutes">
                     <li class="nav-item"
-                        *ngIf="(childroute != null && childroute.DisplayName.length >0) && childroute.DefaultShow != false">
+                      *ngIf="(childroute != null && childroute.DisplayName.length >0) && childroute.DefaultShow != false">
                       <a routerLink="{{childroute.UrlFullPath}}" class="nav-link"
-                         [routerLinkActive]="'left-nav-active'">
-                        <i class="icon-bulb"></i>
+                        [routerLinkActive]="'left-nav-active'">
                         <span class="title">{{childroute.DisplayName}}</span>
                         <span class="badge badge-success"></span>
                       </a>
@@ -278,7 +284,7 @@
         <!-- BEGIN CONTENT BODY -->
         <!-- <danphe-loading [loading]="loading"></danphe-loading> -->
         <!-- 4-3-2019 changed by Vikas -->
-       <danphe-loader [loadingScreen]="loadingScreen"></danphe-loader>
+        <danphe-loader [loadingScreen]="loadingScreen"></danphe-loader>
         <!--Vikas: danphe-loader added for loading display until http request process do not finished-->
         <danphe-msgbox></danphe-msgbox>
         <div [ngClass]="navService.showSideNav ? 'page-content':'cstm-pg-content' ">
@@ -294,5 +300,48 @@
     <!-- END CONTAINER -->
     <!-- BEGIN FOOTER -->
     <!-- END FOOTER -->
+  </div>
+</div>
+
+<!-- popu for change default caledar preference for user  -->
+
+<div class="popup-static portlet box portlet-fullscreen"  *ngIf="showDatePopup">
+  <div class="portlet-body form">
+    <!--Model Box Body Start-->
+    <div class="form-body clearfix">
+      
+      <div class="col-md-4 hidden-xs hidden-sm" style="margin-right: 24px;"> </div>
+      <div class="col-md-5">
+        <div class="col-md-10 modelbox-div">
+          <div class="row">
+            <div class="caption" style="color:blue; margin-top: -25px;"> <span>Change Date Preference</span> 
+            <a style="float:right;margin-right: -10px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+            <hr />
+            </div>
+          </div>
+          <div class="row">
+
+            <div class="input-group">
+              <div class="icheck-inline">
+                <label> Current Selection :</label>
+                <label class="mt-checkbox mt-checkbox-outline">
+                  <input id="AD" name="AD" type="checkbox" (click)="ChangeDatePreference($event)" [(ngModel)]="empPre.en"/>
+                  <span></span> English (AD) </label>
+                <label class="mt-checkbox mt-checkbox-outline">
+                  <input id="BS" name="BS" type="checkbox" (click)="ChangeDatePreference($event)" [(ngModel)]="empPre.np" />
+                <span></span> Nepali (BS)</label>
+              </div>              
+            </div>
+            <div class="form-actions no-border no-padding">
+              <input type="button" class="btn primary-btn" style="height: 30px; float: right;" (click)="SaveEmpPref();" value="Save" />
+            </div>
+
+          </div>
+
+        </div>
+      </div>   
+      <div class="col-md-1 hidden-xs hidden-sm" style="margin-right: 24px;"> </div>
+    </div>
+    <!--Model Box Body End-->
   </div>
 </div>

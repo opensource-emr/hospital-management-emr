@@ -1,0 +1,199 @@
+<style>
+  .invalid-percent {
+    border: 2px solid red;
+  }
+</style>
+<div class="popup-static portlet box portlet-fullscreen">
+  <div class="portlet-body form">
+    <div class="modelbox-div" style="width:80%;display: inline-block;left: 10%;">
+      <div style="width: 100%; float: left;background: #fff;padding:5px;">
+        <div class="col-md-12">
+          <p>
+            <label style="font-size:large;font-weight:100;"><b> Edit Items</b></label>
+            <i class="btn btn-danger" style="float: right;margin:0px 10px 0 0" (click)="ClosePopup()">X</i>
+          </p>
+        </div>
+        <div class="col-md-12">
+          <div class="row">
+            <div class=" col-md-12">
+              <div class="row">
+                <div class=" col-md-4">
+                  <label>Patient Name:</label>
+                  <b>{{txnItemToEdit.PatientName}}</b>
+                </div>
+
+                <div class=" col-md-4">
+                  <label>Hospital Number:</label>
+                  <b>{{txnItemToEdit.PatientCode}}</b>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class=" col-md-12">
+              <div class="row">
+                <div class=" col-md-4">
+                  <label>Transaction Date</label>
+                  <b>{{txnItemToEdit.TransactionDate | DanpheDateTime:'format':'YY/MM/DD HH:mm'}}</b>
+                </div>
+                <div class=" col-md-4">
+                  <label>Item Name:</label>
+                  <b> {{txnItemToEdit.ItemName}}</b>
+                </div>
+                <div class=" col-md-4">
+                  <label>Service Department:</label>
+                  <b> {{txnItemToEdit.ItemName}}</b>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <hr /><br>
+        <div class="col-md-12  pat-hdr" style="margin-top: 25px; margin-bottom: 25px;">
+          <div class="row">
+            <div class="col-md-12" style="margin-bottom: 24px;">
+              <div class="row">
+                <div class="col-md-4">
+                  Referred By:
+                  <select [(ngModel)]="txnItemToEdit.ReferredByEmpId" (change)="OnReferredByEmpChange()">
+                    <option *ngFor="let emp of allEmpList" value="{{emp.EmployeeId}}">{{emp.FullName}}</option>
+                  </select>
+                </div>
+                <div class="col-md-3">
+                  Referral %
+                  <!--<input type="number" [(ngModel)]="txnItemToEdit.ReferredByPercent"
+                         (change)="OnReferredByPercentChange()"
+                         [disabled]="!txnItemToEdit.ReferredByEmpId || txnItemToEdit.ReferredByEmpId=='0'"
+                         onClick="this.select();" style="width: 70px;font-weight: bold;" [ngClass]="{'invalid-percent': !isPercentagesValid}" />-->
+
+                  <div id="toolbox1" class="tooltip" style="z-index: 4;">
+                    <input type="number" [(ngModel)]="txnItemToEdit.ReferredByPercent"
+                           (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                           (change)="OnReferredByPercentChange()"
+                           [disabled]="!txnItemToEdit.ReferredByEmpId || txnItemToEdit.ReferredByEmpId==0"
+                           onClick="this.select();" style="width: 70px;font-weight: bold;"
+                           [ngClass]="{'invalid-percent': !isPercentagesValid}" />
+                    <p *ngIf="!isPercentagesValid" class="tooltiptext ttptextdown">
+                      Total of Referral% and Assigned%
+                      Can't be more than 100.
+                    </p>
+                  </div>
+                  <!--<span *ngIf="!isPercentagesValid">Total of Referral% and Assigned% Can't be more than 100</span>-->
+                </div>
+                <div class="col-md-3">
+                  Amount : <input type="number" [(ngModel)]="txnItemToEdit.ReferralAmount" disabled
+                                  style="width: 120px;font-weight: bold;" />
+                </div>
+              </div>
+            </div>
+            <br>
+
+            <div class="col-md-12" style="margin-bottom: 24px;">
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="row">
+                    <div class="col-md-4">
+                      Assigned To:
+                      <select [(ngModel)]="txnItemToEdit.AssignedToEmpId" (change)="OnAssignedToEmpChange()">
+                        <option *ngFor="let emp of allEmpList" value="{{emp.EmployeeId}}">{{emp.FullName}}</option>
+                      </select>
+                    </div>
+                    <div class="col-md-3">
+                      Assigned %
+                      <!--<input type="number" [(ngModel)]="txnItemToEdit.AssignedToPercent"
+                                         style="width: 70px;font-weight: bold;"
+                                         [disabled]="!txnItemToEdit.AssignedToEmpId || txnItemToEdit.AssignedToEmpId=='0'"
+                                         (change)="OnAssignedToPercentChange()" [ngClass]="{'invalid-percent': !isPercentagesValid}" />-->
+
+                      <div id="toolbox2" class="tooltip" style="z-index: 1;">
+                        <input type="number" [(ngModel)]="txnItemToEdit.AssignedToPercent"
+                               (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                               style="width: 70px;font-weight: bold;"
+                               [disabled]="!txnItemToEdit.AssignedToEmpId || txnItemToEdit.AssignedToEmpId==0"
+                               (change)="OnAssignedToPercentChange()" [ngClass]="{'invalid-percent': !isPercentagesValid}" />
+                        <p *ngIf="!isPercentagesValid" class="tooltiptext ttptextdown">
+                          Total of Referral% and Assigned%
+                          Can't be more than 100.
+                        </p>
+                      </div>
+                    </div>
+                    <!--<span *ngIf="!isPercentagesValid">Total of Referral% and Assigned% Can't be more than 100</span>-->
+                    <div class="col-md-3">
+                      Amount : <input type="number" [(ngModel)]="txnItemToEdit.AssignedToAmount" disabled
+                                      style="width: 120px;font-weight: bold;" />
+                    </div>
+                    <div class="col-md-2">
+                      <input type="button" class="btn btn-sm blue" value="Add Fraction" [disabled]="showAddFractionDiv" (click)="addFraction()" />
+                    </div>
+                  </div>
+                  <div class="row" *ngIf="showAddFractionDiv">
+                    <div class="col-md-12">
+                      <div class="table-responsive">
+                        <table class="table table-striped table-hover" style="background-color:initial;margin-top:10px">
+                          <thead>
+                            <tr>
+                              <th></th>
+                              <th><b>Employee</b></th>
+                              <th><b>Final %</b></th>
+                              <th><b>Fraction Amount</b></th>
+                              <th></th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr *ngFor="let row of fractionTransactionItems; let i = index">
+                              <td style="width:50px">
+                                <a *ngIf="i != 0" (click)="deleteRow(i)"><i class="btn btn-danger fa">X</i></a>
+                              </td>
+                              <td style="width:170px">
+                                <select [(ngModel)]="row.EmployeeId" (change)="onFractionEmpChange(i)"
+                                        [disabled]="i == 0">
+                                  <option *ngFor="let emp of allEmpList" [value]="emp.EmployeeId">
+                                    {{emp.FullName}}
+                                  </option>
+                                </select>
+                                <span *ngIf="row.hasError && row.EmployeeId == 0" class="color-red font-sm">Select Employee</span>
+                                <span *ngIf="row.hasError && row.EmployeeId != 0" class="color-red font-sm">Employee already selected.</span>
+                              </td>
+                              <td style="width:80px">
+                                <input type="number" [(ngModel)]="row.FinalPercent"
+                                       (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                                       style="width: 70px;font-weight: bold;"
+                                       [disabled]="!row.EmployeeId || row.EmployeeId=='0' || i == 0"
+                                       (change)="onFinalPercentChange(i)"
+                                       [ngClass]="{'invalid-percent': !isFractionValid}" />
+                                <span *ngIf="!isFractionValid" class="color-red font-sm">
+                                  Total of Final% Can't be more
+                                  than {{ txnItemToEdit.AssignedToPercent }}.
+                                </span>
+                              </td>
+                              <td style="width:150px;">
+                                <input type="number" [(ngModel)]="row.FinalAmount" disabled
+                                       style="width: 120px;font-weight: bold;" />
+                              </td>
+                              <td style="width:20px">
+                                <a (click)="addFractionRow()">
+                                  <i class="glyphicon glyphicon-plus btn btn-success"></i>
+                                </a>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-12">
+              <div class="col-md-12" style="padding-top:5px;padding-right:0px;">
+                <input type="button" class="btn btn-sm blue" value="Save"
+                       (click)="SaveTxnItem()" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

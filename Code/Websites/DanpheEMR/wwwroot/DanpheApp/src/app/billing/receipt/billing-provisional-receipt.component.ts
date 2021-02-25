@@ -31,6 +31,9 @@ export class BillingProvisionalReceiptComponent {
   public taxLabel: string;
   public currencyUnit: string;
   public headerName: string;
+
+  public provSlipFooterParam = { ShowFooter: false, EnglishText: "!! This is not Final Invoice !!", NepaliText: "!! जानकारीको लागि मात्र !!", VerticalAlign: true };
+
   constructor(
     public billingBLService: BillingBLService,
     public nepaliCalendarServ: NepaliCalendarService,
@@ -99,5 +102,18 @@ export class BillingProvisionalReceiptComponent {
       }
       this.receipt.BillingItems.forEach(a => a.Price = CommonFunctions.parseAmount(a.Price));
     }
+    this.provSlipFooterParam = this.coreService.LoadFooterNoteSettingsFromParameter();
   }
+
+  //LoadFooterNoteSettingsFromParameter() {
+  //  let param = this.coreService.Parameters.find(p => p.ParameterGroupName == "Billing" && p.ParameterName == "ProvisionalSlipFooterNoteSettings");
+  //  if (param) {
+  //    let paramValueStr = param.ParameterValue;
+  //    if (paramValueStr) {
+  //      this.provSlipFooterParam = JSON.parse(paramValueStr);
+  //    }
+  //  }
+
+  //}
+
 }

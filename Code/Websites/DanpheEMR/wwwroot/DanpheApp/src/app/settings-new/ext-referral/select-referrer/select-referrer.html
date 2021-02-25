@@ -1,0 +1,72 @@
+<style>
+  .pad-0-rt {
+    padding-right: 0px;
+  }
+
+  .msg-icn-err {
+    color: #f36a5a;
+    font-size: 14px;
+  }
+
+  .is-ref {
+    font-size: 11px;
+    position: relative;
+    top: 0;
+    left: 0;
+    padding-top: 8px;
+  }
+
+  .d-i-f {
+    display: inline-block;
+    margin-left: 8px;
+    position: inherit;
+  }
+
+  .ref-er .row {
+    position: relative;
+    left: -15px;
+  }
+  .text-wit-btn{
+    display: flex;
+    /*margin-top: 5px;*/
+  }
+</style>
+
+<div class="row">
+  <!--<div class="col-md-2 ex-t">
+    <span *ngIf="includeExtReferrer">(external)</span>
+    <span *ngIf="!includeExtReferrer">(internal) </span>
+  </div>-->
+  <div class="col-md-6 pad-0-rt">
+    <input *ngIf="filteredReferrerList" [disabled]="disableTextBox" class="form-control cstm-form-control"
+           danphe-auto-complete
+           [ngModelOptions]="{standalone: true}" [(ngModel)]="currentRequestedByDoctor"
+           [source]="filteredReferrerList"
+           [list-formatter]="AssignedToDocListFormatter" placeholder="Enter Name"
+           display-property-name="FullName" value-property-name=null match-formatted="true"
+           (focusout)="RequestedByDrOnChange()" onClick="this.select();" max-num-list="10" />
+    <!--<button type="button" class="btn btn-xs blue" *ngIf="defaultRefInfo && defaultRefInfo.ShowButton" (click)="SelectDefault()" style="margin-left:30px;">
+      {{defaultRefInfo.ButtonLabel}}
+    </button>-->
+    <!--<span *ngIf="!isValidReferrerSelection" style="color:red;">Invalid Referrer. Please choose from list or add new (for External).</span>-->
+    <i class="fa fa-close msg-icn-err" *ngIf="!isValidReferrerSelection" title="Invalid Referrer. Please choose from list or add new (for External).">&nbsp;invalid name  </i>
+  </div>
+  <div class="col-md-6" *ngIf="allowExternalRef">
+    <div class="text-wit-btn">
+      <div class="icheck-inline">        
+        <label for="chkIncludeExternal" class="is-ref mt-checkbox mt-checkbox-outline"><input type="checkbox" id="chkIncludeExternal" [(ngModel)]="includeExtReferrer" title="Include External Referrers" (change)="ReferrerChkBoxOnChange()" />
+          <span></span>External?</label>
+      </div>
+      <div *ngIf="includeExtReferrer" class="d-i-f">
+        <a feature="button" class="btn blue btn-xs btn-ext" style="" title="Click to add new external refferer" (click)="showExtRefPopup=true;"><i class="fa fa-plus"></i></a>
+      </div>
+    </div>    
+
+  </div>
+
+</div>
+
+
+<ext-referral-add *ngIf="showExtRefPopup" (callback-add)="ExtRefPopupOnClose($event)">
+</ext-referral-add>
+

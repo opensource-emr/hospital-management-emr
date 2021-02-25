@@ -1,0 +1,115 @@
+
+
+<div class="birth-certificate wd-100">
+  <div id="PrintPage">
+    <div class="padding-15-all">
+      <table style="padding-top: 50px;width: 100%;">
+        <tr>
+          <td>
+            <b>
+              <i>
+                Fiscal Year :
+                <u>{{deadPat.FiscalYear}}</u>
+              </i>
+            </b>
+          </td>
+          <td style="text-align:right">
+            <b>
+              <i>
+                Certificate No :
+                <u>{{deadPat.CertificateNumber}}</u>
+              </i>
+            </b>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <div style="width: 100%; text-align: center; padding: 20px;margin-bottom: 20px;font-family: 'Times New Roman', Times, serif;">
+      <h3><b><i>Medical Certificate of Death</i></b></h3>
+    </div>
+
+    <div class="padding-15-all" style="width: 100%;">
+      <div class="flex-container">
+        <div class="brth-cert-txt">
+          This is to certify that <span *ngIf="deadPat.Sex && deadPat.Sex.toLowerCase() == 'male'">Mr. </span>
+                                  <span *ngIf="deadPat.Sex && deadPat.Sex.toLowerCase() == 'female' && deadPat.SpouseOf">Mrs. </span>
+          <span *ngIf="deadPat.Sex && deadPat.Sex.toLowerCase() == 'female' && !deadPat.SpouseOf">Ms. </span><b>{{deadPat.ShortName}}, </b>
+          <span class="txt-underline">{{deadPat.SpouseOf}}</span>
+          <ng-container *ngIf="deadPat.Sex && deadPat.Sex.toLowerCase() == 'male'">son of Mr </ng-container>
+          <ng-container *ngIf="deadPat.Sex && deadPat.Sex.toLowerCase() == 'female'">daughter of Mr </ng-container>
+          <span *ngIf="isFinalCertificate" class="txt-underline"><b>{{deadPat.FatherName}}</b></span>
+          <span *ngIf="!isFinalCertificate" class="txt-underline"><input type="text" name="fatherName" [(ngModel)]="deadPat.FatherName" /></span> Ms
+          <span *ngIf="isFinalCertificate" class="txt-underline"><b>{{deadPat.MotherName}}</b></span>
+          <span *ngIf="!isFinalCertificate" class="txt-underline"><input type="text" name="motherName" [(ngModel)]="deadPat.MotherName" /></span>
+          spoush of <span *ngIf="deadPat.Sex && deadPat.Sex.toLowerCase() == 'male'">Ms </span>
+          <span *ngIf="deadPat.Sex && deadPat.Sex.toLowerCase() == 'female'">Mr </span>
+          <span *ngIf="isFinalCertificate" class="txt-underline">{{deadPat.SpouseOf}}</span>
+          <span *ngIf="!isFinalCertificate"><input type="text" name="spouseOf" [(ngModel)]="deadPat.SpouseOf" /></span> as per
+          hospital record resident of Country <span class="txt-underline"><b>{{deadPat.Country}}</b></span> district
+          <span class="txt-underline"><b>{{deadPat.CountrySubDivision}}</b></span> <span> village/municipality </span>
+          <span class="txt-underline"><b>{{deadPat.Address}}</b></span> and inpatient/Emergency number
+          <span class="txt-underline">{{deadPat.VisitCode}}</span> expired on BS
+          <span class="txt-underline">{{deadPat.DeathDate | nepaliDate}}</span> <span> (</span>
+          <span class="txt-underline"><b><i>{{deadPat.DeathDate}} AD</i></b></span>
+          <span>, YYYY/MM/DD) time </span>
+            <span class="txt-underline"><b>{{deadPat.DeathTime}}</b></span>
+            (24 hours) at the age of {{deadPat.Age}}.
+            <ng-container *ngIf="deadPat.Sex && deadPat.Sex.toLowerCase() == 'male'">His</ng-container>
+            <ng-container *ngIf="deadPat.Sex && deadPat.Sex.toLowerCase() == 'female'">Her</ng-container> cause of death was
+            <span *ngIf="isFinalCertificate" class="txt-underline">{{deadPat.CauseOfDeath}}</span>
+            <span *ngIf="!isFinalCertificate" class="txt-underline">
+              <input type="text" name="CauseOfDeath" [(ngModel)]="deadPat.CauseOfDeath" />
+            </span>
+
+
+        </div>
+      </div>
+
+      <div class="providedbytext">
+        <div class="flex-container">
+          <div class="flex-1">
+            <p class="margin-15-bt"><b style="font-size: large;"><i>Certified By</i></b></p>
+            <div *ngIf="isFinalCertificate">
+              <p> Signature : ______________________</p>
+              <p>Name : <span *ngIf="!CertifiedSignatory || !CertifiedSignatory.FullName">______________________</span><span><b><u>{{CertifiedSignatory.FullName}}</u></b></span></p>
+              <p>Designation :<span *ngIf="!CertifiedSignatory || !CertifiedSignatory.LongSignature">______________________</span> <b><u>{{CertifiedSignatory.LongSignature}}</u></b></p>
+            </div>
+            <div *ngIf="!isFinalCertificate" class="flex-container">
+              <input danphe-auto-complete class="form-control"
+                     [(ngModel)]="CertifiedSignatory" [source]="providerList"
+                     [list-formatter]="myListFormatter" placeholder="Issued By"
+                     display-property-name="FullName" value-property-name=null
+                     (valueChanged)="OnChangeCertifiedSignatory()" min-chars="0"
+                     max-num-list="10" [ngModelOptions]="{standalone: true}" />
+            </div>
+          </div>
+          <div class="flex-1">
+            <p class="margin-15-bt"><b style="font-size: large;"><i>Hospital/Health Facility</i></b></p>
+            <p>Name: <u><b>{{HospitalDetails.hospitalName}}</b></u></p>
+            <p>Address: <u><b>{{HospitalDetails.address}}</b></u></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="providedbytext">
+        <div class="flex-container">
+          <div class="flex-1"></div>
+          <div class="flex-1">
+            <div style="width:250px;height:80px;border:1px solid;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="modelbox-footer">
+    <div class="all-buttons text-right">
+      <button *ngIf="!isFinalCertificate" [disabled]="loading" (click)="loading=true;UpdateDeathCertificationDetail()" type="button" class="btn btn-cancel btn-sm margin-7-hr">Save and Print</button>
+      <button *ngIf="isFinalCertificate" [disabled]="loading" (click)="Edit()" type="button" class="btn btn-cancel btn-sm margin-7-hr">Edit</button>
+      <button *ngIf="isFinalCertificate" [disabled]="loading" (click)="loading=true;UpdateDeathCertPrintCount()" type="button" class="btn btn-cancel btn-sm margin-7-hr">Print</button>
+      <button (click)="Close()" [disabled]="loading" type="button" class="btn btn-cancel btn-sm margin-7-hr">Cancel</button>
+    </div>
+  </div>
+</div>

@@ -1,4 +1,4 @@
-﻿import { Component, ChangeDetectorRef } from "@angular/core";
+import { Component, ChangeDetectorRef } from "@angular/core";
 
 import { PatientService } from "../../patients/shared/patient.service"
 import { SecurityService } from '../../security/shared/security.service';
@@ -7,10 +7,11 @@ import * as moment from 'moment/moment';
 
 import { PharmacyBLService } from "../shared/pharmacy.bl.service"
 import { PHRMPatient } from "../shared/phrm-patient.model"
+import { Router } from "@angular/router";
 
 @Component({
     selector: "outdoor-patient-registration",
-    templateUrl: "../../view/pharmacy-view/Patient/PHRMPatient.html" // "/PharmacyView/PHRMPatient"
+    templateUrl: "./phrm-patient.html"
 })
 export class PHRMPatientComponent {
     //Constructor of class
@@ -18,7 +19,8 @@ export class PHRMPatientComponent {
         public securityService: SecurityService,
         public patientService: PatientService,
         public pharmacyBLService: PharmacyBLService,
-        public messageboxService: MessageboxService) {
+        public messageboxService: MessageboxService,
+        public router: Router) {
         this.checkPatDetails();
     }
     //All variable declaration
@@ -78,6 +80,10 @@ export class PHRMPatientComponent {
                         this.loading = false;
                         this.loading1 = false;
                         this.showExstingPatientList = false;
+                        this.currentPatient = new PHRMPatient();
+                        this.matchingPatientList = new Array<PHRMPatient>();
+                        this.patientService.getGlobal().PatientId = 0;
+                        this.router.navigate(["/Pharmacy/Patient/List"]);
                     }
                     else {
                         this.messageboxService.showMessage("error", ["Patient Registration failed check error.." + res.ErrorMessage]);

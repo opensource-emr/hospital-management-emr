@@ -1,0 +1,639 @@
+<style>
+@media Print {
+.hide-this {
+	display: none;
+}
+.col-50 {
+	width: 50% !important;
+}
+fieldset {
+	width: 100%;
+	text-align: left;
+	font-size: 11px !important;
+	border: 1px solid #333333;
+	padding: 15px;
+	position: relative;
+	padding-top: 30px;
+	text-align: left;
+	display: inline-flex;
+	margin: 1% 2%;
+	vertical-align: top;
+	margin-bottom: 20px;
+}
+fieldset legend {
+	text-align: left;
+	display: inline-block !important;
+	width: auto;
+	position: absolute;
+	top: -12px;
+	font-size: 14px;
+	background: #fff;
+	left: 20px;
+	border: none;
+	padding: 0px 15px;
+	font-weight: bold;
+	font-size: 14px;
+}
+}
+table tr th {
+	font-size: 11px !important;
+	font-weight: bold;
+	font-family: 'Open Sans';
+	/*    border: 1px solid #ececec !important;*/
+	color: #000;
+	/*    text-align: center;*/
+	vertical-align: middle;
+	padding: 10px;
+}
+td {
+	background: #f6f6f6;
+	padding: 10px;
+	vertical-align: middle;
+	font-size: 11px !important;
+}
+fieldset {
+	width: 100%;
+	border: 1px solid #333333;
+	padding: 15px;
+	position: relative;
+	padding-top: 30px;
+	display: inline-flex;
+	margin: 1% 2%;
+	vertical-align: top;
+}
+fieldset legend {
+	display: inline-block !important;
+	width: auto;
+	position: absolute;
+	top: -12px;
+	font-size: 14px;
+	background: #fff;
+	left: 20px;
+	border: none;
+	padding: 0px 15px;
+	font-weight: 600;
+}
+</style>
+<div class="row">
+  <div class="col-lg-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="PrescriptionHistoryColumn"
+                 [grid-data]="PrescriptionHistoryList"
+                 (grid-actions)="PrescriptionGridAction($event)"> </danphe-grid>
+  </div>
+</div>
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="PrescriptionReceipt">
+  <div id="printpage" class="eh_view"> 
+    <!--Model Box Body Start-->
+    <div class="form-body modal-md clearfix"> <a class="btn btn-danger cancel-btn" (click)="Close()" title="Cancel"><i class="fa fa-times"></i></a>
+      <div class="modelbox-div p5">
+        <div class="row">
+          <div class="hidden-xs hidden-sm noPrint"> </div>
+          <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="col-md-12 noPrint">
+              <fieldset>
+                <legend><b>Patient Information</b> </legend>
+                <div class="row">
+                  <div class="col-md-4 text-left">
+                    <label>
+                    <p><b>Name:</b> {{fullname}}</p>
+                    </label>
+                  </div>
+                  <div class="col-md-4 text-center">
+                    <label>
+                    <p><b>Age:</b> {{age}}</p>
+                    </label>
+                  </div>
+                  <div class="col-md-4 text-right">
+                    <label>
+                    <p><b>Patient ID:</b> {{Patid}}</p>
+                    </label>
+                  </div>
+                </div>
+              </fieldset>
+              <div class="p-his">
+                <fieldset>
+                  <legend><b>Prescription History</b> </legend>
+                  <p> {{PrescriptionDataList.History.History}}</p>
+                </fieldset>
+                <div class="row">
+                  <div class="col-md-3">
+                    <div class="em_title clearfix">
+                      <h4>PGP</h4>
+                    </div>
+                    <table class="table table-bordered">
+                      <thead>
+                        <tr>
+                          <th></th>
+                          <th>Sph</th>
+                          <!-- <th colspan="2" style="background: #ebebeb;vertical-align: middle;border: 1px solid #333333; font-size: 11px !important;"></th>-->
+                          <th>Cyl</th>
+                          <th>Axis</th>
+                          <th>VA</th>
+                          <!--<th colspan="2" style="background: #ebebeb;vertical-align: middle;border: 1px solid #333333; font-size: 11px !important;"></th>--> 
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <th>OD</th>
+                          <td>{{ PrescriptionDataList.Plup.SphOD}}</td>
+                          <td>{{PrescriptionDataList.Plup.CylOD}}</td>
+                          <td>{{PrescriptionDataList.Plup.AxisOD}}</td>
+                          <td>{{PrescriptionDataList.Plup.VaOD}}</td>
+                        </tr>
+                        <tr>
+                          <th>OS</th>
+                          <td>{{ PrescriptionDataList.Plup.SphOS}}</td>
+                          <td>{{ PrescriptionDataList.Plup.CylOS}}</td>
+                          <td>{{ PrescriptionDataList.Plup.AxisOS}}</td>
+                          <td>{{ PrescriptionDataList.Plup.VaOS}}</td>
+                        </tr>
+                      </tbody>
+                    </table>                   
+                  </div>
+					<div class="col-md-3">
+                     <div class="em_title clearfix">
+                      <h4>Acceptance</h4>
+                    </div>
+                    <table class="table table-bordered">
+                      <thead>
+                        <tr>
+                          <th></th>
+                          <th>Sph</th>
+                          <!-- <th colspan="2" style="background: #ebebeb;vertical-align: middle;border: 1px solid #333333; font-size: 11px !important;"></th>-->
+                          <th>Cyl</th>
+                          <th>Axis</th>
+                          <th>VA</th>
+                          <!--<th colspan="2" style="background: #ebebeb;vertical-align: middle;border: 1px solid #333333; font-size: 11px !important;"></th>--> 
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <th>OD</th>
+                          <td>{{ PrescriptionDataList.Acceptance.SphOD}}</td>
+                          <td>{{PrescriptionDataList.Acceptance.CylOD}}</td>
+                          <td>{{PrescriptionDataList.Acceptance.AxisOD}}</td>
+                          <td>{{PrescriptionDataList.Acceptance.VaOD}}</td>
+                        </tr>
+                        <tr>
+                          <th>OS</th>
+                          <td>{{ PrescriptionDataList.Acceptance.SphOS}}</td>
+                          <td>{{ PrescriptionDataList.Acceptance.CylOS}}</td>
+                          <td>{{ PrescriptionDataList.Acceptance.AxisOS}}</td>
+                          <td>{{ PrescriptionDataList.Acceptance.VaOS}}</td>
+                        </tr>
+                      </tbody>
+                    </table>                   
+                  </div>
+                  <div class="col-md-3">
+                    <div class="em_title clearfix">
+                      <h4>Retinoscopy</h4>
+                    </div>
+                    <table class="table table-bordered">
+                      <thead>
+                        <tr>
+                          <th></th>
+                          <th>Sph</th>
+                          <!-- <th colspan="2" style="background: #ebebeb;vertical-align: middle;border: 1px solid #333333; font-size: 11px !important;"></th>-->
+                          <th>Cyl</th>
+                          <th>Axis</th>
+                          <th>VA</th>
+                          <!--<th colspan="2" style="background: #ebebeb;vertical-align: middle;border: 1px solid #333333; font-size: 11px !important;"></th>--> 
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <th>OD</th>
+                          <td>{{ PrescriptionDataList.Retinoscopy.SphOD}}</td>
+                          <td>{{PrescriptionDataList.Retinoscopy.CylOD}}</td>
+                          <td>{{PrescriptionDataList.Retinoscopy.AxisOD}}</td>
+                          <td>{{PrescriptionDataList.Retinoscopy.VaOD}}</td>
+                        </tr>
+                        <tr>
+                          <th>OS</th>
+                          <td>{{ PrescriptionDataList.Retinoscopy.SphOS}}</td>
+                          <td>{{ PrescriptionDataList.Retinoscopy.CylOS}}</td>
+                          <td>{{ PrescriptionDataList.Retinoscopy.AxisOS}}</td>
+                          <td>{{ PrescriptionDataList.Retinoscopy.VaOS}}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    
+                  </div>
+					<div class="col-md-3"><div class="em_title clearfix">
+                      <h4>Final Class Prescription</h4>
+                    </div>
+                    <table class="table table-bordered">
+                      <thead>
+                        <tr>
+                          <th></th>
+                          <th>Sph</th>
+                          <!-- <th colspan="2" style="background: #ebebeb;vertical-align: middle;border: 1px solid #333333; font-size: 11px !important;"></th>-->
+                          <th>Cyl</th>
+                          <th>Axis</th>
+                          <th>VA</th>
+                          <!--<th colspan="2" style="background: #ebebeb;vertical-align: middle;border: 1px solid #333333; font-size: 11px !important;"></th>--> 
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <th>OD</th>
+                          <td>{{ PrescriptionDataList.FinalClass.SphOD}}</td>
+                          <td>{{PrescriptionDataList.FinalClass.CylOD}}</td>
+                          <td>{{PrescriptionDataList.FinalClass.AxisOD}}</td>
+                          <td>{{PrescriptionDataList.FinalClass.VaOD}}</td>
+                        </tr>
+                        <tr>
+                          <th>OS</th>
+                          <td>{{ PrescriptionDataList.FinalClass.SphOS}}</td>
+                          <td>{{ PrescriptionDataList.FinalClass.CylOS}}</td>
+                          <td>{{ PrescriptionDataList.FinalClass.AxisOS}}</td>
+                          <td>{{ PrescriptionDataList.FinalClass.VaOS}}</td>
+                        </tr>
+                      </tbody>
+                    </table></div>
+                </div>
+                <div class="row">
+                  <div class="col-md-3">
+                    <div class="em_title clearfix">
+                      <h4>VA Unaided</h4>
+                    </div>
+                    <table class="table table-bordered">
+                      <thead>
+                        <tr>
+                          <th>OD</th>
+                          <th>OS</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>{{ PrescriptionDataList.VaUnaided.OD}}</td>
+                          <td>{{ PrescriptionDataList.VaUnaided.OS}}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="col-md-3">
+                    <div class="em_title clearfix">
+                      <h4>IOP</h4>
+                    </div>
+                    <table class="table table-bordered">
+                      <thead>
+                        <tr>
+                          <th>OD</th>
+                          <th>OS</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>{{ PrescriptionDataList.IOP.OD}}</td>
+                          <td>{{ PrescriptionDataList.IOP.OS}}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="col-md-3">
+                    <div class="em_title clearfix">
+                      <h4>Schirmer Test</h4>
+                    </div>
+                    <table class="table table-bordered">
+                      <thead>
+                        <tr>
+                          <th>OD</th>
+                          <th>OS</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>{{ PrescriptionDataList.Schrime.OD}}</td>
+                          <td>{{ PrescriptionDataList.Schrime.OS}}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="col-md-3">
+                    <div class="em_title clearfix">
+                      <h4>TBUT</h4>
+                    </div>
+                    <table class="table table-bordered">
+                      <thead>
+                        <tr>
+                          <th>OD</th>
+                          <th>OS</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>{{ PrescriptionDataList.TBUT.OD}}</td>
+                          <td>{{ PrescriptionDataList.TBUT.OS}}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    <table class="table table-bordered table-center">
+                      <thead>
+                        <tr>
+                          <th>Anterior Segment Left</th>
+                          <th>Anterior Segment Right</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><div class="logo"> <img class="img-responsive" src="\themes\theme-default\images\eye\EyeAnterior.jpg" /> </div></td>
+                          <td><div class="logo"> <img class="img-responsive" src="\themes\theme-default\images\eye\EyeAnterior.jpg" /> </div></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="col-md-6">
+                    <table class="table table-bordered table-center">
+                      <thead>
+                        <tr>
+                          <th>Posterior Segment Left</th>
+                          <th>Posterior Segment Right</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><div class="logo"> <img class="img-responsive" src="\themes\theme-default\images\eye\EyePosteriorLeft.jpg" /></div></td>
+                          <td><div class="logo"> <img class="img-responsive" src="\themes\theme-default\images\eye\EyePosterior.jpg" /> </div></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <fieldset>
+                  <legend><b>Dilate</b></legend>
+                  <form action="">
+                    <input type="checkbox" name="Tplus" value="Tplus" disabled [ngModel]="PrescriptionDataList.Dilate.Tplus">
+                    T+
+                    <input type="checkbox" name="CP" value="CP" disabled [ngModel]="PrescriptionDataList.Dilate.CP">
+                    CP
+                    <input type="checkbox" name="CTC" value="CTC" disabled [ngModel]="PrescriptionDataList.Dilate.CTC">
+                    CTC
+                    <input type="checkbox" name="Atropine" value="Atropine" disabled [ngModel]="PrescriptionDataList.Dilate.Atropine">
+                    Atropine
+                  </form>
+                </fieldset>
+                <fieldset>
+                  <legend><b>Advice & Diagnosis</b></legend>
+                  <p>{{PrescriptionDataList.AdviceDiagnosis.AdviceDiagnosis}}</p>
+                </fieldset>
+                <!--<div class="row col-sm-6">
+                <div class="row col-md-12 clearfix">
+                  <h2 class="blue">Prescription History  </h2>
+                  <textarea style="min-width: 100%" disabled> {{PrescriptionDataList.History.History}}</textarea>
+                </div>
+              </div>--> 
+                <!--<div class="row col-sm-6 col-50">
+                  <h2 class="blue"> PGP </h2>
+                  <table class="table table-striped table-hover table-bordered" style="background-color:initial;margin-top:10px">
+                    <thead>
+                      <tr style="font-weight: bold;font-size:small; text-align:center">
+                        <td> </td>
+                        <td><b>Sph</b></td>
+                        <td><b>Cyl</b></td>
+                        <td><b>Axis</b></td>
+                        <td><b>VA</b></td>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr style="font-weight: bold;font-size:small; text-align:center">
+                        <td><b>OD</b></td>
+                        <td>{{ PrescriptionDataList.Plup.SphOD}} </td>
+                        <td>{{PrescriptionDataList.Plup.CylOD}}</td>
+                        <td>{{PrescriptionDataList.Plup.AxisOD}}</td>
+                        <td>{{PrescriptionDataList.Plup.VaOD}}</td>
+                      </tr>
+                    </tbody>
+                    <tbody>
+                      <tr style="font-weight: bold;font-size:small; text-align:center">
+                        <td><b>OS</b></td>
+                        <td>{{ PrescriptionDataList.Plup.SphOS}}</td>
+                        <td>{{ PrescriptionDataList.Plup.CylOS}}</td>
+                        <td>{{ PrescriptionDataList.Plup.AxisOS}}</td>
+                        <td>{{ PrescriptionDataList.Plup.VaOS}}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>-->
+                <div class="col-md-12"> 
+                  <!--<div class="col-md-6 col-50">
+                  <h2 class="blue"> Retinoscopy </h2>
+                  <table class="table table-striped table-hover table-bordered" style="background-color:initial;margin-top:10px">
+                    <thead>
+                      <tr style="font-weight: bold;font-size:small; text-align:center">
+                        <td> </td>
+                        <td><b>Sph</b></td>
+                        <td><b>Cyl</b></td>
+                        <td><b>Axis</b></td>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr style="font-weight: bold;font-size:small; text-align:center">
+                        <td><b>OD</b></td>
+                        <td>{{ PrescriptionDataList.Retinoscopy.SphOD}} </td>
+                        <td>{{PrescriptionDataList.Retinoscopy.CylOD}}</td>
+                        <td>{{PrescriptionDataList.Retinoscopy.AxisOD}}</td>
+                      </tr>
+                    </tbody>
+                    <tbody>
+                      <tr style="font-weight: bold;font-size:small; text-align:center">
+                        <td><b>OS</b></td>
+                        <td>{{ PrescriptionDataList.Retinoscopy.SphOS}}</td>
+                        <td>{{ PrescriptionDataList.Retinoscopy.CylOS}}</td>
+                        <td>{{ PrescriptionDataList.Retinoscopy.AxisOS}}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>-->
+                  <div class="col-md-6 col-50"> 
+                    <!--<h2 class="blue"> Acceptance </h2>--> 
+                    <!--<table class="table table-striped table-hover table-bordered" style="background-color:initial;margin-top:10px">
+                    <thead>
+                      <tr style="font-weight: bold;font-size:small; text-align:center">
+                        <td> </td>
+                        <td><b>Sph</b></td>
+                        <td><b>Cyl</b></td>
+                        <td><b>Axis</b></td>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr style="font-weight: bold;font-size:small; text-align:center">
+                        <td><b>OD</b></td>
+                        <td>{{ PrescriptionDataList.Acceptance.SphOD}} </td>
+                        <td>{{PrescriptionDataList.Acceptance.CylOD}}</td>
+                        <td>{{PrescriptionDataList.Acceptance.AxisOD}}</td>
+                      </tr>
+                    </tbody>
+                    <tbody>
+                      <tr style="font-weight: bold;font-size:small; text-align:center">
+                        <td><b>OS</b></td>
+                        <td>{{ PrescriptionDataList.Acceptance.SphOS}}</td>
+                        <td>{{ PrescriptionDataList.Acceptance.CylOS}}</td>
+                        <td>{{ PrescriptionDataList.Acceptance.AxisOS}}</td>
+                      </tr>
+                    </tbody>
+                  </table>--> 
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <div class="col-md-6 col-25"> 
+                    <!--<h2 class="blue"> VA Unaided </h2>--> 
+                    <!--<table class="table table-striped table-hover table-bordered" style="background-color:initial;margin-top:10px">
+                    <thead>
+                      <tr style="font-weight: bold;font-size:small; text-align:center">
+                        <td><b>OD</b></td>
+                        <td><b>{{ PrescriptionDataList.VaUnaided.OD}}</b></td>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr style="font-weight: bold;font-size:small; text-align:center">
+                        <td><b>OS</b></td>
+                        <td>{{PrescriptionDataList.VaUnaided.OS}} </td>
+                      </tr>
+                    </tbody>
+                  </table>--> 
+                  </div>
+                  <div class="col-md-6 col-25"> 
+                    <!--<h2 class="blue"> IOP </h2>--> 
+                    <!--<table class="table table-striped table-hover table-bordered" style="background-color:initial;margin-top:10px">
+                    <thead>
+                      <tr style="font-weight: bold;font-size:small; text-align:center">
+                        <td><b>OD</b></td>
+                        <td><b>{{ PrescriptionDataList.IOP.OD}}</b></td>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr style="font-weight: bold;font-size:small; text-align:center">
+                        <td><b>OS</b></td>
+                        <td>{{PrescriptionDataList.IOP.OS}} </td>
+                      </tr>
+                    </tbody>
+                  </table>--> 
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <div class="col-md-6 col-25"> 
+                    <!--<h2 class="blue">Schirmer Test </h2>--> 
+                    <!--<table class="table table-striped table-hover table-bordered" style="background-color:initial;margin-top:10px">
+                    <thead>
+                      <tr style="font-weight: bold;font-size:small; text-align:center">
+                        <td><b>OD</b></td>
+                        <td><b>{{ PrescriptionDataList.Schrime.OD}}</b></td>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr style="font-weight: bold;font-size:small; text-align:center">
+                        <td><b>OS</b></td>
+                        <td>{{PrescriptionDataList.Schrime.OS}} </td>
+                      </tr>
+                    </tbody>
+                  </table>--> 
+                  </div>
+                  <div class="col-md-6 col-25"> 
+                    <!--<h2 class="blue"> TBUT </h2>--> 
+                    <!--<table class="table table-striped table-hover table-bordered" style="background-color:initial;margin-top:10px">
+                    <thead>
+                      <tr style="font-weight: bold;font-size:small; text-align:center">
+                        <td><b>OD</b></td>
+                        <td><b>{{ PrescriptionDataList.TBUT.OD}}</b></td>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr style="font-weight: bold;font-size:small; text-align:center">
+                        <td><b>OS</b></td>
+                        <td>{{PrescriptionDataList.TBUT.OS}} </td>
+                      </tr>
+                    </tbody>
+                  </table>--> 
+                  </div>
+                </div>
+                <div class="row col-sm-4 "> 
+                  <!--<h2 class="blue"> Dilate</h2>-->
+                  <div class="col-md-12"> 
+                    <!--<form action="">
+                    <input type="checkbox"   name="Tplus" value="Tplus" disabled [ngModel]="PrescriptionDataList.Dilate.Tplus">T+
+                    &nbsp;&nbsp;
+                    <input type="checkbox" name="CP" value="CP" disabled [ngModel]="PrescriptionDataList.Dilate.CP" >CP
+                    <br>
+                    <input type="checkbox"  name="CTC" value="CTC" disabled  [ngModel]="PrescriptionDataList.Dilate.CTC">CTC
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <input type="checkbox"   name="Atropine" value="Atropine" disabled [ngModel]="PrescriptionDataList.Dilate.Atropine">Atropine
+                  </form>--> 
+                  </div>
+                </div>
+                <div class="row col-md-12 ">
+                  <div class="col-md-6"> 
+                    <!--<h2 class="blue">Final Class Prescription </h2>--> 
+                    <!--<table class="table table-striped table-hover table-bordered" style="background-color:initial;margin-top:10px">
+                    <thead>
+                      <tr style="font-weight: bold;font-size:small; text-align:center">
+                        <td><b>Sph</b></td>
+                        <td><b>Cyl</b></td>
+                        <td><b>Axis</b></td>
+                        <td><b>VA</b></td>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr style="font-weight: bold;font-size:small; text-align:center">
+                        <td><b>OD</b></td>
+                        <td>{{ PrescriptionDataList.FinalClass.SphOD}} </td>
+                        <td>{{PrescriptionDataList.FinalClass.CylOD}}</td>
+                        <td>{{PrescriptionDataList.FinalClass.AxisOD}}</td>
+                      </tr>
+                    </tbody>
+                    <tbody>
+                      <tr style="font-weight: bold;font-size:small; text-align:center">
+                        <td><b>OS</b></td>
+                        <td>{{ PrescriptionDataList.FinalClass.SphOS}}</td>
+                        <td>{{ PrescriptionDataList.FinalClass.CylOS}}</td>
+                        <td>{{ PrescriptionDataList.FinalClass.AxisOS}}</td>
+                      </tr>
+                    </tbody>
+                  </table>--> 
+                  </div>
+                </div>
+                <div class="row col-md-12 ">
+                  <div class="row col-sm-6 eye-center" style="border: none !important"> 
+                    <!--<h2 class="blue">Anterior Segment Right </h2>
+                  <div class="logo" style="width: 100%;padding:0px 15px 0px 15px; float: left;">
+                    <img class="img-responsive" style="max-height:184px;" src="\DanpheApp\src\app\clinical\eye-examination\prescription-slip\shared\EyeAnterior.jpg" />
+
+                  </div>--> 
+                  </div>
+                  <div class="row col-sm-6 eye-center" style="border: none !important"> 
+                    <!--<h2 class="blue">Anterior Segment Left </h2>--> 
+                    <!--<div class="logo" style="width: 100%;padding:0px 15px 0px 15px; float: left;">
+                    <img class="img-responsive" style="max-height:184px;" src="\DanpheApp\src\app\clinical\eye-examination\prescription-slip\shared\EyeAnterior.jpg" />
+                  </div>--> 
+                  </div>
+                </div>
+                <div class="row col-md-12 "> 
+                  <!--<div class="row col-sm-6 eye-center ">
+                  <h2 class="blue">Posterior Segment Right </h2>
+                  <div class="logo" style="width: 100%;padding:0px 15px 0px 15px; float: left;">
+                    <img class="img-responsive" style="max-height:184px;" src="\DanpheApp\src\app\clinical\eye-examination\prescription-slip\shared\EyePosterior.jpg" />
+                  </div>
+                </div>-->
+                  <div class="row col-sm-6 eye-center" style="border: none !important"> 
+                    <!--<h2 class="blue">Posterior Segment Left </h2>
+                  <div class="logo" style="width: 100%;padding:0px 15px 0px 15px; float: left;">
+                    <img class="img-responsive" style="max-height:184px;" src="\DanpheApp\src\app\clinical\eye-examination\prescription-slip\shared\EyePosteriorLeft.jpg" />
+                  </div>--> 
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="hide-this text-center">
+          <button class="btn primary-btn" (click)="print()"> Print Receipt <i class="glyphicon glyphicon-print"></i> </button>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

@@ -21,10 +21,10 @@ namespace DanpheEMR.ServerModel
         public string LabTestSynonym { get; set; }
         public string LabTestSpecimen { get; set; }
         public string LabTestSpecimenSource { get; set; }
-       
+
         public string LOINC { get; set; }
         public int? ReportTemplateId { get; set; }
-        public bool? IsValidSampling { get; set; }
+        public bool? IsValidForReporting { get; set; }
         public string Description { get; set; }
         public int? DisplaySequence { get; set; }
         public string RunNumberType { get; set; }//Anish:26Sept'18       
@@ -35,9 +35,10 @@ namespace DanpheEMR.ServerModel
 
         public bool? HasNegativeResults { get; set; }
         public string NegativeResultText { get; set; }
+        public int? LabTestCategoryId { get; set; }
 
         public virtual LabReportTemplateModel LabReportTemplate { get; set; }
-        
+
 
         //ashim: 06Sep2018
         public string ReportingName { get; set; }
@@ -61,8 +62,8 @@ namespace DanpheEMR.ServerModel
         public List<LabTestJSONComponentModel> LabTestComponentsJSON { get; set; }
         [NotMapped]
         public List<LabTestComponentMapModel> LabTestComponentMap { get; set; }
-        
-        
+
+
         //NBB-29 Jan 2018- searched but not any reference found for this property in our application        
         //and MyProperty is not a valid column in db also, so now i'm applying [NotMapped] decorator
         [NotMapped]
@@ -73,6 +74,7 @@ namespace DanpheEMR.ServerModel
 
         [NotMapped]
         public string TemplateType { get; set; }
+
 
         //public ICollection<LabTestJSONComponentModel> LabTestComponents { get; set; }
     }

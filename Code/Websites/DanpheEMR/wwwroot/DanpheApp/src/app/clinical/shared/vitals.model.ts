@@ -1,4 +1,4 @@
-﻿
+
 //importing form and its related components, these are used for forms validation.
 import {
     NgForm,
@@ -36,6 +36,8 @@ export class Vitals {
     public ModifiedBy: number = null;
     public CreatedOn: string = null;
     public ModifiedOn: string = null;
+    public VitalsTakenOn: string = null;
+
     public VitalsValidator: FormGroup = null;
 
     constructor() {

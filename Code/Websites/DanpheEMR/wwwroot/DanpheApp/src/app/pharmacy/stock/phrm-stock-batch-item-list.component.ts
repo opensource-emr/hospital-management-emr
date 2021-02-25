@@ -10,7 +10,7 @@ import { PharmacyService } from "../shared/pharmacy.service";
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import * as moment from 'moment/moment';
 @Component({
-    templateUrl:'../../view/pharmacy-view/Stock/PHRMStockBatchItemList.html'// "/PharmacyView/PHRMStockBatchItemList"
+    templateUrl:"./phrm-stock-batch-item-list.html"
 })
 export class PHRMStockBatchItemListComponent {
 

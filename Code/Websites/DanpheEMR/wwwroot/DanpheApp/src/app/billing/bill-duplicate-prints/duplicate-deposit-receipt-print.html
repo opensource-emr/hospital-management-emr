@@ -1,14 +1,32 @@
-<div class="row"  *ngIf="!showReceipt" >
-  <div class="col-lg-12 col-sm-12">
-    <danphe-grid [grid-colDefaults]="duplicateBillGrid" [grid-data]="depositList" (grid-actions)="DuplicateReceiptGridActions($event)">
-    </danphe-grid>
+<div class="wrapper">
+  <div class="row">
+    <div class="col-lg-12 col-sm-12">
+      <danphe-grid [grid-colDefaults]="duplicateBillGrid"
+                   [grid-data]="depositList"
+                   (grid-actions)="DuplicateReceiptGridActions($event)"
+                   [NepaliDateInGridParams]="NepaliDateInGridSettings"> </danphe-grid>
+    </div>
   </div>
-</div>
-
-<div *ngIf="showReceipt">
-    <a class="btn blue" (click)="ShowGridView()">
-        <i class="fa fa-backward"></i> Back
-    </a>
+  <!--<div *ngIf="showReceipt">
+    <a class="btn blue" (click)="ShowGridView()"> <i class="fa fa-backward"></i> Back </a>
     <deposit-receipt [deposit]="deposit"
                      [showReceipt]="showReceipt"></deposit-receipt>
+  </div>-->
+  <div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showReceipt">
+    <div class="portlet-body form">
+      <div class="row">
+        <div class="col-md-6 col-md-offset-3" style="margin-top: 70px;">
+          <div class="modelbox-div clearfix">
+            <a class="btn btn-danger del-btn" (click)="CloseDepositReceiptPopUp()">X</a>
+            <div>
+              <deposit-receipt [deposit]="deposit"
+                               [showReceipt]="showReceipt"
+                               (callback-close)="CallBackCloseRecipt($event)">
+              </deposit-receipt>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

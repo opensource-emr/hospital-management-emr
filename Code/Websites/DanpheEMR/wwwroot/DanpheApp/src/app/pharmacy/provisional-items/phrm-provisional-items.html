@@ -1,0 +1,105 @@
+
+<style>
+    /*This class for background border red */
+    .bg-on {
+        font-weight: bold;
+        border: solid 1px red;
+    }
+
+    /*This class for */
+    .bg-off {
+        font-weight: bold;
+    }
+
+    tr.tbl-td-padding td {
+        padding-top: 0px !important;
+        padding-bottom: 0px !important;
+        padding-left: 0px !important;
+        padding-right: 0px !important;
+    }
+</style>
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showDispatchItem">
+       <div class="portlet-body form" style="background-color:white">
+           <form [formGroup]=" " class="form-horizontal">
+               <div class="col-md-12">
+                   <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+                   </div>
+                   <div class="col-md-8 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+                       <div style="margin-left:30px">
+                           <i class="btn btn-danger" style="float: right" (click)="CloseDrugsRequestsPage()">X</i>
+                       </div>
+                       <div class="col-md-12">
+                           <div class="caption" style="color:blue;">
+                               <h3> <span>Drugs Request</span> </h3>
+                           </div>
+                          
+                            <hr />
+                       </div>
+                       <div class="col-md-12 col-xs-12 col-sm-12">
+                           <table class="table table-striped table-hover" style="background-color:initial; margin:0px;margin-bottom: 5px;">
+                               <thead>
+                                   <tr class="tbl-td-padding">
+                                       <th>Item Name</th>
+                                       <th>Quantity</th>
+                                       <th></th>
+                                    
+                                   </tr>
+                               </thead>
+                               <tbody>
+                                   <tr *ngFor="let row of PHRMProItemsList">
+                                       <td title={{row.ItemName}}>
+
+                                           <input danphe-auto-complete class="form-control"
+                                                  [(ngModel)]="row.ItemName"
+                                                  [source]="row.ItemName"
+                                                  [list-formatter]="myItemListFormatter"
+                                                  display-property-name="ItemName"
+                                                  value-property-name=null
+                                                  max-num-list="20"
+                                                  [ngModelOptions]="{standalone: true}"
+                                                  min-chars="0"
+                                                  style="width:250px;"
+                                                  id="{{'item-box'+i}}"
+                                                  [grid-sort]="'ItemName'"
+                                                  match-formatted="true"
+                                                  (keyup.enter)="switchTextBox(i)"
+                                                  disabled />
+                                       </td>
+                                       <td>
+                                           <input danphe-auto-complete class="form-control"
+                                                  [(ngModel)]="row.Quantity"
+                                                  [source]="row.Quantity"
+                                                  value-property-name=null
+                                                  max-num-list="20"
+                                                  style="width:50px;"
+                                                  [ngModelOptions]="{standalone: true}"
+                                                  (keyup.enter)="switchTextBox(i)" />
+                                       </td>                                      
+                                   </tr>
+                               </tbody>
+                           </table>
+
+
+                       </div>
+                       <div class="col-md-12 col-xs-12 col-sm-12">
+                           <div style="float:right;margin-bottom:30px;">
+                               <input type="button" class="btn btn-success" value="Save" (click)="Save()" />
+                               <span></span>
+                               <input type="button" class="btn btn-danger" (click)="CloseDrugsRequestsPage()" value="Cancel">
+                               <span></span>
+                           </div>
+
+                       </div>
+                  </div>
+               </div>
+</form>
+</div>
+</div>
+
+<div *ngIf="showProItemList">
+    <danphe-grid [grid-colDefaults]="PHRMProvisionalItemsGridColumns"
+                                 [grid-data]="PHRMProvisionalItemsList"
+                                 (grid-actions)="PHRMProvisionalItemsGridAction($event)">
+     </danphe-grid>
+</div>

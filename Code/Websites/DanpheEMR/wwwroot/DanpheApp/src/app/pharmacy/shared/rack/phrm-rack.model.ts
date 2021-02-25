@@ -3,9 +3,10 @@ import { IRack } from './Irack';
 
 export class PhrmRackModel implements IRack {
 
-    public RackId: number;
+    public RackId: number = 0;
     public Name: string = null;
-    public ParentId: number = 0;
+    public ParentId: number = null;
+    public LocationId : number = 1; //by default Rack For Dispensary.
     public Description: string = null;
     public CreatedBy: number = null;
     public CreatedOn: Date = null;
@@ -17,6 +18,7 @@ export class PhrmRackModel implements IRack {
         var _formBuilder = new FormBuilder();
         this.RackValidator = _formBuilder.group({
             'Name': ['', Validators.compose([Validators.required, Validators.maxLength(50)])],
+            'LocationId': ['', Validators.compose([Validators.required])]
         });
     }
 

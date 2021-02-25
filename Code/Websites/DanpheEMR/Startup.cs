@@ -39,17 +39,30 @@ namespace DanpheEMR
                 .AddEnvironmentVariables();
             Configuration = builder.Build();
 
-            CurrentEnvironment = env;
-
-            Audit.Core.Configuration.DataProvider = new SqlDataProvider()
-            {
-                ConnectionString = Configuration["ConnectionStringAdmin"],
-                Schema = "dbo",
-                TableName = "DanpheAudit",
-                IdColumnName = "AuditId",
-                JsonColumnName = "Data",
-                LastUpdatedDateColumnName = "LastUpdatedDate"
-            };
+            CurrentEnvironment = env;          
+            //check audit is enable or disable             
+            if ((!string.IsNullOrEmpty(Configuration["IsAuditEnable"])) && Convert.ToBoolean(Configuration["IsAuditEnable"])==true)
+            {                
+                string adminConstr = Configuration["ConnectionStringAdmin"];
+                SqlConnectionStringBuilder conBuilderObj = new SqlConnectionStringBuilder(adminConstr);                
+                string encPwd = conBuilderObj.Password;
+                if (!string.IsNullOrEmpty(encPwd))  //check is it encrypted or not
+                {
+                    string decPwd= DecryptPassword(encPwd);                 
+                    conBuilderObj.Password = decPwd;                    
+                }              
+                Audit.Core.Configuration.DataProvider = new SqlDataProvider()
+                {
+                    ConnectionString = conBuilderObj.ConnectionString,
+                    Schema = "dbo",
+                    TableName = "DanpheAudit",
+                    IdColumnName = "AuditId",
+                    JsonColumnName = "Data",
+                    LastUpdatedDateColumnName = "LastUpdatedDate"
+                };
+            }
+            
+           
         }
 
 
@@ -67,7 +80,7 @@ namespace DanpheEMR
                 //IMPORTANT-- remove the hardcoded value 20 from below
                 //keep short timeout like max 2-3 hours, 
                 //we've to redirect to login once the session expires.
-                options.IdleTimeout = TimeSpan.FromHours(20);
+                options.IdleTimeout = TimeSpan.FromHours(2);
                 options.CookieHttpOnly = true;
 
             });
@@ -81,6 +94,7 @@ namespace DanpheEMR
             services.AddTransient<IEmailService, EmailService>();
             services.AddTransient<IFractionPercentService, FractionPercentService>();
             services.AddTransient<IFractionCalculationService, FractionCalculationService>();
+            services.AddTransient<IVerificationService, VerificationService>();
 
             // Add framework services.
             services.AddOptions();

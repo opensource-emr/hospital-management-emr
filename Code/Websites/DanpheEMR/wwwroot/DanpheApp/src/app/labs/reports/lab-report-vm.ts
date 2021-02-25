@@ -1,4 +1,7 @@
-import { LabResult_TemplatesVM, LabResult_TestVM } from "../shared/lab-view.models";
+import {
+  LabResult_TemplatesVM,
+  LabResult_TestVM,
+} from "../shared/lab-view.models";
 
 //sud: 22Jun'18--for report printing part.
 
@@ -25,15 +28,22 @@ export class LabReportVM {
   public PrintedBy: number = null;
   public PrintedByName: number = null;
   public PrintCount: number = null;
-  public Templates: Array<LabResult_TemplatesVM> = new Array<LabResult_TemplatesVM>();
+  public VerifiedByList: Array<number> = [];
+  public Templates: Array<LabResult_TemplatesVM> = new Array<
+    LabResult_TemplatesVM
+  >();
 
   //sud: 21Aug'18--Implementation Pending -- handed over to Ashim
-  public static AssignControlTypesToComponent(ipLabReportVM: LabReportVM): LabReportVM {
-    ipLabReportVM.Templates.forEach(temp => {
-      temp.Tests.forEach(test => {
+  public static AssignControlTypesToComponent(
+    ipLabReportVM: LabReportVM
+  ): LabReportVM {
+    ipLabReportVM.Templates.forEach((temp) => {
+      temp.Tests.forEach((test) => {
         // let componentJsonList: Array<any> = JSON.parse(test.ComponentJSON);
-        test.Components.forEach(component => {
-          let cmp = test.ComponentJSON.find(a => a.ComponentName == component.ComponentName);
+        test.Components.forEach((component) => {
+          let cmp = test.ComponentJSON.find(
+            (a) => a.ComponentName == component.ComponentName
+          );
           if (cmp) {
             component.ControlType = cmp.ControlType;
           }
@@ -44,39 +54,65 @@ export class LabReportVM {
   }
 
   //sud:3Sept'18 -- To show Sensitivity report in Pivotted Format. <needs revision>
-  public static FormatResultForCulture(test: LabResult_TestVM): any {
+  public static FormatResultForCulture(
+    test: LabResult_TestVM,
+    grpNum: number = 1
+  ): any {
     //separate the cuture report into: 4 groups: IsolatedOrganism (this will be single value)
     // Partial, Sensitive, Resitant (Array of Antibiotics names i.e. ComponentName in our case.)
     //MaxLenArray : to figure out how many times we should loop <Comment: Find alternative approach later on>
-    //note: We've to show Intermediate in HTML so making array as such. 
-    let retFormattedData = { IsolatedOrganism: null, Intermediate: [], Sensitive: [], Resistant: [], Others: [], MaxLenArray: [], HasOthersFields: false };
-
-    test.Components.forEach(component => {
+    //note: We've to show Intermediate in HTML so making array as such.
+    let retFormattedData = {
+      IsolatedOrganism: null,
+      Intermediate: [],
+      Sensitive: [],
+      Resistant: [],
+      Others: [],
+      MaxLenArray: [],
+      HasOthersFields: false,
+      ColonyCount: "",
+    };
+    var compFilteredByGrp = test.Components.filter(
+      (c) => c.ResultGroup == grpNum
+    );
+    compFilteredByGrp.forEach((component) => {
       if (component.ComponentName == "Isolated Organism") {
         retFormattedData.IsolatedOrganism = component.Value;
-      }
-      else {
+      } else {
         if (component.Value) {
           //Change it to Intermediate if Lookup Value changes in database.
           //we need to check what all possible values could be there and should map accordingly..
           //this is preety much hardcoding, so trying to include as many scenarios as possible..
-          if (component.Value == "Partial Sensitive" || component.Value == "Intermediate" || component.Value.startsWith("Inter")) {
+          if (
+            component.Value == "Partial Sensitive" ||
+            component.Value == "Intermediate" ||
+            component.Value.startsWith("Inter")
+          ) {
             retFormattedData.Intermediate.push(component.ComponentName);
-          }
-          else if (component.Value == "Resistance" || component.Value == "Resistant" || component.Value.startsWith("Resist")) {
+          } else if (
+            component.Value == "Resistance" ||
+            component.Value == "Resistant" ||
+            component.Value.startsWith("Resist")
+          ) {
             retFormattedData.Resistant.push(component.ComponentName);
-
-          }
-          else if (component.Value == "Sensitive" || component.Value.startsWith("Sensit")) {
+          } else if (
+            component.Value == "Sensitive" ||
+            component.Value.startsWith("Sensit")
+          ) {
             retFormattedData.Sensitive.push(component.ComponentName);
-          }
-          else {
+          } else if (
+            component.ComponentName == "Colony Count" ||
+            component.ComponentName.startsWith("Colony")
+          ) {
+            retFormattedData.ColonyCount = component.Value;
+          } else {
             //if currentvalue is not included in any of above, then add them to others array and display both compName +Value
             retFormattedData.HasOthersFields = true;
-            retFormattedData.Others.push(component.ComponentName + ' : ' + component.Value);
+            retFormattedData.Others.push(
+              component.ComponentName + " : " + component.Value
+            );
           }
         }
-
       }
     });
 
@@ -84,21 +120,26 @@ export class LabReportVM {
     if (retFormattedData) {
       //first assign Sensitive to MaxLenArray, then compare and keep replacing it whenever other array is bigger than MaxLenArray
       retFormattedData.MaxLenArray = retFormattedData.Sensitive;
-      if (retFormattedData.Intermediate.length > retFormattedData.MaxLenArray.length) {
+      if (
+        retFormattedData.Intermediate.length >
+        retFormattedData.MaxLenArray.length
+      ) {
         retFormattedData.MaxLenArray = retFormattedData.Intermediate;
       }
-      if (retFormattedData.Resistant.length > retFormattedData.MaxLenArray.length) {
+      if (
+        retFormattedData.Resistant.length > retFormattedData.MaxLenArray.length
+      ) {
         retFormattedData.MaxLenArray = retFormattedData.Resistant;
       }
-      if (retFormattedData.Others.length > retFormattedData.MaxLenArray.length) {
+      if (
+        retFormattedData.Others.length > retFormattedData.MaxLenArray.length
+      ) {
         retFormattedData.MaxLenArray = retFormattedData.Others;
       }
     }
 
-
     return retFormattedData;
   }
-
 }
 
 export class ReportLookup {

@@ -31,5 +31,7 @@ namespace DanpheEMR.ServerModel
         public bool? IsTransferredToACC { get; set; }
         [NotMapped]
         public double? UpdatedQty { get; set; }
+        [NotMapped]
+        public int StockId { get; set; }
     }
 }

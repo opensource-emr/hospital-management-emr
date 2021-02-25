@@ -11,8 +11,8 @@ import { LabSettingsDLService } from './shared/lab-settings.dl.service';
 import { SharedModule } from "../../shared/shared.module";
 import { AddNewLabReportComponent } from "./lab-report-template/add-lab-report-template.component";
 import { AddLabTestCompComponent } from "../lab-settings/lab-test-component/add-lab-test-comp.component";
-import { SettingsBLService } from '../../settings/shared/settings.bl.service';
-import { SettingsDLService } from '../../settings/shared/settings.dl.service';
+import { SettingsBLService } from '../../settings-new/shared/settings.bl.service';
+import { SettingsDLService } from '../../settings-new/shared/settings.dl.service';
 import { DanpheAutoCompleteModule } from '../../shared/danphe-autocomplete/danphe-auto-complete.module';
 import { EditSignatoriesComponent } from './signatories/edit-signatories.component';
 import { LabTestCompComponent } from './lab-test-component/labTestComp.component';
@@ -21,6 +21,10 @@ import { LabVendorAddComponent } from '../external-labs/vendors-settings/lab-ven
 import { LabVendorListComponent } from '../external-labs/vendors-settings/lab-vendor-list.component';
 import { LabLookUpComponent } from './lab-lookups/lookups-list.component';
 import { AddLookUpComponent } from './lab-lookups/lookups-add.component';
+import { AddLabCategoryComponent } from './lab-category/add-lab-category.component';
+import { LabCategoryComponent } from './lab-category/lab-category.component';
+import { MapGovernmentItemsComponent } from './map-lab-test-components/map-government-items-component';
+import { AddGovernmentItemsComponent } from './map-lab-test-components/add-government-items.component';
 // import { LabVendorAddComponent } from './external-labs/vendors/lab-vendor-add.component';
 // import { LabVendorListComponent } from './external-labs/vendors/lab-vendor-list.component';
 
@@ -34,8 +38,9 @@ export const LabSettingsRoutingConstant = [
     imports: [LabSettingsRoutingModule, SharedModule, ReactiveFormsModule, FormsModule, CommonModule,DanpheAutoCompleteModule
     ],
     declarations: [LabSettingsMainComponent, ReportTemplateComponent, LabTestComponent, 
-        AddNewLabReportComponent, AddLabTestCompComponent, AddLabTestComponent, 
-      EditSignatoriesComponent, LabTestCompComponent, LabVendorAddComponent, LabVendorListComponent, LabLookUpComponent, AddLookUpComponent],
+      AddNewLabReportComponent, AddLabTestCompComponent, AddLabTestComponent, AddLabCategoryComponent, LabCategoryComponent,
+      EditSignatoriesComponent, LabTestCompComponent, LabVendorAddComponent, LabVendorListComponent, LabLookUpComponent, AddLookUpComponent, MapGovernmentItemsComponent,
+      AddGovernmentItemsComponent],
     bootstrap: []
 })
 

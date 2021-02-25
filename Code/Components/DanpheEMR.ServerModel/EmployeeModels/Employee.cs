@@ -33,16 +33,20 @@ namespace DanpheEMR.ServerModel
         public int? ModifiedBy { get; set; }
         public DateTime? ModifiedOn { get; set; }
         public string Gender { get; set; }
-        public string FullName
-        {
-            get
-            {
-                //if designation is not empty, append it inside a bracket.
-                string midName = string.IsNullOrEmpty(this.MiddleName) ? "" : this.MiddleName + " ";
-                string salutaion = string.IsNullOrEmpty(this.Salutation) ? "" : this.Salutation + ". ";
-                return salutaion + this.FirstName + " " + midName + this.LastName;
-            }
-        }
+
+        public string FullName { get; set; }//this is combination of: Salutation+FName+MidName+LName, stored in database.
+
+        //sud:4Sept: We've aded new column for FullName, so it'll come from database now. 
+        //public string FullName
+        //{
+        //    get
+        //    {
+        //        //if designation is not empty, append it inside a bracket.
+        //        string midName = string.IsNullOrEmpty(this.MiddleName) ? "" : this.MiddleName + " ";
+        //        string salutaion = string.IsNullOrEmpty(this.Salutation) ? "" : this.Salutation + ". ";
+        //        return salutaion + this.FirstName + " " + midName + this.LastName;
+        //    }
+        //}
         public Int16? Extension { get; set; }
         public Int16? SpeedDial { get; set; }
         public string OfficeHour { get; set; }
@@ -59,14 +63,34 @@ namespace DanpheEMR.ServerModel
         public bool? IsAppointmentApplicable { get; set; }
         public string LabSignature { get; set; }
 
+        public string RadiologySignature { get; set; }
+
+        public string BloodGroup { get; set; }
+        public string DriverLicenseNo { get; set; }
+        public string NursingCertificationNo { get; set; }
+        public string HealthProfessionalCertificationNo { get; set; }
         public int? DisplaySequence { get; set; }
 
         public string SignatoryImageName { get; set; }
 
         [NotMapped]
-        public string SignatoryImageBase64 { get;set; }
+        public string SignatoryImageBase64 { get; set; }
 
 
+        //public string ExtReferrerName { get; set; }//Pratik:2Sept'19--For External Referral
+        public bool IsExternal { get; set; }//Pratik:2Sept'19--For External Referral
 
+
+        [NotMapped]
+        public List<BillItemPrice> ServiceItemsList { get; set; }
+
+        [NotMapped]
+        public int LedgerId { get; set; }
+        [NotMapped]
+        public string LedgerType { get; set; }
+
+        public double? TDSPercent { get; set; }//pratik:14April'2020
+        public bool? IsIncentiveApplicable { get; set; }//pratik:14April'2020
+        public string PANNumber { get; set; }//pratik:14April'2020
     }
 }

@@ -1,0 +1,545 @@
+<!--Model Box Starting Here-->
+<div class="popup-static portlet box portlet-fullscreen custom_modal">
+  <div class="portlet-body form"> 
+    <!--Model Box Body Start-->
+    
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class=" modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3> <span *ngIf="!update">Add Item</span> <span *ngIf="update">Update item</span> </h3>
+            <a class="btn btn-danger" (click)="Close()"
+                 title="Cancel">X</a> </div>
+          <form [formGroup]="CurrentBillingItem.BillingItemValidator" class="form-horizontal hm-form">
+            <div class="form-body">
+              <div class="row clearfix">
+                <div class="form-group col-md-6">
+                  <label class="control-label col-md-4"> Service Department<sup>*</sup><b>:</b> </label>
+                  <div class="col-md-8">
+                    <div class="div-relative">
+                      <input danphe-auto-complete
+                         [(ngModel)]="selectedSrvDept"
+                         class="form-control"
+                         [list-formatter]="ServiceDeptListFormatter"
+                         [source]="srvdeptList"
+                         placeholder="Enter Department Name"
+                         display-property-name="ServiceDepartmentName"
+                         value-property-name=null
+                         onClick="this.select();"
+                         (focusout)="OnSrvDeptValueChanged()"
+                         max-num-list="15"
+                         [disabled]="update"
+                         formControlName="ServiceDepartmentId" />
+                      <a class="fa fa-question" *ngIf="!update" (click)="AddServiceDepartmentPopUp()" title="Unable to find Service Department ? Click to add to Master"></a></div>
+                    <span class="color-red font-sm"
+                        [hidden]="isSrvDeptValid"> Service Department is Invalid </span> </div>
+                </div>
+                <div class="form-group col-md-6">
+                  <label class="control-label col-md-4">Item Code<b>:</b></label>
+                  <div class="col-md-8">
+                    <input type="text" name="" class="form-control" maxlength="10"
+                         [(ngModel)]="CurrentBillingItem.ItemCode" id="ItemCode"
+                         formControlName="ItemCode" placeholder="Item Code" disabled />
+                    <span class="color-red font-sm"
+                        [hidden]="CurrentBillingItem.IsValidCheck('ItemCode','maxlength') || !(CurrentBillingItem.IsDirty('ItemCode'))"> Item
+                    Code should be less than or equal to 10 characters. </span> </div>
+                </div>
+                <div class="form-group col-md-6">
+                  <label class="control-label col-md-4"> Item Name<sup>*</sup><b>:</b> </label>
+                  <div class="col-md-8">
+                    <input type="text" name="" required value="" class="form-control" maxlength="100"
+                         [readonly]="update" [(ngModel)]="CurrentBillingItem.ItemName"
+                         formControlName="ItemName" id="ItemName" placeholder="Item Name" />
+                    <span class="color-red font-sm"
+                        [hidden]="CurrentBillingItem.IsValidCheck('ItemName','required') || !(CurrentBillingItem.IsDirty('ItemName'))"> Enter
+                    ItemName </span> <span class="color-red font-sm"
+                        [hidden]="CurrentBillingItem.IsValidCheck('ItemName','maxlength') || !(CurrentBillingItem.IsDirty('ItemName'))"> Item
+                    Name should be less than 100 characters. </span> </div>
+                </div>
+                <!--<div class="form-group">
+                  <label class="control-label col-md-4">Procedure Code<b>:</b></label>
+                  <div class="col-md-8">
+
+                      <input type="text" name="" class="form-control" maxlength="30"
+                             [(ngModel)]="CurrentBillingItem.ProcedureCode" id="ProcedureCode"
+                             placeholder="Procedure Code" formControlName="ProcedureCode" /><br />
+                      <span class="color-red font-sm" [hidden]="CurrentBillingItem.IsValidCheck('ItemName','maxlength') || !(CurrentBillingItem.IsDirty('ProcedureCode'))">ProcedureCode should be less than 30 characters.</span>
+                  </div>
+              </div>-->
+                <div class="form-group col-md-6">
+                  <label class="control-label col-md-4"> Price<sup>*</sup><b>:</b> </label>
+                  <div class="col-md-8">
+                    <input type="number" name="" required value="" class="form-control" maxlength="100"
+                         [(ngModel)]="CurrentBillingItem.Price" formControlName="Price" id="Price"
+                         placeholder="Price" (change)="NormalPriceOnChange()" />
+                    <span class="color-red font-sm"
+                        [hidden]="CurrentBillingItem.IsValidCheck('Price','required') || !(CurrentBillingItem.IsDirty('Price'))"> Enter
+                    Price </span> </div>
+                </div>
+                <div class="form-group col-md-6">
+                  <label class="control-label col-md-4">Description<b>:</b></label>
+                  <div class="col-md-8">
+                    <input type="text" name="" class="form-control" maxlength="100"
+                         [(ngModel)]="CurrentBillingItem.Description" id="Description"
+                         placeholder="Description" formControlName="Description" />
+                    <br />
+                    <span class="color-red font-sm"
+                        [hidden]="CurrentBillingItem.IsValidCheck('Description','maxlength') || !(CurrentBillingItem.IsDirty('Description'))"> Description
+                    should be less than 100 characters. </span> </div>
+                </div>
+                <div class="col-md-12">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="form-group">
+                        <label class="control-label col-md-4"> Tax ({{coreService.taxLabel}}) Applicable <b>:</b> </label>
+                        <div class="col-md-8">
+                          <div class="input-group">
+                            <div class="icheck-inline">
+                              <label class="mt-checkbox mt-checkbox-outline">
+                                <input id="TaxApplicable" name="TaxApplicable" type="checkbox" value=""
+                                   [(ngModel)]="CurrentBillingItem.TaxApplicable"
+                                   [ngModelOptions]="{standalone: true}">
+                                <span></span> </label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label class="control-label col-md-4"> Discount Applicable <b>:</b> </label>
+                        <div class="col-md-8">
+                          <div class="input-group">
+                            <div class="icheck-inline">
+                              <label class="mt-checkbox mt-checkbox-outline">
+                                <input id="discountApplicable" name="discountApplicable" type="checkbox"
+                                   value="" [(ngModel)]="CurrentBillingItem.DiscountApplicable"
+                                   [ngModelOptions]="{standalone: true}">
+                                <span></span> </label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label class="control-label col-md-4"> Normal Price Applicable <b>:</b> </label>
+                        <div class="col-md-8">
+                          <div class="input-group">
+                            <div class="icheck-inline">
+                              <label class="mt-checkbox mt-checkbox-outline">
+                                <input id="IsNormalPriceApplicable" name="IsNormalPriceApplicable"
+                                   type="checkbox" value=""
+                                   [(ngModel)]="CurrentBillingItem.IsNormalPriceApplicable"
+                                   [ngModelOptions]="{standalone: true}">
+                                <span></span> </label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div *ngIf="CurrentBillingItem.ServiceDepartmentId">
+                        <div class="form-group">
+                          <label class="control-label col-md-4"> Is O.T. <b>:</b> </label>
+                          <div class="input-group">
+                            <div class="col-md-8">
+                              <div class="icheck-inline">
+                                <label class="mt-checkbox mt-checkbox-outline">
+                                  <input id="OT" name="OTProc" type="checkbox" value=""
+                                     (click)="onOTClicked()"
+                                     [(ngModel)]="CurrentBillingItem.IsOT"
+                                     [ngModelOptions]="{standalone: true}">
+                                  <span></span> </label>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="form-group col-md-12">
+                          <label class="control-label col-md-8"> Is Procedure <b>:</b> </label>
+                          <div class="col-md-4">
+                            <div class="input-group">
+                              <div class="icheck-inline">
+                                <label class="mt-checkbox mt-checkbox-outline">
+                                  <input id="procedure" name="OTProc" type="checkbox" value=""
+                                     (click)="onProcClick()"
+                                     [(ngModel)]="CurrentBillingItem.IsProc"
+                                     [ngModelOptions]="{standalone: true}">
+                                  <span></span> </label>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="form-group">
+                        <label class="control-label col-md-5"> Is Doctor Mandatory<b>:</b> </label>
+                        <div class="col-md-7">
+                          <div class="input-group">
+                            <div class="icheck-inline">
+                              <label class="mt-checkbox mt-checkbox-outline">
+                                <input id="isDoctorMandatory" name="isDoctorMandatory" type="checkbox"
+                                   value="" [(ngModel)]="CurrentBillingItem.IsDoctorMandatory"
+                                   [ngModelOptions]="{standalone: true}">
+                                <span></span> </label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label class="control-label col-md-5">
+                        Doctors List
+                        <div id="DoctorListToolbox" class="tooltip"> <span style="cursor: pointer;"> <i class="fa fa-info" style="padding: 0;background-color: #2d68ea;border-radius: 50%;width: 20px;height: 20px;line-height: 20px;text-align: center;font-size: 13px;color: #fff;"></i> </span>
+                          <p class="tooltiptext ttptextdown no-print">List of doctor while choosing the item</p>
+                        </div>
+                        <b>:</b>
+                        </label>
+                        <div class="col-md-7">
+                          <danphe-multiselect [ddl-data]="docterList"
+                                          [pre-selected]="PreSelectedDoctors"
+                                          [placeholder-text]="'---Select Doctor---'"
+                                          [value-property-name]="'EmployeeId'"
+                                          (selected-items-list)="AssignDefaultDocter($event)"
+                                          [display-property-name]="'FullName'"
+                                          [single-selection]="false"> </danphe-multiselect>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label class="control-label col-md-5"> Is Fraction Applicable<b>:</b> </label>
+                        <div class="col-md-7">
+                          <div class="input-group">
+                            <div class="icheck-inline">
+                              <label class="mt-checkbox mt-checkbox-outline">
+                                <input id="isFractionApplicable" name="isFractionApplicable"
+                                   type="checkbox" value=""
+                                   [(ngModel)]="CurrentBillingItem.IsFractionApplicable"
+                                   [ngModelOptions]="{standalone: true}">
+                                <span></span> </label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label class="control-label col-md-5">
+                        Allow Multiple Quantity
+                        <div id="MultipleQuantityToolbox" class="tooltip"> <span style="cursor: pointer;"> <i class="fa fa-question" style="padding: 0;background-color: #2d68ea;border-radius: 50%;width: 20px;height: 20px;line-height: 20px;text-align: center;font-size: 13px;color: #fff;"></i> </span>
+                          <p class="tooltiptext ttptextdown no-print">If not allowed then it'll show warning in billing before sending multiple Quantity (>1). </p>
+							
+                        </div>
+                        <b>:</b>
+                        </label>
+                        <div class="col-md-7">
+                          <div class="input-group">
+                            <div class="icheck-inline">
+                              <label class="mt-checkbox mt-checkbox-outline">
+                                <input id="allowMultipleQty" name="allowMultipleQty" type="checkbox"
+                                   value="" [(ngModel)]="CurrentBillingItem.AllowMultipleQty"
+                                   [ngModelOptions]="{standalone: true}">
+                                <span></span> </label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class=" col-md-6">
+                      <div class="form-group" *ngIf="CurrentBillingItem.IsOT">
+                        <label class="control-label col-md-4"> Category <b>:</b> </label>
+                        <div class="col-md-8">
+                          <div class="input-group">
+                            <div class="icheck-inline">
+                              <label class="mt-checkbox mt-checkbox-outline">
+                                <input name="Category" type="radio" value="Major"
+                                 [(ngModel)]="CurrentBillingItem.Category"
+                                 [ngModelOptions]="{standalone: true}">
+                                <span></span> </label>
+                              <span>Major</span>
+                              <label class="mt-checkbox mt-checkbox-outline">
+                                <input name="Category" type="radio" value="Minor"
+                                 [(ngModel)]="CurrentBillingItem.Category"
+                                 [ngModelOptions]="{standalone: true}">
+                                <span></span> </label>
+                              <span>Minor</span>
+                              <label class="mt-checkbox mt-checkbox-outline">
+                                <input name="Category" type="radio" value="Intermediate"
+                                 [(ngModel)]="CurrentBillingItem.Category"
+                                 [ngModelOptions]="{standalone: true}">
+                                <span></span> </label>
+                              <span>Intermediate</span> </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="form-group" *ngIf="CurrentBillingItem.IsProc">
+                        <label class="control-label col-md-4"> Category <b>:</b> </label>
+                        <div class="col-md-8">
+                          <div class="input-group">
+                            <div class="icheck-inline">
+                              <label class="mt-checkbox mt-checkbox-outline">
+                                <input name="Category" type="radio" value="Large"
+                                 [(ngModel)]="CurrentBillingItem.Category"
+                                 [ngModelOptions]="{standalone: true}">
+                                <span></span> </label>
+                              <span>Large</span>
+                              <label class="mt-checkbox mt-checkbox-outline">
+                                <input name="Category" type="radio" value="Small"
+                                 [(ngModel)]="CurrentBillingItem.Category"
+                                 [ngModelOptions]="{standalone: true}">
+                                <span></span> </label>
+                              <span>Small</span>
+                              <label class="mt-checkbox mt-checkbox-outline">
+                                <input name="Category" type="radio" value="Medium"
+                                 [(ngModel)]="CurrentBillingItem.Category"
+                                 [ngModelOptions]="{standalone: true}">
+                                <span></span> </label>
+                              <span>Medium</span> </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <div style="background-color: #ebf0fb;margin-bottom: 10px;border: 1px solid;border-radius: 5px !important;padding: 15px;border: 1px solid #d9dee8;">
+                    <p style="font-weight: bold;color: #2d68ea;text-align: left;text-decoration: underline;font-size: 16px;margin-bottom: 15px;"> Custom Prices </p>
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="form-group">
+                          <label class="control-label col-md-7"> Insurance Applicable <b>:</b> </label>
+                          <div class="col-md-5">
+                            <div class="input-group">
+                              <div class="icheck-inline">
+                                <label class="mt-checkbox mt-checkbox-outline">
+                                  <input id="insuranceApplicable" name="insuranceApplicable"
+                                     type="checkbox" value=""
+                                     [(ngModel)]="CurrentBillingItem.InsuranceApplicable"
+                                     (ngModelChange)="ConditionalValidationGovtPrice()"
+                                     [ngModelOptions]="{standalone: true}">
+                                  <span></span> </label>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="form-group" *ngIf="CurrentBillingItem.InsuranceApplicable">
+                          <label class="control-label col-md-5"> Government Insurance Price<b>:</b> </label>
+                          <div class="col-md-7">
+                            <input class="form-control" type="number" maxlength="100"
+                               [(ngModel)]="CurrentBillingItem.GovtInsurancePrice" required
+                               value="" placeholder="Price" formControlName="GovtInsurancePrice" />
+                            <span class="color-red font-sm"
+                              [hidden]="CurrentBillingItem.IsValid('GovtInsurancePrice','required') || !(CurrentBillingItem.IsDirty('GovtInsurancePrice'))"> Enter
+                            Price </span> </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row" *ngIf="CurrentBillingItem.InsuranceApplicable">
+                      <div class="col-md-6">
+                        <div class="form-group">
+                          <label class="control-label col-md-7"> Insurance Package <b>:</b> </label>
+                          <div class="col-md-5">
+                            <div class="input-group">
+                              <div class="icheck-inline">
+                                <label class="mt-checkbox mt-checkbox-outline">
+                                  <input type="checkbox" value=""
+                                     [(ngModel)]="CurrentBillingItem.IsInsurancePackage"
+                                     [ngModelOptions]="{standalone: true}">
+                                  <span></span> </label>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="form-group">
+                          <label class="control-label col-md-7"> EHS Price Applicable <b>:</b> </label>
+                          <div class="col-md-5">
+                            <div class="input-group">
+                              <div class="icheck-inline">
+                                <label class="mt-checkbox mt-checkbox-outline">
+                                  <input id="IsEHSPriceApplicable" name="IsEHSPriceApplicable"
+                                     type="checkbox" value=""
+                                     [(ngModel)]="CurrentBillingItem.IsEHSPriceApplicable"
+                                     [ngModelOptions]="{standalone: true}"
+                                     (change)="PriceCategoryChkOnChange('EHS')">
+                                  <span></span> </label>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="form-group" *ngIf="CurrentBillingItem.IsEHSPriceApplicable">
+                          <label class="control-label col-md-5"> EHS Price<b>:</b> </label>
+                          <div class="col-md-7">
+                            <div class="row">
+                              <div class="col-md-10">
+                                <input class="form-control" type="number" maxlength="100"
+                                   [(ngModel)]="CurrentBillingItem.EHSPrice" required value=""
+                                   placeholder="EHS Price" [ngModelOptions]="{standalone: true}" />
+                              </div>
+                              <div class="col-md-2" style="padding: 7px 0px 0px 0px;">
+                                <div id="EHStoolbox" class="tooltip" style="z-index:10" *ngIf="ratioSettings.AutomaticRatioEnabled && ratioSettings.EHS"> <span style="cursor: pointer;"> <i class="fa fa-info" style="padding: 3px 6px 3px 6px;background-color: #c8c8d2;border-radius: 9px;"></i> </span>
+                                  <p class="tooltiptext ttptextdown">EHS Price is {{ratioSettings.EHS}} times than Normal Price. </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="form-group">
+                          <label class="control-label col-md-7"> Foreigner Price Applicable <b>:</b> </label>
+                          <div class="col-md-5">
+                            <div class="input-group">
+                              <div class="icheck-inline">
+                                <label class="mt-checkbox mt-checkbox-outline">
+                                  <input id="IsForeignerPriceApplicable"
+                                     name="IsForeignerPriceApplicable" type="checkbox"
+                                     value=""
+                                     [(ngModel)]="CurrentBillingItem.IsForeignerPriceApplicable"
+                                     [ngModelOptions]="{standalone: true}"
+                                     (change)=" PriceCategoryChkOnChange('Foreigner')">
+                                  <span></span> </label>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="form-group" *ngIf="CurrentBillingItem.IsForeignerPriceApplicable">
+                          <label class="control-label col-md-5"> Foreigner Price<b>:</b> </label>
+                          <!--<div class="col-md-5">
+                        <input class="form-control" type="number" maxlength="100"
+                               [(ngModel)]="CurrentBillingItem.ForeignerPrice" required value=""
+                               placeholder="Foreigner Price"
+                               [ngModelOptions]="{standalone: true}" />
+
+                      </div>-->
+                          <div class="col-md-7">
+                            <div class="row">
+                              <div class="col-md-10">
+                                <input class="form-control" type="number" maxlength="100"
+                                   [(ngModel)]="CurrentBillingItem.ForeignerPrice" required value=""
+                                   placeholder="Foreigner Price"
+                                   [ngModelOptions]="{standalone: true}" />
+                              </div>
+                              <div class="col-md-2" style="padding: 7px 0px 0px 0px;">
+                                <div id="ForeignerToolbox" class="tooltip" style="z-index:8" *ngIf="ratioSettings.AutomaticRatioEnabled && ratioSettings.Foreigner"> <span style="cursor: pointer;"> <i class="fa fa-info" style="padding: 3px 6px 3px 6px;background-color: #c8c8d2;border-radius: 9px;"></i> </span>
+                                  <p class="tooltiptext ttptextdown">Foreigner Price is {{ratioSettings.Foreigner}} times than Normal Price. </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="form-group">
+                          <label class="control-label col-md-7"> SAARC Price Applicable <b>:</b> </label>
+                          <div class="col-md-5">
+                            <div class="input-group">
+                              <div class="icheck-inline">
+                                <label class="mt-checkbox mt-checkbox-outline">
+                                  <input id="IsSAARCPriceApplicable"
+                                     name="IsSAARCPriceApplicable" type="checkbox" value=""
+                                     [(ngModel)]="CurrentBillingItem.IsSAARCPriceApplicable"
+                                     [ngModelOptions]="{standalone: true}"
+                                     (change)="PriceCategoryChkOnChange('SAARC')">
+                                  <span></span> </label>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="form-group" *ngIf="CurrentBillingItem.IsSAARCPriceApplicable">
+                          <label class="control-label col-md-5"> SAARC Price<b>:</b> </label>
+                          <div class="col-md-7">
+                            <div class="row">
+                              <div class="col-md-10">
+                                <input class="form-control" type="number" maxlength="100"
+                                   [(ngModel)]="CurrentBillingItem.SAARCCitizenPrice" required value=""
+                                   placeholder="SAARC CitizenPrice Price"
+                                   [ngModelOptions]="{standalone: true}" />
+                              </div>
+                              <div class="col-md-2" style="padding: 7px 0px 0px 0px;">
+                                <div id="SAARCToolbox" class="tooltip" style="z-index:6" *ngIf="ratioSettings.AutomaticRatioEnabled && ratioSettings.SAARC"> <span style="cursor: pointer;"> <i class="fa fa-info" style="padding: 3px 6px 3px 6px;background-color: #c8c8d2;border-radius: 9px;"></i> </span>
+                                  <p class="tooltiptext ttptextdown">SAARC Price is {{ratioSettings.SAARC}} times than Normal Price. </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="form-group">
+                          <label class="control-label col-md-7"> Foreigner(Insurance) Price Applicable <b>:</b> </label>
+                          <div class="col-md-5">
+                            <div class="input-group">
+                              <div class="icheck-inline">
+                                <label class="mt-checkbox mt-checkbox-outline">
+                                  <input id="IsInsForeignerPriceApplicable"
+                                     name="IsInsForeignerPriceApplicable" type="checkbox" value=""
+                                     [(ngModel)]="CurrentBillingItem.IsInsForeignerPriceApplicable"
+                                     [ngModelOptions]="{standalone: true}"
+                                     (change)="PriceCategoryChkOnChange('InsForeigner')">
+                                  <span></span> </label>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="form-group" *ngIf="CurrentBillingItem.IsInsForeignerPriceApplicable">
+                          <label class="control-label col-md-5"> Foreigner Insurance Price<b>:</b> </label>
+                          <div class="col-md-7">
+                            <div class="row">
+                              <div class="col-md-10">
+                                <input class="form-control" type="number" maxlength="100"
+                                   [(ngModel)]="CurrentBillingItem.InsForeignerPrice" required value=""
+                                   [ngModelOptions]="{standalone: true}" />
+                              </div>
+                              <div class="col-md-2" style="padding: 7px 0px 0px 0px;">
+                                <div id="InsForeignerToolbox" class="tooltip" style="z-index:4" *ngIf="ratioSettings.AutomaticRatioEnabled && ratioSettings.InsForeigner"> <span style="cursor: pointer;"> <i class="fa fa-info" style="padding: 3px 6px 3px 6px;background-color: #c8c8d2;border-radius: 9px;"></i> </span>
+                                  <p class="tooltiptext ttptextdown">Foreigner Insurance Price is {{ratioSettings.InsForeigner}} times than Normal Price. </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group col-md-6">
+                  <label class="control-label col-md-4"> Search Sequence <i class="fa fa-question"
+                     style="padding: 0;background-color: #2d68ea;border-radius: 50%;width: 20px;height: 20px;line-height: 20px;text-align: center;font-size: 13px;color: #fff;"
+                     title="This sets the order in which item will be displayed in Billing-Search"></i> <b>:</b> </label>
+                  <div class="col-md-8">
+                    <input type="number" name="" class="form-control" min="1"
+                         [(ngModel)]="CurrentBillingItem.DisplaySeq" placeholder="search sequence"
+                         [ngModelOptions]="{standalone: true}" />
+                    <br />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="panel-footer">
+              <input type="button" class="btn btn-primary" *ngIf="!update" [disabled]="loading"
+                       (click)="Add()" value="Add" />
+              <input type="button" class="btn btn-primary" *ngIf="update" [disabled]="loading"
+                       (click)="Update()" value="Update" />
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <!--Model Box Body End--> 
+  </div>
+</div>
+<service-department-add *ngIf="showAddServiceDepartmentPopUp"
+                        (callback-add)="OnNewServiceDepartmentAdded($event)"></service-department-add>

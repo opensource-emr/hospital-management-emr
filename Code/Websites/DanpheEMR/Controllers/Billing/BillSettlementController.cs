@@ -15,6 +15,7 @@ using Newtonsoft.Json;
 using DanpheEMR.Security;
 using DanpheEMR.Controllers.Billing;
 using System.Data;
+using DanpheEMR.Enums;
 
 namespace DanpheEMR.Controllers
 {
@@ -79,7 +80,8 @@ namespace DanpheEMR.Controllers
 
                     //for this request type, patientid comes as inputid.
                     var patCreditInvoice = (from bill in billingDbContext.BillingTransactions.Include("BillingTransactionItems")
-                                            where bill.BillStatus == "unpaid" && bill.ReturnStatus != true && bill.PatientId == patientId
+                                            where bill.BillStatus == ENUM_BillingStatus.unpaid // "unpaid" 
+                                            && bill.ReturnStatus != true && bill.PatientId == patientId
 
                                             //&& bill.IsInsuranceBilling == false
                                             //sud:5June'19
@@ -89,7 +91,15 @@ namespace DanpheEMR.Controllers
 
                                             select bill).ToList<BillingTransactionModel>().OrderBy(b => b.BillingTransactionId);
 
-                    var patCreditDetails = new { Patient = currPatient, CreditItems = patCreditInvoice };
+                    AdmissionDbContext admissionDbContext = new AdmissionDbContext(base.connString);
+
+                    bool isAdmitted = (from patAdmission in admissionDbContext.Admissions
+                                       where patAdmission.PatientId == patientId
+                                           && patAdmission.AdmissionStatus == "admitted"
+                                       select patAdmission.AdmissionStatus
+                                          ).FirstOrDefault() == null ? false : true;
+
+                    var patCreditDetails = new { Patient = currPatient, CreditItems = patCreditInvoice, IsPatientAdmitted = isAdmitted };
 
 
                     responseData.Results = patCreditDetails;
@@ -196,7 +206,7 @@ namespace DanpheEMR.Controllers
                                 {
                                     billingDbContext.BillingTransactions.Attach(txn);
                                     txn.SettlementId = settlement.SettlementId;
-                                    txn.BillStatus = "paid";
+                                    txn.BillStatus = ENUM_BillingStatus.paid;// "paid";
                                     txn.PaidAmount = txn.TotalAmount;
                                     txn.PaidDate = settlement.SettlementDate;
                                     txn.PaymentReceivedBy = currentUser.EmployeeId;//added: sud: 29may'18
@@ -221,7 +231,7 @@ namespace DanpheEMR.Controllers
                                             txnItems[i] = BillingTransactionBL.UpdateTxnItemBillStatus(billingDbContext,
                                             txnItems[i],
                                             "paid",
-                                            currentUser.EmployeeId,
+                                            currentUser,
                                             settlement.SettlementDate,
                                             settlement.CounterId);
                                         }
@@ -240,7 +250,7 @@ namespace DanpheEMR.Controllers
                                 BillingDeposit depositModel = new BillingDeposit()
                                 {
                                     Amount = settlement.DepositDeducted,
-                                    DepositType = "depositdeduct",
+                                    DepositType = ENUM_BillDepositType.DepositDeduct,// "depositdeduct",
                                     IsActive = true,
                                     FiscalYearId = BillingBL.GetFiscalYear(billingDbContext).FiscalYearId,
                                     Remarks = "Deposit used in Settlement Receipt No. SR" + settlement.SettlementReceiptNo + " on " + settlement.SettlementDate,

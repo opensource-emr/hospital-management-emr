@@ -16,7 +16,7 @@ import { LabSticker } from "../../shared/lab-sticker.model";
 import { CoreService } from "../../../core/shared/core.service";
 
 @Component({
-  templateUrl: "../../../view/lab-view/CollectSampleLabTests.html",  //"/LabView/CollectSampleLabTests"
+  templateUrl: "./lab-tests-collect-sample.html", 
   styleUrls: ['./lab-tests-collect-sample.style.css']
 })
 
@@ -31,8 +31,9 @@ export class LabTestsCollectSampleComponent {
   public showModalBox: boolean = false;
   public showConfirmationBox: boolean = false;
   public isAllTestSelected: boolean = true;
-  public LatestSampleCode = { SampleCode: ' ', SampleNumber: 0, BarCodeNumber: 0 }
-  public requisitionlist: Array<LabTestRequisition> = [];
+  public LatestSampleCode = { SampleCode: ' ', SampleNumber: 0, SampleLetter: '', BarCodeNumber: 0 };
+  public LastSampleCodeOfPat = { SampleNumber: ' ', BarCodeNumber: 0, SampleDate: '', SampleCodeFormatted: '', IsSelected: false };
+  public requisitionlist: Array<number> = [];
   public showChangeTest: boolean = false;
   public labTestToChange: any;
   public Providers: Array<any> = [];
@@ -48,6 +49,7 @@ export class LabTestsCollectSampleComponent {
 
   public PatientLabInfo: LabSticker = new LabSticker();
   public showlabsticker: boolean = false;
+  public loading: boolean = false;
 
   //ashim: 20Sep2018: Added for change Run number feature.
   public sampleCreatedOn: string;
@@ -57,6 +59,10 @@ export class LabTestsCollectSampleComponent {
 
 
   public showInsuranceFlag: boolean = false;//sud:16Jul'19
+  public fromLabRequisition: boolean = true;
+  public showPrintEmptySheet: boolean = false;
+  public showEmptySheet: boolean = false;
+  public allReqIdListForPrint: Array<number> = [];
 
 
   constructor(public labBLService: LabsBLService,
@@ -67,7 +73,6 @@ export class LabTestsCollectSampleComponent {
     public msgBoxServ: MessageboxService,
     public changeDetector: ChangeDetectorRef,
     public coreService: CoreService) {
-
     this.patientService = _patientservice;
     this.labResultService = _labresultservice;
     this.currentUser = this.securityService.GetLoggedInUser().EmployeeId;
@@ -75,14 +80,14 @@ export class LabTestsCollectSampleComponent {
     this.visitType = this.patientService.getGlobal().PatientType;
     this.RunNumberType = this.patientService.getGlobal().RunNumberType;
     this.RequisitionId = this.patientService.getGlobal().RequisitionId;
-    this.wardNumber = this.patientService.getGlobal().WardName;
+    this.wardNumber = this.patientService.getGlobal().WardName;   
+  }
 
+  ngOnInit() {
     this.ListLabTestOfPatient();
-
     this.labResultService.CreateNewGlobalLabTestResult();
     this.sampleCreatedOn = moment().format('YYYY-MM-DD HH:mm');
     this.GetLatestSampleCode();
-
     this.SetInsuranceFlagParam();//sud:16Jul'19
   }
 
@@ -151,12 +156,14 @@ export class LabTestsCollectSampleComponent {
 
   GetLatestSampleCode(): void {
     this.sampleCreatedOn = this.sampleCreatedOn ? this.sampleCreatedOn : moment().format('YYYY-MM-DD HH:mm');
-    this.labBLService.GetLatestSampleCode(this.visitType, this.sampleCreatedOn, this.RunNumberType)
+    this.labBLService.GetLatestSampleCode(this.visitType, this.sampleCreatedOn, this.RunNumberType, this.patientId)
       .subscribe(res => {
         if (res.Status == 'OK' && res.Results) {
           this.LatestSampleCode.SampleCode = res.Results.SampleCode;
           this.LatestSampleCode.SampleNumber = res.Results.SampleNumber;
           this.LatestSampleCode.BarCodeNumber = res.Results.BarCodeNumber;
+          this.LatestSampleCode.SampleLetter = res.Results.SampleLetter;
+          this.LastSampleCodeOfPat = res.Results.ExistingBarCodeNumbersOfPatient;
         }
         else {
           this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
@@ -198,12 +205,15 @@ export class LabTestsCollectSampleComponent {
           //labTest.SmNumber = res.SmNumber;
           this.patientTestCSVs.push(labTest);
         });
-      }
+      }      
       else {
         this.msgBoxServ.showMessage("failed", ["lab bill not paid"]);
 
         this.router.navigate(['/Lab/Requisition']);
       }
+      if (this.coreService.ShowEmptyReportSheetPrint()) {
+        this.showPrintEmptySheet = true;
+      }      
     }
     else {
       this.msgBoxServ.showMessage("error", [res.ErrorMessage]);
@@ -211,25 +221,31 @@ export class LabTestsCollectSampleComponent {
   }
 
   CheckIfSampleCodeExist() {
-    if (this.LatestSampleCode.SampleNumber) {
-      this.labBLService.GetSampleCodeCompared(this.LatestSampleCode.SampleNumber, this.visitType, this.sampleCreatedOn, this.RunNumberType)
-        .subscribe(res => {
-          if (res.Status == "OK" && res.Results) {
-            if (res.Results.Exist) {
-              this.sampleCodeExistingDetail = res.Results;
-              this.showConfirmationBox = true;
-            }
-            else {
-              this.AddSampleCode();
-            }
-          }
-        });
+    if (this.loading) {
+      if (this.LastSampleCodeOfPat && this.LastSampleCodeOfPat.BarCodeNumber && this.LastSampleCodeOfPat.IsSelected) {
+        this.AddSampleCode();
+      } else {
+        if (this.LatestSampleCode.SampleNumber) {
+          this.labBLService.GetSampleCodeCompared(this.LatestSampleCode.SampleNumber, this.visitType, this.sampleCreatedOn, this.RunNumberType)
+            .subscribe(res => {
+              if (res.Status == "OK" && res.Results) {
+                if (res.Results.Exist) {
+                  this.sampleCodeExistingDetail = res.Results;
+                  this.showConfirmationBox = true;
+                  this.loading = false;
+                }
+                else {
+                  this.AddSampleCode();
+                }
+              } else { this.loading = false; }
+            });
+        } else {
+          this.msgBoxServ.showMessage("failed", ["Enter valid run number."]);
+          this.loading = false; 
+        }       
+      }
+      
     }
-    else {
-      this.msgBoxServ.showMessage("failed", ["Enter valid run number."]);
-
-    }
-
   }
 
   //updating the sampleCode
@@ -237,31 +253,47 @@ export class LabTestsCollectSampleComponent {
     this.showConfirmationBox = false;
     var isLastSampleUsed: boolean = false;
     var selectedTests: Array<any> = new Array<any>();
+
+    if (this.LastSampleCodeOfPat && this.LastSampleCodeOfPat.BarCodeNumber && this.LastSampleCodeOfPat.IsSelected) {
+      isLastSampleUsed = true;
+      var continueUsingLastSample: boolean;
+      continueUsingLastSample = window.confirm("You have selected UseLastSampleCode for some tests. Do you wish to continue?");
+      if (!continueUsingLastSample)
+        return;
+    } 
+
+    this.allReqIdListForPrint = [];
     this.patientTestCSVs.filter(sam => {
       if (sam.IsSelected) {
+        this.allReqIdListForPrint.push(sam.RequisitionId);
         if (this.LatestSampleCode) {
           sam.SampleCode = this.LatestSampleCode.SampleNumber.toString();
           sam.SampleCreatedOn = this.sampleCreatedOn;
           sam.SampleCreatedBy = null;
           sam.BarCodeNumber = this.LatestSampleCode.BarCodeNumber;
         }
+
+        if (this.LastSampleCodeOfPat && this.LastSampleCodeOfPat.BarCodeNumber && this.LastSampleCodeOfPat.IsSelected) {
+          sam.SampleCode = this.LastSampleCodeOfPat.SampleNumber.toString();
+          sam.SampleCreatedOn = this.LastSampleCodeOfPat.SampleDate;
+          sam.SampleCreatedBy = null;
+          sam.BarCodeNumber = this.LastSampleCodeOfPat.BarCodeNumber;
+          isLastSampleUsed = true;
+        } 
+        
         var test = _.omit(sam, ['SpecimenList']);
         selectedTests.push(test);
       }
     });
 
-    if (isLastSampleUsed) {
-      var continueUsingLastSample: boolean;
-      continueUsingLastSample = window.confirm("You have selected UseLastSampleCode for some tests. Do you wish to continue?");
-      if (!continueUsingLastSample)
-        return;
-    }
+    
 
     if (selectedTests.length) {
       this.labBLService.PutSampleCode(selectedTests, this.currentUser)
         .subscribe(res => {
           if (res.Status == 'OK') {
             this.sampleDetail = res.Results;
+            this.requisitionlist = [];
             this.UpdateSampleCodes();
 
 
@@ -314,6 +346,7 @@ export class LabTestsCollectSampleComponent {
         if (!test.UseLastSampleCode) {
           test.SampleCode = this.sampleDetail.FormattedSampleCode;
           test.BarCodeNumber = this.sampleDetail.BarCodeNumber;
+          this.requisitionlist.push(test.RequisitionId);
         }
         else {
           test.SampleCode = test.LastSampleCode;
@@ -382,13 +415,13 @@ export class LabTestsCollectSampleComponent {
   }
 
   //added: ashim: 20Sep2018: For update sample date feature.
-  ConfirmChangeSampleCreatedOn() {
+  public ConfirmChangeSampleCreatedOn() {
     var createNew: boolean = window.confirm('Are you sure to change Sample Collection Date?');;
     if (createNew)
       this.showChangeSampleCreatedOn = true;
   }
 
-  CheckSampleCollectionDate() {
+  public CheckSampleCollectionDate() {
     let dateDiff = moment(moment(this.sampleCreatedOn).format('YYYY-MM-DD')).diff(moment().format('YYYY-MM-DD'));
     //if>0 then it is future date.
     if (dateDiff <= 0) {
@@ -398,8 +431,20 @@ export class LabTestsCollectSampleComponent {
       this.msgBoxServ.showMessage("failed", ["Select valid sample collection date."]);
     }
   }
-  CancelDateChange() {
+  public CancelDateChange() {
     this.sampleCreatedOn = moment().format("YYYY-MM-DD HH:mm");
     this.showChangeSampleCreatedOn = false;
+  }
+
+  public PrintEmptySheet() {
+    this.showEmptySheet = true;
+  }
+
+  public CloseEmptyReportSheetPopUp($event) {
+    if ($event.close) { this.CloseEmptySheet(); }
+  }
+
+  public CloseEmptySheet() {
+    this.showEmptySheet = false;
   }
 }

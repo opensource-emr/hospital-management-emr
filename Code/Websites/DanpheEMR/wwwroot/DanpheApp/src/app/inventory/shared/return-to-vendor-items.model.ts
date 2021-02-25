@@ -1,4 +1,4 @@
-﻿import {
+import {
     NgForm,
     FormGroup,
     FormControl,
@@ -6,9 +6,11 @@
     FormBuilder,
     ReactiveFormsModule
 } from '@angular/forms';
-import { ItemMaster } from "./item-master.model"
+import { ItemMaster } from "./item-master.model";
+
 export class ReturnToVendorItem {
     public ReturnToVendorItemId: number = 0;
+    public ReturnToVendorId: number = null;
     public VendorId: number = null;
     public ItemId: number = null;
     public VendorName: string = null; 

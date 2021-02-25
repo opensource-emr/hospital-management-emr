@@ -1,0 +1,213 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="row">
+      <h2 class="text-center">Prescription Note</h2>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="row">
+      <div class="col-md-12 form-group">
+        <h3>Clinical Information</h3>
+      </div>
+    </div>
+    <div class="row form-group">
+      <div class="col-md-4">Chief Complaint</div>
+      <div class="col-md-8"><input type="text" [(ngModel)]="prescriptionNotes.ChiefComplaint" class="form-control" /></div>
+    </div>
+    <div class="row form-group">
+      <div class="col-md-4">History of Presenting Illness</div>
+      <div class="col-md-8"><input type="text" [(ngModel)]="prescriptionNotes.HistoryOfPresentingIllness" class="form-control" /></div>
+    </div>
+    <div class="row form-group">
+      <div class="col-md-4">Review of System</div>
+      <div class="col-md-8"><input type="text" [(ngModel)]="prescriptionNotes.ReviewOfSystems" class="form-control" /></div>
+    </div>
+
+    <div class="row form-group">
+      <div class="col-md-12">
+        <h3>Rx Medication</h3>
+      </div>
+    </div>
+    <div class="row form-group">
+      <div class="col-md-4">Old Medication to be stopped</div>
+      <div class="col-md-8"><input type="text" [(ngModel)]="prescriptionNotes.OldMedicationStopped" class="form-control" /></div>
+    </div>
+    <div class="row form-group">
+      <div class="col-md-4">New Medication to be started</div>
+      <div class="col-md-8"><input type="text" [(ngModel)]="prescriptionNotes.NewMedicationStarted" class="form-control" /></div>
+    </div>
+
+    <div class="row form-group">
+      <div class="col-md-12">
+        <h3>Instruction</h3>
+      </div>
+    </div>
+    <div class="row form-group">
+      <div class="col-md-4">Follow Up in</div>
+      <div class="col-md-8">
+        <div class="row">
+          <div class="col-md-4"><input type="text" [(ngModel)]="prescriptionNotes.FollowUpTime" class="form-control" /></div>
+          <div class="col-md-4">
+            <select [(ngModel)]="prescriptionNotes.FollowUpUnit">
+              <option value="days">Days</option>
+              <option value="weeks">Weeks</option>
+              <option value="months">Months</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row form-group">
+      <div class="col-md-4">Remarks</div>
+      <div class="col-md-8"><input type="text" [(ngModel)]="prescriptionNotes.Remarks" class="form-control" /></div>
+    </div>
+
+  </div>
+
+  <div class="col-md-6">
+    <div class="row">
+      <div class="col-md-12 form-group">
+        <h3 style="visibility: hidden;">Other Informations</h3>
+      </div>
+    </div>
+    <div class="row form-group">
+      <div class="col-md-4">Clinical Notes</div>
+      <div class="col-md-8"><input type="text" [(ngModel)]="prescriptionNotes.PrescriptionNoteText" class="form-control" /></div>
+    </div>
+    <div class="row form-group">
+      <div class="col-md-4">Diagnosis(ICD 10 code)</div>
+      <div class="col-md-8" *ngIf="prescriptionNotes.ICDList && prescriptionNotes.ICDList.length>0">
+        <div class="row margin-5-bt" *ngFor="let icddata of prescriptionNotes.ICDList; let idx = index">
+          <div class="col-md-9">
+            <div class="autocomplete-item">
+              <div>
+                <input danphe-auto-complete
+                       class="form-control"
+                       [(ngModel)]="prescriptionNotes.ICDList[idx]"
+                       [source]="ICD10List"
+                       [list-formatter]="ICDListFormatter"
+                       placeholder="Select ICD10"
+                       display-property-name="ICD10Description"
+                       onClick="this.select();"
+                       match-formatted="true"
+                       [grid-sort]="'ICD10Description'"
+                       id="{{ 'icd10-box'+idx }}"
+                       max-num-list="20" />
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3" *ngIf="prescriptionNotes.ICDList && prescriptionNotes.ICDList.length > 1">
+            <button class="btn btn-danger" (click)="DeleteRow(idx)">
+              <i class="fa fa-close"></i>
+            </button>
+          </div>
+        </div>
+        <div class="row margin-15-vr">
+          <div class="col-md-4"><button class="btn btn-primary" (click)="AddNewICDRow()">Add ICD</button></div>
+        </div>
+      </div>
+    </div>
+    <div class="row form-group">
+      <div class="col-md-4">ICD Remarks</div>
+      <div class="col-md-8">
+        <input type="text" [(ngModel)]="prescriptionNotes.ICDRemarks" class="form-control" />
+      </div>
+
+      <div class="row">
+        <div class="col-md-12 form-group">
+          <h3>Lab and Orders</h3>
+        </div>
+        <div class="col-md-12">
+          <div class="row form-group">
+            <div class="col-md-12">Lab and Orders</div>
+            <div class="col-md-12">
+              <div class="row">
+                <div class="col-md-4">
+                  <select class="form-control" [(ngModel)]="selItemType" style="width:90%; height: 30px;" (ngModelChange)="ItemsTypeOnChange()">
+                    <option value="All">----------</option>
+                    <option value="Lab">Labs</option>
+                    <option value="Imaging">Imaging</option>
+                    <option value="Others">Others</option>
+                  </select>
+                </div>
+                <div class="col-md-8">
+                  <div class="input-group srchTbx" style="width: 100%;">
+                    <input danphe-auto-complete class="form-control round-input" aria-label="search"
+                           [(ngModel)]="selOrdItem"
+                           [source]="ordItemsFiltered"
+                           [list-formatter]="orderItemsListFormatter"
+                           placeholder="search order items"
+                           display-property-name="ItemName"
+                           max-num-list="20"
+                           match-formatted="false"
+                           (valueChanged)="OrderItemValueChanged()"
+                           id="acOrderItem"
+                           onClick="this.select();" />
+
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row form-group">
+            <div class="col-md-12">
+              <div class="order-item-list">
+                <div class="ord-new-items">
+                  <div class="item-type-head">
+                    Lab
+                  </div>
+
+                  <div class="item-type-name">
+                    <ng-container *ngFor="let itm of prescriptionNotes.SelectedOrderItems;">
+                      <span *ngIf="itm.PreferenceType == 'Lab'" style="background-color: #f0f1f3;padding: 3px;display: inline-block;">
+                        <i class="fa fa-close" style="font-size: 18px;color: #c12616;"
+                           (click)="RemoveOrderItem(itm)" title="Remove this item"></i>
+                        {{itm.ItemName}}
+                      </span>
+                    </ng-container>
+                  </div>
+                </div>
+              </div>
+
+              <div class="order-item-list">
+                <div class="ord-new-items">
+                  <div class="item-type-head">
+                    Imaging
+                  </div>
+
+                  <div class="item-type-name">
+                    <ng-container *ngFor="let itm of prescriptionNotes.SelectedOrderItems;">
+                      <span *ngIf="itm.PreferenceType == 'Imaging'" style="background-color: #f0f1f3;padding: 3px;display: inline-block;">
+                        <i class="fa fa-close" style="font-size: 18px;color: #c12616;"
+                           (click)="RemoveOrderItem(itm)" title="Remove this item"></i>
+                        {{itm.ItemName}}
+                      </span>
+                    </ng-container>
+                  </div>
+                </div>
+              </div>
+
+              <div class="order-item-list">
+                <div class="ord-new-items">
+                  <div class="item-type-head">
+                    Others
+                  </div>
+
+                  <div class="item-type-name">
+                    <ng-container *ngFor="let itm of prescriptionNotes.SelectedOrderItems;">
+                      <span *ngIf="itm.PreferenceType == 'Others'" style="background-color: #f0f1f3;padding: 3px;display: inline-block;">
+                        <i class="fa fa-close" style="font-size: 18px;color: #c12616;"
+                           (click)="RemoveOrderItem(itm)" title="Remove this item"></i>
+                        {{itm.ItemName}}
+                      </span>
+                    </ng-container>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

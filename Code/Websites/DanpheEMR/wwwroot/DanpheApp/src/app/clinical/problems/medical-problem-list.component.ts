@@ -1,4 +1,4 @@
-﻿import { Component, ChangeDetectorRef } from "@angular/core";
+import { Component, ChangeDetectorRef } from "@angular/core";
 import { Router } from '@angular/router';
 import { ProblemsBLService } from '../shared/problems.bl.service';
 
@@ -173,6 +173,7 @@ export class MedicalProblemListComponent {
         resMedical.ResolvedDate = moment().format('YYYY-MM-DD');
         resMedical.Note = _active.Note;
         resMedical.PatientId = _active.PatientId;
+        resMedical.PrincipleProblem = _active.PrincipleProblem;
         this.addActiveProblemBox = false;
         //this.Initialize();
         this.problemsBLService.Resolved(_active)

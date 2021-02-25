@@ -20,12 +20,18 @@ namespace DanpheEMR.ServerModel
         public DateTime? CreatedOn { get; set; }
         public int? ModifiedBy { get; set; }
         public DateTime? ModifiedOn { get; set; }
+        public DateTime? HoldedOn { get; set; }
         public bool IsActive { get; set; }
         public WardModel Ward { get; set; }
-
+        public bool? IsReserved { get; set; }
+        public bool? OnHold { get; set; }
         [NotMapped]
         public int BedNumFrm { get; set; }
         [NotMapped]
         public int BedNumTo { get; set; }
+        //[NotMapped]
+        //public string ReservedByPatient { get; set; }
+        //[NotMapped]
+        //public DateTime? ReservedForDate { get; set; }
     }
 }

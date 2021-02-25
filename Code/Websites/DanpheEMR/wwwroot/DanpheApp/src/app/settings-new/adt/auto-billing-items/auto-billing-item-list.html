@@ -1,0 +1,131 @@
+<div class="row" *ngIf="!enable">
+  <div class="col-md-12" style="padding-bottom: 18px;">
+    <div class="form-actions">
+      <input type="button" class="btn btn-primary" [disabled]="loading" (click)="checkEnable()" value="Enable Auto Add Items" />
+    </div>
+  </div>
+</div>
+<div class="row" *ngIf="enable">
+  <div class="col-md-12">
+    <div class="row">
+      <div class="col-md-9" style="margin-right:10%;margin-right:10%;border-bottom-color:black">
+        <table class="table table-striped table-hover table-bordered" style="background-color:initial;margin-top:10px" border="0">
+          <tr>
+            <td colspan="4" align="center"><h3 style="font-weight:bold;">Auto Billing Items</h3></td>
+          </tr>
+          <tr>
+            <td align="center"><b>SN.</b></td>
+            <th align="center">Service Department Name</th>
+            <th align="center">Item Name</th>
+          </tr>
+          <tr *ngFor="let itm of txnItemList;let i=index;">
+            <td align="center">{{i+1}}</td>
+            <td>{{itm.ServiceDepartmentName}}</td>
+            <td>{{itm.ItemName}}</td>
+          </tr>
+        </table>
+        <hr />
+        <table>
+          <tr>
+            <td><h4 style="text-decoration:underline">Auto Add Bill Item: </h4></td>
+            <td *ngIf="AutoAddBillingItems"><h4><b>&nbsp;&nbsp;True</b></h4></td>
+            <td *ngIf="!AutoAddBillingItems"><h4><b>&nbsp;&nbsp;False</b></h4></td>
+            <!--<td><input style="width: 18px;height: 18px;float:right" type="checkbox" name="DoAutoAddBedItem" [disabled] [(ngModel)]="autoBillingItemList.DoAutoAddBedItem" value="" /></td>--> 
+          </tr>
+          <tr>
+            <td><h4 style="text-decoration:underline">Auto Add Bed Item: </h4></td>
+            <td *ngIf="AutoAddBedItem"><h4><b>&nbsp;&nbsp;True</b></h4></td>
+            <td *ngIf="!AutoAddBedItem"><h4><b>&nbsp;&nbsp;False</b></h4></td>
+            <!--<td><input style="width: 18px;height: 18px;float:right" type="checkbox" name="DoAutoAddBillingItems" [disabled] [(ngModel)]="autoBillingItemList.DoAutoAddBillingItems" value="" /></td>--> 
+          </tr>
+        </table>
+        <hr />
+      </div>
+    </div>
+    <div class="col-md-9" style="float:none;border-top-color:black;text-align:center"> <a class="btn blue bordered" (click)="showAutoBillingItemPopUp=true"> <span class="glyphicon glyphicon-edit"></span> Edit </a> </div>
+  </div>
+</div>
+
+<!--Model-Box-->
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showAutoBillingItemPopUp">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption no-margin">
+            <h3> <span>Update Auto Billing Items</span> </h3>
+            <a class="btn btn-danger" (click)="ClosePopUp()" title="Cancel">X</a> </div>
+          <div class="form-body clearfix">
+            <table class="table table-striped table-hover inv_table padLess_table table-bordered" style="background-color:initial;margin-top:10px">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th sortable-header col="department"> <b>Department</b> </th>
+                  <th></th>
+                  <th sortable-header col="itemnames"><b>ItemName</b></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of txnItemList; let i = index">
+                  <td><a (click)="DeleteRow(i)"><i class="btn btn-danger fa fa-times"></i></a></td>
+                  <td><form [formGroup]="row.BillingItemValidator" class="form-horizontal">
+                      <input class="form-control" danphe-auto-complete
+                                                   style="width: 300px;"
+                                                   formControlName="ServiceDepartmentId"
+                                                   [ngClass]="{'border-red': row.IsDirty('ServiceDepartmentId') && !row.IsValid('ServiceDepartmentId','required'), 'border-red': !row.IsValidSelDepartment }"
+                                                   [(ngModel)]="selectedServDepts[i]"
+                                                   [list-formatter]="ServiceDeptListFormatter"
+                                                   [source]="srvdeptList"
+                                                   placeholder="Enter Department"
+                                                   display-property-name="ServiceDepartmentName"
+                                                   value-property-name=null
+                                                   (focusout)="ServiceDeptOnChange(i);"
+                                                   match-formatted="true"
+                                                   onClick="this.select();"
+                                                   max-num-list="10" />
+                      <span class="color-red font-sm" [hidden]="row.IsValid('ServiceDepartmentId','required') || !(row.IsDirty('ServiceDepartmentId'))">Select Service Department from List</span>
+                    </form></td>
+                  <td><a (click)="AddRow(i)"><i class="fa fa-plus btn btn-success"></i></a></td>
+                  <td><form [formGroup]="row.BillingItemValidator" class="form-horizontal">
+                      <input class="form-control" danphe-auto-complete
+                                                   style="width:300px"
+                                                   formControlName="ItemId"
+                                                   [ngClass]="{'border-red': row.IsDirty('ItemId') && !row.IsValid('ItemId','required'), 'border-red': !row.IsValidSelItemName }"
+                                                   [(ngModel)]="selectedBillItems[i]"
+                                                   [source]="row.filteredItem"
+                                                   placeholder="Enter Item Name"
+                                                   display-property-name="ItemName"
+                                                   [list-formatter]="ItemsListFormatter"
+                                                   value-property-name=null
+                                                   (focusout)="AssignSelectedBillItem(i)"
+                                                   onclick="this.select();"
+                                                   match-formatted="true"
+                                                   max-num-list="10" />
+                      <div class="color-red font-sm" *ngIf="row.IsDuplicateItem">Duplicate Item not allowed</div>
+                      <span class="color-red font-sm" [hidden]="row.IsValid('ItemId','required') || !(row.IsDirty('ItemId'))">Select Item from the list</span>
+                    </form></td>
+                </tr>
+              </tbody>
+            </table>
+            <hr />
+            <table>
+              <tr>
+                <td><h4>Auto Add Bill Item </h4></td>
+                <td><label class="mt-checkbox mt-checkbox-outline">
+					<input style="width: 18px;height: 18px;float:right" type="checkbox" name="DoAutoAddBillingItems" [(ngModel)]="autoBillingItemList.DoAutoAddBillingItems" value="" /><span></span>
+					</label></td>
+              </tr>
+              <tr>
+                <td><h4>Auto Add Bed Item </h4></td>
+                <td><label class="mt-checkbox mt-checkbox-outline"><input style="width: 18px;height: 18px;float:right" type="checkbox" name="DoAutoAddBedItem" [(ngModel)]="autoBillingItemList.DoAutoAddBedItem" value="" /><span></span></label></td>
+              </tr>
+            </table>
+          </div>
+          <div class="panel-footer">
+            <input type="button" class="btn btn-primary" [disabled]="loading" (click)="loading=true;UpdateAutoBillingItems()" value="Update" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

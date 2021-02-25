@@ -613,6 +613,7 @@ namespace DanpheEMR.Controllers.ReportingNew
             }
         }
 
+
         public FileContentResult ExportToExcelBilDeptSummary(DateTime FromDate, DateTime ToDate)
         {
             try
@@ -708,6 +709,109 @@ namespace DanpheEMR.Controllers.ReportingNew
                 throw ex;
             }
         }
+
+
+        public FileContentResult ExportToExcelRefSummary(DateTime FromDate, DateTime ToDate)
+        {
+            try
+            {
+                ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
+                List<SqlParameter> paramList = new List<SqlParameter>() { new SqlParameter("@FromDate", FromDate), new SqlParameter("@ToDate", ToDate) };
+                DataSet excelData = DALFunctions.GetDatasetFromStoredProc("SP_Report_BIL_ReferralSummary", paramList, reportingDbContext);
+                ExcelExportHelper export = new ExcelExportHelper("Sheet1");
+
+                //creating list for adding the column 
+                List<ColumnMetaData> columnamesForExcel = new List<ColumnMetaData>();
+
+                // passing the name and the function we have to perform like sum,count etc 
+                columnamesForExcel.Add(new ColumnMetaData() { DisplaySeq = 0, ColName = "ReferrerName", ColDisplayName = "Referred By" });
+                columnamesForExcel.Add(new ColumnMetaData() { DisplaySeq = 1, ColName = "SubTotal", ColDisplayName = "Gross Total", Formula = ColumnFormulas.Sum });
+                columnamesForExcel.Add(new ColumnMetaData() { DisplaySeq = 2, ColName = "Discount", ColDisplayName = "Discount", Formula = ColumnFormulas.Sum });
+                columnamesForExcel.Add(new ColumnMetaData() { DisplaySeq = 3, ColName = "Refund", ColDisplayName = "Refund", Formula = ColumnFormulas.Sum });
+                columnamesForExcel.Add(new ColumnMetaData() { DisplaySeq = 4, ColName = "NetTotal", ColDisplayName = "Net Total", Formula = ColumnFormulas.Sum });
+                columnamesForExcel.Add(new ColumnMetaData() { DisplaySeq = 5, ColName = "IsExtReferrer", ColDisplayName = "Is External" });
+                ////Sorted ColMetadata in DisplaySequenceOrder 
+                //////Its Required Because in LoadFromDataTable Function we Require ColMetadata in Sorted Form 
+                var FinalColsForExcel = columnamesForExcel.OrderBy(x => x.DisplaySeq).ToList();
+
+
+                //If you want to remove some columns from datatable then run below function
+                //first provide column name in list
+                //column name must be same as dataTable column name
+                //after removing columnName you cant create columnMetadata details for this column
+                List<string> RemoveColName = new List<string>();
+                RemoveColName.Add("ReferrerId");
+
+                string excelHeader = "Referral Summary Report. From: " + FromDate.ToString("yyyy-MM-dd") + " To: " + ToDate.ToString("yyyy-MM-dd");
+
+                //passing the collection in exportExcelHelper 
+                export.LoadFromDataTable(FinalColsForExcel, excelData.Tables[0], excelHeader, true, true, removeColNameList: RemoveColName);
+
+                //this used to export the package in excel...
+                byte[] filecontent = export.package.GetAsByteArray();
+                return File(filecontent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                     , "ReferralSummary.xlsx");
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+
+        public FileContentResult ExportToExcelBilRefItemSummary(DateTime FromDate, DateTime ToDate, int ProviderId, string SrvDeptName)
+        {
+            try
+            {
+                ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
+                List<SqlParameter> paramList = new List<SqlParameter>()
+                {
+                    new SqlParameter("@FromDate", FromDate),
+                    new SqlParameter("@ToDate", ToDate),
+                    new SqlParameter("@DoctorId", ProviderId),
+                    new SqlParameter("@SrvDeptName", SrvDeptName)
+                };
+                DataSet rData = DALFunctions.GetDatasetFromStoredProc("SP_Report_BIL_ReferralItemsSummary", paramList, reportingDbContext);
+                ExcelExportHelper export = new ExcelExportHelper("Sheet1");
+
+                //creating list for adding the column 
+                List<ColumnMetaData> columnamesForExcel = new List<ColumnMetaData>();
+
+                // passing the name and the function we have to perform like sum,count etc 
+                columnamesForExcel.Add(new ColumnMetaData() { DisplaySeq = 0, ColName = "Date", ColDisplayName = "Billing Date", Formula = ColumnFormulas.Date });
+                columnamesForExcel.Add(new ColumnMetaData() { DisplaySeq = 1, ColName = "DoctorName", ColDisplayName = "Doctor" });
+                columnamesForExcel.Add(new ColumnMetaData() { DisplaySeq = 2, ColName = "PatientCode", ColDisplayName = "Patient Code" });
+                columnamesForExcel.Add(new ColumnMetaData() { DisplaySeq = 3, ColName = "PatientName", ColDisplayName = "Patient Name" });
+                columnamesForExcel.Add(new ColumnMetaData() { DisplaySeq = 4, ColName = "ServiceDepartmentName", ColDisplayName = "Service Department" });
+                columnamesForExcel.Add(new ColumnMetaData() { DisplaySeq = 5, ColName = "ItemName", ColDisplayName = "Item Name" });
+                columnamesForExcel.Add(new ColumnMetaData() { DisplaySeq = 6, ColName = "Price", ColDisplayName = "Price" });
+                columnamesForExcel.Add(new ColumnMetaData() { DisplaySeq = 7, ColName = "Quantity", ColDisplayName = "Quantity", Formula = ColumnFormulas.Sum });
+                columnamesForExcel.Add(new ColumnMetaData() { DisplaySeq = 8, ColName = "SubTotal", ColDisplayName = "Gross Total", Formula = ColumnFormulas.Sum });
+                columnamesForExcel.Add(new ColumnMetaData() { DisplaySeq = 9, ColName = "DiscountAmount", ColDisplayName = "Discount Amt", Formula = ColumnFormulas.Sum });
+                columnamesForExcel.Add(new ColumnMetaData() { DisplaySeq = 10, ColName = "TotalAmount", ColDisplayName = "Total Amt", Formula = ColumnFormulas.Sum });
+                columnamesForExcel.Add(new ColumnMetaData() { DisplaySeq = 11, ColName = "ReturnAmount", ColDisplayName = "Return Amt", Formula = ColumnFormulas.Sum });
+                columnamesForExcel.Add(new ColumnMetaData() { DisplaySeq = 12, ColName = "NetAmount", ColDisplayName = "Net Amount", Formula = ColumnFormulas.Sum });
+
+                ////Sorted ColMetadata in DisplaySequenceOrder 
+                //////Its Required Because in LoadFromDataTable Function we Require ColMetadata in Sorted Form 
+                var FinalColsForExcel = columnamesForExcel.OrderBy(x => x.DisplaySeq).ToList();
+
+                string excelHeader = "Referral Item Summary Report. From: " + FromDate.ToString("yyyy-MM-dd") + " To: " + ToDate.ToString("yyyy-MM-dd");
+
+                //passing the collection in exportExcelHelper 
+                export.LoadFromDataTable(FinalColsForExcel, rData.Tables[0], excelHeader, true, true);
+
+                //this used to export the package in excel...
+                byte[] filecontent = export.package.GetAsByteArray();
+                return File(filecontent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                     , "ReferralItemSummaryReport.xlsx");
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
 
         public FileContentResult ExportToExcelBilDocDeptSummary(DateTime FromDate, DateTime ToDate, int ProviderId)
         {
@@ -974,25 +1078,72 @@ namespace DanpheEMR.Controllers.ReportingNew
             }
         }
 
-        public FileContentResult ExportToExcelCancelBills()
+        public FileContentResult ExportToExcelPackageSalesReport(DateTime FromDate, DateTime ToDate)
         {
             try
             {
                 ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
-                DataTable billCancel = reportingDbContext.BIL_BillCancelSummary();
+                DataTable packageSalesReport = reportingDbContext.PackageSalesDetail(FromDate, ToDate);
+
+                ExcelExportHelper export = new ExcelExportHelper("Sheet1");
+
+                //creating list for adding the column 
+                List<ColumnMetaData> columnamesForPackageSales = new List<ColumnMetaData>();
+
+                // passing the name and the function we have to perform like sum,count etc 
+                columnamesForPackageSales.Add(new ColumnMetaData() { DisplaySeq = 0, ColName = "BillingTransactionId", ColDisplayName = "BillingTransactionId" });
+                columnamesForPackageSales.Add(new ColumnMetaData() { DisplaySeq = 1, ColName = "IssuedDate", ColDisplayName = "Issued Date", Formula = ColumnFormulas.Date });
+
+                ////Sorted ColMetadata in DisplaySequenceOrder 
+                //////Its Required Because in LoadFromDataTable Function we Require ColMetadata in Sorted Form 
+                var FinalColsForPackageSalesInSorted = columnamesForPackageSales.OrderBy(x => x.DisplaySeq).ToList();
+
+                //If you want to remove some columns from datatable then run below function
+                //first provide column name in list
+                //column name must be same as dataTable column name
+                //after removing columnName you cant create columnMetadata details for this column
+                List<string> RemoveColName = new List<string>();
+                RemoveColName.Add("BillingTransactionId");
+
+                string header = "Package Sales Report    " + '(' + FromDate.ToString("MM/dd/yyyy") + '-' + ToDate.ToString("MM/dd/yyyy") + ')';
+                //passing the collection in exportExcelHelper 
+                export.LoadFromDataTable(FinalColsForPackageSalesInSorted, packageSalesReport, header, true, true, RemoveColName);
+
+                //this used to export the package in excel...
+                byte[] filecontent = export.package.GetAsByteArray();
+                return File(filecontent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                     , "PackageSalesReport.xlsx");
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public FileContentResult ExportToExcelCancelBills(DateTime FromDate, DateTime ToDate)
+        {
+            try
+            {
+                ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
+                DataTable billCancel = reportingDbContext.BIL_BillCancelSummary(FromDate, ToDate);
                 ExcelExportHelper export = new ExcelExportHelper("Sheet1");
 
                 //creating list for adding the column 
                 List<ColumnMetaData> columnamesForCancelBills = new List<ColumnMetaData>();
 
                 // passing the name and the function we have to perform like sum,count etc 
-                columnamesForCancelBills.Add(new ColumnMetaData() { DisplaySeq = 0, ColName = "SN", ColDisplayName = "Sr No" });
-                columnamesForCancelBills.Add(new ColumnMetaData() { DisplaySeq = 1, ColName = "PatientName", ColDisplayName = "Patient Name" });
-                columnamesForCancelBills.Add(new ColumnMetaData() { DisplaySeq = 2, ColName = "HospitalNo", ColDisplayName = "Hospital Number", });
-                columnamesForCancelBills.Add(new ColumnMetaData() { DisplaySeq = 3, ColName = "TotalAmount", ColDisplayName = "Total Cancel Amount", Formula = ColumnFormulas.Sum });
-                columnamesForCancelBills.Add(new ColumnMetaData() { DisplaySeq = 4, ColName = "LastTxnDate", ColDisplayName = "Last Txn Date", Formula = ColumnFormulas.Date });
-                columnamesForCancelBills.Add(new ColumnMetaData() { DisplaySeq = 5, ColName = "CancelRemarks", ColDisplayName = "Cancel Remark" });
-                columnamesForCancelBills.Add(new ColumnMetaData() { DisplaySeq = 6, ColName = "Users", ColDisplayName = "User" });
+                columnamesForCancelBills.Add(new ColumnMetaData() { DisplaySeq = 1, ColName = "HospitalNo", ColDisplayName = "Hospital Number", });
+                columnamesForCancelBills.Add(new ColumnMetaData() { DisplaySeq = 2, ColName = "PatientName", ColDisplayName = "Patient Name" });
+                columnamesForCancelBills.Add(new ColumnMetaData() { DisplaySeq = 3, ColName = "ServiceDepartmentName", ColDisplayName = "ServiceDepartment Name", });
+                columnamesForCancelBills.Add(new ColumnMetaData() { DisplaySeq = 4, ColName = "ItemName", ColDisplayName = "Item Name", });
+                columnamesForCancelBills.Add(new ColumnMetaData() { DisplaySeq = 5, ColName = "Quantity", ColDisplayName = "Quantity", });
+                columnamesForCancelBills.Add(new ColumnMetaData() { DisplaySeq = 6, ColName = "TotalAmount", ColDisplayName = "Total Cancel Amount", Formula = ColumnFormulas.Sum });
+                columnamesForCancelBills.Add(new ColumnMetaData() { DisplaySeq = 7, ColName = "CreatedOn", ColDisplayName = "Bill Entry Date", Formula = ColumnFormulas.Date });
+                columnamesForCancelBills.Add(new ColumnMetaData() { DisplaySeq = 8, ColName = "CreatedBy", ColDisplayName = "Entered By", });
+                columnamesForCancelBills.Add(new ColumnMetaData() { DisplaySeq = 9, ColName = "CancelledOn", ColDisplayName = "Cancelled Date", Formula = ColumnFormulas.Date });
+                columnamesForCancelBills.Add(new ColumnMetaData() { DisplaySeq = 10, ColName = "CancelledBy", ColDisplayName = "Cancelled By", });
+                columnamesForCancelBills.Add(new ColumnMetaData() { DisplaySeq = 11, ColName = "CancelRemarks", ColDisplayName = "Cancel Remark" });
 
                 ////Sorted ColMetadata in DisplaySequenceOrder 
                 //////Its Required Because in LoadFromDataTable Function we Require ColMetadata in Sorted Form 
@@ -1024,14 +1175,14 @@ namespace DanpheEMR.Controllers.ReportingNew
                 //creating list for adding the column 
                 List<ColumnMetaData> columnamesForDailyAppointment = new List<ColumnMetaData>();
                 // passing the name and the function we have to perform like sum,count etc 
-                //columnamesForDailyAppointment.Add(new ColumnMetaData() { DisplaySeq = 0, ColName = "Date", ColDisplayName = "Date", Formula = ColumnFormulas.DateTime });
+                columnamesForDailyAppointment.Add(new ColumnMetaData() { DisplaySeq = 0, ColName = "Date", ColDisplayName = "Date", Formula = ColumnFormulas.Date });
                 //columnamesForDailyAppointment.Add(new ColumnMetaData() { DisplaySeq = 1, ColName = "Patient_Name", ColDisplayName = "Patient Name" });
                 //columnamesForDailyAppointment.Add(new ColumnMetaData() { DisplaySeq = 2, ColName = "AppointmentType", ColDisplayName = "Appointment Type", });
                 //columnamesForDailyAppointment.Add(new ColumnMetaData() { DisplaySeq = 3, ColName = "Doctor_Name", ColDisplayName = "Doctor Name" });
                 //columnamesForDailyAppointment.Add(new ColumnMetaData() { DisplaySeq = 4, ColName = "VisitStatus", ColDisplayName = "Appointment Status" });
 
                 //passing the collection in exportExcelHelper 
-                export.LoadFromDataTable(columnamesForDailyAppointment, dailyappointment, "Daily Appointment Report", false, true);
+                export.LoadFromDataTable(columnamesForDailyAppointment, dailyappointment, "Daily Appointment Report " + "(" + FromDate + "-" + ToDate + ')', false, true);
 
                 //this used to export the package in excel...
                 byte[] filecontent = export.package.GetAsByteArray();
@@ -1045,6 +1196,64 @@ namespace DanpheEMR.Controllers.ReportingNew
             }
         }
 
+        public FileContentResult ExportToExcelPhoneBookAppointment(DateTime FromDate, DateTime ToDate, string Doctor_Name, string AppointmentStatus)
+        {
+            try
+            {
+                ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
+                DataTable phonebookappointment = reportingDbContext.PhoneBookAppointmentReport(FromDate, ToDate, Doctor_Name, AppointmentStatus);
+
+                ExcelExportHelper export = new ExcelExportHelper("Sheet1");
+                //creating list for adding the column 
+                List<ColumnMetaData> columnamesForPhoneBookAppointment = new List<ColumnMetaData>();
+                // passing the name and the function we have to perform like sum,count etc 
+                columnamesForPhoneBookAppointment.Add(new ColumnMetaData() { DisplaySeq = 0, ColName = "Date", ColDisplayName = "Date", Formula = ColumnFormulas.Date });
+                //columnamesForDailyAppointment.Add(new ColumnMetaData() { DisplaySeq = 1, ColName = "Patient_Name", ColDisplayName = "Patient Name" });
+                //columnamesForDailyAppointment.Add(new ColumnMetaData() { DisplaySeq = 2, ColName = "AppointmentType", ColDisplayName = "Appointment Type", });
+                //columnamesForDailyAppointment.Add(new ColumnMetaData() { DisplaySeq = 3, ColName = "Doctor_Name", ColDisplayName = "Doctor Name" });
+                //columnamesForDailyAppointment.Add(new ColumnMetaData() { DisplaySeq = 4, ColName = "VisitStatus", ColDisplayName = "Appointment Status" });
+
+                //passing the collection in exportExcelHelper 
+                export.LoadFromDataTable(columnamesForPhoneBookAppointment, phonebookappointment, "PhoneBook Appointment Report " + "(" + FromDate + "-" + ToDate + ')', false, true);
+
+                //this used to export the package in excel...
+                byte[] filecontent = export.package.GetAsByteArray();
+                return File(filecontent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                     , "PhoneBookAppointmentReport.xlsx");
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        // Diagnosis Wise Patient Report
+        public FileContentResult ExportToExcelDiagnosisWisePatientReport(DateTime FromDate, DateTime ToDate, string Diagnosis)
+        {
+            try
+            {
+                ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
+                DataTable DiagnosisWisePatient = reportingDbContext.DiagnosisWisePatientReport(FromDate, ToDate, Diagnosis);
+
+                ExcelExportHelper export = new ExcelExportHelper("Sheet1");
+                //creating list for adding the column 
+                List<ColumnMetaData> columnamesForDailyDiagnosisWisePatient = new List<ColumnMetaData>();
+                columnamesForDailyDiagnosisWisePatient.Add(new ColumnMetaData() { DisplaySeq = 0, ColName = "Date", ColDisplayName = "Date", Formula = ColumnFormulas.Date });
+                //passing the collection in exportExcelHelper 
+                export.LoadFromDataTable(columnamesForDailyDiagnosisWisePatient, DiagnosisWisePatient, "DiagnosisWise Patient Report", false, true);
+
+                //this used to export the package in excel...
+                byte[] filecontent = export.package.GetAsByteArray();
+                return File(filecontent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                     , "DiagnosisWisePatientReport.xlsx");
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
         public FileContentResult ExportToExcelDepartmentSales(DateTime FromDate, DateTime ToDate, bool IsInsurance)
         {
             try
@@ -1142,7 +1351,157 @@ namespace DanpheEMR.Controllers.ReportingNew
                 throw ex;
             }
         }
-        #endregion       
+        #endregion
+
+        public FileContentResult ExportToExcelCategoryWiseLabReport(DateTime FromDate, DateTime ToDate)
+        {
+            try
+            {
+                ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
+                DataTable CategoryWiseLabReport = reportingDbContext.CategoryWiseLabReport(FromDate, ToDate);
+
+                ExcelExportHelper export = new ExcelExportHelper("Sheet1");
+
+                //creating list for adding the column 
+                List<ColumnMetaData> columnamesForCategoryWiseLabReport = new List<ColumnMetaData>();
+
+
+                columnamesForCategoryWiseLabReport.Add(new ColumnMetaData() { DisplaySeq = 0, ColName = "SN", ColDisplayName = "S.N.", });
+                columnamesForCategoryWiseLabReport.Add(new ColumnMetaData() { DisplaySeq = 1, ColName = "Category", ColDisplayName = "Category" });
+                columnamesForCategoryWiseLabReport.Add(new ColumnMetaData() { DisplaySeq = 2, ColName = "Count", ColDisplayName = "Count" });
+                List<string> RemoveColName = new List<string>();
+
+
+                var FinalColsForLabCategoryTests = columnamesForCategoryWiseLabReport.OrderBy(x => x.DisplaySeq).ToList();
+                string header = "Category Wise Lab Report From: " + FromDate.ToString("yyyy-MM-dd") + " To:" + ToDate.ToString("yyyy-MM-dd");
+                export.LoadFromDataTable(FinalColsForLabCategoryTests, CategoryWiseLabReport, header, false, true, RemoveColName);
+                byte[] filecontent = export.package.GetAsByteArray();
+
+                //check if filename could be set from server side, use above format if it can be set..
+                string fileName = "CategoryWiseLabTest.xlsx";
+                return File(filecontent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                     , fileName);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public FileContentResult ExportToExcelDoctorWisePatientCountLabReport(DateTime FromDate, DateTime ToDate)
+        {
+            try
+            {
+                ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
+                DataTable DoctorWiseLabReport = reportingDbContext.DoctorWisePatientCountLabReport(FromDate, ToDate);
+
+                ExcelExportHelper export = new ExcelExportHelper("Sheet1");
+
+                //creating list for adding the column 
+                List<ColumnMetaData> columnamesForDoctorWiseLabReport = new List<ColumnMetaData>();
+
+
+                columnamesForDoctorWiseLabReport.Add(new ColumnMetaData() { DisplaySeq = 0, ColName = "SN", ColDisplayName = "S.N.", });
+                columnamesForDoctorWiseLabReport.Add(new ColumnMetaData() { DisplaySeq = 1, ColName = "Doctor", ColDisplayName = "Doctor" });
+                columnamesForDoctorWiseLabReport.Add(new ColumnMetaData() { DisplaySeq = 2, ColName = "OP", ColDisplayName = "OP" });
+                columnamesForDoctorWiseLabReport.Add(new ColumnMetaData() { DisplaySeq = 2, ColName = "IP", ColDisplayName = "IP" });
+                columnamesForDoctorWiseLabReport.Add(new ColumnMetaData() { DisplaySeq = 2, ColName = "Emergency", ColDisplayName = "ER" });
+                List<string> RemoveColName = new List<string>();
+
+
+                var FinalColsForDoctorWiseLabTests = columnamesForDoctorWiseLabReport.OrderBy(x => x.DisplaySeq).ToList();
+                string header = "Doctor Wise Patient Count Lab Report From: " + FromDate.ToString("yyyy-MM-dd") + " To:" + ToDate.ToString("yyyy-MM-dd");
+                export.LoadFromDataTable(FinalColsForDoctorWiseLabTests, DoctorWiseLabReport, header, false, true, RemoveColName);
+                byte[] filecontent = export.package.GetAsByteArray();
+
+                //check if filename could be set from server side, use above format if it can be set..
+                string fileName = "DoctorWiseLabTest.xlsx";
+                return File(filecontent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                     , fileName);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public FileContentResult ExportToExcel_INCTV_AllEmpItemsSettings()
+        {
+            try
+            {
+                ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
+                DataTable reportData = DALFunctions.GetDataTableFromStoredProc("SP_Inctv_ExportAllEmpItemsSettings", reportingDbContext);
+
+                ExcelExportHelper export = new ExcelExportHelper("Employee Items Settings");
+                List<ColumnMetaData> columnamesForEmpItemsSettings = new List<ColumnMetaData>();
+
+                columnamesForEmpItemsSettings.Add(new ColumnMetaData() { ColName = "EmployeeName", DisplaySeq = 0, ColDisplayName = "Employee Name" });
+                columnamesForEmpItemsSettings.Add(new ColumnMetaData() { ColName = "TDSPercent", DisplaySeq = 1, ColDisplayName = "TDS Percent" });
+                columnamesForEmpItemsSettings.Add(new ColumnMetaData() { ColName = "ServiceDepartmentName", DisplaySeq = 2, ColDisplayName = "Service Department Name" });
+                columnamesForEmpItemsSettings.Add(new ColumnMetaData() { ColName = "ItemName", DisplaySeq = 3, ColDisplayName = "ItemName" });
+                columnamesForEmpItemsSettings.Add(new ColumnMetaData() { ColName = "AssignedToPercent", DisplaySeq = 4, ColDisplayName = "AssignedToPercent" });
+                columnamesForEmpItemsSettings.Add(new ColumnMetaData() { ColName = "ReferredByPercent", DisplaySeq = 5, ColDisplayName = "ReferredByPercent" });
+                columnamesForEmpItemsSettings.Add(new ColumnMetaData() { ColName = "HasGroupDistribution", DisplaySeq = 6, ColDisplayName = "GroupDistribution?" });
+                columnamesForEmpItemsSettings.Add(new ColumnMetaData() { ColName = "DistributionInfo", DisplaySeq = 7, ColDisplayName = "Group Distribution Detail" });
+
+                var FinalColsForEmpItemsSettingSorted = columnamesForEmpItemsSettings.OrderBy(x => x.DisplaySeq).ToList();
+                List<string> RemoveColName = new List<string>();
+                RemoveColName.Add("EmployeeId");
+                RemoveColName.Add("ServiceDepartmentId");
+                RemoveColName.Add("ItemId");
+
+                export.LoadFromDataTable(FinalColsForEmpItemsSettingSorted, reportData, "Employee Items Incentive Settings", false, true, RemoveColName);
+                byte[] filecontent = export.package.GetAsByteArray();
+                return File(filecontent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "INCTV_AllEmpItemsSettings.xlsx");
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public FileContentResult ExportToExcelSubstoreDispConSummaryReport(DateTime FromDate, DateTime ToDate, string StoreIds, string SummaryData, string SummaryHeader)
+        {
+            try
+            {
+                ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
+                List<SqlParameter> paramList = new List<SqlParameter>() {
+                           new SqlParameter("@StoreIds", StoreIds),
+                           new SqlParameter("@FromDate", FromDate),
+                           new SqlParameter("@ToDate", ToDate)
+                           
+                };
+
+                DataTable allData = DALFunctions.GetDataTableFromStoredProc("SP_INV_RPT_GetSubstoreDispConsumption_Summary", paramList, reportingDbContext);
+
+                ExcelExportHelper export = new ExcelExportHelper("Sheet1");
+                List<ColumnMetaData> columnamesForTotalItemBill = new List<ColumnMetaData>();
+
+                columnamesForTotalItemBill.Add(new ColumnMetaData() { DisplaySeq = 0, ColName = "SubCategoryName", ColDisplayName = "Sub Category Name"});
+                columnamesForTotalItemBill.Add(new ColumnMetaData() { DisplaySeq = 1, ColName = "ItemName", ColDisplayName = "ItemName", });
+                columnamesForTotalItemBill.Add(new ColumnMetaData() { DisplaySeq = 4, ColName = "ItemType", ColDisplayName = "ItemType", });
+                columnamesForTotalItemBill.Add(new ColumnMetaData() { DisplaySeq = 5, ColName = "Unit", ColDisplayName = "Unit", });
+                columnamesForTotalItemBill.Add(new ColumnMetaData() { DisplaySeq = 6, ColName = "DispatchQuantity", ColDisplayName = "DispatchQuantity" });
+                columnamesForTotalItemBill.Add(new ColumnMetaData() { DisplaySeq = 7, ColName = "DispatchValue", ColDisplayName = "DispatchValue" });
+                columnamesForTotalItemBill.Add(new ColumnMetaData() { DisplaySeq = 8, ColName = "ConsumptionQuantity", ColDisplayName = "ConsumptionQuantity" });
+                columnamesForTotalItemBill.Add(new ColumnMetaData() { DisplaySeq = 9, ColName = "ConsumptionValue", ColDisplayName = "Consumption Value" });
+                ////Sorted ColMetadata in DisplaySequenceOrder 
+                //////Its Required Because in LoadFromDataTable Function we Require ColMetadata in Sorted Form 
+                var FinalColsForTotalItemInSorted = columnamesForTotalItemBill.OrderBy(x => x.DisplaySeq).ToList();
+                string header = "Substore Dispatch and Consumption Report " + FromDate.ToString("yyyy-MM-dd") + " To:" + ToDate.ToString("yyyy-MM-dd");
+                export.LoadFromDataTable(FinalColsForTotalItemInSorted, allData, header, true, true, SummaryData: SummaryData, summaryHeader: SummaryHeader);
+                byte[] filecontent = export.package.GetAsByteArray();
+
+                //check if filename could be set from server side, use above format if it can be set..
+                string fileName = "SubstoreDispatchandConsumption.xlsx";
+                return File(filecontent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                     , fileName);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
     }
 }
 

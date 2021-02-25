@@ -1,0 +1,170 @@
+<div class="printStyle print-border">
+  <div>
+    <div class="logo" style="width: 18%;padding:0px 15px 0px 15px; float: left;">
+      <img class="img-responsive" style="max-height:70px;" src="../../../themes/theme-default/images/hams-logo.PNG" />
+    </div>
+    <div style="width: 64%;float: left;padding-bottom:  0px;">
+      <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
+        <span style="font-size:15px;"><strong>{{headerDetail.CustomerName}}</strong></span><br />
+        <span style="font-size:15px;">{{headerDetail.Address}}</span><br />
+        <span style="font-size:13px;">{{headerDetail.CustomerRegLabel}} , Tel: {{ headerDetail.Tel}}</span><br />
+        <span style="font-size:15px;"><strong> Clinical Unit </strong></span><br />
+      </div>
+    </div>
+    <div style="float: left;">
+      <div class="qr-code" style="margin-left:20px; top:35px;">
+        <qr-code *ngIf="patientQRCodeInfo" [value]="patientQRCodeInfo" [size]="75" [backgroundAlpha]="0"></qr-code>
+      </div>
+    </div>
+    <!-- Billing Header  -->
+    <div style="clear:left"></div>
+  </div>
+</div>
+<div class="panel-body row" style="text-align:left;">
+  <div class="col-md-12">
+    <div class="row">
+      <p class="col-md-4" *ngIf="note">Patient Name:<b>{{note.PatientName}} </b></p>
+      <p class="col-md-4">Primary Doctor:<b *ngIf="note">{{note.PrimaryDoctor}}</b></p>
+      <p class="col-md-4">Secondary Doctor:<b *ngIf="note">{{note.SecondaryDoctor}}</b></p>
+    </div>
+  </div>
+  <div class="col-md-12">
+    <div class="row">
+      <p class="col-md-4">Age/ Sex:<b *ngIf="note">{{note.Age}}/{{note.Sex}} </b></p>
+      <p class="col-md-4">Written By:<b *ngIf="note">{{note.WrittenBy}}</b></p>
+      <p class="col-md-4">Date:<b *ngIf="note">{{note.CreatedOn | date:'yyyy-MM-dd'}}</b></p>
+    </div>
+  </div>
+  <div class="col-md-12">
+    <div class="row">
+      <p class="col-md-4">Note Type:<b *ngIf="note">{{note.NoteType}}</b></p>
+      <!--<p class="col-md-4">Start Time :<b>{{note.CreatedOn | date: 'dd-MM-yyyy h:mm:ss'}}</b></p>
+      <p class="col-md-4">Finish Time:<b>{{note.ModifiedOn |date: 'dd-MM-yyyy h:mm:ss'}}</b></p>-->
+    </div>
+  </div>  
+</div>
+
+<div class="row panel-body">
+  <h3 class="text-capitalize text-center">Prescription Note</h3>
+</div>
+
+<div class="row panel-body">
+  <div class="col-md-12">
+    <div class="row">
+      <div class="col-md-6">
+        <div class="row">
+          <div class="col-md-12 form-group">
+            <h3>Clinical Information</h3>
+          </div>
+        </div>
+        <div class="row form-group">
+          <div class="col-md-4">Chief Complaint</div>
+          <div class="col-md-8" *ngIf="note && note.SubjectiveNote">
+            {{note.SubjectiveNote.ChiefComplaint}}
+          </div>
+        </div>
+        <div class="row form-group">
+          <div class="col-md-4">History of Presenting Illness</div>
+          <div class="col-md-8" *ngIf="note && note.SubjectiveNote">
+            {{note.SubjectiveNote.HistoryOfPresentingIllness}}
+          </div>
+        </div>
+        <div class="row form-group">
+          <div class="col-md-4">Review of System</div>
+          <div class="col-md-8" *ngIf="note && note.SubjectiveNote">
+            {{note.SubjectiveNote.ReviewOfSystems}}
+          </div>
+        </div>
+
+        <div class="row form-group">
+          <div class="col-md-12">
+            <h3>Rx Medication</h3>
+          </div>
+        </div>
+        <div class="row form-group">
+          <div class="col-md-4">Old Medication to be stopped</div>
+          <div class="col-md-8" *ngIf="note && note.Prescription">
+            {{note.Prescription.OldMedicationStopped}}
+          </div>
+        </div>
+        <div class="row form-group">
+          <div class="col-md-4">New Medication to be started</div>
+          <div class="col-md-8" *ngIf="note && note.Prescription">
+            {{note.Prescription.NewMedicationStarted}}
+          </div>
+        </div>
+
+        <div class="row form-group">
+          <div class="col-md-12">
+            <h3>Instruction</h3>
+          </div>
+        </div>
+        <div class="row form-group">
+          <div class="col-md-4">Follow Up in</div>
+          <div class="col-md-8">
+            <div class="row">
+              <div class="col-md-6" *ngIf="note">
+                {{note.FollowUp}} &nbsp; &nbsp; {{note.FollowUpUnit}}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row form-group">
+          <div class="col-md-4">Remarks</div>
+          <div class="col-md-8" *ngIf="note">
+            {{note.Remarks}}
+          </div>
+        </div>
+
+      </div>
+
+      <div class="col-md-6">
+        <div class="row">
+          <div class="col-md-12 form-group">
+            <h3 style="visibility: hidden;">Other Informations</h3>
+          </div>
+        </div>
+        <div class="row form-group">
+          <div class="col-md-4">Clinical Notes</div>
+          <div class="col-md-8" *ngIf="note && note.Prescription">
+            {{note.Prescription.PrescriptionNoteText}}
+          </div>
+        </div>
+        <div class="row form-group">
+          <div class="col-md-4">Diagnosis(ICD 10 code)</div>
+          <div class="col-md-8" *ngIf="ICDList && ICDList.length">
+            <div class="row margin-5-bt">
+              <div class="col-md-12" *ngFor="let icd of ICDList; let i=index;">
+                {{i+1}})&nbsp;{{icd.ICD10Description}}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row form-group">
+          <div class="col-md-4">ICD Remarks</div>
+          <div class="col-md-8" *ngIf="note && note.Prescription">
+            {{note.Prescription.ICDRemarks}}
+          </div>
+
+          <div class="row">
+            <div class="col-md-12 form-group">
+              <h3>Lab and Orders</h3>
+            </div>
+            <div class="col-md-12">
+              <div class="row form-group">
+                <div class="col-md-12" *ngIf="OrdersList && OrdersList.length">
+                  <div style="display: inline-block;padding: 7px 12px;" *ngFor="let odr of OrdersList; let j=index;">
+                    {{odr.ItemName}}({{odr.Type}}) <span *ngIf="j+1 != OrdersList.length">,&nbsp;</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+      
+    </div>
+  </div>

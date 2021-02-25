@@ -12,6 +12,7 @@ namespace DanpheEMR.ServerModel
     {
         [Key]
         public int WardId { get; set; }
+        public int StoreId { get; set; }
         public string WardCode { get; set; }
         public string WardName { get; set; }
         public string WardLocation { get; set; }

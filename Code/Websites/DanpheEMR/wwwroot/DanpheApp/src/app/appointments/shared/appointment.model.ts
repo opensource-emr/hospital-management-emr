@@ -16,6 +16,8 @@ export class Appointment {
   public MiddleName: string = "";
   public LastName: string = "";
   public Gender: string = "";
+  public Age: string = null;
+  public AgeUnit: string = 'Y';
   public ContactNumber: string = "";
   public AppointmentDate: string = "";
   public AppointmentTime: string = "";
@@ -24,12 +26,16 @@ export class Appointment {
   public AppointmentType: string = "";
   public PatientType: string = "outpatient";
   public AppointmentStatus: string = "";
+  public ModifiedOn: string = "";
+  public ModifiedBy: number = null;
   public CreatedOn: string = "";
   public CreatedBy: number = null;
   public CancelledOn: string = "";
+  public IsDobVerified: boolean = false;
   public CancelledBy: number = null;
   public CancelledRemarks: string = null;
   public DepartmentId: number = null;
+  public DepartmentName: string = null; //Yubraj :  23rd August '19
   public DoctorName: string = null;
 
   //reason mentioned in task no 152
@@ -40,7 +46,8 @@ export class Appointment {
   //public CountrySubDivisionId: number = null;
   //public DateOfBirth: string = null;
   public AppointmentValidator: FormGroup = null;
-
+  public IsValidSelDepartment: boolean = true; //Yubraj :  23rd August '19
+  public IsValidSelProvider: boolean = true;
 
   constructor() {
 
@@ -51,11 +58,13 @@ export class Appointment {
       'LastName': ['', Validators.compose([Validators.required, Validators.maxLength(30)])],
       'Gender': ['', Validators.compose([Validators.required])],
       'ContactNumber': ['', Validators.compose([Validators.required, Validators.pattern('^[0-9]{1,10}$')])],
+      'Age': ['', Validators.compose([Validators.required])],
       //'DateOfBirth': ['', Validators.compose([this.dateValidatorsForPast])],
       'AppointmentDate': ['', Validators.compose([Validators.required, this.dateValidator])],
       //Appointment validators empty ..but we need declaration to check this in IsSSDirty
       'AppointmentTime': ['', Validators.compose([])],
       //'Doctor': ['', Validators.compose([Validators.required])],
+      //'Department': ['', Validators.compose([Validators.required])],
       //'AppointmentType': ['', Validators.compose([Validators.required])],
       //--duration--this features/functions is not used: removed since this is not useful and has some defects..--sudarshan: 6May'16
       //'Duration': ['', Validators.compose([this.durationValidator])],
@@ -106,6 +115,19 @@ export class Appointment {
 
   }
 
+  public UpdateValidator(onOff: string, formControlName: string) {
+    let validator = null;
+    if (formControlName == "Age" && onOff == "on") {
+      this.AppointmentValidator.controls['Age'].validator = Validators.compose([Validators.required]);
+      this.AppointmentValidator.controls['DateOfBirth'].validator = Validators.compose([]);
+    }
+    else {
+      this.AppointmentValidator.controls['DateOfBirth'].validator = Validators.compose([Validators.required, this.dateValidator]);
+      this.AppointmentValidator.controls['Age'].validator = Validators.compose([]);
+    }
+    this.AppointmentValidator.controls[formControlName].updateValueAndValidity();
+
+  }
   public IsValidTime(): boolean {
     let _date = this.AppointmentValidator.controls["AppointmentDate"].value;
     let _time = this.AppointmentValidator.controls["AppointmentTime"].value;
@@ -114,7 +136,7 @@ export class Appointment {
     var _currDate = moment().format('YYYY-MM-DD HH:mm');
 
     //if positive then selected time is of future else it of the past
-    if (moment(_dateTime).diff(_currDate) > 0)
+    if (moment(_dateTime).diff(_currDate, "minute") > 0)
       return true;
     else
       return false;
@@ -173,7 +195,6 @@ export class Appointment {
     }
   }
   public IsValidCheck(fieldName, validator): boolean {
-    console.log(this);
     if (fieldName == undefined) {
       if (this.IsValidTime() && this.IsValidAppointmentTime())
         return this.AppointmentValidator.valid;

@@ -1,0 +1,399 @@
+<style>
+    textarea {
+        resize: vertical;
+    }
+
+    .clp.clp-hd {
+        margin-bottom: 0px !important;
+    }
+
+    .each-card {
+        background: #fbfbfb;
+    }
+</style>
+<div class="row">
+    <div class="col-md-6">
+      <form *ngIf="subjectiveNote" class="form-horizontal hm-bg-white">
+        <!--
+    *ngIf="subjectiveNote && subjectiveNote.SubjectiveNoteValidator"
+    [formGroup]="subjectiveNote.SubjectiveNoteValidator"
+    -->
+        <div class="form-body hm-form">
+          <div class="text-head-wrapper mt0 clearfix">
+            <h3 class="text-head cstm-add-heading">Clinical Subjective Notes</h3>
+          </div>
+          <div class="form-group">
+            <label class="control-label col-md-4">Chief Complaint<b>:</b></label>
+
+            <div class="col-md-8">
+              <textarea [(ngModel)]="subjectiveNote.ChiefComplaint" (focusout)="Focusit()" [ngModelOptions]="{standalone: true}" maxlength="2000" rows="5" cols="80"></textarea>
+              <!--<span class="error-msg" *ngIf="subjectiveNote.IsDirty('ChiefComplaint')" [hidden]="subjectiveNote.IsValidCheck('ChiefComplaint','maxLength')">Invalid length</span>-->
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="control-label col-md-4">History Of Presenting Illness<b>:</b></label>
+
+            <div class="col-md-8">
+              <textarea [(ngModel)]="subjectiveNote.HistoryOfPresentingIllness" (focusout)="Focusit()" [ngModelOptions]="{standalone: true}" maxlength="2000" rows="5" cols="80"></textarea>
+              <!--<span class="error-msg" *ngIf="subjectiveNote.IsDirty('HistoryOfPresentingIllness')" [hidden]="subjectiveNote.IsValidCheck('HistoryOfPresentingIllness','maxLength')">Invalid length</span>-->
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="control-label col-md-4">Review Of Systems<b>:</b></label>
+            <div class="col-md-8">
+              <textarea [(ngModel)]="subjectiveNote.ReviewOfSystems" (focusout)="Focusit()" [ngModelOptions]="{standalone: true}" maxlength="2000" rows="5" cols="80"></textarea>
+              <!--<span class="error-msg" *ngIf="subjectiveNote.IsDirty('ReviewOfSystems')" [hidden]="subjectiveNote.IsValidCheck('ReviewOfSystems','maxLength')">Invalid length</span>-->
+            </div>
+          </div>
+        </div>
+
+      </form>
+    </div>
+    <div class="col-md-6">  
+      <div class="hm-bg-white hm-ecard">
+        <div class="each-card">
+          <h4 class="clp clp-hd clearfix" data-toggle="collapse" data-target="#allergy" aria-expanded="true">
+            Allergy
+            <span>[{{clinicalDetail.Allergies.length}}]</span>
+            <button class="btn primary-btn" (click)="AddAllergyPopUp()">
+              <i class="fa fa-plus"></i>
+              Add
+            </button>
+          </h4>
+          <div id="allergy" class="collapse in clp-cntnt" [ngStyle]="{'overflow-y': clinicalDetail.Allergies.length ? 'scroll' : ''}">
+            <p *ngIf="!clinicalDetail.Allergies.length">No records found</p>
+            <table class="table table-striped" *ngIf="clinicalDetail.Allergies.length">
+              <thead>
+                <tr>
+                  <th sortable-header col="itemnames"><b>Recorded On</b></th>
+                  <th sortable-header col="itemnames"><b>Allergy Type</b></th>
+                  <th sortable-header col="itemnames"><b>Allergy Name</b></th>
+                  <th sortable-header col="itemnames"><b>Sevirity</b></th>
+                  <th sortable-header col="itemnames"><b>IsVerified</b></th>
+                </tr>
+              </thead>
+              <tr *ngFor="let allergy of clinicalDetail.Allergies">
+                <td>{{allergy.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                <td>{{allergy.AllergyType}}</td>
+                <td>{{allergy.AllergenAdvRecName}}</td>
+                <td>{{allergy.Severity}}</td>
+                <td>{{allergy.Verified}}</td>
+              </tr>
+            </table>
+          </div>
+
+        </div>
+        <div class="each-card">
+          <h4 class="clp clp-hd" data-toggle="collapse" data-target="#pastmedicalhistory" aria-expanded="true">
+            Past Medical History
+            <span>[{{clinicalDetail.PastMedicals.length}}]</span>
+            <button class="btn primary-btn" (click)="AddPastMedicalPopUp()">
+              <i class="fa fa-plus"></i>
+              Add
+            </button>
+          </h4>
+
+          <div id="pastmedicalhistory" class="collapse clp-cntnt"
+               [ngStyle]="{'overflow-y': clinicalDetail.PastMedicals.length ? 'scroll' : ''}">
+            <p *ngIf="!clinicalDetail.PastMedicals.length">No records found</p>
+            <table class="table table-striped" *ngIf="clinicalDetail.PastMedicals.length">
+              <thead>
+                <tr>
+                  <th sortable-header col="itemnames"><b>ICD10 Description</b></th>
+                  <th sortable-header col="itemnames"><b>On Set Date</b></th>
+                  <th sortable-header col="itemnames"><b>Resolved Date</b></th>
+                  <th sortable-header col="itemnames"><b>Notes</b></th>
+                </tr>
+              </thead>
+              <tr *ngFor="let pastMedical of clinicalDetail.PastMedicals">
+                <td>{{pastMedical.ICD10Description}}</td>
+                <td>{{pastMedical.OnSetDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                <td>{{pastMedical.ResolvedDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                <td>{{pastMedical.Note}}</td>
+              </tr>
+            </table>
+          </div>
+
+        </div>
+        <div class="each-card">
+          <h4 class="clp clp-hd" data-toggle="collapse" data-target="#surgicalhistory" aria-expanded="true">
+            Surgical History
+            <span>[{{clinicalDetail.SurgicalHistory.length}}]</span>
+            <button class="btn primary-btn" (click)="AddSurgeryHistoryPopUp()">
+              <i class="fa fa-plus"></i>
+              Add
+            </button>
+          </h4>
+          <div id="surgicalhistory" class="collapse clp-cntnt" [ngStyle]="{'overflow-y': clinicalDetail.SurgicalHistory.length ? 'scroll' : ''}">
+            <p *ngIf="!clinicalDetail.SurgicalHistory.length">No records found</p>
+            <table class="table table-striped" *ngIf="clinicalDetail.SurgicalHistory.length">
+              <thead>
+                <tr>
+                  <th sortable-header col="itemnames"><b>ICD10 Description</b></th>
+                  <th sortable-header col="itemnames"><b>On Set Date</b></th>
+                  <th sortable-header col="itemnames"><b>Resolved Date</b></th>
+                  <th sortable-header col="itemnames"><b>Notes</b></th>
+                </tr>
+              </thead>
+              <tr *ngFor="let surgical of clinicalDetail.SurgicalHistory">
+                <td>{{surgical.ICD10Description}}</td>
+                <td>{{surgical.SurgeryDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                <td>{{surgical.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                <td>{{surgical.Note}}</td>
+              </tr>
+            </table>
+          </div>
+
+        </div>
+        <div class="each-card">
+          <h4 class="clp clp-hd" data-toggle="collapse" data-target="#socialhistory" aria-expanded="true">
+            Social History
+            <span>({{clinicalDetail.SocialHistory.length}})</span>
+            <button class="btn primary-btn" (click)="AddSocialHistoryPopUp()">
+              <i class="fa fa-plus"></i>
+              Add
+            </button>
+          </h4>
+          <div id="socialhistory" class="collapse clp-cntnt" [ngStyle]="{'overflow-y': clinicalDetail.SocialHistory.length ? 'scroll' : ''}">
+            <p *ngIf="!clinicalDetail.SocialHistory.length">No records found</p>
+            <table class="table table-striped" *ngIf="clinicalDetail.SocialHistory.length">
+              <thead>
+                <tr>
+                  <th sortable-header col="itemnames"><b>Recorded On</b></th>
+                  <th sortable-header col="itemnames"><b>Smoking History</b></th>
+                  <th sortable-header col="itemnames"><b>Alcohol History</b></th>
+                  <th sortable-header col="itemnames"><b>Drug History</b></th>
+                  <th sortable-header col="itemnames"><b>Occupation</b></th>
+                  <th sortable-header col="itemnames"><b>Family Support</b></th>
+                  <th sortable-header col="itemnames"><b>Note</b></th>
+                </tr>
+              </thead>
+              <tr *ngFor="let social of clinicalDetail.SocialHistory">
+                <td>{{social.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                <td>{{social.SmokingHistory}}</td>
+                <td>{{social.AlcoholHistory}}</td>
+                <td>{{social.DrugHistory}}</td>
+                <td>{{social.Occupation}}</td>
+                <td>{{social.FamilySupport}}</td>
+                <td>{{social.Note}}</td>
+              </tr>
+            </table>
+          </div>
+
+        </div>
+        <div class="each-card">
+          <h4 class="clp clp-hd" data-toggle="collapse" data-target="#familyhistory" aria-expanded="true">
+            Family History
+            <span>[{{clinicalDetail.FamilyHistory.length}}]</span>
+            <button class="btn primary-btn" (click)="AddFamilyHistoryPopUp()">
+              <i class="fa fa-plus"></i>
+              Add
+            </button>
+          </h4>
+          <div id="familyhistory" class="collapse clp-cntnt" [ngStyle]="{'overflow-y': clinicalDetail.FamilyHistory.length ? 'scroll' : ''}">
+            <p *ngIf="!clinicalDetail.FamilyHistory.length">No records found</p>
+            <table class="table table-striped" *ngIf="clinicalDetail.FamilyHistory.length">
+              <thead>
+                <tr>
+                  <th sortable-header col="itemnames"><b>Recorded On</b></th>
+                  <th sortable-header col="itemnames"><b>ICD10</b></th>
+                  <th sortable-header col="itemnames"><b>Relationship</b></th>
+                  <th sortable-header col="itemnames"><b>Note</b></th>
+                </tr>
+              </thead>
+              <tr *ngFor="let family of clinicalDetail.FamilyHistory">
+                <td>{{family.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                <td>{{family.ICD10Description}}</td>
+                <td>{{family.Relationship}}</td>
+                <td>{{family.Note}}</td>
+              </tr>
+            </table>
+          </div>
+
+        </div>
+        <!--<div class="each-card">
+          <h4 class="clp clp-hd" data-toggle="collapse" data-target="#vaccinationStatus" aria-expanded="true">
+            Vaccination Status
+            <span>[{{clinicalDetail.PastMedicals.length}}]</span>
+            <button class="btn primary-btn" (click)="AddPastMedicalPopUp()">
+              <i class="fa fa-plus"></i>
+              Add
+            </button>
+          </h4>
+
+          <div id="vaccinationStatus" class="collapse clp-cntnt"
+               [ngStyle]="{'overflow-y': clinicalDetail.PastMedicals.length ? 'scroll' : ''}">
+            <p *ngIf="!clinicalDetail.PastMedicals.length">No records found</p>
+            <table class="table table-striped" *ngIf="clinicalDetail.PastMedicals.length">
+              <thead>
+                <tr>
+                  <th sortable-header col="itemnames"><b>ICD10 Description</b></th>
+                  <th sortable-header col="itemnames"><b>On Set Date</b></th>
+                  <th sortable-header col="itemnames"><b>Resolved Date</b></th>
+                  <th sortable-header col="itemnames"><b>Notes</b></th>
+                </tr>
+              </thead>
+              <tr *ngFor="let pastMedical of clinicalDetail.PastMedicals">
+                <td>{{pastMedical.ICD10Description}}</td>
+                <td>{{pastMedical.OnSetDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                <td>{{pastMedical.ResolvedDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                <td>{{pastMedical.Note}}</td>
+              </tr>
+            </table>
+          </div>
+
+        </div>
+        <div class="each-card">
+          <h4 class="clp clp-hd" data-toggle="collapse" data-target="#preventiveCare" aria-expanded="true">
+            Preventive Care
+            <span>[{{clinicalDetail.PastMedicals.length}}]</span>
+            <button class="btn primary-btn" (click)="AddPastMedicalPopUp()">
+              <i class="fa fa-plus"></i>
+              Add
+            </button>
+          </h4>
+
+          <div id="preventiveCare" class="collapse clp-cntnt"
+               [ngStyle]="{'overflow-y': clinicalDetail.PastMedicals.length ? 'scroll' : ''}">
+            <p *ngIf="!clinicalDetail.PastMedicals.length">No records found</p>
+            <table class="table table-striped" *ngIf="clinicalDetail.PastMedicals.length">
+              <thead>
+                <tr>
+                  <th sortable-header col="itemnames"><b>ICD10 Description</b></th>
+                  <th sortable-header col="itemnames"><b>On Set Date</b></th>
+                  <th sortable-header col="itemnames"><b>Resolved Date</b></th>
+                  <th sortable-header col="itemnames"><b>Notes</b></th>
+                </tr>
+              </thead>
+              <tr *ngFor="let pastMedical of clinicalDetail.PastMedicals">
+                <td>{{pastMedical.ICD10Description}}</td>
+                <td>{{pastMedical.OnSetDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                <td>{{pastMedical.ResolvedDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                <td>{{pastMedical.Note}}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="each-card">
+          <h4 class="clp clp-hd" data-toggle="collapse" data-target="#homeMedication" aria-expanded="true">
+            Home Medication
+            <span>[{{clinicalDetail.PastMedicals.length}}]</span>
+            <button class="btn primary-btn" (click)="AddPastMedicalPopUp()">
+              <i class="fa fa-plus"></i>
+              Add
+            </button>
+          </h4>
+
+          <div id="homeMedication" class="collapse clp-cntnt"
+               [ngStyle]="{'overflow-y': clinicalDetail.PastMedicals.length ? 'scroll' : ''}">
+            <p *ngIf="!clinicalDetail.PastMedicals.length">No records found</p>
+            <table class="table table-striped" *ngIf="clinicalDetail.PastMedicals.length">
+              <thead>
+                <tr>
+                  <th sortable-header col="itemnames"><b>ICD10 Description</b></th>
+                  <th sortable-header col="itemnames"><b>On Set Date</b></th>
+                  <th sortable-header col="itemnames"><b>Resolved Date</b></th>
+                  <th sortable-header col="itemnames"><b>Notes</b></th>
+                </tr>
+              </thead>
+              <tr *ngFor="let pastMedical of clinicalDetail.PastMedicals">
+                <td>{{pastMedical.ICD10Description}}</td>
+                <td>{{pastMedical.OnSetDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                <td>{{pastMedical.ResolvedDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                <td>{{pastMedical.Note}}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        <div class="each-card">
+          <h4 class="clp clp-hd" data-toggle="collapse" data-target="#OBorCYNhistory" aria-expanded="true">
+            OB/ CYN History (only for female)
+            <span>[{{clinicalDetail.PastMedicals.length}}]</span>
+            <button class="btn primary-btn" (click)="AddPastMedicalPopUp()">
+              <i class="fa fa-plus"></i>
+              Add
+            </button>
+          </h4>
+
+          <div id="OBorCYNhistory" class="collapse clp-cntnt"
+               [ngStyle]="{'overflow-y': clinicalDetail.PastMedicals.length ? 'scroll' : ''}">
+            <p *ngIf="!clinicalDetail.PastMedicals.length">No records found</p>
+            <table class="table table-striped" *ngIf="clinicalDetail.PastMedicals.length">
+              <thead>
+                <tr>
+                  <th sortable-header col="itemnames"><b>ICD10 Description</b></th>
+                  <th sortable-header col="itemnames"><b>On Set Date</b></th>
+                  <th sortable-header col="itemnames"><b>Resolved Date</b></th>
+                  <th sortable-header col="itemnames"><b>Notes</b></th>
+                </tr>
+              </thead>
+              <tr *ngFor="let pastMedical of clinicalDetail.PastMedicals">
+                <td>{{pastMedical.ICD10Description}}</td>
+                <td>{{pastMedical.OnSetDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                <td>{{pastMedical.ResolvedDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                <td>{{pastMedical.Note}}</td>
+              </tr>
+            </table>
+          </div>
+        </div>-->
+      </div>       
+    </div>
+</div>
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showAllergyAddBox">
+    <div class="portlet-body form hm-portlet-body">
+        <div class="modelbox-div">
+            <div>
+                <allergy-add [showAllergyAddBox]="showAllergyAddBox"
+                             (callback-addupdate)="CallBackAddAllergy($event)"></allergy-add>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="addPastProblemBox">
+    <div class="portlet-body form hm-portlet-body">
+        <div class="modelbox-div">
+            <div>
+                <past-medical-add [show-past-medical-add]="addPastProblemBox"
+                                  (callback-addupdate)="CallBackAddPastMedical($event)"></past-medical-add>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showSurgicalAddBox">
+    <div class="portlet-body form hm-portlet-body">
+        <div class="modelbox-div">
+            <div>
+                <surgical-history-add [show-Surgical-AddBox]="showSurgicalAddBox"
+                                      (callBack-AddUpdate)="callBackAddSurgical($event)">
+                </surgical-history-add>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showSocialAddBox">
+    <div class="portlet-body form hm-portlet-body">
+        <div class="modelbox-div">
+            <div>
+                <social-history-add [showSocialAddBox]="showSocialAddBox"
+                                    (callback-socialupdate)="CallBackAddSocialHistory($event)"></social-history-add>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showFamilyHistoryBox">
+    <div class="portlet-body form hm-portlet-body">
+        <div class="modelbox-div">
+            <div>
+                <family-history-add [show-familyHistory-add]="showFamilyHistoryBox"
+                                    (callback-addupdate)="CallBackAddFamilyHistory($event)"></family-history-add>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -40,6 +40,8 @@ export class VisitListComponent {
   public patGirdDataApi: string = "";
   public patientVisitId: number;
   public status: string = "";
+  searchText: string = '';
+  public enableServerSideSearch: boolean = false;
   constructor(
     public visitService: VisitService,
     public patientService: PatientService,
@@ -64,10 +66,11 @@ export class VisitListComponent {
       this.loadMaximumLastVisitDays();
       //this.selectedVisit=this.visitService.CreateNewGlobal();
       this.appointmentService.CreateNewGlobal(); //needed only to clear previously selected appointment
-      this.LoadVisitList();
+      this.getParamter();
+      this.LoadVisitList("");
       this.visitGridColumns = GridColumnSettings.VisitSearch;
 
-      this.patGirdDataApi = APIsByType.VisitList;
+      // this.patGirdDataApi = APIsByType.VisitList;
 
       this._searchService.status = this.status;
       this._searchService.maxdayslimit = this.maxLastVisitDays;
@@ -80,9 +83,18 @@ export class VisitListComponent {
     document.getElementById('quickFilterInput').focus();
   }
 
+  serverSearchTxt(searchTxt) {
+    this.searchText = searchTxt;
+    this.LoadVisitList(this.searchText);
+  }
+  getParamter() {
+    let parameterData = this.coreService.Parameters.find(p => p.ParameterGroupName == "Common" && p.ParameterName == "ServerSideSearchComponent").ParameterValue;
+    var data = JSON.parse(parameterData);
+    this.enableServerSideSearch = data["VisitList"];
+  }
   //today's all visit or all visits with IsVisitContinued status as false
-  LoadVisitList(): void {
-    this.visitBlService.GetVisitsByStatus(this.status, this.maxLastVisitDays)
+  LoadVisitList(searchTxt): void {
+    this.visitBlService.GetVisitsByStatus(this.status, this.maxLastVisitDays, searchTxt)
       .subscribe(res => {
         if (res.Status == "OK") {
           this.visits = res.Results;
@@ -270,6 +282,7 @@ export class VisitListComponent {
             this.changeDetector.detectChanges();
             this.selectedVisit = this.visitService.CreateNewGlobal();
             this.selectedVisit.PatientVisitId = selectedVisit.PatientVisitId;
+            this.selectedVisit.QueueNo = selectedVisit.QueueNo;
 
             this.selectedVisit.PatientId = selectedVisit.PatientId;
             this.showOpdSticker = true;

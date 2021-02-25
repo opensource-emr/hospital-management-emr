@@ -127,17 +127,20 @@ thead.show-gap:after {
   padding-top: 2px;
   padding-bottom: 2px;
 }
+
 .tooltip {
   padding: 0px 5px;
   color: #006687;
   z-index: inherit;
 }
-.tooltip span {
-  display: inline-block;
-  background: #d8dff1;
-  padding: 1px 2px 0px;
-  cursor: pointer;
-}
+
+  .tooltip span {
+    display: inline-block;
+    background: #d8dff1;
+    padding: 1px 2px 0px;
+    cursor: pointer;
+  }
+
 .tooltiptext {
   width: 250px;
   margin-left: -125px;
@@ -149,15 +152,18 @@ thead.show-gap:after {
 .single-head {
   padding: 1px 0px;
 }
+
 .left-col-data {
   padding-left: 7px;
 }
+
 .right-col-data {
   padding-right: 3px;
   white-space: nowrap;
   width: 100%;
   float: left;
 }
+
 .single-head:nth-child(odd) {
   flex-basis: 60%;
 }
@@ -165,35 +171,43 @@ thead.show-gap:after {
 .single-head:nth-child(even) {
   flex-basis: 40%;
 }
+
 .interpretation-txt-holder {
   margin-top: 5px;
   text-align: justify;
   white-space: pre-line;
   font-size: 11px;
 }
-.lab-footer-text{
+
+.lab-footer-text {
   font-size: 10px;
 }
-.all-signatures{
+
+.all-signatures {
   font-size: 13px;
 }
+
 .signature-item {
   flex-basis: 29%;
   padding: 1%;
 }
 
-.signature-item:nth-child(3n+1){
-  text-align: left;
-}
+  .signature-item:nth-child(3n+1) {
+    text-align: left;
+  }
+
   .signature-item:nth-child(3n+2) {
     text-align: center;
   }
-.signature-item:nth-child(3n) {
-  text-align: right;
-}
-.signature-item-inside{
+
+  .signature-item:nth-child(3n) {
+    text-align: right;
+  }
+
+.signature-item-inside {
   font-weight: 700;
 }
+
 .main-signature {
   white-space: pre-line;
   display: inline-block;
@@ -213,35 +227,40 @@ table.single-tempate-table {
 }
 
 
-table.culture-holder-table tbody tr.not-bdr-cltr{border-left: 0;}
+table.culture-holder-table tbody tr.not-bdr-cltr {
+  border-left: 0;
+}
+
 table.single-tempate-table tbody tr table.culture-holder-table tr.culture-header {
   border-top: none;
   border-left: 0;
   border-right: 0;
 }
 
-  table.single-tempate-table thead tr:first-child th:first-child {
-    padding: 0px 7px;
-    text-align: left;
-    width: 330px;
-  }
+table.single-tempate-table thead tr:first-child th:first-child {
+  padding: 0px 7px;
+  text-align: left;
+  width: 330px;
+}
+
 table.single-tempate-table thead tr:first-child th:not(:first-child) {
   padding: 0px 5px;
 }
+
 table.single-tempate-table thead tr:nth-child(2) th {
   padding: 0px 7px;
   text-align: left;
 }
 
-  table.single-tempate-table tr.test-reportname-row th:first-child {
-    padding: 0px 7px;
-    text-align: left;
-  }
+table.single-tempate-table tr.test-reportname-row th:first-child {
+  padding: 0px 7px;
+  text-align: left;
+}
 
-  table.single-tempate-table tbody tr.test-reportname-row th:not(:first-child) {
-    padding: 0px 7px;
-    font-size: 14px;
-  }
+table.single-tempate-table tbody tr.test-reportname-row th:not(:first-child) {
+  padding: 0px 7px;
+  font-size: 14px;
+}
 
 table.single-tempate-table tr.res-positive-rw td {
   text-align: left;
@@ -250,6 +269,7 @@ table.single-tempate-table tr.res-positive-rw td {
 .test-data-pstv {
   padding: 0px 8px;
 }
+
 td.range {
   max-width: 200px;
   white-space: pre-line;
@@ -266,15 +286,18 @@ table.culture-holder-table {
   font-size: 13px;
   margin-bottom: -1px;
 }
+
   table.culture-holder-table thead tr.culture-header th {
     text-align: left;
     text-transform: uppercase;
     padding: 0px 7px;
   }
+
   table.culture-holder-table thead tr.culture-heading-col th:first-child {
     padding: 0px 7px;
     text-align: left;
   }
+
   table.culture-holder-table thead tr.culture-heading-col th:nth-child(2) {
     padding: 0px 5px;
     text-align: center;
@@ -285,24 +308,25 @@ table.culture-holder-table {
     border-top: none;
   }
 
-  table.culture-neg-testres {
-    width: 100%;
-    font-size: 13px;
-    border-collapse: collapse;
-  }
+table.culture-neg-testres {
+  width: 100%;
+  font-size: 13px;
+  border-collapse: collapse;
+}
 
   table.culture-neg-testres tbody tr td {
     padding: 0px 7px;
   }
+
   table.culture-neg-testres tbody tr:last-child {
     text-align: left;
   }
 
 
-  table.culture-positive-testres tbody tr:first-child {
-    border-top: 0;
-    text-align: left;
-  }
+table.culture-positive-testres tbody tr:first-child {
+  border-top: 0;
+  text-align: left;
+}
 
 tbody.culture-positive-testres tr.sensitiv-rst-data td, tbody.culture-positive-testres tr.sensitiv-rst-hd td {
   padding-left: 5px;
@@ -312,11 +336,23 @@ tbody.culture-positive-testres tr.sensitiv-rst-data td, tbody.culture-positive-t
   border: 1px solid #000;
 }
 
-tbody.culture-negative-testres tr td{padding-left: 7px;}
+tbody.culture-negative-testres tr td {
+  padding-left: 7px;
+}
 
-.htmlholder{padding: 0px 8px;}
-.margin-50-tp{margin-top: 50px;}
-.ref-label{margin-bottom: 0; line-height:36px;}
+.htmlholder {
+  padding: 0px 8px;
+}
+
+.margin-50-tp {
+  margin-top: 50px;
+}
+
+.ref-label {
+  margin-bottom: 0;
+  line-height: 36px;
+}
+
 .report-print-info {
   display: none;
 }
@@ -330,6 +366,24 @@ tbody.culture-negative-testres tr td{padding-left: 7px;}
   display: inline-block;
 }
 
-.margin-5-bt{margin-bottom: 5px;}
+.margin-5-bt {
+  margin-bottom: 5px;
+}
 
+.prelim-sig-holder {
+  position: relative;
+}
 
+.txt-prelim {
+  position: relative;
+  display: inline-block;
+  font-size: 40px;
+  line-height: 1;
+  left: 50%;
+  top: 100px;
+  transform: translate(-50%, 110px) rotate(-45deg);
+  opacity: 0.2;
+}
+.cmh .cs-result {
+  font-style: italic;
+}

@@ -63,9 +63,17 @@ export class AccountHeadListComponent {
   }
 
   CallBackAdd($event) {
-    this.accountheadList.push($event.accounthead);
-    if (this.index != null)
-      this.accountheadList.splice(this.index, 1);
+    if ($event != null) {
+       //find the index of currently added/updated accounthead in the list of all items (grid)
+       let index = this.accountheadList.findIndex(a => a.AccountHeadId == $event.accounthead.AccountHeadId);
+       //index will be -1 when this accountheadis currently added. 
+       if (index < 0) {
+           this.accountheadList.splice(0, 0, $event.accounthead);//this will add this accounthead to 0th index.
+       }
+       else {
+           this.accountheadList.splice(index, 1, $event.accounthead);//this will replace one accounthead at particular index. 
+       }
+    }
     this.accountheadList = this.accountheadList.slice();
     this.changeDetector.detectChanges();
     this.showAddPage = false;

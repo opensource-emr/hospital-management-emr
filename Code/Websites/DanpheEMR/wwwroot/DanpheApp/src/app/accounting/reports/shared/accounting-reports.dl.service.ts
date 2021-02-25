@@ -10,35 +10,41 @@ public options =  {
     //START: GET Reporting DATA
 
     //GET Accounting Balance sheet report data
-    public GetBalanceSheetReportData(frmDt, toDt) {
+    public GetBalanceSheetReportData(selectedDate, fiscalYearId) {
         try {
-            return this.http.get<any>("/api/AccountingReport?reqType=balanceSheetReportData&FromDate=" + frmDt + "&ToDate=" + toDt);
+            return this.http.get<any>("/api/AccountingReport?reqType=balanceSheetReportData&selectedDate=" + selectedDate + "&FiscalYearId="+fiscalYearId);
         } catch (exception) {
             throw exception;
         }
     }
 
-    public GetCashFlowReportData(frmDt, toDt) {
+    public GetCashFlowReportData(frmDt, toDt,fiscalYearId) {
         try {
-            return this.http.get<any>("/api/AccountingReport?reqType=cashflowReportData&FromDate=" + frmDt + "&ToDate=" + toDt);
+            return this.http.get<any>("/api/AccountingReport?reqType=cashflowReportData&FromDate=" + frmDt + "&ToDate=" + toDt + "&FiscalYearId="+fiscalYearId);
         } catch (exception) {
             throw exception;
         }
     }
-    public GetTrailBalanceReport(fromDate: string, toDate: string) {
-        return this.http.get<any>("/api/AccountingReport?reqType=trailBalanceReport&FromDate=" + fromDate + "&ToDate=" + toDate);
+    public GetTrailBalanceReport(fromDate: string, toDate: string,fiscalYearId) {
+        return this.http.get<any>("/api/AccountingReport?reqType=trailBalanceReport&FromDate=" + fromDate + "&ToDate=" + toDate + "&FiscalYearId="+fiscalYearId);
     }
-    public GetProfitLossReport(frmDt, toDt) {
-        return this.http.get<any>("/api/AccountingReport?reqType=profitLossReport&FromDate=" + frmDt + "&ToDate=" + toDt);
+    public GetProfitLossReport(frmDt, toDt,fiscalYearId) {
+        return this.http.get<any>("/api/AccountingReport?reqType=profitLossReport&FromDate=" + frmDt + "&ToDate=" + toDt + "&FiscalYearId="+fiscalYearId);
     }
-    public GetVoucherReport(fromDate: string, toDate: string) {
-        return this.http.get<any>("/api/AccountingReport?reqType=voucher-report&FromDate=" + fromDate + "&ToDate=" + toDate);
-    }    
-    public GetDayWiseVoucherReport(fromDate: string, toDate: string) {
-        return this.http.get<any>("/api/AccountingReport?reqType=daywise-voucher-report&FromDate=" + fromDate + "&ToDate=" + toDate);
+    public GetVoucherReport(fromDate: string, toDate: string, sectionId, fiscalYearId) {
+        return this.http.get<any>("/api/AccountingReport?reqType=voucher-report&FromDate=" + fromDate + "&ToDate=" + toDate + "&sectionId=" + sectionId + "&FiscalYearId=" + fiscalYearId);
+    }  
+    public GetSystemAuditReport(fromDate: string, toDate: string,voucherType:string,sectionId:number) {
+        return this.http.get<any>("/api/AccountingReport?reqType=system-aduit-report&FromDate=" + fromDate + "&ToDate=" + toDate +"&voucherReportType="+voucherType+"&sectionId="+sectionId);
+    }       
+    public GetReverseTransactionDetail(reverseTxnId:number) {    
+        return this.http.get<any>("/api/AccountingReport?reqType=reverse-transaction-detail&ReverseTransactionId="+reverseTxnId);
+    }   
+    public GetDayWiseVoucherReport(fromDate: string, toDate: string,sectionId) {
+        return this.http.get<any>("/api/AccountingReport?reqType=daywise-voucher-report&FromDate=" + fromDate + "&ToDate=" + toDate+"&sectionId="+sectionId);
     }
-    public GetLedgerReport(ledgerId: number, fromDate: string, toDate: string) {
-        return this.http.get<response>('/api/AccountingReport?reqType=ledger-report&ledgerId=' + ledgerId + "&FromDate=" + fromDate + "&ToDate=" + toDate);
+    public GetLedgerReport(ledgerId: number, fromDate: string, toDate: string,fiscalYearId) {
+        return this.http.get<response>('/api/AccountingReport?reqType=ledger-report&ledgerId=' + ledgerId + "&FromDate=" + fromDate + "&ToDate=" + toDate + "&FiscalYearId="+fiscalYearId);
     }
 
     public GetLedgerList() {
@@ -47,15 +53,15 @@ public options =  {
     public GetFiscalYearsList() {
         return this.http.get<any>("/api/Accounting?reqType=fiscalYearList");
     }
-    public GetDailyTxnReport(frmDt: string, toDt: string) {
-        return this.http.get<any>("/api/AccountingReport?reqType=daily-txn-report&FromDate=" + frmDt + "&ToDate=" + toDt);
+    public GetDailyTxnReport(frmDt: string, toDt: string,fiscalYearId) {
+        return this.http.get<any>("/api/AccountingReport?reqType=daily-txn-report&FromDate=" + frmDt + "&ToDate=" + toDt + "&FiscalYearId="+fiscalYearId);
     }
     public GetTxnOriginDetails(txnId) {
         return this.http.get<any>("/api/AccountingReport?reqType=txn-Origin-details&transactionIds=" + txnId);
     }
-    public GetDaywiseVoucherDetailsbyDayVoucherNo(dayVouchernumber: number, voucherId:number) {
+    public GetDaywiseVoucherDetailsbyDayVoucherNo(dayVouchernumber: number, voucherId:number,sectionId) {
         try {
-            return this.http.get<response>('/api/AccountingReport?reqType=daywise-voucher-detail-by-dayVoucherNO&DayVoucherNumber=' + dayVouchernumber + '&voucherId='+ voucherId);
+            return this.http.get<response>('/api/AccountingReport?reqType=daywise-voucher-detail-by-dayVoucherNO&DayVoucherNumber=' + dayVouchernumber + '&voucherId='+ voucherId+"&sectionId="+sectionId);
         } catch (ex) {
             throw ex;
         }

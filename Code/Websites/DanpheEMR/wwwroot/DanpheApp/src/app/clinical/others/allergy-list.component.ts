@@ -1,4 +1,4 @@
-﻿import { Component, ChangeDetectorRef } from "@angular/core";
+import { Component, ChangeDetectorRef, Input, Output, EventEmitter } from "@angular/core";
 import { PatientService } from "../../patients/shared/patient.service";
 import { CallbackService } from '../../shared/callback.service';
 import { IOAllergyVitalsBLService } from '../shared/io-allergy-vitals.bl.service';
@@ -9,6 +9,7 @@ import { PharmacyBLService } from "../../pharmacy/shared/pharmacy.bl.service";
 import { PHRMGenericModel } from "../../pharmacy/shared/phrm-generic.model";
 
 @Component({
+    selector: "allergy-list",
     templateUrl: "../../view/clinical-view/AllergyList.html" // "/ClinicalView/AllergyList"
 })
 export class AllergyListComponent {
@@ -18,7 +19,11 @@ export class AllergyListComponent {
     public showAllergyAddBox: boolean = false; //@input
     //ng2-autocomplete binds the selected reaction to reactionSelected.
     public selectedAllergy: Allergy = null; //@input
-    public selectedIndex: number = null;
+  public selectedIndex: number = null;
+
+
+  @Input("returnAllergyList") public returnAllergyList: boolean = false;
+  @Output("allergyEmitter") public allergyEmitter: EventEmitter<object> = new EventEmitter<object>();
 
     constructor(public patientServ: PatientService,
         public ioAllergyVitalsBLService: IOAllergyVitalsBLService,
@@ -34,6 +39,11 @@ export class AllergyListComponent {
             .subscribe(res => {
                 if (res.Status == "OK") {
                     this.allergieLists = res.Results;
+                    this.patientServ.globalPatient.Allergies = this.allergieLists;
+                  this.patientServ.globalPatient.FormatPatientAllergies();
+                  if (this.returnAllergyList) {
+                    this.allergyEmitter.emit({ allergieLists: res.Results });
+                  }
                 }
                 else {
                     this.msgBoxServ.showMessage("failed", ["Failed. please check log for details."], res.ErrorMessage);
@@ -59,7 +69,12 @@ export class AllergyListComponent {
             }
             //add
             else {
-                this.allergieLists.push($event.allergy);
+              this.allergieLists.push($event.allergy);
+              if (this.returnAllergyList) {
+                let arr = [];
+                arr.push($event.allergy);
+                this.allergyEmitter.emit({ allergieLists: arr });
+              }
             }
             this.UpdateGlobalAllergy();
         }

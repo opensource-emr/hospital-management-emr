@@ -1,247 +1,334 @@
-﻿<style>
-    .withshowlist{
+<style>
+  .withshowlist {}
+  .vitals-list-container {
+    overflow-x: scroll;
+    margin-left: 10em;
+    overflow-y: visible;
+    padding: 0;
+    font-size: 12px;
+  }
+  
+  .vitals-list-tbl {
+    border-collapse: separate;
+    border-spacing: 0;
+    border-top: 1px solid grey;
+  }
 
-    }
+  .vitals-list-tbl td,
+  .vitals-list-tbl th {
+    margin: 0;
+    border: 1px solid grey !important;
+    white-space: nowrap;
+    border-top-width: 0px;
+    padding: 5px 3px;
+  }
+
+  .headcol {
+    position: absolute;
+    width: 10em;
+    left: 0;
+    top: auto;
+    border-top-width: 1px;
+    margin-top: -1px;
+  }
 </style>
 
-<div *ngIf="showAddVitalBox" class="prob-entry" style="padding: 5px 0px 15px 0px; background: #006687; width: 100%; display: table;">
-    <div class="cstm-close" (click)="closeAddBox()" style="z-index: 111;">
-        <a><i class="fa fa-close"></i> </a>
+<div class="prob-entry" style="padding: 5px 0px 15px 0px; background: #006687; width: 100%; display: table;">
+  <div class="cstm-close" (click)="closeAddBox()" style="z-index: 111;">
+    <a><i class="fa fa-close"></i> </a>
+  </div>
+
+  <div *ngIf="showVitalList" class="col-md-7 col-xs-12" style="background: #fff;">
+    <div class="row">
+      <div class="portlet cstm-portlet portlet-with-collapse">
+        <div class="portlet-title cstm-pt-title">
+          <div class="cstm-portlet-caption" style="margin-left: 15px; margin-top: 15px;">
+            Vitals List
+          </div>
+        </div>
+
+        <div class="cstm-portlet-body">
+          <div class="vitals-list-container">
+            <table class="vitals-list-tbl" style="margin-bottom: 0px;">
+              <tbody>
+                <tr>
+                  <th class="headcol">Recorded On</th>
+                  <td *ngFor="let vitals of vitalsList">
+                    <strong>{{vitals.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</strong></td>
+                </tr>
+                <tr>
+                  <th class="headcol">Height</th>
+                  <td *ngFor="let vitals of vitalsList">
+                    <div *ngIf="vitals.HeightUnit!='inch'">{{vitals.Height |HasValue: vitals.HeightUnit}}</div>
+                    <div *ngIf="vitals.HeightUnit=='inch'">{{vitals.Height}}</div>
+                  </td>
+                </tr>
+                <tr>
+                  <th class="headcol">Weight</th>
+                  <td *ngFor="let vitals of vitalsList">{{vitals.Weight | HasValue: vitals.WeightUnit}}</td>
+                </tr>
+                <tr>
+                  <th class="headcol">BMI</th>
+                  <td *ngFor="let vitals of vitalsList">{{vitals.BMI}}</td>
+                </tr>
+                <tr>
+                  <th class="headcol">Temperature</th>
+                  <td *ngFor="let vitals of vitalsList">{{vitals.Temperature | HasValue: vitals.TemperatureUnit}}</td>
+                </tr>
+                <tr>
+                  <th class="headcol">Pulse</th>
+                  <td *ngFor="let vitals of vitalsList">{{vitals.Pulse | HasValue:'/min'}}</td>
+                </tr>
+                <tr>
+                  <th class="headcol">Blood Pressure</th>
+                  <td *ngFor="let vitals of vitalsList">{{vitals.BPSystolic | HasValue:'/'}}{{vitals.BPDiastolic}}</td>
+                </tr>
+                <tr>
+                  <th class="headcol">Respiratory Rate</th>
+                  <td *ngFor="let vitals of vitalsList">{{vitals.RespiratoryRatePerMin | HasValue:'/min'}}</td>
+                </tr>
+                <tr>
+                  <th class="headcol">SpO2</th>
+                  <td *ngFor="let vitals of vitalsList">{{vitals.SpO2 | HasValue:'percent'}}</td>
+                </tr>
+                <tr>
+                  <th class="headcol">O<sub>2</sub> Deliver Method</th>
+                  <td *ngFor="let vitals of vitalsList">{{vitals.OxygenDeliveryMethod}}</td>
+                </tr>
+                <tr>
+                  <th class="headcol">Body Pain Data</th>
+                  <td *ngFor="let painList of painDataList">
+                    <div *ngFor="let pnlist of painList">
+                      <span>{{pnlist.BodyPart}}-{{pnlist.PainScale}} </span>
+                    </div>
+                  </td>
+                </tr>
+
+
+                <tr>
+                  <th class="headcol">Action</th>
+                  <td *ngFor="let vitals of vitalsList;let i = index">
+                    <a (click)="Edit(vitals,i)"
+                      style="padding: 4px 15px;margin-right: 15px;/* background-color: #fde11a; *//* color: #000000; */"
+                      class="bs-glyphicon-class btn yellow"><span class="glyphicon glyphicon-edit"></span>Edit</a>
+                  </td>
+                </tr>
+
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div [ngClass]="showVitalList ? 'col-md-5 col-xs-12 withshowlist' : ' '">
+    <h3 *ngIf="!updateButton" class="cstm-add-heading" style="margin-left: 15px; margin-top: 15px;">Add New Vitals</h3>
+    <h3 *ngIf="updateButton" class="cstm-add-heading" style="margin-left: 15px; margin-top: 15px;">Update Vitals</h3>
+
+    <div class="form-group cstm-form-group">
+      <label class="control-label cstm-control-label col-md-4">Added On<b style="float:right;">:</b></label>
+      <div class="col-md-8">
+        <danphe-date-picker [(ngModel)]="CurrentVital.VitalsTakenOn" [showTime]="true"> </danphe-date-picker>
+      </div>
     </div>
 
-    <div *ngIf="showVitalList" class="col-md-7 col-xs-12" style="background: #fff;">
-        <div class="row">
-            <div class="portlet cstm-portlet portlet-with-collapse">
-                <div class="portlet-title cstm-pt-title">
-                    <div class="cstm-portlet-caption">
-                        Vitals List
-                    </div>
-                </div>
-
-                <div class="cstm-portlet-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-striped table-condensed flip-content" style="margin-bottom: 0px;">
-                            <tbody>
-                                <tr>
-                                    <td>Recorded On</td>
-                                    <td *ngFor="let vitals of vitalsList"><strong>{{vitals.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</strong></td>
-                                </tr>
-                                <tr>
-                                    <td>Height</td>
-                                    <td *ngFor="let vitals of vitalsList">
-                                        <div *ngIf="vitals.HeightUnit!='inch'">{{vitals.Height |HasValue: vitals.HeightUnit}}</div>
-                                        <div *ngIf="vitals.HeightUnit=='inch'">{{vitals.Height}}</div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Weight</td>
-                                    <td *ngFor="let vitals of vitalsList">{{vitals.Weight | HasValue: vitals.WeightUnit}}</td>
-                                </tr>
-                                <tr>
-                                    <td>BMI</td>
-                                    <td *ngFor="let vitals of vitalsList">{{vitals.BMI}}</td>
-                                </tr>
-                                <tr>
-                                    <td>Temperature</td>
-                                    <td *ngFor="let vitals of vitalsList">{{vitals.Temperature | HasValue: vitals.TemperatureUnit}}</td>
-                                </tr>
-                                <tr>
-                                    <td>Pulse</td>
-                                    <td *ngFor="let vitals of vitalsList">{{vitals.Pulse | HasValue:'/min'}}</td>
-                                </tr>
-                                <tr>
-                                    <td>Blood Pressure</td>
-                                    <td *ngFor="let vitals of vitalsList">{{vitals.BPSystolic | HasValue:'/'}}{{vitals.BPDiastolic}}</td>
-                                </tr>
-                                <tr>
-                                    <td>Respiratory Rate</td>
-                                    <td *ngFor="let vitals of vitalsList">{{vitals.RespiratoryRatePerMin | HasValue:'/min'}}</td>
-                                </tr>
-                                <tr>
-                                    <td>SpO2</td>
-                                    <td *ngFor="let vitals of vitalsList">{{vitals.SpO2 | HasValue:'percent'}}</td>
-                                </tr>
-                                <tr>
-                                    <td>O<sub>2</sub> Deliver Method</td>
-                                    <td *ngFor="let vitals of vitalsList">{{vitals.OxygenDeliveryMethod}}</td>
-                                </tr>
-                                <tr>
-                                    <td>Body Pain Data</td>
-                                    <td *ngFor="let painList of painDataList">
-                                        <div *ngFor="let pnlist of painList">
-                                            <span>{{pnlist.BodyPart}}-{{pnlist.PainScale}} </span>
-                                        </div>
-                                    </td>
-                                </tr>                              
-
-
-                                <tr>
-                                    <td>Action</td>
-                                    <td *ngFor="let vitals of vitalsList;let i = index">
-                                        <a (click)="Edit(vitals,i)" style="padding: 0;margin-right: 15px;" class="bs-glyphicon-class btn yello"><span class="glyphicon glyphicon-edit"></span>Edit</a>                                        
-                                    </td>
-                                </tr>
-
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+    <div class="form-group cstm-form-group">
+      <label class="control-label cstm-control-label col-md-4">Height<b style="float:right;">:</b></label>
+      <div class="col-md-5">
+        <input #height class="form-control cstm-form-control" maxlength="30" (keyup.enter)="GoToNext(weight)"
+               *ngIf="!footInchSelected" type="number" [(ngModel)]="CurrentVital.Height" (ngModelChange)="CalculateBMI()" />
+        <div>
+          <div class="col-md-6" style="padding: 0px 5px 0px 0px;">
+            <input class="form-control cstm-form-control"
+                   maxlength="30" type="number" *ngIf="footInchSelected" [hidden]="!footInchSelected" [(ngModel)]="foot"
+                   placeholder="foot" (ngModelChange)="CalculateBMI()" />
+          </div>
+          <div class="col-md-6" style="padding:0px 0px 0px 4px">
+            <input class="form-control cstm-form-control" maxlength="30" type="number" *ngIf="footInchSelected"
+                   [hidden]="!footInchSelected" [(ngModel)]="inch" placeholder="inch" (ngModelChange)="CalculateBMI()" />
+          </div>
         </div>
+      </div>
+      <div class="col-md-3">
+        <select class="form-control cstm-form-control" placeholder="Unit" name="" [(ngModel)]="CurrentVital.HeightUnit"
+                (ngModelChange)="HeightUnitChanged()">
+          <option value="cm" selected>cm</option>
+          <option value="meter">meter</option>
+          <option value="inch">foot'inch''</option>
+        </select>
+      </div>
     </div>
+    <div class="form-group cstm-form-group">
+      <label class="control-label cstm-form-label col-md-4">Weight<b style="float:right;">:</b></label>
+      <div class="col-md-5">
+        <input #weight class="form-control cstm-form-control" maxlength="10" type="number" name="" min="1"
+               (keyup.enter)="GoToNext(temperature)" [(ngModel)]="CurrentVital.Weight" (ngModelChange)="CalculateBMI()" />
+      </div>
+      <div class="col-md-3">
+        <select class="form-control cstm-form-control" placeholder="Unit" name="" [(ngModel)]="CurrentVital.WeightUnit"
+                (ngModelChange)="CalculateBMI()">
+          <option value="kg" selected>kg</option>
+          <option value="pound">lbs</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group cstm-form-group">
+      <label class="control-label cstm-control-label col-md-4">BMI<b style="float:right;">:</b></label>
+      <div class="col-md-5">
+        <input class="form-control cstm-form-control " maxlength="10" type="number" [(ngModel)]="CurrentVital.BMI"
+               disabled>
+      </div>
+      <div class="col-md-3 hidden-xs">
+      </div>
+    </div>
+    <div class="form-group cstm-form-group">
+      <label class="control-label cstm-control-label col-md-4">Temperature<b style="float:right;">:</b></label>
+      <div class="col-md-5">
+        <input #temperature type="number" class="form-control cstm-form-control" maxlength="10" name="" min="1"
+               (keyup.enter)="GoToNext(pulse)" [(ngModel)]="CurrentVital.Temperature">
+      </div>
+      <div class="col-md-3 hidden-xs">
+        <select class="form-control cstm-form-control" placeholder="Unit" name=""
+                [(ngModel)]="CurrentVital.TemperatureUnit">
+          <option value="F" selected>F</option>
+          <option value="C">C</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group cstm-form-group">
+      <label class="control-label cstm-control-label col-md-4">Pulse<b style="float:right;">:</b></label>
+      <div class="col-md-5">
+        <input #pulse type="number" class="form-control cstm-form-control" maxlength="50" min="1" name=""
+               (keyup.enter)="GoToNext(bpSystolic)" [(ngModel)]="CurrentVital.Pulse">
+      </div>
+      <div class="col-md-3">
+        <b class="white">per minute</b>
+      </div>
+    </div>
+    <div class="form-group cstm-form-group">
+      <label class="control-label cstm-control-label col-md-4">Blood Pressure<b style="float:right;">:</b></label>
+      <div class="col-md-6">
+        <form [formGroup]="CurrentVital.VitalsValidator">
 
-    <div [ngClass]="showVitalList ? 'col-md-5 col-xs-12 withshowlist' : ' '">
-        <h3 *ngIf="!updateButton" class="cstm-add-heading">Add New Vitals</h3>
-        <h3 *ngIf="updateButton" class="cstm-add-heading">Update Vitals</h3>
-        <div class="form-group cstm-form-group">
-            <label class="control-label cstm-control-label col-md-4">Height<b style="float:right;">:</b></label>
-            <div class="col-md-5">
-                <input class="form-control cstm-form-control" maxlength="30" *ngIf="!footInchSelected" type="number" [(ngModel)]="CurrentVital.Height" (ngModelChange)="CalculateBMI()" />
-                <div>
-                    <div class="col-md-6" style="padding: 0px 5px 0px 0px;"> <input class="form-control cstm-form-control" maxlength="30" type="number" *ngIf="footInchSelected" [hidden]="!footInchSelected" [(ngModel)]="foot" placeholder="foot" (ngModelChange)="CalculateBMI()" /></div>
-                    <div class="col-md-6" style="padding:0px 0px 0px 4px">
-                        <input class="form-control cstm-form-control" maxlength="30" type="number" *ngIf="footInchSelected" [hidden]="!footInchSelected" [(ngModel)]="inch" placeholder="inch" (ngModelChange)="CalculateBMI()" />
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <select class="form-control cstm-form-control" placeholder="Unit" name="" [(ngModel)]="CurrentVital.HeightUnit" (ngModelChange)="HeightUnitChanged()">
-                    <option value="cm" selected>cm</option>
-                    <option value="meter">meter</option>
-                    <option value="inch">foot'inch''</option>
-                </select>
-            </div>
-        </div>
-        <div class="form-group cstm-form-group">
-            <label class="control-label cstm-form-label col-md-4">Weight<b style="float:right;">:</b></label>
-            <div class="col-md-5">
-                <input class="form-control cstm-form-control" maxlength="10" type="number" name="" min="1" [(ngModel)]="CurrentVital.Weight" (ngModelChange)="CalculateBMI()" />
-            </div>
-            <div class="col-md-3">
-                <select class="form-control cstm-form-control" placeholder="Unit" name="" [(ngModel)]="CurrentVital.WeightUnit" (ngModelChange)="CalculateBMI()">
-                    <option value="kg" selected>kg</option>
-                    <option value="pound">lbs</option>
-                </select>
-            </div>
-        </div>
-        <div class="form-group cstm-form-group">
-            <label class="control-label cstm-control-label col-md-4">BMI<b style="float:right;">:</b></label>
-            <div class="col-md-5">
-                <input class="form-control cstm-form-control " maxlength="10" type="number" [(ngModel)]="CurrentVital.BMI" disabled>
-            </div>
-            <div class="col-md-3 hidden-xs">
-            </div>
-        </div>
-        <div class="form-group cstm-form-group">
-            <label class="control-label cstm-control-label col-md-4">Temperature<b style="float:right;">:</b></label>
-            <div class="col-md-5">
-                <input type="number" class="form-control cstm-form-control" maxlength="10" name="" min="1" [(ngModel)]="CurrentVital.Temperature">
-            </div>
-            <div class="col-md-3 hidden-xs">
-                <select class="form-control cstm-form-control" placeholder="Unit" name="" [(ngModel)]="CurrentVital.TemperatureUnit">
-                    <option value="F" selected>F</option>
-                    <option value="C">C</option>
-                </select>
-            </div>
-        </div>
-        <div class="form-group cstm-form-group">
-            <label class="control-label cstm-control-label col-md-4">Pulse<b style="float:right;">:</b></label>
-            <div class="col-md-5">
-                <input type="number" class="form-control cstm-form-control" maxlength="50" min="1" name="" [(ngModel)]="CurrentVital.Pulse">
-            </div>
-            <div class="col-md-3">
-                <b class="white">per minute</b>
-            </div>
-        </div>
-        <div class="form-group cstm-form-group">
-            <label class="control-label cstm-control-label col-md-4">Blood Pressure<b style="float:right;">:</b></label>
-            <div class="col-md-6">
-                <form [formGroup]="CurrentVital.VitalsValidator">
+          <div class="col-md-6" style="padding: 0px 5px 0px 0px;">
+            <input #bpSystolic class="form-control cstm-form-control" type="number" min="1" step="1" name="BPSystolic"
+                   (keyup.enter)="GoToNext(bpDiastolic)" [(ngModel)]="CurrentVital.BPSystolic" placeholder="BPSystolic"
+                   formControlName="systolic">
+          </div>
+          <div class="col-md-6" style="padding: 0px 0px 0px 4px;">
+            <input #bpDiastolic class="form-control cstm-form-control" type="number" min="1" name="BPDiastolic"
+                   (keyup.enter)="GoToNext(respRate)" [(ngModel)]="CurrentVital.BPDiastolic" placeholder="BPDiastolic"
+                   formControlName="diastolic">
+          </div>
 
-                    <div class="col-md-6" style="padding: 0px 5px 0px 0px;">
-                        <input class="form-control cstm-form-control" type="number" min="1" step="1" name="BPSystolic" [(ngModel)]="CurrentVital.BPSystolic" placeholder="BPSystolic" formControlName="systolic">
-                    </div>
-                    <div class="col-md-6" style="padding: 0px 0px 0px 4px;">
-                        <input class="form-control cstm-form-control" type="number" min="1" name="BPDiastolic" [(ngModel)]="CurrentVital.BPDiastolic" placeholder="BPDiastolic" formControlName="diastolic">
-                    </div>
+          <span class="color-red font-sm" *ngIf="CurrentVital.IsDirty()" [hidden]="CurrentVital.IsValid()">
+            bpsystolic
+            should be greater than bpdiastolic
+          </span>
+          <div class="color-red font-sm" *ngIf="CurrentVital.IsDirty()" [hidden]="CurrentVital.IsBPComplete()">
+            either
+            bpsystolic or bpdiastolic is empty
+          </div>
+        </form>
+      </div>
+      <div class="col-md-2">
+        <b class="white"> mmHg</b>
+      </div>
+    </div>
+    <div class="form-group cstm-form-group">
+      <label class="control-label cstm-control-label col-md-4">Respiratory Rate<b style="float:right;">:</b></label>
+      <div class="col-md-5">
+        <input #respRate type="text" class="form-control cstm-form-control" maxlength="50"
+               (keyup.enter)="GoToNext(spo2)" [(ngModel)]="CurrentVital.RespiratoryRatePerMin">
+      </div>
+      <div class="col-md-3">
+        <b class="white">per minute</b>
+      </div>
+    </div>
+    <div class="form-group cstm-form-group">
+      <label class="control-label cstm-control-label col-md-4">SpO2<b style="float:right;">:</b></label>
+      <div class="col-md-5">
+        <input #spo2 type="number" class="form-control cstm-form-control" maxlength="50" min="1" max="100"
+               (keyup.enter)="GoToNextSelect(deliveryPlan)" [(ngModel)]="CurrentVital.SpO2" placeholder="SpO2">
+      </div>
+      <div class="col-md-3">
+        <b class="white">percent</b>
+      </div>
+    </div>
+    <div class="form-group cstm-form-group">
+      <label class="control-label cstm-control-label col-md-4">
+        O<sub>2</sub> Delivery Plan<b style="float:right;">:</b>
+      </label>
+      <div class="col-md-5">
+        <select #deliveryPlan class="form-control cstm-form-control" placeholder="Unit" (change)="change()" name=""
+                [(ngModel)]="CurrentVital.OxygenDeliveryMethod">
+          <option value="NULL">--select--</option>
+          <option value="Room Air">Room air</option>
+          <option value="Nasal Cannula">Nasal cannula</option>
+          <option value="Face Mask">Fase mask</option>
+          <option value="BiPAP">BiPAP</option>
+          <option value="Mechanical Ventilator">Mechanical ventilator</option>
+        </select>
+      </div>
+      <div class="col-md-3 hidden-xs">
 
-                    <span class="color-red font-sm" *ngIf="CurrentVital.IsDirty()" [hidden]="CurrentVital.IsValid()"> bpsystolic should be greater than bpdiastolic</span>
-                    <div class="color-red font-sm" *ngIf="CurrentVital.IsDirty()" [hidden]="CurrentVital.IsBPComplete()">either bpsystolic or bpdiastolic is empty</div>
-                </form>
+      </div>
+    </div>
+    <div class="form-group cstm-form-group">
+      <label class="control-label cstm-control-label col-md-4">
+        Pain Scale<b> (/10)</b><b style="float:right;">:</b>
+      </label>
+      <div class="col-md-8">
+        <div *ngFor="let pdata of painData; let idx = index" class="col-md-12" style="padding: 0; margin-bottom: 5px;">
+          <div class="col-md-8" style="padding:0px 10px 0px 0px;">
+            <input id="bodyPart" class="form-control cstm-form-control" type="text" (keyup.enter)="GoToNextSelect(painScale)"
+                   [(ngModel)]="pdata.BodyPart" placeholder="Body Part">
+          </div>
+          <div class="col-md-2" style="padding:0px">
+            <div class="col-md-12" style="padding:0px">
+              <select #painScale class="form-control cstm-form-control" name="" style="padding:0px"
+                      [(ngModel)]="pdata.PainScale">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+              </select>
             </div>
-            <div class="col-md-2">
-                <b class="white"> mmHg</b>
-            </div>
+          </div>
+          <div class="col-md-2">
+            <button *ngIf="idx > 0" class="add-row-btn red btn btn-danger" (click)="DeletePainData(idx)"
+                    style="width: 30px;height: 30px;line-height: 30px;padding: 0;text-align: center;margin-top: 5px;">
+              <i class="fa fa-close fa-2x" style="font-size: 14px;"></i>
+            </button>
+          </div>
         </div>
-        <div class="form-group cstm-form-group">
-            <label class="control-label cstm-control-label col-md-4">Respiratory Rate<b style="float:right;">:</b></label>
-            <div class="col-md-5">
-                <input type="text" class="form-control cstm-form-control" maxlength="50" [(ngModel)]="CurrentVital.RespiratoryRatePerMin">
-            </div>
-            <div class="col-md-3">
-                <b class="white">per minute</b>
-            </div>
+        <div class="col-md-12" style="padding: 0;">
+          <button class="add-row-btn" (click)="AddMorePainData()">
+            <i class="fa fa-plus" style="font-size: 18px;"
+               title="add more pain data"></i>
+          </button>
         </div>
-        <div class="form-group cstm-form-group">
-            <label class="control-label cstm-control-label col-md-4">SpO2<b style="float:right;">:</b></label>
-            <div class="col-md-5">
-                <input type="number" class="form-control cstm-form-control" maxlength="50" min="1" max="100" [(ngModel)]="CurrentVital.SpO2" placeholder="SpO2">
-            </div>
-            <div class="col-md-3">
-                <b class="white">percent</b>
-            </div>
-        </div>
-        <div class="form-group cstm-form-group">
-            <label class="control-label cstm-control-label col-md-4">O<sub>2</sub> Delivery Plan<b style="float:right;">:</b></label>
-            <div class="col-md-5">
-                <select class="form-control cstm-form-control" placeholder="Unit" name="" [(ngModel)]="CurrentVital.OxygenDeliveryMethod">
-                    <option value="Room Air">Room air</option>
-                    <option value="Nasal Cannula">Nasal cannula</option>
-                    <option value="Face Mask">Fase mask</option>
-                    <option value="BiPAP">BiPAP</option>
-                    <option value="Mechanical Ventilator">Mechanical ventilator</option>
-                </select>
-            </div>
-            <div class="col-md-3 hidden-xs">
+      </div>
 
-            </div>
-        </div>
-        <div class="form-group cstm-form-group">
-            <label class="control-label cstm-control-label col-md-4">Pain Scale<b> (/10)</b><b style="float:right;">:</b></label>
-            <div class="col-md-8">
-                <div *ngFor="let pdata of painData; let idx = index" class="col-md-12" style="padding: 0; margin-bottom: 5px;">
-                    <div class="col-md-8" style="padding:0px 10px 0px 0px;">
-                        <input class="form-control cstm-form-control" type="text" [(ngModel)]="pdata.BodyPart" placeholder="Body Part">
-                    </div>
-                    <div class="col-md-2" style="padding:0px">
-                        <div class="col-md-12" style="padding:0px">
-                            <select class="form-control cstm-form-control" name="" style="padding:0px" [(ngModel)]="pdata.PainScale">
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="3">3</option>
-                                <option value="4">4</option>
-                                <option value="5">5</option>
-                                <option value="6">6</option>
-                                <option value="7">7</option>
-                                <option value="8">8</option>
-                                <option value="9">9</option>
-                                <option value="10">10</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-2">
-                        <button *ngIf="idx > 0" class="add-row-btn red" (click)="DeletePainData(idx)"><i class="fa fa-close fa-2x"></i></button>
-                    </div>
-                </div>
-                <div class="col-md-12" style="padding: 0;">
-                    <button class="add-row-btn" (click)="AddMorePainData()"><i class="fa fa-plus" style="font-size: 18px;"></i></button>
-                </div>
-            </div>
-
-        </div>
-        <div class="cstm-form-group">
-            <input type="button" style="background: #374150;margin-left:15px;" class="btn btn-primary" *ngIf="!updateButton" name="name" value="Add Vitals" (click)="AddVitals()" />
-            <input type="button" style="background: #374150;margin-left:15px;" class="btn btn-success" *ngIf="updateButton" value="Update" (click)="Update()" />
-        </div>
-    </div>    
+    </div>
+    <div class="cstm-form-group">
+      <button type="button" style="background: #374150;margin-left:15px;" class="btn btn-primary" *ngIf="!updateButton"
+              name="name" (click)="AddVitals()">
+        <i class="fa fa-save"></i>
+        Save
+      </button>
+      <button type="button" style="background: #374150;margin-left:15px;" class="btn btn-success" *ngIf="updateButton"
+              (click)="Update()">
+        <i class="fa fa-save"></i>
+        Update
+      </button>
+    </div>
+  </div>
 </div>

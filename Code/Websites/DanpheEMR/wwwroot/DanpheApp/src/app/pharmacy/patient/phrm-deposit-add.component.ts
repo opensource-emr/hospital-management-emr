@@ -116,7 +116,9 @@ export class PHRMDepositAdd {
     }
 
     SubmitDeposit(showReceipt: boolean) {
-        this.loading = true;
+      this.loading = true;
+      //to store counter Id
+      this.depositData.CounterId = this.currentCounterId;
         if (this.depositData.DepositType) {
 
             if (this.depositData.DepositAmount > 0) {
@@ -148,10 +150,12 @@ export class PHRMDepositAdd {
                                 if (this.depositData.DepositType == "deposit") {
                                     //deposit add 
                                     this.msgBoxServ.showMessage("success", ["Deposit of " + this.depositData.DepositAmount + " added successfully."]);
+                                    this.Close();
                                 }
                                 else {
                                     //deposit return
                                     this.msgBoxServ.showMessage("success", [this.depositData.DepositAmount + " returned successfully."]);
+                                    this.Close();
                                 }
                                 this.depositData.DepositBalance = res.Results.DepositBalance;
                                 if (showReceipt) {

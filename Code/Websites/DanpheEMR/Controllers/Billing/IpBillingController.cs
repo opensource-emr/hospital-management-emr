@@ -16,6 +16,7 @@ using DanpheEMR.Security;
 using DanpheEMR.Controllers.Billing;
 using System.Data;
 using System.Threading.Tasks;
+using DanpheEMR.Enums;
 
 namespace DanpheEMR.Controllers
 {
@@ -24,9 +25,11 @@ namespace DanpheEMR.Controllers
     {
 
         double cacheExpMinutes;//= 5;//this should come from configuration later on.
+        bool realTimeRemoteSyncEnabled = false;
         public IpBillingController(IOptions<MyConfiguration> _config) : base(_config)
         {
             cacheExpMinutes = _config.Value.CacheExpirationMinutes;
+            realTimeRemoteSyncEnabled = _config.Value.RealTimeRemoteSyncEnabled;
         }
 
 
@@ -58,7 +61,8 @@ namespace DanpheEMR.Controllers
                                           PatientNo = pat.PatientCode,
                                           pat.DateOfBirth,
                                           pat.Gender,
-                                          pat.PhoneNumber,
+                                          //if careofpersonPhonenumber is not empty then add "/CareOfPersonPhoneNo", else Don't add anything..
+                                          PhoneNumber = pat.PhoneNumber + ( String.IsNullOrEmpty(adm.CareOfPersonPhoneNo) ? "" : " / " + adm.CareOfPersonPhoneNo),
                                           VisitId = adm.PatientVisitId,
                                           IpNumber = vis.VisitCode,
                                           PatientName = pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName,
@@ -69,15 +73,16 @@ namespace DanpheEMR.Controllers
                                           DischargeDate = adm.AdmissionStatus == "admitted" ? adm.DischargeDate : (DateTime?)DateTime.Now,
                                           AdmittingDoctorId = adm.AdmittingDoctorId,
                                           AdmittingDoctorName = doc != null ? doc.FirstName + " " + doc.LastName : null,
-                                          ProvisionalAmount = (
-                                                   dbContext.BillingTransactionItems.Where(itm => itm.PatientId == pat.PatientId
-                                                   && itm.BillStatus == "provisional").Sum(itm => itm.TotalAmount)
-                                                   ),
+                                          //sud:3Sept'19--removed provisional since it's not being used, also its consuming lot of time for execution.
+                                          //ProvisionalAmount = (
+                                          //         dbContext.BillingTransactionItems.Where(itm => itm.PatientId == pat.PatientId
+                                          //         && itm.BillStatus == "provisional").Sum(itm => itm.TotalAmount)
+                                          //         ),
                                           DepositAdded = (
                                              dbContext.BillingDeposits.Where(dep => dep.PatientId == pat.PatientId &&
                                                                              dep.PatientVisitId == vis.PatientVisitId &&
-                                                                             dep.DepositType.ToLower() == "deposit" &&
-                                                                             dep.IsActive == true)
+                                                                             dep.DepositType == ENUM_BillDepositType.Deposit // "deposit" 
+                                                                             && dep.IsActive == true)
                                               .Sum(dep => dep.Amount)
                                            ),
 
@@ -85,12 +90,13 @@ namespace DanpheEMR.Controllers
                                                  dbContext.BillingDeposits.Where(dep =>
                                                         dep.PatientId == pat.PatientId &&
                                                         dep.PatientVisitId == vis.PatientVisitId &&
-                                                        (dep.DepositType.ToLower() == "depositdeduct" || dep.DepositType.ToLower() == "returndeposit") &&
-                                                        dep.IsActive == true).Sum(dep => dep.Amount)
+                                                         //(dep.DepositType.ToLower() == "depositdeduct" || dep.DepositType.ToLower() == "returndeposit")
+                                                         (dep.DepositType.ToLower() == ENUM_BillDepositType.DepositDeduct.ToLower() || dep.DepositType.ToLower() == ENUM_BillDepositType.ReturnDeposit.ToLower())
+                                                         && dep.IsActive == true).Sum(dep => dep.Amount)
                                            ),
 
                                           BedInformation = (from bedInfos in dbContext.PatientBedInfos
-                                                            where bedInfos.PatientVisitId == adm.PatientVisitId
+                                                            where bedInfos.PatientVisitId == adm.PatientVisitId && bedInfos.IsActive == true
                                                             select new
                                                             {
                                                                 Ward = bedInfos.Ward.WardName,
@@ -103,11 +109,29 @@ namespace DanpheEMR.Controllers
                     responseData.Results = ipPatients.OrderByDescending(a => a.AdmittedDate);
                 }
                 else if (reqType == "pat-pending-items")
-                {
+                {//Sanjit / Dinesh :We need to check the items with the Itemid as well as servicedepartmentid
+                    var BedServiceDepartmentId = dbContext.AdminParameters.Where(a => a.ParameterGroupName == "ADT" && a.ParameterName == "Bed_Charges_SevDeptId").FirstOrDefault().ParameterValue;
+                    var intbedservdeptid = Convert.ToInt64(BedServiceDepartmentId);
                     //Check if we can apply ipVisitId condition here.. 
                     var pendingItems = dbContext.BillingTransactionItems.Where(itm => itm.PatientId == patientId
-                                                  && itm.BillStatus == "provisional" && itm.Quantity > 0
+                                                  && itm.BillStatus == ENUM_BillingStatus.provisional //"provisional" //&& itm.Quantity > 0
                                                   && (itm.IsInsurance == false || itm.IsInsurance == null)).AsEnumerable().ToList(); //Excluding insurance items
+
+                    ////sud:30Apr'20--AllEmployee not needed in this API, this is available in client side already.. 
+                    //var allEmployees = (from emp in dbContext.Employee
+                    //                    join dep in dbContext.Departments
+                    //                    on emp.DepartmentId equals dep.DepartmentId into empDpt
+                    //                    from emp2 in empDpt.DefaultIfEmpty()
+                    //                    select new
+                    //                    {
+                    //                        EmployeeId = emp.EmployeeId,
+                    //                        FullName = emp.FullName,
+                    //                        FirstName = emp.FirstName,
+                    //                        DepartmentCode = emp2 != null ? emp2.DepartmentCode : "N/A",
+                    //                        DepartmentName = emp2 != null ? emp2.DepartmentName : "N/A"
+                    //                    }).ToList();
+
+
                     var bedPatInfo = (from bedInfo in dbContext.PatientBedInfos
                                       where bedInfo.PatientVisitId == ipVisitId
                                       select bedInfo).OrderBy(x => x.PatientBedInfoId).ToList().LastOrDefault();
@@ -118,7 +142,8 @@ namespace DanpheEMR.Controllers
                     var checkBedFeatureId = dbContext.PatientBedInfos.Where(a => a.PatientVisitId == bedPatInfo.PatientVisitId && a.PatientId == bedPatInfo.PatientId && bedPatInfo.BedFeatureId == a.BedFeatureId).Select(a => a.BedFeatureId).ToList();
                     pendingItems.ForEach(itm =>
                        {
-                           if (itm.ItemId == bedPatInfo.BedFeatureId && bedPatInfo.EndedOn == null && itm.ModifiedBy == null)
+                           //Sanjit / Dinesh :Currently servicedepartment name is hardcoded we need to parameterize later through cfg parameters
+                           if (itm.ItemId == bedPatInfo.BedFeatureId && itm.ServiceDepartmentId == intbedservdeptid && bedPatInfo.EndedOn == null && itm.ModifiedBy == null)
                            {
                                //var StartedOn = Convert.ToDateTime(bedPatInfo.StartedOn).Date;
                                //int totalDays = Convert.ToInt32((DateTime.Now.Date - StartedOn).TotalDays);
@@ -129,6 +154,7 @@ namespace DanpheEMR.Controllers
                                if (DateTime.Now > EndDateTime)
                                {
                                    qty = EndDateTime.Subtract(bedPatInfo.StartedOn.Value);
+                                   //qty = bedPatInfo.StartedOn.Value.Subtract(EndDateTime);
                                    itm.Quantity = (checkBedFeatureId.Count > 1) ? ((int)qty.TotalDays + itm.Quantity + 1) : (itm.Quantity = (int)qty.TotalDays + 1);
                                    if (bedPatInfo.StartedOn.Value.Date != EndDateTime.Date)
                                    {
@@ -143,6 +169,14 @@ namespace DanpheEMR.Controllers
                                }
                            }
                        });
+                    var itemToRemove = pendingItems.Where(r => r.Quantity == 0).Select(z => z).ToList();
+                    if (itemToRemove.Count > 0)
+                    {
+                        itemToRemove.ForEach(a =>
+                        {
+                            pendingItems.Remove(a);
+                        });
+                    }
                     var srvDepts = dbContext.ServiceDepartment.ToList();
                     var billItems = dbContext.BillItemPrice.ToList();
                     //update integrationName and integrationServiceDepartmentName
@@ -162,6 +196,20 @@ namespace DanpheEMR.Controllers
                             penItem.ItemIntegrationName = itemIntegrationDetail.ItemIntegrationName;
                             penItem.SrvDeptIntegrationName = itemIntegrationDetail.SrvIntegrationName;
                         }
+
+                        ////sud:30Apr'20--ModifiedByInformation not needed from here, we're taking it in client side.. hence removing.. 
+                        //if (penItem.ModifiedBy != null)
+                        //{
+                        //    var ModifiedByName = (from emp in dbContext.Employee
+                        //                          where emp.EmployeeId == penItem.ModifiedBy
+                        //                          select emp.FirstName + " " + emp.LastName).FirstOrDefault();
+                        //    penItem.ModifiedByName = ModifiedByName;
+                        //}
+
+
+                        //sud:30Apr'20 Clearing ServiceDepartment Object from PendingItems list.. which is not needed.. and creating heavy data..
+                        penItem.ServiceDepartment = null;
+
                     });
                     var admInfo = (from pat in dbContext.Patient
                                    where pat.PatientId == patientId
@@ -187,30 +235,37 @@ namespace DanpheEMR.Controllers
                                        FirstName = pat.FirstName,
                                        LastName = pat.LastName,
                                        MiddleName = pat.MiddleName,
+                                       MembershipTypeId = pat.MembershipTypeId,
                                        AdmittedOn = adm.AdmissionDate,
                                        DischargedOn = adm.AdmissionStatus == "admitted" ? (DateTime?)DateTime.Now : adm.DischargeDate,
                                        AdmittingDoctorId = adm.AdmittingDoctorId,
-                                       AdmittingDoctorName = doc != null ? (string.IsNullOrEmpty(doc.Salutation) ? "" : doc.Salutation + ". ") + doc.FirstName + " " + (string.IsNullOrEmpty(doc.MiddleName) ? "" : doc.MiddleName + " ") + doc.LastName : null,
+                                       AdmittingDoctorName = doc != null ? doc.FullName : null,//sud:30Apr'20 Replacing the concatenation logic with fullname. now we have that in database table.
+                                       //AdmittingDoctorName = doc != null ? (string.IsNullOrEmpty(doc.Salutation) ? "" : doc.Salutation + ". ") + doc.FirstName + " " + (string.IsNullOrEmpty(doc.MiddleName) ? "" : doc.MiddleName + " ") + doc.LastName : null,
                                        ProcedureType = adm.ProcedureType,
-                                       ProvisionalItems = (
-                                                dbContext.BillingTransactionItems.Where(itm => itm.PatientId == pat.PatientId
-                                                && itm.BillStatus == "provisional" && itm.Quantity > 0
-                                                && (itm.IsInsurance == false || itm.IsInsurance == null))).ToList(), //excluding Insurance Items
+                                       IsPoliceCase = adm.IsPoliceCase.HasValue? adm.IsPoliceCase : false,
+                                       ////sud:30Apr'20--removed-- Below data is not at all required in client side..
+                                       //ProvisionalItems = (,
+                                       //         dbContext.BillingTransactionItems.Where(itm => itm.PatientId == pat.PatientId
+                                       //         && itm.BillStatus == ENUM_BillingStatus.provisional //"provisional" 
+                                       //         && itm.Quantity > 0
+                                       //         && (itm.IsInsurance == false || itm.IsInsurance == null))).ToList(), //excluding Insurance Items
 
                                        DepositAdded = (
                                           dbContext.BillingDeposits.Where(dep => dep.PatientId == pat.PatientId &&
                                                                         dep.PatientVisitId == vis.PatientVisitId &&
-                                                                        dep.DepositType.ToLower() == "deposit" &&
-                                                                        dep.IsActive == true)
+                                                                        dep.DepositType.ToLower() == ENUM_BillDepositType.Deposit.ToLower()  //"deposit"
+                                                                         && dep.IsActive == true)
                                            .Sum(dep => dep.Amount)
+                                        
                                         ),
 
                                        DepositReturned = (
                                               dbContext.BillingDeposits.Where(dep =>
                                                   dep.PatientId == pat.PatientId &&
                                                   dep.PatientVisitId == vis.PatientVisitId &&
-                                                  (dep.DepositType.ToLower() == "depositdeduct" || dep.DepositType.ToLower() == "returndeposit") &&
-                                                   dep.IsActive == true
+                                                  (dep.DepositType.ToLower() == ENUM_BillDepositType.DepositDeduct.ToLower() || dep.DepositType.ToLower() == ENUM_BillDepositType.ReturnDeposit.ToLower()) &&
+                                                  //(dep.DepositType.ToLower() == "depositdeduct" || dep.DepositType.ToLower() == "returndeposit") &&
+                                                  dep.IsActive == true
                                            ).Sum(dep => dep.Amount)
                                         ),
                                        DepositTxns = (
@@ -262,11 +317,17 @@ namespace DanpheEMR.Controllers
                                                          Days = 0,
                                                      }).OrderByDescending(a => a.PatientBedInfoId).ToList()
                                    }).FirstOrDefault();
+
+
+
+
                     var patIpInfo = new
                     {
                         AdmissionInfo = admInfo,
-                        PendingBillItems = pendingItems,
-                        allBillItem = billItems
+                        PendingBillItems = pendingItems
+
+                        //allBillItem = billItems, // sud: 30Apr'20-- These two are not needed in this list.. they're already available in client side..
+                        //AllEmployees = allEmployees
                     };
 
                     responseData.Results = patIpInfo;
@@ -311,7 +372,7 @@ namespace DanpheEMR.Controllers
                         {
                             deposits = (from deposit in dbContext.BillingDeposits
                                         where deposit.PatientId == patId &&
-                                        deposit.PatientVisitId == ipVisitId && deposit.DepositType!= "depositcancel" &&
+                                        deposit.PatientVisitId == ipVisitId && deposit.DepositType != ENUM_BillDepositType.DepositCancel && //"depositcancel" &&
                                         deposit.IsActive == true
                                         join settlement in dbContext.BillSettlements on deposit.SettlementId
                                         equals settlement.SettlementId into settlementTemp
@@ -333,9 +394,13 @@ namespace DanpheEMR.Controllers
                         {
                             deposits = (from deposit in dbContext.BillingDeposits
                                         where deposit.PatientId == patId &&
-                                        deposit.PatientVisitId == ipVisitId &&
-                                        ((deposit.IsActive == true && deposit.DepositType == "Deposit")
-                                        || (deposit.BillingTransactionId == billingTxnId && (deposit.DepositType == "depositdeduct" || deposit.DepositType == "ReturnDeposit")))
+                                        deposit.PatientVisitId == ipVisitId && deposit.IsActive == true
+
+                                        //
+                                        //((deposit.IsActive == true && deposit.DepositType == ENUM_BillDepositType.Deposit) // "Deposit")
+                                        //    || (deposit.BillingTransactionId == billingTxnId &&
+                                        //         (deposit.DepositType == ENUM_BillDepositType.DepositDeduct || deposit.DepositType == ENUM_BillDepositType.ReturnDeposit))
+                                        // )
                                         join settlement in dbContext.BillSettlements on deposit.SettlementId
                                         equals settlement.SettlementId into settlementTemp
                                         from billSettlement in settlementTemp.DefaultIfEmpty()
@@ -391,7 +456,8 @@ namespace DanpheEMR.Controllers
                                              Address = pat.Address,
                                              ContactNo = pat.PhoneNumber,
                                              InpatientNo = visitNAdmission.VisitCode,
-                                             CountrySubDivision = sub.CountrySubDivisionName
+                                             CountrySubDivision = sub.CountrySubDivisionName,
+                                             PANNumber = pat.PANNumber
                                          }).FirstOrDefault();
 
 
@@ -422,7 +488,9 @@ namespace DanpheEMR.Controllers
                                             PrintCount = bil.PrintCount,
                                             ReturnStatus = bil.ReturnStatus,
                                             OrganizationId = bil.OrganizationId,
-                                            ExchangeRate = bil.ExchangeRate
+                                            ExchangeRate = bil.ExchangeRate,
+                                            Tender = bil.Tender,
+                                            Change = bil.Change
                                         }).FirstOrDefault();
                     if (billingTxnDetail != null)
                     {
@@ -482,14 +550,15 @@ namespace DanpheEMR.Controllers
                             {
                                 //step:1 -- make copy of billingTxnItems into new list, so thate EF doesn't add txn items again.
                                 //step:2-- if there's deposit deduction, then add to deposit table.
-                                billTransaction = BillingTransactionBL.PostBillingTransaction(billingDbContext, connString, billTransaction, currentUser.EmployeeId, currentDate);
+                                billTransaction = BillingTransactionBL.PostBillingTransaction(billingDbContext, connString, billTransaction, currentUser, currentDate);
 
                                 //step:3-- if there's deposit balance, then add a return transaction to deposit table. 
-                                if (billTransaction.PaymentMode != "credit" && billTransaction.DepositBalance != null && billTransaction.DepositBalance > 0)
+                                if (billTransaction.PaymentMode != ENUM_BillPaymentMode.credit // "credit" 
+                                    && billTransaction.DepositBalance != null && billTransaction.DepositBalance > 0)
                                 {
                                     BillingDeposit dep = new BillingDeposit()
                                     {
-                                        DepositType = "ReturnDeposit",
+                                        DepositType = ENUM_BillDepositType.ReturnDeposit, // "ReturnDeposit",
                                         Remarks = "Deposit Refunded from InvoiceNo. " + billTransaction.InvoiceCode + billTransaction.InvoiceNo,
                                         //Remarks = "ReturnDeposit" + " for transactionid:" + billTransaction.BillingTransactionId,
                                         Amount = billTransaction.DepositBalance,
@@ -504,8 +573,18 @@ namespace DanpheEMR.Controllers
                                         PatientVisitId = billTransaction.PatientVisitId,
                                         PaymentMode = billTransaction.PaymentMode,
                                         PaymentDetails = billTransaction.PaymentDetails,
-                                        ReceiptNo = billTransaction.ReceiptNo
+                                        //ReceiptNo = BillingBL.GetDepositReceiptNo(connString)
+
                                     };
+                                    if (billTransaction.ReceiptNo == null)
+                                    {
+                                        dep.ReceiptNo = BillingBL.GetDepositReceiptNo(connString);
+                                    }
+                                    else
+                                    {
+                                        dep.ReceiptNo = billTransaction.ReceiptNo;
+                                    }
+
 
                                     billingDbContext.BillingDeposits.Add(dep);
                                     billingDbContext.SaveChanges();
@@ -519,11 +598,46 @@ namespace DanpheEMR.Controllers
                                 {
                                     item.ForEach(itm =>
                                     {
-                                        var txnItem = BillingTransactionBL.UpdateTxnItemBillStatus(billingDbContext, itm, "adtCancel", billTransaction.CreatedBy.Value, currentDate, billTransaction.CounterId, null);
+                                        var txnItem = BillingTransactionBL.UpdateTxnItemBillStatus(billingDbContext, itm, "adtCancel", currentUser, currentDate, billTransaction.CounterId, null);
                                     });
                                 }
 
-                           
+                                if (realTimeRemoteSyncEnabled)
+                                {
+                                    if (billTransaction.Patient == null)
+                                    {
+                                        PatientModel pat = billingDbContext.Patient.Where(p => p.PatientId == billTransaction.PatientId).FirstOrDefault();
+                                        billTransaction.Patient = pat;
+                                    }
+                                    //Sud:23Dec'18--making parallel thread call (asynchronous) to post to IRD. so that it won't stop the normal execution of logic.
+                                    //BillingBL.SyncBillToRemoteServer(billTransaction, "sales", billingDbContext);
+                                    Task.Run(() => BillingBL.SyncBillToRemoteServer(billTransaction, "sales", billingDbContext));
+
+                                }
+
+                                var allPatientBedInfos = (from bedInfos in billingDbContext.PatientBedInfos
+                                                          where bedInfos.PatientVisitId == billTransaction.PatientVisitId
+                                                          && bedInfos.IsActive == true
+                                                          select bedInfos
+                                                          ).OrderByDescending(a => a.PatientBedInfoId).Take(2).ToList();
+
+                                if (allPatientBedInfos.Count > 0)
+                                {
+                                    allPatientBedInfos.ForEach(bed =>
+                                    {
+                                        var b = billingDbContext.Beds.FirstOrDefault(fd => fd.BedId == bed.BedId);
+                                        if (b != null)
+                                        {
+                                            b.OnHold = null;
+                                            b.HoldedOn = null;
+                                            billingDbContext.Entry(b).State = EntityState.Modified;
+                                            billingDbContext.Entry(b).Property(x => x.OnHold).IsModified = true;
+                                            billingDbContext.Entry(b).Property(x => x.HoldedOn).IsModified = true;
+                                            billingDbContext.SaveChanges();
+                                        }
+                                    });
+                                }
+
                                 dbContextTransaction.Commit();
                                 responseData.Results = billTransaction;
                             }
@@ -556,6 +670,7 @@ namespace DanpheEMR.Controllers
             try
             {
                 BillingDbContext billingDbContext = new BillingDbContext(connString);
+                RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
                 string str = this.ReadPostData();
                 string reqType = this.ReadQueryStringData("reqType");
                 if (reqType == "update-adtItems-duration")
@@ -563,7 +678,7 @@ namespace DanpheEMR.Controllers
                     List<BedDurationTxnDetailsVM> bedDurationDetails = DanpheJSONConvert.DeserializeObject<List<BedDurationTxnDetailsVM>>(str);
                     if (bedDurationDetails != null && bedDurationDetails.Count > 0)
                     {
-                        double totalDuration = bedDurationDetails[0].TotalDays;
+                        double totalDuration = bedDurationDetails[0].Days;
                         int patientVisitId = bedDurationDetails[0].PatientVisitId;
                         BillingTransactionItemModel billItem = new BillingTransactionItemModel();
 
@@ -632,6 +747,7 @@ namespace DanpheEMR.Controllers
                     {
                         txnItems.ForEach(item =>
                         {
+                            item.ModifiedBy = currentUser.EmployeeId;
                             BillingTransactionBL.UpdateBillingTransactionItems(billingDbContext, item);
                         });
                     }

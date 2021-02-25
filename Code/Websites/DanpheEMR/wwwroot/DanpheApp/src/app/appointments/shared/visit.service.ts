@@ -3,6 +3,7 @@ import { Visit } from "../shared/visit.model";
 import { CoreService } from '../../core/shared/core.service';
 import { Subject } from 'rxjs';
 import { BillingTransaction } from '../../billing/shared/billing-transaction.model';
+import { BillItemPriceVM } from '../../billing/shared/billing-view-models';
 
 @Injectable()
 export class VisitService {
@@ -44,6 +45,7 @@ export class VisitService {
 
   public ApptApplicableDepartmentList = [];
   public ApptApplicableDoctorsList = [];
+  public allBillItemsPriceList = [];
 
   //this stores information of previous visit in case of visit-continuation.
   //applicable for followup, transfer, refer etc. now used only for followup.
@@ -72,7 +74,7 @@ export class VisitService {
       //let sameDeptCount = todaysVisitList.filter(v => v.PatientId == patientId &&  v.DepartmentId == departmentId);
 
       //for now check only for Same doctor, If same department also needs validation, then we can simply check sameDeptCount.
-      if (doctorId) {
+      if (doctorId  && this.globalVisit.BillingStatus !="returned" ) {
         let sameDoctCount = todaysVisitList.filter(v => v.PatientId == patientId && v.ProviderId == doctorId);
         if (sameDoctCount.length > 0) {
           hasDuplicate = true;
@@ -85,5 +87,8 @@ export class VisitService {
 
   }
 
+  public LoadAllBillItemsPriceList(billItms: Array<BillItemPriceVM>) {
+    this.allBillItemsPriceList = billItms;
+  }
 
 }

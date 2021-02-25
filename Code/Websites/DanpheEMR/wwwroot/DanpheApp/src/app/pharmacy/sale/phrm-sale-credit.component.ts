@@ -9,13 +9,15 @@ import { PatientService } from "../../patients/shared/patient.service";
 import { PharmacyService } from "../shared/pharmacy.service"
 import { CommonFunctions } from "../../shared/common.functions";
 import { PHRMInvoiceItemsModel } from "../shared/phrm-invoice-items.model";
+import { PHRMInvoiceReturnItemsModel } from "../shared/phrm-invoice-return-items.model";
 //import { PHRMInvoiceItemsModel } "../shared/phrm-invoice-items.model";
 @Component({
-    templateUrl: "../../view/pharmacy-view/Sale/PHRMSaleCredit.html" //  "/PharmacyView/PHRMSaleCredit"
+    templateUrl: "./phrm-sale-credit.html"
 })
 export class PHRMSaleCreditComponent {
 
     public creditBillInvItems: Array<PHRMInvoiceItemsModel> = new Array<PHRMInvoiceItemsModel>();
+    public creditBillInvRetItems: Array<PHRMInvoiceReturnItemsModel> = new Array<PHRMInvoiceReturnItemsModel>();
     public loading: boolean = false;
 
     //constructor of class
@@ -48,6 +50,30 @@ export class PHRMSaleCreditComponent {
                 err => {
                     this.logError("failed to get invoice items")
                 });
+                this.pharmacyBLService.GetSaleInvoiceRetItemsByInvoiceId(InvoiceId)
+                .subscribe(res => {
+                    if (res.Status == 'OK') {
+                        this.creditBillInvRetItems = res.Results;
+                        this.creditBillInvRetItems.forEach(itm => {
+                            itm.CreatedOn = moment(itm.CreatedOn).format('YYYY-MM-DD');
+                        }
+                        )
+                        for (let i = 0; i < this.creditBillInvRetItems.length; i++) {
+                            if(this.creditBillInvRetItems[i].ReturnedQty > 0 )
+                            {
+                                this.creditBillInvItems[i].Quantity =  this.creditBillInvItems[i].Quantity-this.creditBillInvRetItems[i].ReturnedQty; 
+                                this.creditBillInvItems[i].TotalAmount = this.creditBillInvItems[i].Quantity * this.creditBillInvItems[i].MRP;
+                            } 
+                        }
+                    }
+                    else {
+                        this.logError(res.ErrorMessage);
+                    }
+                },
+                err => {
+                    this.logError("failed to get invoice items")
+                });
+                
         } else {
             //if there is no invoice id then  return to list page
             this.messageboxService.showMessage("notice", ["Please select invoice!"]);
@@ -95,6 +121,15 @@ export class PHRMSaleCreditComponent {
         } catch (exception) {
             this.ShowCatchErrMessage(exception);
         }
+    }
+    //Onchange CreditBill as Quantity change
+    CalculateCreditBill(){
+      for (let i = 0; i < this.creditBillInvItems.length; i++) {
+          if(this.creditBillInvItems[i].Quantity != null){
+              this.creditBillInvItems[i].TotalAmount = this.creditBillInvItems[i].Quantity* this.creditBillInvItems[i].MRP;
+          }
+          
+      }
     }
     //after successfully credit payment completed call to this one
     CallBackCreditPay(res) {

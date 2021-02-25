@@ -96,8 +96,8 @@ namespace DanpheEMR.Controllers
                 MasterDbContext dbMaster = new MasterDbContext(connString);
                 List<CountryModel> Country = new List<CountryModel>();
                 Country = (from country in dbMaster.Country
-                                      where country.IsActive == true
-                                      select country).ToList();
+                           where country.IsActive == true
+                           select country).ToList();
                 var formatedResult = new DanpheHTTPResponse<List<CountryModel>>() { Results = Country, Status = "OK" };
                 returnValue = DanpheJSONConvert.SerializeObject(formatedResult, true);
 
@@ -109,9 +109,9 @@ namespace DanpheEMR.Controllers
                 List<DepartmentModel> deptList = (List<DepartmentModel>)DanpheCache.GetMasterData(MasterDataEnum.Department);
                 List<EmployeeModel> empListFromCache = (List<EmployeeModel>)DanpheCache.GetMasterData(MasterDataEnum.Employee);
                 DepartmentModel department = (from d in deptList
-                                  join e in empListFromCache on d.DepartmentId equals e.DepartmentId
-                                  where e.EmployeeId == employeeId
-                                  select d).FirstOrDefault();
+                                              join e in empListFromCache on d.DepartmentId equals e.DepartmentId
+                                              where e.EmployeeId == employeeId
+                                              select d).FirstOrDefault();
                 //search in the departmentlist
 
                 //add into DanpheHTTPResponse format.
@@ -198,14 +198,22 @@ namespace DanpheEMR.Controllers
                                     join dept in deptList on emp.DepartmentId equals dept.DepartmentId
                                     where (dept.DepartmentName.ToLower() == "lab" || dept.DepartmentName.ToLower() == "pathology")
                                     && emp.IsActive == true
-                                    select emp).OrderBy(e=>e.DisplaySequence).ToList();
+                                    select emp).OrderBy(e => e.DisplaySequence).ToList();
                 }
-                else
+                else if(departmentName.ToLower() == "radiology")
+                {
+                    filteredList = (from emp in empListFromCache
+                                    join dept in deptList on emp.DepartmentId equals dept.DepartmentId
+                                    where (dept.DepartmentName.ToLower() == departmentName.ToLower() || (!String.IsNullOrEmpty(emp.RadiologySignature)))
+                                    && emp.EmployeeRoleId == doctorRoleId
+                                    && emp.IsActive == true //sud:1Jun'19--take only active employees.
+                                    select emp).OrderBy(e => e.DisplaySequence).ToList();
+                } else
                 {
                     filteredList = (from emp in empListFromCache
                                     join dept in deptList on emp.DepartmentId equals dept.DepartmentId
                                     where dept.DepartmentName.ToLower() == departmentName.ToLower() && emp.EmployeeRoleId == doctorRoleId
-                                    && emp.IsActive==true //sud:1Jun'19--take only active employees.
+                                    && emp.IsActive == true //sud:1Jun'19--take only active employees.
                                     select emp).OrderBy(e => e.DisplaySequence).ToList();
                 }
                 var formattedList = new DanpheHTTPResponse<List<EmployeeModel>>() { Results = filteredList, Status = "OK" };
@@ -356,14 +364,16 @@ namespace DanpheEMR.Controllers
             else if (type == "AllMasters")
             {
                 List<ServiceDepartmentModel> srvDeptList = (List<ServiceDepartmentModel>)DanpheCache.GetMasterData(MasterDataEnum.ServiceDepartment);
+                List<PriceCategoryModel> priceCategoryList = (List<PriceCategoryModel>)DanpheCache.GetMasterData(MasterDataEnum.PriceCategory);
                 List<DepartmentModel> departments = (List<DepartmentModel>)DanpheCache.GetMasterData(MasterDataEnum.Department);
                 List<TaxModel> taxes = (List<TaxModel>)DanpheCache.GetMasterData(MasterDataEnum.Taxes);
                 UniquePastDataModel allPastPatUniqueData = (UniquePastDataModel)DanpheCache.GetMasterData(MasterDataEnum.PastUniqueData);
+                List<ICD10CodeModel> icd10List = (List<ICD10CodeModel>)DanpheCache.GetMasterData(MasterDataEnum.ICD10);
                 //Add other master tables if they need to be loaded at the beginning
 
                 var srvDpts = FormatServiceDepts(srvDeptList, departments);
 
-                var masters = new { ServiceDepartments = srvDpts, Departments = departments, Taxes = taxes, UniqueDataList = allPastPatUniqueData };
+                var masters = new { ServiceDepartments = srvDpts, Departments = departments, Taxes = taxes, UniqueDataList = allPastPatUniqueData, PriceCategories = priceCategoryList , ICD10List = icd10List };
                 responseData.Results = masters;
                 responseData.Status = "OK";
                 returnValue = DanpheJSONConvert.SerializeObject(responseData, true);
@@ -438,8 +448,8 @@ namespace DanpheEMR.Controllers
                                        DepartmentName = d.DepartmentName,
                                        DepartmentId = d.DepartmentId,
                                        IntegrationName = s.IntegrationName,
-                                       Isactive=s.IsActive
-                                   }).Where(s=>s.Isactive==true).ToList();
+                                       Isactive = s.IsActive
+                                   }).Where(s => s.Isactive == true).ToList();
             return srvDptFormatted;
         }
     }

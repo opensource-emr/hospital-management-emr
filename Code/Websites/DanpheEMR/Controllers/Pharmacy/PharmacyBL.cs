@@ -10,10 +10,14 @@ using Microsoft.AspNetCore.Http;
 using DanpheEMR.ServerModel.PharmacyModels;
 
 using System.Configuration;
-//using DanpheEMR.Sync.IRDNepal.Models;
+using DanpheEMR.Sync.IRDNepal.Models;
 using Newtonsoft.Json;
 using DanpheEMR.Utilities;
 using System.Data;
+using System.Data.Entity.Migrations;
+using DanpheEMR.Core;
+using DanpheEMR.Core.Parameters;
+
 namespace DanpheEMR.Controllers
 {
     public class PharmacyBL
@@ -37,8 +41,8 @@ namespace DanpheEMR.Controllers
             {
                 try
                 {
-                    List<Boolean> flag = new List<bool>(); //for checking all transaction status
-                                                           ////Add GoodsReceiptItems
+                    List<bool> flag = new List<bool>(); //for checking all transaction status
+                                                        ////Add GoodsReceiptItems
                     bool isPoOrder = false;
                     isPoOrder = (grViewModelData.purchaseOrder.PurchaseOrderId <= 0) ? true : false;
                     //add server side createdby,authorizedby,
@@ -61,115 +65,9 @@ namespace DanpheEMR.Controllers
                         flag.Add(PoStsReslt);
                     }
 
-                    ///Getting GrId 
-                    var GRID = grViewModelData.goodReceipt.GoodReceiptId;
-                    ///Get GrItemsList based on GRID
-                    var grItemsList = (from GrItems in phrmdbcontext.PHRMGoodsReceiptItems
-                                       join gr in phrmdbcontext.PHRMGoodsReceipt on GrItems.GoodReceiptId equals gr.GoodReceiptId
-                                       where GrItems.GoodReceiptId == GRID
-                                       select GrItems
+                    Boolean addStoreStockResponse = AddPhrmStoreStock(grViewModelData, phrmdbcontext, "in", currentUser);
 
-                                    ).ToList();
-                    /////// Add GRItems Txn to StockTransactionItems
-                    //List<PHRMStockTransactionItemsModel> phrmStockTxnItems = new List<PHRMStockTransactionItemsModel>();
-                    //List<PHRMStoreStockModel> phrmStoreStock = new List<PHRMStoreStockModel>();
-                    //for (int i = 0; i < grItemsList.Count; i++)
-                    //{
-                    //    //////Gets and Sets GRItems Txn to StockTransactionItems
-                    //    var selectedstockTxnItm = new PHRMStockTransactionItemsModel();
-
-                    //    selectedstockTxnItm.ItemId = grItemsList[i].ItemId;
-                    //    selectedstockTxnItm.BatchNo = grItemsList[i].BatchNo;
-                    //    selectedstockTxnItm.ExpiryDate = grItemsList[i].ExpiryDate;
-                    //    selectedstockTxnItm.CCCharge = grItemsList[i].CCCharge;
-                    //    selectedstockTxnItm.Quantity = grItemsList[i].ReceivedQuantity;
-                    //    selectedstockTxnItm.FreeQuantity = grItemsList[i].FreeQuantity;
-                    //    selectedstockTxnItm.Price = grItemsList[i].GRItemPrice;
-                    //    selectedstockTxnItm.DiscountPercentage = grItemsList[i].DiscountPercentage;
-                    //    selectedstockTxnItm.VATPercentage = grItemsList[i].VATPercentage;
-                    //    selectedstockTxnItm.SubTotal = grItemsList[i].SubTotal;
-                    //    selectedstockTxnItm.TotalAmount = grItemsList[i].TotalAmount;
-                    //    selectedstockTxnItm.InOut = "in";
-                    //    selectedstockTxnItm.ReferenceNo = grItemsList[i].GoodReceiptItemId;
-                    //    selectedstockTxnItm.ReferenceItemCreatedOn = DateTime.Now;
-                    //    selectedstockTxnItm.TransactionType = "goodsreceipt"; ///during GR Transaction Type is goodsreceipt
-                    //    selectedstockTxnItm.MRP = grItemsList[i].MRP;
-                    //    selectedstockTxnItm.CreatedBy = grItemsList[i].CreatedBy;
-                    //    //grItemsList[i].CounterId;
-                    //    phrmStockTxnItems.Add(selectedstockTxnItm);
-                    //    phrmdbcontext.SaveChanges();
-                    //}
-                    for (int i = 0; i < grItemsList.Count; i++)
-                    {
-                        var selectedStoreStock = new PHRMStoreStockModel();
-                        selectedStoreStock.ItemId = grItemsList[i].ItemId;
-                        selectedStoreStock.ItemName = grItemsList[i].ItemName;
-                        selectedStoreStock.BatchNo = grItemsList[i].BatchNo;
-                        selectedStoreStock.ExpiryDate = grItemsList[i].ExpiryDate;
-                        selectedStoreStock.CCCharge = grItemsList[i].CCCharge;
-                        selectedStoreStock.Quantity = grItemsList[i].ReceivedQuantity;
-                        selectedStoreStock.FreeQuantity = grItemsList[i].FreeQuantity;
-                        selectedStoreStock.Price = grItemsList[i].GRItemPrice;
-                        selectedStoreStock.DiscountPercentage = grItemsList[i].DiscountPercentage;
-                        selectedStoreStock.VATPercentage = grItemsList[i].VATPercentage;
-                        selectedStoreStock.SubTotal = grItemsList[i].SubTotal;
-                        selectedStoreStock.TotalAmount = grItemsList[i].TotalAmount;
-                        selectedStoreStock.InOut = "in";
-                        selectedStoreStock.ReferenceNo = grItemsList[i].GoodReceiptItemId;
-                        selectedStoreStock.GoodsReceiptItemId = grItemsList[i].GoodReceiptItemId;
-                        selectedStoreStock.ReferenceItemCreatedOn = DateTime.Now;
-                        selectedStoreStock.TransactionType = "goodsreceipt"; ///during GR Transaction Type is goodsreceipt
-                        selectedStoreStock.MRP = grItemsList[i].MRP;
-                        selectedStoreStock.CreatedBy = grItemsList[i].CreatedBy;
-                        selectedStoreStock.CreatedOn = DateTime.Now;
-                        selectedStoreStock.StoreId = grViewModelData.goodReceipt.StoreId;
-                        selectedStoreStock.StoreName = grViewModelData.goodReceipt.StoreName;
-                        selectedStoreStock.IsActive = true;
-                        phrmdbcontext.PHRMStoreStock.Add(selectedStoreStock);
-                        phrmdbcontext.SaveChanges();
-                    }
-                    ///common function to StockTransactionItems by passing List<PHRMStockTransactionItemsModel>
-                    //var StkTxnReslt = AddStockTransactionItems(phrmdbcontext, phrmStockTxnItems);
-                    flag.Add(true);
-                    ///Ajay/04/jan'19: Commented below code ,now stock table is managed in trigger
-                    /////  Add and Update Available Quantity of Item in Stock Table
-                    //List<PHRMStockModel> updateStockList = new List<PHRMStockModel>();
-                    //List<PHRMStockModel> addStockList = new List<PHRMStockModel>();
-                    //for (int i = 0; i < grItemsList.Count; i++)
-                    //{
-                    //    PHRMStockModel curtStock = new PHRMStockModel();
-
-
-                    //    /////get list of Current Stock Item by Passing ItemId
-                    //    curtStock = GetStockItemsByItemId(grItemsList[i].ItemId, phrmdbcontext);
-                    //    if (curtStock != null)
-                    //    {   /////if Items is Already in Stoock Table then update the stock with latest quantity                                                                                   
-                    //        curtStock.AvailableQuantity = curtStock.AvailableQuantity + grItemsList[i].ReceivedQuantity;
-                    //        updateStockList.Add(curtStock);
-                    //        //UpdateStock(phrmdbcontext, curtStock);
-                    //    }
-                    //    else
-                    //    {   //// if Items is Not present in List means We have to add current item as New Item in Stock table
-                    //        PHRMStockModel addStockData = new PHRMStockModel();
-                    //        addStockData.ItemId = grItemsList[i].ItemId;
-                    //        addStockData.AvailableQuantity = grItemsList[i].ReceivedQuantity;
-                    //        addStockList.Add(addStockData);
-                    //    }
-
-
-                    //}
-
-                    //if (updateStockList.Count > 0)
-                    //{
-                    //    var UpdStkReslt = UpdateStock(phrmdbcontext, updateStockList);
-                    //    flag.Add(UpdStkReslt);
-
-                    //}
-                    //if (addStockList.Count > 0)
-                    //{
-                    //    var AddStkReslt = AddStock(phrmdbcontext, addStockList);
-                    //    flag.Add(AddStkReslt);
-                    //}
+                    flag.Add(addStoreStockResponse);
 
                     if (CheckFlagList(flag))
                     {
@@ -190,32 +88,206 @@ namespace DanpheEMR.Controllers
                 }
             }
         }
+
+        private static Boolean AddPhrmStoreStock(PHRMGoodsReceiptViewModel grViewModelData, PharmacyDbContext phrmdbcontext, string inout, RbacUser currentUser)
+        {
+            try
+            {
+                /// Getting GrId 
+                var GRID = grViewModelData.goodReceipt.GoodReceiptId;
+                /// Get GrItemsList based on GRID
+                var grItemsList = (from GrItems in phrmdbcontext.PHRMGoodsReceiptItems
+                                   join gr in phrmdbcontext.PHRMGoodsReceipt on GrItems.GoodReceiptId equals gr.GoodReceiptId
+                                   where GrItems.GoodReceiptId == GRID
+                                   select GrItems
+
+                                ).ToList();
+                List<bool> flag = new List<bool>();
+
+                for (int i = 0; i < grItemsList.Count; i++)
+                {
+                    var selectedStoreStock = new PHRMStoreStockModel();
+                    selectedStoreStock.ItemId = grItemsList[i].ItemId;
+                    selectedStoreStock.ItemName = grItemsList[i].ItemName;
+                    selectedStoreStock.BatchNo = grItemsList[i].BatchNo;
+                    selectedStoreStock.ExpiryDate = grItemsList[i].ExpiryDate;
+                    selectedStoreStock.CCCharge = grItemsList[i].CCCharge;
+                    selectedStoreStock.Quantity = grItemsList[i].ReceivedQuantity;
+                    selectedStoreStock.FreeQuantity = grItemsList[i].FreeQuantity;
+                    selectedStoreStock.Price = grItemsList[i].GRItemPrice;
+                    selectedStoreStock.DiscountPercentage = grItemsList[i].DiscountPercentage;
+                    selectedStoreStock.VATPercentage = grItemsList[i].VATPercentage;
+                    selectedStoreStock.SubTotal = grItemsList[i].SubTotal;
+                    selectedStoreStock.TotalAmount = grItemsList[i].TotalAmount;
+                    selectedStoreStock.InOut = inout;
+                    selectedStoreStock.ReferenceNo = grItemsList[i].GoodReceiptItemId;
+                    selectedStoreStock.GoodsReceiptItemId = grItemsList[i].GoodReceiptItemId;
+                    selectedStoreStock.ReferenceItemCreatedOn = DateTime.Now;
+                    selectedStoreStock.TransactionType = "goodsreceipt"; ///during GR Transaction Type is goodsreceipt
+                    selectedStoreStock.MRP = grItemsList[i].MRP;
+                    selectedStoreStock.CreatedBy = grItemsList[i].CreatedBy;
+                    selectedStoreStock.CreatedOn = DateTime.Now;
+                    selectedStoreStock.StoreId = grViewModelData.goodReceipt.StoreId;
+                    selectedStoreStock.StoreName = grViewModelData.goodReceipt.StoreName;
+                    selectedStoreStock.IsActive = true;
+                    phrmdbcontext.PHRMStoreStock.Add(selectedStoreStock);
+                    phrmdbcontext.SaveChanges();
+                    flag.Add(true);
+
+                    // for direct transfer to Dispensary stock
+                    if (grViewModelData.goodReceipt.SendDirectToDispensary && grViewModelData.goodReceipt.SelectedDispensaryId > 0)
+                    {
+                        selectedStoreStock.DispensaryId = grViewModelData.goodReceipt.SelectedDispensaryId;
+                        selectedStoreStock.UpdatedQty = grItemsList[i].ReceivedQuantity + grItemsList[i].FreeQuantity; // while transfer, updated quantity is transfering quantity
+                        selectedStoreStock.InOut = "out";
+                        var stockTfrFlag = TransferStoreStockToDispensary(selectedStoreStock, phrmdbcontext, currentUser);
+
+                        flag.Add(stockTfrFlag);
+                    }
+                }
+
+                if (CheckFlagList(flag))
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
         public static BillingFiscalYear GetFiscalYear(PharmacyDbContext phrmdbcontext)
         {
             DateTime currentDate = DateTime.Now.Date;
             return phrmdbcontext.BillingFiscalYear.Where(fsc => fsc.StartYear <= currentDate && fsc.EndYear >= currentDate).FirstOrDefault();
         }
 
+
+        public static BillingFiscalYear GetFiscalYearGoodsReceipt(PharmacyDbContext phrmdbcontext, DateTime? DecidingDate = null)
+        {
+            DecidingDate = (DecidingDate == null) ? DateTime.Now.Date : DecidingDate;
+            return phrmdbcontext.BillingFiscalYear.Where(fsc => fsc.StartYear <= DecidingDate && fsc.EndYear >= DecidingDate).FirstOrDefault();
+        }
+
+
         public static int GetInvoiceNumber(PharmacyDbContext phrmdbcontext)
         {
             int fiscalYearId = GetFiscalYear(phrmdbcontext).FiscalYearId;
-            
+
             int invoiceNumber = (from txn in phrmdbcontext.PHRMInvoiceTransaction
-                                  where txn.FiscalYearId == fiscalYearId
-                                  select txn.InvoicePrintId).DefaultIfEmpty(0).Max();
+                                 where txn.FiscalYearId == fiscalYearId
+                                 select txn.InvoicePrintId).DefaultIfEmpty(0).Max();
             return invoiceNumber + 1;
         }
+        public static int RegisterPatient(PHRMPatient patient, PharmacyDbContext db, PatientDbContext patientDb, CoreDbContext coreDb)
+        {
+            try
+            {
+                patient.CreatedOn = DateTime.Now;
+                patient.PatientNo = GetLatestPatientNo(patientDb);
+                patient.PatientCode = GetPatientCode((int)patient.PatientNo, patientDb, coreDb);
+                db.PHRMPatient.Add(patient);
+                db.SaveChanges();
+                return patient.PatientId;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+        public static int GetLatestPatientNo(PatientDbContext patientDbContext)
+        {
+            try
+            {
+                int newPatNo = 0;
+                var maxPatNo = patientDbContext.Patients.DefaultIfEmpty().Max(p => p == null ? 0 : p.PatientNo);
+                newPatNo = maxPatNo.Value + 1;
+                return newPatNo;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+        public static string GetPatientCode(int patientNo, PatientDbContext patientDbContext, CoreDbContext coreDbContext)
+        {
+            try
+            {
+                NewPatientUniqueNumbersVM retValue = new NewPatientUniqueNumbersVM();
+                int newPatNo = patientNo;
+                string newPatCode = "";
 
+
+                string patCodeFormat = "YYMM-PatNum";//this is default value.
+                string hospitalCode = "";//default empty
+
+                List<ParameterModel> allParams = coreDbContext.Parameters.ToList();
+
+
+                ParameterModel patCodeFormatParam = allParams
+                   .Where(a => a.ParameterGroupName == "Patient" && a.ParameterName == "PatientCodeFormat")
+                   .FirstOrDefault<ParameterModel>();
+                if (patCodeFormatParam != null)
+                {
+                    patCodeFormat = patCodeFormatParam.ParameterValue;
+                }
+
+
+                ParameterModel hospCodeParam = allParams
+                    .Where(a => a.ParameterName == "HospitalCode")
+                    .FirstOrDefault<ParameterModel>();
+                if (hospCodeParam != null)
+                {
+                    hospitalCode = hospCodeParam.ParameterValue;
+                }
+
+
+
+                if (patCodeFormat == "YYMM-PatNum")
+                {
+                    newPatCode = DateTime.Now.ToString("yy") + DateTime.Now.ToString("MM") + String.Format("{0:D6}", newPatNo);
+                }
+                else if (patCodeFormat == "HospCode-PatNum")
+                {
+                    newPatCode = hospitalCode + newPatNo;
+                }
+                else if (patCodeFormat == "PatNum")
+                {
+                    newPatCode = newPatNo.ToString();
+                }
+
+                return newPatCode;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public static int GetGoodReceiptPrintNo(PharmacyDbContext phrmdbcontext, int fiscalYearId)
+        {
+            var goodreceiptprintnumber = (from goodrecp in phrmdbcontext.PHRMGoodsReceipt
+                                          where goodrecp.FiscalYearId == fiscalYearId
+                                          select goodrecp.GoodReceiptPrintId).DefaultIfEmpty(0).Max() ?? 0;
+            return goodreceiptprintnumber + 1;
+        }
         public static string GetFiscalYearFormattedName(PharmacyDbContext phrmdbcontext, int? fiscalYearId)
         {
             if (fiscalYearId != null)
             {
                 return phrmdbcontext.BillingFiscalYear.Where(fsc => fsc.FiscalYearId == fiscalYearId).FirstOrDefault().FiscalYearFormatted;
             }
-            else {
+            else
+            {
                 return "";
             }
-            
+
         }
         /// <summary>
         /// This is whole single transaction of Invoice
@@ -235,7 +307,13 @@ namespace DanpheEMR.Controllers
                 try
                 {
                     var discPer = (invoiceDataFromClient.DiscountAmount / invoiceDataFromClient.SubTotal) * 100;
-                    List<Boolean> flag = new List<bool>(); //for checking all transaction status       
+                    List<Boolean> flag = new List<bool>(); //for checking all transaction status  
+                    //Check whether stock is available
+                    //var test = SalesValidation(invoiceDataFromClient, phrmdbcontext);
+                    //if (test)
+                    //{
+
+                    //}
                     //Save Invoice And Invoice Items details
                     var saveRes = SaveInvoiceAndInvoiceItems(invoiceDataFromClient, phrmdbcontext, currentUser);
                     flag.Add(saveRes);
@@ -245,6 +323,7 @@ namespace DanpheEMR.Controllers
                         itm =>
                         {
                             PHRMDispensaryStockModel tempdispensaryStkTxn = new PHRMDispensaryStockModel();
+                            tempdispensaryStkTxn.StockId = Convert.ToInt32(itm.StockId);
                             tempdispensaryStkTxn.AvailableQuantity = itm.Quantity;
                             tempdispensaryStkTxn.BatchNo = itm.BatchNo;
                             tempdispensaryStkTxn.MRP = itm.MRP;
@@ -266,18 +345,17 @@ namespace DanpheEMR.Controllers
                     {
                         List<string> BatchNoForInvoiceItems = new List<string>();
                         //Quantity of InvoiceItems
-                        //var discPer = (invoiceDataFromClient.DiscountAmount/ invoiceDataFromClient.SubTotal)*100;
-                        double discPerForCalcn = decimal.ToDouble(discPer.Value);
+                        //var discPer = (invoiceDataFromClient.DiscountAmount/ invoiceDataFromClient.SubTotal)*100;                     
                         var currQuantity = invoiceDataFromClient.InvoiceItems[i].Quantity.Value;
                         var tempStockTxnItems = new PHRMStockTransactionItemsModel();
                         tempStockTxnItems.CreatedBy = currentUser.EmployeeId;
                         tempStockTxnItems.CreatedOn = DateTime.Now;
-                        tempStockTxnItems.DiscountPercentage = discPerForCalcn;
+                        tempStockTxnItems.DiscountPercentage = Convert.ToDouble(invoiceDataFromClient.InvoiceItems[i].DiscountPercentage);
                         //tempStockTxnItems.DiscountPercentage = invoiceDataFromClient.InvoiceItems[i].DiscountPercentage.Value;
                         tempStockTxnItems.ExpiryDate = invoiceDataFromClient.InvoiceItems[i].ExpiryDate;
                         tempStockTxnItems.FreeQuantity = invoiceDataFromClient.InvoiceItems[i].FreeQuantity;
                         //just to make insert work
-                        tempStockTxnItems.GoodsReceiptItemId = null;
+                        tempStockTxnItems.GoodsReceiptItemId = invoiceDataFromClient.InvoiceItems[i].GrItemId;
                         tempStockTxnItems.Quantity = invoiceDataFromClient.InvoiceItems[i].Quantity.Value;
                         tempStockTxnItems.BatchNo = invoiceDataFromClient.InvoiceItems[i].BatchNo;
                         tempStockTxnItems.InOut = "out";
@@ -286,14 +364,12 @@ namespace DanpheEMR.Controllers
                         tempStockTxnItems.Price = invoiceDataFromClient.InvoiceItems[i].Price;
                         tempStockTxnItems.ReferenceItemCreatedOn = DateTime.Now;
                         tempStockTxnItems.ReferenceNo = invoiceDataFromClient.InvoiceItems[i].InvoiceId;
-                        tempStockTxnItems.TransactionType = "sale";
+                        tempStockTxnItems.TransactionType = invoiceDataFromClient.PaymentMode == "cash" ? "sale" : "creditsale";
                         tempStockTxnItems.GoodsReceiptItemId = invoiceDataFromClient.InvoiceItems[i].GoodReceiptItemId;
                         string avlbleQty = invoiceDataFromClient.InvoiceItems[i].AvailableQuantity.ToString();
                         invoiceDataFromClient.InvoiceItems[i].AvailableQuantity = Convert.ToDouble(avlbleQty) - currQuantity;
-                        decimal subTotal = (Convert.ToDecimal(tempStockTxnItems.Quantity) - Convert.ToDecimal(tempStockTxnItems.FreeQuantity)) * Convert.ToDecimal(tempStockTxnItems.Price);
-                        decimal discountAmt = (subTotal * Convert.ToDecimal(tempStockTxnItems.DiscountPercentage)) / 100;
-                        tempStockTxnItems.SubTotal = subTotal - discountAmt;
-                        tempStockTxnItems.TotalAmount = tempStockTxnItems.SubTotal * (1 - Convert.ToDecimal(discPerForCalcn));
+                        tempStockTxnItems.SubTotal = Convert.ToDecimal(invoiceDataFromClient.InvoiceItems[i].SubTotal);
+                        tempStockTxnItems.TotalAmount = Convert.ToDecimal(invoiceDataFromClient.InvoiceItems[i].TotalAmount);
                         //tempStockTxnItems.TotalAmount = ((tempStockTxnItems.SubTotal * Convert.ToDecimal(tempStockTxnItems.VATPercentage)) / 100) + tempStockTxnItems.SubTotal;
                         phrmStockTxnItems.Add(tempStockTxnItems);
                         if (currQuantity == 0)
@@ -541,6 +617,16 @@ namespace DanpheEMR.Controllers
             {
                 try
                 {
+                    var itmdis = (from dbc in phrmdbcontext.CFGParameters                       //get item level discount features detail.
+                                  where dbc.ParameterGroupName.ToLower() == "Pharmacy"
+                                  && dbc.ParameterName == "PharmacyItemlvlDiscount"
+                                  select dbc.ParameterValue).FirstOrDefault();
+                    if (itmdis == "false")                                                     //check item level discount features disable
+                    {
+                        invoiceDataFromClient.TotalAmount = invoiceDataFromClient.SubTotal;    //we applied general discount in client side on invoice but invoice not generated in provisional bill.
+                        invoiceDataFromClient.DiscountAmount = 0;                              // and when item level discount features is disable then remove general discount total amt is = to subtotal.
+                                                                                               // this code for only display total amt in provisional bill.
+                    }
                     var discPer = (invoiceDataFromClient.DiscountAmount / invoiceDataFromClient.SubTotal) * 100;
                     List<Boolean> flag = new List<bool>(); //for checking all transaction status       
                     //Save Invoice And Invoice Items details
@@ -548,9 +634,13 @@ namespace DanpheEMR.Controllers
                     flag.Add(saveRes);
                     //# post to PHRMDispensaryStock tables.
                     List<PHRMDispensaryStockModel> phrmDispensaryItems = new List<PHRMDispensaryStockModel>();
+                    //// Dinesh : 1-30-2020  solution for stock adjustment while doing the provisional transaction
+
+
                     invoiceDataFromClient.InvoiceItems.ForEach(
                         itm =>
                         {
+                            //var StockId = phrmdbcontext.DispensaryStock.Where(x => x.ItemId == itm.ItemId && x.ExpiryDate == itm.ExpiryDate && x.BatchNo == itm.BatchNo).Select(s => s.StockId).FirstOrDefault();
                             PHRMDispensaryStockModel tempdispensaryStkTxn = new PHRMDispensaryStockModel();
                             tempdispensaryStkTxn.AvailableQuantity = itm.Quantity;
                             tempdispensaryStkTxn.BatchNo = itm.BatchNo;
@@ -559,6 +649,7 @@ namespace DanpheEMR.Controllers
                             tempdispensaryStkTxn.ItemId = itm.ItemId;
                             tempdispensaryStkTxn.Price = itm.Price;
                             tempdispensaryStkTxn.ExpiryDate = itm.ExpiryDate;
+                            tempdispensaryStkTxn.StockId = itm.StockId;
                             phrmDispensaryItems.Add(tempdispensaryStkTxn);
                         }
                         );
@@ -573,13 +664,12 @@ namespace DanpheEMR.Controllers
                         List<string> BatchNoForInvoiceItems = new List<string>();
                         //Quantity of InvoiceItems
                         //var discPer = (invoiceDataFromClient.DiscountAmount/ invoiceDataFromClient.SubTotal)*100;
-                        double discPerForCalcn = decimal.ToDouble(discPer.Value);
+                        // double discPerForCalcn = decimal.ToDouble(discPer.Value);
                         var currQuantity = invoiceDataFromClient.InvoiceItems[i].Quantity.Value;
                         var tempStockTxnItems = new PHRMStockTransactionItemsModel();
                         tempStockTxnItems.CreatedBy = currentUser.EmployeeId;
                         tempStockTxnItems.CreatedOn = DateTime.Now;
-                        tempStockTxnItems.DiscountPercentage = discPerForCalcn;
-                        //tempStockTxnItems.DiscountPercentage = invoiceDataFromClient.InvoiceItems[i].DiscountPercentage.Value;
+                        tempStockTxnItems.DiscountPercentage = invoiceDataFromClient.InvoiceItems[i].DiscountPercentage.Value;
                         tempStockTxnItems.ExpiryDate = invoiceDataFromClient.InvoiceItems[i].ExpiryDate;
                         tempStockTxnItems.FreeQuantity = invoiceDataFromClient.InvoiceItems[i].FreeQuantity;
                         //just to make insert work
@@ -595,10 +685,8 @@ namespace DanpheEMR.Controllers
                         tempStockTxnItems.TransactionType = "provisionalsale";
                         string avlbleQty = invoiceDataFromClient.InvoiceItems[i].AvailableQuantity.ToString();
                         invoiceDataFromClient.InvoiceItems[i].AvailableQuantity = Convert.ToDouble(avlbleQty) - currQuantity;
-                        decimal subTotal = (Convert.ToDecimal(tempStockTxnItems.Quantity) - Convert.ToDecimal(tempStockTxnItems.FreeQuantity)) * Convert.ToDecimal(tempStockTxnItems.Price);
-                        decimal discountAmt = (subTotal * Convert.ToDecimal(tempStockTxnItems.DiscountPercentage)) / 100;
-                        tempStockTxnItems.SubTotal = subTotal - discountAmt;
-                        tempStockTxnItems.TotalAmount = tempStockTxnItems.SubTotal * (1 - Convert.ToDecimal(discPerForCalcn));
+                        tempStockTxnItems.SubTotal = Convert.ToDecimal(invoiceDataFromClient.InvoiceItems[i].SubTotal);
+                        tempStockTxnItems.TotalAmount = Convert.ToDecimal(invoiceDataFromClient.InvoiceItems[i].TotalAmount);
                         //tempStockTxnItems.TotalAmount = ((tempStockTxnItems.SubTotal * Convert.ToDecimal(tempStockTxnItems.VATPercentage)) / 100) + tempStockTxnItems.SubTotal;
                         phrmStockTxnItems.Add(tempStockTxnItems);
                         if (currQuantity == 0)
@@ -678,26 +766,32 @@ namespace DanpheEMR.Controllers
         }
 
         // Ward Requisition Items Dispatch.
-        public static WARDDispatchModel WardRequisitionItemsDispatch(WARDDispatchModel wardDispatchedItems, PharmacyDbContext phrmdbcontext, RbacUser currentUser, int requisitionId = 0)
+        public static WARDDispatchModel WardRequisitionItemsDispatch(WARDDispatchModel wardDispatch, PharmacyDbContext phrmdbcontext, RbacUser currentUser, int requisitionId = 0)
         {
             //Transaction Begin
             using (var dbContextTransaction = phrmdbcontext.Database.BeginTransaction())
             {
                 try
                 {
-
                     List<Boolean> flag = new List<bool>();
-
-                    var saveRes = SaveWardRequisitionItems(wardDispatchedItems, phrmdbcontext, currentUser, requisitionId);
+                    //decrement in pharmacy dispensary stock happens here.
+                    var saveRes = SaveWardRequisitionItems(wardDispatch, phrmdbcontext, currentUser, requisitionId);
                     flag.Add(saveRes);
                     //Make StockTransaction object data for post/save
 
-                    List<WARDStockModel> wardStockTxnItems = new List<WARDStockModel>();
+                    List<WARDStockModel> wardStock = new List<WARDStockModel>();
+                    List<WARDTransactionModel> wardStockTXN = new List<WARDTransactionModel>();
+                    //var priceList = (from price in phrmdbcontext.PHRMStoreStock
+                    //                select new
+                    //                {
+                    //                    Price = price.Price
+                    //                }).ToList();
+                    //List<int> priceList = stckprice.                   
                     var ward = (from wardReq in phrmdbcontext.WardRequisition
                                 join wardReqItem in phrmdbcontext.WardRequisitionItem on wardReq.RequisitionId equals wardReqItem.RequisitionId
                                 join wardModel in phrmdbcontext.WardModel on wardReq.WardId equals wardModel.WardId
                                 join disp in phrmdbcontext.WardDisapatch on wardReqItem.RequisitionId equals disp.RequisitionId
-                                where wardReq.RequisitionId == wardDispatchedItems.RequisitionId
+                                where wardReq.RequisitionId == wardDispatch.RequisitionId
                                 select new
                                 {
                                     WardId = wardReq.WardId,
@@ -705,40 +799,55 @@ namespace DanpheEMR.Controllers
                                 }).FirstOrDefault();
 
                     //loop RequisitionItems and make stock transaction object
-                    for (int i = 0; i < wardDispatchedItems.WardDispatchedItemsList.Count; i++)
+                    for (int i = 0; i < wardDispatch.WardDispatchedItemsList.Count; i++)
                     {
 
-                        var currQuantity = wardDispatchedItems.WardDispatchedItemsList[i].Quantity;
-                        var tempStockTxnItems = new WARDStockModel();
+                        var currQuantity = wardDispatch.WardDispatchedItemsList[i].Quantity;
+                        var tempWardStock = new WARDStockModel();
 
-                        tempStockTxnItems.WardId = ward.WardId;
-                        tempStockTxnItems.WardName = ward.WardName;
-                        tempStockTxnItems.ItemId = wardDispatchedItems.WardDispatchedItemsList[i].ItemId;
-                        tempStockTxnItems.AvailableQuantity = wardDispatchedItems.WardDispatchedItemsList[i].Quantity;
-                        tempStockTxnItems.MRP = Convert.ToDouble(wardDispatchedItems.WardDispatchedItemsList[i].MRP);
-                        tempStockTxnItems.BatchNo = wardDispatchedItems.WardDispatchedItemsList[i].BatchNo;
-                        tempStockTxnItems.ExpiryDate = wardDispatchedItems.WardDispatchedItemsList[i].ExpiryDate;
-                        tempStockTxnItems.ItemName = wardDispatchedItems.WardDispatchedItemsList[i].ItemName;
-                        tempStockTxnItems.DispachedQuantity = wardDispatchedItems.WardDispatchedItemsList[i].Quantity;
-                        tempStockTxnItems.StockType = "pharmacy";
-                        wardStockTxnItems.Add(tempStockTxnItems);
+                        tempWardStock.ItemId = wardDispatch.WardDispatchedItemsList[i].ItemId;
+                        tempWardStock.StoreId = wardDispatch.StoreId;
+                        tempWardStock.AvailableQuantity = wardDispatch.WardDispatchedItemsList[i].Quantity;
+                        tempWardStock.MRP = Convert.ToDouble(wardDispatch.WardDispatchedItemsList[i].MRP);
+                        tempWardStock.BatchNo = wardDispatch.WardDispatchedItemsList[i].BatchNo;
+                        tempWardStock.ExpiryDate = wardDispatch.WardDispatchedItemsList[i].ExpiryDate;
+                        tempWardStock.ItemName = wardDispatch.WardDispatchedItemsList[i].ItemName;
+                        tempWardStock.DispachedQuantity = wardDispatch.WardDispatchedItemsList[i].Quantity;
+                        tempWardStock.StockType = "pharmacy";
+                        tempWardStock.Price = wardDispatch.WardDispatchedItemsList[i].Price;
+                        wardStock.Add(tempWardStock);
+
+                        var WardTxn = new WARDTransactionModel();
+                        WardTxn.ItemId = tempWardStock.ItemId;
+                        WardTxn.Quantity = tempWardStock.AvailableQuantity;
+                        WardTxn.TransactionType = "Dispatched";
+                        WardTxn.CreatedBy = currentUser.UserName;
+                        WardTxn.CreatedOn = DateTime.Now;
+                        WardTxn.Remarks = wardDispatch.Remark;
+                        WardTxn.IsWard = true;
+                        WardTxn.newWardId = 0;
+                        WardTxn.ReceivedBy = wardDispatch.ReceivedBy;
+                        WardTxn.StoreId = tempWardStock.StoreId;
+                        WardTxn.Price = tempWardStock.Price;
+                        wardStockTXN.Add(WardTxn);
+
                         if (currQuantity == 0)
                         {
                             break;
                         }
                     }
-                    var StkTxnRes = AddWardStockItems(phrmdbcontext, wardStockTxnItems);
+                    var StkTxnRes = AddWardStockItems(phrmdbcontext, wardStock, wardStockTXN);
                     flag.Add(StkTxnRes);
 
                     if (CheckFlagList(flag))
                     {
                         dbContextTransaction.Commit();//Commit Transaction
-                        return wardDispatchedItems;
+                        return wardDispatch;
                     }
                     else
                     {
                         dbContextTransaction.Rollback();//Rollback transaction
-                        return wardDispatchedItems;
+                        return wardDispatch;
                     }
                 }
                 catch (Exception ex)
@@ -995,6 +1104,7 @@ namespace DanpheEMR.Controllers
                     writeOffFromClient.phrmWriteOffItem.ForEach(
                         itm =>
                         {
+                            var StockId = phrmdbcontext.DispensaryStock.Where(x => x.ItemId == itm.ItemId && x.ExpiryDate == itm.ExpiryDate && x.BatchNo == itm.BatchNo).Select(s => s.StockId).FirstOrDefault();
                             PHRMDispensaryStockModel tempdispensaryStkTxn = new PHRMDispensaryStockModel();
                             tempdispensaryStkTxn.AvailableQuantity = itm.WriteOffQuantity;
                             tempdispensaryStkTxn.BatchNo = itm.BatchNo;
@@ -1002,6 +1112,7 @@ namespace DanpheEMR.Controllers
                             tempdispensaryStkTxn.InOut = "out";
                             tempdispensaryStkTxn.ItemId = itm.ItemId;
                             tempdispensaryStkTxn.ExpiryDate = itm.ExpiryDate;
+                            tempdispensaryStkTxn.StockId = StockId != 0 ? StockId : 0;
                             phrmDispensaryItems.Add(tempdispensaryStkTxn);
                         }
                         );
@@ -1274,83 +1385,83 @@ namespace DanpheEMR.Controllers
 
         public static Boolean TransferStoreStockToDispensary(PHRMStoreStockModel storeStockData, PharmacyDbContext phrmdbcontext, RbacUser currentUser)
         {
-            using (var dbContextTransaction = phrmdbcontext.Database.BeginTransaction())
+            try
             {
-                try
+                List<Boolean> flag = new List<bool>(); //for checking all transaction status
+
+                storeStockData.Quantity = (double)storeStockData.UpdatedQty;
+                storeStockData.CreatedOn = DateTime.Now;
+                storeStockData.SubTotal = Convert.ToDecimal(storeStockData.Quantity) * Convert.ToDecimal(storeStockData.MRP);
+                storeStockData.TotalAmount = ((storeStockData.SubTotal * Convert.ToDecimal(storeStockData.VATPercentage)) / 100) + storeStockData.SubTotal;
+                storeStockData.CreatedBy = currentUser.EmployeeId;
+                storeStockData.TransactionType = "Transfer To Dispensary";
+                storeStockData.ReferenceItemCreatedOn = storeStockData.CreatedOn;
+                storeStockData.ReferenceNo = storeStockData.GoodsReceiptItemId;
+                storeStockData.IsActive = true;
+
+                var StckTxnItmReslt = AddStoreTransactionItems(phrmdbcontext, storeStockData);
+                flag.Add(StckTxnItmReslt);
+                //# post to pharmacy despensary items table.
+                List<PHRMDispensaryStockModel> phrmDispensaryStockModels = new List<PHRMDispensaryStockModel>();
+                var selecteddispensarystock = new PHRMDispensaryStockModel();
+
+                selecteddispensarystock.ItemId = storeStockData.ItemId;
+                selecteddispensarystock.GoodReceiptItemId = storeStockData.GoodsReceiptItemId;
+                selecteddispensarystock.BatchNo = storeStockData.BatchNo;
+                selecteddispensarystock.ExpiryDate = storeStockData.ExpiryDate;
+                selecteddispensarystock.AvailableQuantity = Convert.ToDouble(storeStockData.Quantity);
+                selecteddispensarystock.Price = storeStockData.Price;
+                selecteddispensarystock.InOut = "in";
+                selecteddispensarystock.MRP = storeStockData.MRP;
+                selecteddispensarystock.DispensaryId = storeStockData.DispensaryId;
+                phrmDispensaryStockModels.Add(selecteddispensarystock);
+
+                var addUpdateDispensaryReslt = AddUpdateDispensaryStock(phrmdbcontext, phrmDispensaryStockModels, false);
+                flag.Add(addUpdateDispensaryReslt);
+
+
+                List<PHRMStockTransactionItemsModel> phrmStockTxnItems = new List<PHRMStockTransactionItemsModel>();
+                var StockTxnItem = new PHRMStockTransactionItemsModel();
+                StockTxnItem.ItemId = storeStockData.ItemId;
+                StockTxnItem.BatchNo = storeStockData.BatchNo;
+                StockTxnItem.ExpiryDate = storeStockData.ExpiryDate;
+                StockTxnItem.Quantity = storeStockData.Quantity;
+                StockTxnItem.Price = storeStockData.Price;
+                StockTxnItem.DiscountPercentage = storeStockData.DiscountPercentage;
+                StockTxnItem.VATPercentage = storeStockData.VATPercentage;
+                StockTxnItem.CCCharge = storeStockData.CCCharge;
+                StockTxnItem.SubTotal = storeStockData.SubTotal;
+                StockTxnItem.TotalAmount = storeStockData.TotalAmount;
+                StockTxnItem.InOut = "in";
+                StockTxnItem.ReferenceNo = storeStockData.ReferenceNo;
+                StockTxnItem.ReferenceItemCreatedOn = storeStockData.ReferenceItemCreatedOn;
+                StockTxnItem.TransactionType = "Sent From Store";
+                StockTxnItem.FreeQuantity = 0;
+                StockTxnItem.CreatedBy = currentUser.EmployeeId;
+                StockTxnItem.MRP = storeStockData.MRP;
+                StockTxnItem.GoodsReceiptItemId = storeStockData.GoodsReceiptItemId;
+                StockTxnItem.DispensaryId = storeStockData.DispensaryId;
+                phrmStockTxnItems.Add(StockTxnItem);
+                var StockTxnResult = AddStockTransactionItems(phrmdbcontext, phrmStockTxnItems);
+                flag.Add(StockTxnResult);
+
+                if (CheckFlagList(flag))
                 {
-                    List<Boolean> flag = new List<bool>(); //for checking all transaction status
-
-                    storeStockData.Quantity = (double)storeStockData.UpdatedQty;
-                    storeStockData.CreatedOn = DateTime.Now;
-                    storeStockData.SubTotal = Convert.ToDecimal(storeStockData.Quantity) * Convert.ToDecimal(storeStockData.MRP);
-                    storeStockData.TotalAmount = ((storeStockData.SubTotal * Convert.ToDecimal(storeStockData.VATPercentage)) / 100) + storeStockData.SubTotal;
-                    storeStockData.CreatedBy = currentUser.EmployeeId;
-                    storeStockData.TransactionType = "Transfer To Dispensary";
-                    storeStockData.ReferenceItemCreatedOn = storeStockData.CreatedOn;
-                    storeStockData.ReferenceNo = storeStockData.GoodsReceiptItemId;
-                    storeStockData.IsActive = true;
-
-                    var StckTxnItmReslt = AddStoreTransactionItems(phrmdbcontext, storeStockData);
-                    flag.Add(StckTxnItmReslt);
-                    //# post to pharmacy despensary items table.
-                    List<PHRMDispensaryStockModel> phrmDispensaryStockModels = new List<PHRMDispensaryStockModel>();
-                    var selecteddispensarystock = new PHRMDispensaryStockModel();
-
-                    selecteddispensarystock.ItemId = storeStockData.ItemId;
-                    selecteddispensarystock.BatchNo = storeStockData.BatchNo;
-                    selecteddispensarystock.ExpiryDate = storeStockData.ExpiryDate;
-                    selecteddispensarystock.AvailableQuantity = Convert.ToDouble(storeStockData.Quantity);
-                    selecteddispensarystock.Price = storeStockData.Price;
-                    selecteddispensarystock.InOut = "in";
-                    selecteddispensarystock.MRP = storeStockData.MRP;
-                    phrmDispensaryStockModels.Add(selecteddispensarystock);
-
-                    var addUpdateDispensaryReslt = AddUpdateDispensaryStock(phrmdbcontext, phrmDispensaryStockModels);
-                    flag.Add(addUpdateDispensaryReslt);
-
-
-                    List<PHRMStockTransactionItemsModel> phrmStockTxnItems = new List<PHRMStockTransactionItemsModel>();
-                    var StockTxnItem = new PHRMStockTransactionItemsModel();
-                    StockTxnItem.ItemId = storeStockData.ItemId;
-                    StockTxnItem.BatchNo = storeStockData.BatchNo;
-                    StockTxnItem.ExpiryDate = storeStockData.ExpiryDate;
-                    StockTxnItem.Quantity = storeStockData.Quantity;
-                    StockTxnItem.Price = storeStockData.Price;
-                    StockTxnItem.DiscountPercentage = storeStockData.DiscountPercentage;
-                    StockTxnItem.VATPercentage = storeStockData.VATPercentage;
-                    StockTxnItem.CCCharge = storeStockData.CCCharge;
-                    StockTxnItem.SubTotal = storeStockData.SubTotal;
-                    StockTxnItem.TotalAmount = storeStockData.TotalAmount;
-                    StockTxnItem.InOut = "in";
-                    StockTxnItem.ReferenceNo = storeStockData.ReferenceNo;
-                    StockTxnItem.ReferenceItemCreatedOn = storeStockData.ReferenceItemCreatedOn;
-                    StockTxnItem.TransactionType = "Sent From Store";
-                    StockTxnItem.CreatedBy = currentUser.EmployeeId;
-                    StockTxnItem.MRP = storeStockData.MRP;
-                    StockTxnItem.GoodsReceiptItemId = storeStockData.GoodsReceiptItemId;
-                    StockTxnItem.DispensaryId = storeStockData.DispensaryId;
-                    phrmStockTxnItems.Add(StockTxnItem);
-                    var StockTxnResult = AddStockTransactionItems(phrmdbcontext, phrmStockTxnItems);
-                    flag.Add(StockTxnResult);
-
-                    if (CheckFlagList(flag))
-                    {
-                        dbContextTransaction.Commit();//Commit Transaction
-                        return true;
-                    }
-                    else
-                    {
-                        dbContextTransaction.Rollback();//Rollback transaction
-                        return false;
-                    }
+                    return true;
                 }
-                catch (Exception ex)
+                else
                 {
-                    dbContextTransaction.Rollback();
-                    throw ex;
+                    return false;
                 }
             }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
         }
+
+
         public static Boolean TransferDispensaryStockToStore(PHRMStockTransactionItemsModel dispensaryStockData, int StoreId, PharmacyDbContext phrmdbcontext, RbacUser currentUser)
         {
             using (var dbContextTransaction = phrmdbcontext.Database.BeginTransaction())
@@ -1377,6 +1488,7 @@ namespace DanpheEMR.Controllers
                     var selecteddispensarystock = new PHRMDispensaryStockModel();
 
                     selecteddispensarystock.ItemId = dispensaryStockData.ItemId;
+                    selecteddispensarystock.StockId = dispensaryStockData.StockId;
                     selecteddispensarystock.BatchNo = dispensaryStockData.BatchNo;
                     selecteddispensarystock.ExpiryDate = dispensaryStockData.ExpiryDate;
                     selecteddispensarystock.AvailableQuantity = Convert.ToDouble(dispensaryStockData.Quantity);
@@ -1410,12 +1522,8 @@ namespace DanpheEMR.Controllers
                     StoreTxnItem.GoodsReceiptItemId = dispensaryStockData.GoodsReceiptItemId;
                     StoreTxnItem.StoreId = StoreId;
                     StoreTxnItem.IsActive = true;
-                    StoreTxnItem.ItemName = (from itm in phrmdbcontext.PHRMItemMaster
-                                             where itm.ItemId == dispensaryStockData.ItemId
-                                             select itm.ItemName).ToList().FirstOrDefault();
-                    StoreTxnItem.StoreName = (from store in phrmdbcontext.PHRMStore
-                                              where store.StoreId == StoreId
-                                              select store.Name).ToList().FirstOrDefault();
+                    StoreTxnItem.ItemName = phrmdbcontext.PHRMItemMaster.FirstOrDefault(a => a.ItemId == dispensaryStockData.ItemId).ItemName;
+                    StoreTxnItem.StoreName = phrmdbcontext.PHRMStore.FirstOrDefault(a => a.StoreId == StoreId).Name;
                     var StockTxnResult = AddStoreTransactionItems(phrmdbcontext, StoreTxnItem);
                     flag.Add(StockTxnResult);
 
@@ -1447,7 +1555,7 @@ namespace DanpheEMR.Controllers
         /// 3-Update GRItems available qty, 
         /// 4-Update stock Qty by ItemId        
         /// </summary>        
-        public static Boolean ReturnFromCustomerTransaction(List<PHRMInvoiceReturnItemsModel> returnInvClientData, PharmacyDbContext phrmdbcontext, RbacUser currentUser)
+        public static Boolean ReturnFromCustomerTransaction(PHRMInvoiceReturnModel ClientData, PharmacyDbContext phrmdbcontext, RbacUser currentUser)
         {
             //Transaction Begin
             using (var dbContextTransaction = phrmdbcontext.Database.BeginTransaction())
@@ -1457,26 +1565,57 @@ namespace DanpheEMR.Controllers
                     List<Boolean> flag = new List<bool>(); //for checking all transaction status                                           
 
                     //#1 Post to PHRMInvoiceReturnItemsModel
-                    var invItmsPostResult = SaveReturnInvoiceItems(returnInvClientData, phrmdbcontext, currentUser);
+                    var invItmsPostResult = SaveReturnInvoiceItems(ClientData, phrmdbcontext, currentUser);
                     flag.Add(invItmsPostResult);
-                    var updateInvoiceReturnStatus = UpdateInvoiceReturnStatus(returnInvClientData[0].InvoiceId, phrmdbcontext);
-                    flag.Add(updateInvoiceReturnStatus);
+                    //var updateInvoiceReturnStatus = UpdateInvoiceReturnStatus(returnInvClientData[0].InvoiceId, phrmdbcontext);
+                    //flag.Add(updateInvoiceReturnStatus);
                     //# post to PHRMDispensaryStock tables.
                     List<PHRMDispensaryStockModel> phrmDispensaryItems = new List<PHRMDispensaryStockModel>();
-                    returnInvClientData.ForEach(
-                        itm =>
+
+                    // Deepak/Dinesh : 1-29-2020 temporary solution for stock adjustment while returning the item
+                    foreach (var item in ClientData.InvoiceReturnItems)
+                    {
+                        //var StockId = phrmdbcontext.DispensaryStock.Where(x => x.ItemId == itm.ItemId && x.ExpiryDate == itm.ExpiryDate && x.BatchNo == itm.BatchNo).Select(s => s.StockId).FirstOrDefault();
+                        var StockId = phrmdbcontext.DispensaryStock
+                                                   .Where(x => x.ItemId == item.ItemId &&
+                                                               x.ExpiryDate == item.ExpiryDate &&
+                                                               x.BatchNo == item.BatchNo &&
+                                                               x.MRP == item.MRP &&
+                                                               x.Price == item.Price)
+                                                   .OrderBy(x => x.StockId)
+                                                   .Select(x => x.StockId)
+                                                   .FirstOrDefault();
+
+                        var tempdispensaryStkTxn = new PHRMDispensaryStockModel
                         {
-                            PHRMDispensaryStockModel tempdispensaryStkTxn = new PHRMDispensaryStockModel();
-                            tempdispensaryStkTxn.AvailableQuantity = itm.Quantity;
-                            tempdispensaryStkTxn.BatchNo = itm.BatchNo;
-                            tempdispensaryStkTxn.MRP = itm.MRP;
-                            tempdispensaryStkTxn.InOut = "in";
-                            tempdispensaryStkTxn.ItemId = itm.ItemId;
-                            tempdispensaryStkTxn.Price = itm.Price;
-                            tempdispensaryStkTxn.ExpiryDate = itm.ExpiryDate;
-                            phrmDispensaryItems.Add(tempdispensaryStkTxn);
-                        }
-                        );
+                            AvailableQuantity = item.ReturnedQty,
+                            BatchNo = item.BatchNo,
+                            MRP = item.MRP,
+                            InOut = "in",
+                            ItemId = item.ItemId,
+                            Price = item.Price,
+                            ExpiryDate = item.ExpiryDate,
+                            StockId = StockId != 0 ? StockId : 0
+                        };
+                        phrmDispensaryItems.Add(tempdispensaryStkTxn);
+
+                    }
+
+                    //returnInvClientData.ForEach(
+                    //    itm =>
+                    //    {
+                    //        PHRMDispensaryStockModel tempdispensaryStkTxn = new PHRMDispensaryStockModel();
+                    //        tempdispensaryStkTxn.AvailableQuantity = itm.Quantity;
+                    //        tempdispensaryStkTxn.BatchNo = itm.BatchNo;
+                    //        tempdispensaryStkTxn.MRP = itm.MRP;
+                    //        tempdispensaryStkTxn.InOut = "in";
+                    //        tempdispensaryStkTxn.ItemId = itm.ItemId;
+                    //        tempdispensaryStkTxn.Price = itm.Price;
+                    //        tempdispensaryStkTxn.ExpiryDate = itm.ExpiryDate;
+
+                    //        phrmDispensaryItems.Add(tempdispensaryStkTxn);
+                    //    }
+                    //    );
                     var addUpdateDispensaryReslt = AddUpdateDispensaryStock(phrmdbcontext, phrmDispensaryItems);
                     flag.Add(addUpdateDispensaryReslt);
 
@@ -1484,7 +1623,7 @@ namespace DanpheEMR.Controllers
                     //#4 Post to Stock Transaction table as salereturn txn type
 
                     List<PHRMStockTransactionItemsModel> phrmStockTxnItems = new List<PHRMStockTransactionItemsModel>();
-                    returnInvClientData.ForEach(
+                    ClientData.InvoiceReturnItems.ForEach(
                         itm =>
                         {
                             PHRMStockTransactionItemsModel tempStkTxn = new PHRMStockTransactionItemsModel();
@@ -1496,7 +1635,8 @@ namespace DanpheEMR.Controllers
                             tempStkTxn.InOut = "in";
                             tempStkTxn.ItemId = itm.ItemId;
                             tempStkTxn.Price = itm.Price;
-                            tempStkTxn.Quantity = Convert.ToDouble(itm.Quantity);
+                            tempStkTxn.Quantity = Convert.ToDouble(itm.ReturnedQty);
+                            tempStkTxn.FreeQuantity = 0;
                             tempStkTxn.ReferenceNo = itm.InvoiceReturnItemId;
                             tempStkTxn.ReferenceItemCreatedOn = itm.CreatedOn;
                             tempStkTxn.ExpiryDate = itm.ExpiryDate;
@@ -1549,8 +1689,11 @@ namespace DanpheEMR.Controllers
                         item.CreatedOn = DateTime.Now;
                         item.AvailableQuantity = item.ReceivedQuantity;
                         //below fields are used for accounting do not remove
-                        item.GrPerItemVATAmt = (decimal)((((item.SubTotal - ((item.SubTotal * dispercentage) / 100)) / 100) * vatpercentage) / (decimal)item.ReceivedQuantity);
-                        item.GrPerItemDisAmt = (decimal)(((item.SubTotal * dispercentage) / 100) / (decimal)item.ReceivedQuantity);
+                        if (item.AvailableQuantity != 0)
+                        {
+                            item.GrPerItemVATAmt = (decimal)((((item.SubTotal - ((item.SubTotal * dispercentage) / 100)) / 100) * vatpercentage) / (decimal)item.ReceivedQuantity);
+                            item.GrPerItemDisAmt = (decimal)(((item.SubTotal * Convert.ToDecimal(item.DiscountPercentage)) / 100) / (decimal)item.ReceivedQuantity);            //cal per item discount     
+                        }
                     });
 
                     grViewModelData.goodReceipt.CreatedOn = DateTime.Now;
@@ -1661,13 +1804,31 @@ namespace DanpheEMR.Controllers
         }
         #endregion
         #region
-        public static Boolean AddWardStockItems(PharmacyDbContext phrmdbcontext, List<WARDStockModel> wardStockTxnItems)
+        public static Boolean AddWardStockItems(PharmacyDbContext phrmdbcontext, List<WARDStockModel> wardStockTxnItems, List<WARDTransactionModel> wardStockTXN)
         {
             try
             {
                 for (int i = 0; i < wardStockTxnItems.Count; i++)
                 {
-                    phrmdbcontext.WardStock.Add(wardStockTxnItems[i]);
+                    WARDStockModel stockToAdd = wardStockTxnItems[i];
+                    var exisitingStock = phrmdbcontext.WardStock.Where(a => a.StoreId == stockToAdd.StoreId && a.ItemId == stockToAdd.ItemId && a.BatchNo == stockToAdd.BatchNo && a.ExpiryDate == stockToAdd.ExpiryDate && a.MRP == stockToAdd.MRP).FirstOrDefault();
+                    if (exisitingStock != null)
+                    {
+                        phrmdbcontext.WardStock.Attach(exisitingStock);
+                        exisitingStock.AvailableQuantity += stockToAdd.AvailableQuantity;
+                        phrmdbcontext.Entry(exisitingStock).State = EntityState.Modified;
+                        phrmdbcontext.Entry(exisitingStock).Property(x => x.AvailableQuantity).IsModified = true;
+                        phrmdbcontext.SaveChanges();
+                        wardStockTxnItems[i].StockId = exisitingStock.StockId;
+                    }
+                    else
+                    {
+                        phrmdbcontext.WardStock.Add(wardStockTxnItems[i]);
+                        phrmdbcontext.SaveChanges();
+                    }
+                    wardStockTXN[i].StockId = wardStockTxnItems[i].StockId;
+                    phrmdbcontext.WardTransactionModel.Add(wardStockTXN[i]);
+
                 }
 
                 int j = phrmdbcontext.SaveChanges();
@@ -1759,16 +1920,18 @@ namespace DanpheEMR.Controllers
                 {
 
                     //invoiceDataFromClient.
-                    var discPerinTotal = (invoiceDataFromClient.DiscountAmount / invoiceDataFromClient.SubTotal) * 100;
-                    double discPerForCalcn = decimal.ToDouble(discPerinTotal.Value);
+                    //var discPerinTotal = (invoiceDataFromClient.DiscountAmount / invoiceDataFromClient.SubTotal) * 100;
+                    // double discPerForCalcn = decimal.ToDouble(discPerinTotal.Value);
                     invoiceDataFromClient.InvoiceItems.ForEach(item =>
                     {
-                        // to calculate discount percent and price according to discount given  
-                        item.TotalAmount = item.TotalAmount - item.TotalAmount * (Convert.ToDecimal(discPerForCalcn / 100));
-                        item.Price = item.Price - item.Price * (Convert.ToDecimal(discPerForCalcn / 100));
-                        item.DiscountPercentage = discPerForCalcn;
+                        // to calculate Total discount Amount,per item discount amount and price according to discount given  
+                        item.Price = item.Price - item.Price * (Convert.ToDecimal(item.DiscountPercentage / 100));
+                        item.PerItemDisAmt = (decimal)(((item.SubTotal * Convert.ToDecimal(item.DiscountPercentage)) / 100) / (decimal)item.Quantity);
                         item.CreatedOn = DateTime.Now;
                         item.CreatedBy = currentUser.EmployeeId;
+                        item.PatientId = invoiceDataFromClient.PatientId;
+                        item.BilItemStatus = invoiceDataFromClient.BilStatus;
+
                         //add narcotic record in-case of narcotic drugs
                         if (item.NarcoticsRecord.NMCNumber != null)
                         {
@@ -1781,6 +1944,15 @@ namespace DanpheEMR.Controllers
                     });
                     invoiceDataFromClient.CreateOn = DateTime.Now;
                     invoiceDataFromClient.CreatedBy = currentUser.EmployeeId;
+
+                    if (invoiceDataFromClient.BilStatus == "unpaid")
+                    {
+                        invoiceDataFromClient.Creditdate = DateTime.Now;
+                    }
+                    else
+                    {
+                        invoiceDataFromClient.Creditdate = null;
+                    }
                     invoiceDataFromClient.FiscalYearId = GetFiscalYear(phrmdbcontext).FiscalYearId;
                     phrmdbcontext.PHRMInvoiceTransaction.Add(invoiceDataFromClient);
                     // phrmdbcontext.PHRMNarcoticRecord.Add();
@@ -1807,17 +1979,17 @@ namespace DanpheEMR.Controllers
                 {
                     //invoiceDataFromClient.
                     List<int> ItemId = new List<int>();
-                    var discPerinTotal = (invoiceDataFromClient.DiscountAmount / invoiceDataFromClient.SubTotal) * 100;
-                    double discPerForCalcn = decimal.ToDouble(discPerinTotal.Value);
+                    // var discPerinTotal = (invoiceDataFromClient.DiscountAmount / invoiceDataFromClient.SubTotal) * 100;
+                    //  double discPerForCalcn = decimal.ToDouble(discPerinTotal.Value);
                     invoiceDataFromClient.InvoiceItems.ForEach(item =>
                     {
                         // to calculate discount percent and price according to discount given  
                         item.InvoiceId = null;
                         item.BilItemStatus = "provisional";
+                        item.VisitType = invoiceDataFromClient.VisitType;
                         item.PatientId = invoiceDataFromClient.PatientId;
-                        item.TotalAmount = item.TotalAmount - item.TotalAmount * (Convert.ToDecimal(discPerForCalcn / 100));
-                        item.Price = item.Price - item.Price * (Convert.ToDecimal(discPerForCalcn / 100));
-                        item.DiscountPercentage = discPerForCalcn;
+                        item.Price = item.Price - item.Price * (Convert.ToDecimal(item.DiscountPercentage / 100));
+                        item.PerItemDisAmt = (decimal)(((item.SubTotal * Convert.ToDecimal(item.DiscountPercentage)) / 100) / (decimal)item.Quantity);
                         item.CreatedOn = DateTime.Now;
                         item.CreatedBy = currentUser.EmployeeId;
                         //add narcotic record in-case of narcotic drugs
@@ -1878,11 +2050,17 @@ namespace DanpheEMR.Controllers
                 if (wardDispatchedItems != null && wardDispatchedItems.WardDispatchedItemsList != null)
                 {
                     List<int> ItemId = new List<int>();
-
-                    wardDispatchedItems.CreatedOn = DateTime.Now.Date;
+                    Boolean RequisitionFulfilled = true; //to check whether the request is fulfilled or not
+                    var countCompare = phrmdbcontext.WardRequisitionItem.Where(a => a.RequisitionId == wardDispatchedItems.RequisitionId && a.DispatchedQty < a.Quantity).ToList().Count;
+                    if (countCompare > wardDispatchedItems.WardDispatchedItemsList.Count)
+                    {
+                        RequisitionFulfilled = false;
+                    }
+                    wardDispatchedItems.CreatedOn = DateTime.Now;
                     wardDispatchedItems.CreatedBy = currentUser.EmployeeId;
                     wardDispatchedItems.RequisitionId = wardDispatchedItems.RequisitionId;
                     phrmdbcontext.WardDisapatch.Add(wardDispatchedItems);
+                    phrmdbcontext.SaveChanges();
                     wardDispatchedItems.WardDispatchedItemsList.ForEach(item =>
                     {
                         item.DispatchId = wardDispatchedItems.DispatchId;
@@ -1890,6 +2068,43 @@ namespace DanpheEMR.Controllers
                         item.CreatedOn = DateTime.Now;
                         item.CreatedBy = currentUser.EmployeeId;
                         phrmdbcontext.WardDispatchItems.Add(item);
+
+                        //decrement from store
+                        var StoreStock = phrmdbcontext.PHRMStoreStock.Where(a => a.IsActive == true && a.ItemId == item.ItemId && a.BatchNo == item.BatchNo && a.ExpiryDate == item.ExpiryDate).
+                        GroupBy(a => new { a.ItemId, a.ExpiryDate, a.BatchNo }).Select(a => new
+                        {
+                            InQuantity = a.Where(w => w.InOut == "in").Sum(s => s.Quantity),
+                            OutQuantity = a.Where(w => w.InOut == "out").Sum(s => s.Quantity),
+                            FreeInQuantity = a.Where(w => w.InOut == "in").Sum(s => s.FreeQuantity),
+                            FreeOutQuantity = a.Where(w => w.InOut == "out").Sum(s => s.FreeQuantity),
+                        }).Select(a => new
+                        {
+                            Quantity = a.InQuantity + a.FreeInQuantity - a.OutQuantity - a.FreeOutQuantity
+                        }).FirstOrDefault();
+                        if (StoreStock.Quantity < item.Quantity)
+                        {
+                            Exception ex = new Exception("Quantity has been changed.");
+                            throw ex;
+                        }
+                        var UpdatedStock = phrmdbcontext.PHRMStoreStock.Where(a => a.IsActive == true && a.ItemId == item.ItemId && a.BatchNo == item.BatchNo && a.ExpiryDate == item.ExpiryDate).FirstOrDefault();
+                        UpdatedStock.InOut = "out";
+                        UpdatedStock.Quantity = item.Quantity;
+                        UpdatedStock.Remark = "Substore Request";
+                        UpdatedStock.ReferenceNo = item.DispatchId;
+                        UpdatedStock.CreatedBy = currentUser.EmployeeId;
+                        UpdatedStock.CreatedOn = DateTime.Now;
+                        UpdatedStock.TransactionType = "Substore Dispatch";
+                        item.Price = UpdatedStock.Price;
+                        phrmdbcontext.PHRMStoreStock.Add(UpdatedStock);
+                        phrmdbcontext.SaveChanges();
+                        //update requisition item table
+                        var requisitionItem = phrmdbcontext.WardRequisitionItem.Where(a => a.RequisitionItemId == item.RequisitionItemId).FirstOrDefault();
+                        requisitionItem.DispatchedQty += item.Quantity;
+                        if (requisitionItem.DispatchedQty < requisitionItem.Quantity)
+                        {
+                            RequisitionFulfilled = false;
+                        }
+
                     });
                     decimal total = wardDispatchedItems.WardDispatchedItemsList.Where(a => a.DispatchId == wardDispatchedItems.DispatchId).Sum(item => item.SubTotal);
                     wardDispatchedItems.SubTotal = total;
@@ -1900,7 +2115,14 @@ namespace DanpheEMR.Controllers
                         string RequistionItemIdList = string.Join(",", ItemId);
                         WARDRequisitionModel phrmwardRequisition = phrmdbcontext.WardRequisition.Find(wardDispatchedItems.RequisitionId);
                         phrmwardRequisition.ReferenceId = RequistionItemIdList;
-                        phrmwardRequisition.Status = "complete";
+                        if (RequisitionFulfilled)
+                        {
+                            phrmwardRequisition.Status = "complete";
+                        }
+                        else
+                        {
+                            phrmwardRequisition.Status = "partial";
+                        }
                         phrmdbcontext.WardRequisition.Attach(phrmwardRequisition);
                         phrmdbcontext.Entry(phrmwardRequisition).State = EntityState.Modified;
                         phrmdbcontext.Entry(phrmwardRequisition).Property(x => x.Status).IsModified = true;
@@ -2029,6 +2251,8 @@ namespace DanpheEMR.Controllers
                     retSupplFromClient.returnToSupplierItems.ForEach(item =>
                     {
                         item.CreatedOn = DateTime.Now;
+                        item.FreeQuantity = item.FreeQuantityReturn;
+                        item.FreeAmount = item.FreeAmountReturn;
 
                     });
 
@@ -2080,9 +2304,15 @@ namespace DanpheEMR.Controllers
         #endregion
 
         #region Save Return from customer invoice items to db
-        private static Boolean SaveReturnInvoiceItems(List<PHRMInvoiceReturnItemsModel> returnInvClientData, PharmacyDbContext phrmdbcontext, RbacUser currentUser)
+        public static Boolean SaveReturnInvoiceItems(PHRMInvoiceReturnModel ClientData, PharmacyDbContext phrmdbcontext, RbacUser currentUser)
         {
             var currFiscalYear = GetFiscalYear(phrmdbcontext);
+            int? maxCreditNoteId = phrmdbcontext.PHRMInvoiceReturnModel.Where(a => a.FiscalYearId == currFiscalYear.FiscalYearId).Max(a => a.CreditNoteId);
+            if (maxCreditNoteId == null || !maxCreditNoteId.HasValue)
+            {
+                maxCreditNoteId = 0;
+            }
+
             int? maxCreditNoteNum = phrmdbcontext.PHRMInvoiceReturnItemsModel.Where(a => a.FiscalYearId == currFiscalYear.FiscalYearId).Max(a => a.CreditNoteNumber);
             if (maxCreditNoteNum == null || !maxCreditNoteNum.HasValue)
             {
@@ -2091,7 +2321,8 @@ namespace DanpheEMR.Controllers
 
             try
             {
-                if (returnInvClientData.Count > 0)
+                List<PHRMInvoiceReturnItemsModel> returnInvClientData = ClientData.InvoiceReturnItems;
+                if (returnInvClientData.Count > 0 && ClientData != null)
                 {
                     returnInvClientData.ForEach(invItm =>
                     {
@@ -2099,8 +2330,25 @@ namespace DanpheEMR.Controllers
                         invItm.CreatedBy = currentUser.EmployeeId;
                         invItm.FiscalYearId = currFiscalYear.FiscalYearId;
                         invItm.CreditNoteNumber = (int?)(maxCreditNoteNum + 1);
-                        phrmdbcontext.PHRMInvoiceReturnItemsModel.Add(invItm);
+                        // phrmdbcontext.PHRMInvoiceReturnItemsModel.Add(invItm);
+
                     });
+                    ClientData.CreatedOn = System.DateTime.Now;
+                    ClientData.CreatedBy = currentUser.EmployeeId;
+                    int invid = (from txn in phrmdbcontext.PHRMInvoiceTransaction
+                                 where txn.InvoicePrintId == ClientData.InvoiceId
+                                 select txn.InvoiceId).DefaultIfEmpty(0).Max();
+                    if (invid == 0)
+                    {
+                        ClientData.InvoiceId = null;
+                    }
+                    else
+                    {
+                        ClientData.InvoiceId = invid;
+                    }
+                    ClientData.FiscalYearId = GetFiscalYear(phrmdbcontext).FiscalYearId;
+                    ClientData.CreditNoteId = (int?)(maxCreditNoteId + 1);
+                    phrmdbcontext.PHRMInvoiceReturnModel.Add(ClientData);
                     int i = phrmdbcontext.SaveChanges();
                     return (i > 0) ? true : false;
                 }
@@ -2234,118 +2482,152 @@ namespace DanpheEMR.Controllers
         }
         #endregion
 
-        public static Boolean CancelGoodsReceipt(PharmacyDbContext phrmdbcontext, int goodReceiptId, RbacUser currentUser)
+        public static Boolean CancelGoodsReceipt(PharmacyDbContext phrmdbcontext, int goodReceiptId, RbacUser currentUser,PHRMGoodsReceiptModel currentGr)
         {
             Boolean flag = true;
             //PHRMStoreModel store = new PHRMStoreModel();
-            var store = phrmdbcontext.PHRMStore.Where(a => a.StoreId ==
-            phrmdbcontext.PHRMGoodsReceipt.Where(b => b.GoodReceiptId == goodReceiptId).FirstOrDefault().StoreId);
-            var grItems = (from gritms in phrmdbcontext.PHRMGoodsReceiptItems.AsEnumerable()
-                           where gritms.GoodReceiptId == goodReceiptId
-                           select gritms).ToList();
-            List<PHRMStoreStockModel> tempList = new List<PHRMStoreStockModel>();
-            grItems.ForEach(itm =>
+            Boolean isTrue = false;
+            var test1 = phrmdbcontext.PHRMGoodsReceiptItems.Where(a => a.GoodReceiptId == goodReceiptId).ToList();
+            foreach (var testitm in test1)
             {
-                var stockTxnItems = phrmdbcontext.PHRMStoreStock
-                    .Where(a => a.ItemId == itm.ItemId
-                    && a.BatchNo == itm.BatchNo
-                    && a.ExpiryDate == itm.ExpiryDate
-                    && a.InOut == "in").ToList()
-                    .GroupBy(b => new { b.ItemId, b.BatchNo, b.ExpiryDate })
-                    .Select(c => new PHRMStoreStockModel
-                    {
-                        ItemId = c.Key.ItemId,
-                        BatchNo = c.Key.BatchNo,
-                        ExpiryDate = c.Key.ExpiryDate,
-                        Quantity = c.Where(w => w.InOut == "in").Sum(q => q.Quantity)
-                    }).FirstOrDefault();
-                if (stockTxnItems != null)
+                var test = phrmdbcontext.PHRMStoreStock.Where(a => a.GoodsReceiptItemId == testitm.GoodReceiptItemId && a.InOut == "in").Sum(a => a.Quantity + a.FreeQuantity);
+                var resitem = test;
+                if (testitm.AvailableQuantity + testitm.FreeQuantity > test)
                 {
-                    tempList.Add(stockTxnItems);
+                    isTrue = false;
                 }
-            });
+            }
 
-            if (grItems.Count == tempList.Count)
+
+
+            var phrmDispensaryStore = (from stk in phrmdbcontext.PHRMStoreStock
+                                       join grItem in phrmdbcontext.PHRMGoodsReceiptItems on stk.GoodsReceiptItemId equals grItem.GoodReceiptItemId
+                                       where grItem.GoodReceiptId == goodReceiptId && stk.TransactionType == "Transfer To Dispensary"
+                                       && stk.InOut == "out"
+                                       select stk).FirstOrDefault();
+
+            if (phrmDispensaryStore != null)
             {
-                tempList.ForEach(tl =>
+                var phrmMainStore = (from stk in phrmdbcontext.PHRMStoreStock
+                                     join grItem in phrmdbcontext.PHRMGoodsReceiptItems on stk.GoodsReceiptItemId equals grItem.GoodReceiptItemId
+                                     where grItem.GoodReceiptId == goodReceiptId && stk.TransactionType == "Sent From Dispensary"
+                                     && stk.InOut == "in"
+                                     select stk).FirstOrDefault();
+
+                if (phrmMainStore != null)
                 {
-                    var res = grItems.Where(g => g.ItemId == tl.ItemId && g.BatchNo == tl.BatchNo && g.ExpiryDate == tl.ExpiryDate
-                    ).ToList()
-                    .GroupBy(k => new { k.ItemId, k.BatchNo, k.ExpiryDate })
-                    .Select(c => new PHRMStockTransactionItemsModel
+                    isTrue = true;
+                }
+                else
+                {
+                    isTrue = false;
+                }
+
+            }
+            else
+            {
+                isTrue = true;
+            }
+
+            if (isTrue)
+            {
+                var store = phrmdbcontext.PHRMStore.Where(a => a.StoreId ==
+              phrmdbcontext.PHRMGoodsReceipt.Where(b => b.GoodReceiptId == goodReceiptId).FirstOrDefault().StoreId);
+                var grItems = (from gritms in phrmdbcontext.PHRMGoodsReceiptItems.AsEnumerable()
+                               where gritms.GoodReceiptId == goodReceiptId
+                               select gritms).ToList();
+                List<PHRMStoreStockModel> tempList = new List<PHRMStoreStockModel>();
+                grItems.ForEach(itm =>
+                {
+                    var stockTxnItems = phrmdbcontext.PHRMStoreStock
+                        .Where(a => a.ItemId == itm.ItemId
+                        && a.BatchNo == itm.BatchNo
+                        && a.ExpiryDate == itm.ExpiryDate
+                        && a.InOut == "in").ToList()
+                        .GroupBy(b => new { b.ItemId, b.BatchNo, b.ExpiryDate })
+                        .Select(c => new PHRMStoreStockModel
+                        {
+                            ItemId = c.Key.ItemId,
+                            BatchNo = c.Key.BatchNo,
+                            ExpiryDate = c.Key.ExpiryDate,
+                            Quantity = c.Where(w => w.InOut == "in").Sum(q => q.Quantity)
+                        }).FirstOrDefault();
+                    if (stockTxnItems != null)
                     {
-                        ItemId = c.Key.ItemId,
-                        BatchNo = c.Key.BatchNo,
-                        ExpiryDate = c.Key.ExpiryDate,
-                        Quantity = c.Sum(q => q.ReceivedQuantity)
-                    }).FirstOrDefault();
-                    if (res == null || res.Quantity > tl.Quantity)
+                        tempList.Add(stockTxnItems);
+                    }
+                });
+
+                if (grItems.Count == tempList.Count)
+                {
+                    tempList.ForEach(tl =>
+                    {
+                        var res = grItems.Where(g => g.ItemId == tl.ItemId && g.BatchNo == tl.BatchNo && g.ExpiryDate == tl.ExpiryDate
+                        ).ToList()
+                        .GroupBy(k => new { k.ItemId, k.BatchNo, k.ExpiryDate })
+                        .Select(c => new PHRMStockTransactionItemsModel
+                        {
+                            ItemId = c.Key.ItemId,
+                            BatchNo = c.Key.BatchNo,
+                            ExpiryDate = c.Key.ExpiryDate,
+                            Quantity = c.Sum(q => q.ReceivedQuantity)
+                        }).FirstOrDefault();
+                        if (res == null || res.Quantity > tl.Quantity)
+                        {
+                            flag = false;
+                        }
+                    });
+                    if (flag == true)
+                    {
+                        grItems.ForEach(a =>
+                        {
+                            PHRMStoreStockModel phrmStoreStock = new PHRMStoreStockModel();
+                            phrmStoreStock.ItemId = a.ItemId;
+                            phrmStoreStock.ItemName = a.ItemName;
+                            phrmStoreStock.IsActive = true;
+                            phrmStoreStock.BatchNo = a.BatchNo;
+                            phrmStoreStock.ExpiryDate = a.ExpiryDate;
+                            phrmStoreStock.Quantity = a.AvailableQuantity;
+                            phrmStoreStock.FreeQuantity = a.FreeQuantity;
+                            phrmStoreStock.Price = a.GRItemPrice;
+                            phrmStoreStock.MRP = a.MRP;
+                            phrmStoreStock.StoreId = store.FirstOrDefault().StoreId;
+                            phrmStoreStock.StoreName = store.FirstOrDefault().Name;
+                            phrmStoreStock.GoodsReceiptItemId = a.GoodReceiptItemId;
+                            phrmStoreStock.SubTotal = a.SubTotal;
+                            phrmStoreStock.TotalAmount = a.TotalAmount;
+                            phrmStoreStock.InOut = "out";
+                            phrmStoreStock.ReferenceNo = a.GoodReceiptItemId;
+                            phrmStoreStock.TransactionType = "cancelgoodsreceipt";
+                            phrmStoreStock.ReferenceItemCreatedOn = a.CreatedOn;
+                            phrmStoreStock.CreatedBy = currentUser.EmployeeId;
+                            phrmStoreStock.CreatedOn = DateTime.Now;
+                            phrmdbcontext.PHRMStoreStock.Add(phrmStoreStock);
+                            phrmdbcontext.SaveChanges();
+                        });
+                        var gr = (from g in phrmdbcontext.PHRMGoodsReceipt
+                                  where g.GoodReceiptId == goodReceiptId
+                                  select g).FirstOrDefault();
+                        gr.IsCancel = true;
+                        gr.CancelledBy = currentUser.EmployeeId;
+                        gr.CancelledOn = DateTime.Now;
+                        gr.CancelRemarks = currentGr.CancelRemarks;
+
+                        phrmdbcontext.PHRMGoodsReceipt.Attach(gr);
+                        phrmdbcontext.Entry(gr).State = EntityState.Modified;
+                        phrmdbcontext.Entry(gr).Property(x => x.IsCancel).IsModified = true;
+                        phrmdbcontext.SaveChanges();
+                    }
+                    else
                     {
                         flag = false;
                     }
-                });
-                if (flag == true)
-                {
-                    grItems.ForEach(a =>
-                    {
-                        //PHRMStockTransactionItemsModel stockTransactionItem = new PHRMStockTransactionItemsModel();
-                        //stockTransactionItem.ItemId = a.ItemId;
-                        //stockTransactionItem.BatchNo = a.BatchNo;
-                        //stockTransactionItem.ExpiryDate = a.ExpiryDate;
-                        //stockTransactionItem.Quantity = a.AvailableQuantity;
-                        //stockTransactionItem.FreeQuantity = a.FreeQuantity;
-                        //stockTransactionItem.Price = a.GRItemPrice;
-                        //stockTransactionItem.MRP = a.SellingPrice;
-                        //stockTransactionItem.GoodsReceiptItemId = a.GoodReceiptItemId;
-                        //stockTransactionItem.SubTotal = a.SubTotal;
-                        //stockTransactionItem.TotalAmount = a.TotalAmount;
-                        //stockTransactionItem.InOut = "out";
-                        //stockTransactionItem.ReferenceNo = a.GoodReceiptItemId;
-                        //stockTransactionItem.TransactionType = "cancelgoodsreceipt";
-                        //stockTransactionItem.ReferenceItemCreatedOn = a.CreatedOn;
-                        //stockTransactionItem.CreatedBy = currentUser.EmployeeId;
-                        //stockTransactionItem.CreatedOn = DateTime.Now;
-                        //phrmdbcontext.PHRMStockTransactionModel.Add(stockTransactionItem);
-                        //phrmdbcontext.SaveChanges();
-                        //To store in storestock table 
-                        PHRMStoreStockModel phrmStoreStock = new PHRMStoreStockModel();
-                        phrmStoreStock.ItemId = a.ItemId;
-                        phrmStoreStock.ItemName = a.ItemName;
-                        phrmStoreStock.IsActive = true;
-                        phrmStoreStock.BatchNo = a.BatchNo;
-                        phrmStoreStock.ExpiryDate = a.ExpiryDate;
-                        phrmStoreStock.Quantity = a.AvailableQuantity;
-                        phrmStoreStock.FreeQuantity = a.FreeQuantity;
-                        phrmStoreStock.Price = a.GRItemPrice;
-                        phrmStoreStock.MRP = a.MRP;
-                        phrmStoreStock.StoreId = store.FirstOrDefault().StoreId;
-                        phrmStoreStock.StoreName = store.FirstOrDefault().Name;
-                        phrmStoreStock.GoodsReceiptItemId = a.GoodReceiptItemId;
-                        phrmStoreStock.SubTotal = a.SubTotal;
-                        phrmStoreStock.TotalAmount = a.TotalAmount;
-                        phrmStoreStock.InOut = "out";
-                        phrmStoreStock.ReferenceNo = a.GoodReceiptItemId;
-                        phrmStoreStock.TransactionType = "cancelgoodsreceipt";
-                        phrmStoreStock.ReferenceItemCreatedOn = a.CreatedOn;
-                        phrmStoreStock.CreatedBy = currentUser.EmployeeId;
-                        phrmStoreStock.CreatedOn = DateTime.Now;
-                        phrmdbcontext.PHRMStoreStock.Add(phrmStoreStock);
-                        phrmdbcontext.SaveChanges();
-                    });
-                    var gr = (from g in phrmdbcontext.PHRMGoodsReceipt
-                              where g.GoodReceiptId == goodReceiptId
-                              select g).FirstOrDefault();
-                    gr.IsCancel = true;
-                    phrmdbcontext.PHRMGoodsReceipt.Attach(gr);
-                    phrmdbcontext.Entry(gr).State = EntityState.Modified;
-                    phrmdbcontext.Entry(gr).Property(x => x.IsCancel).IsModified = true;
-                    phrmdbcontext.SaveChanges();
+
                 }
                 else
                 {
                     flag = false;
                 }
-
             }
             else
             {
@@ -2354,6 +2636,98 @@ namespace DanpheEMR.Controllers
             return flag;
         }
 
+
+        public static void SyncPHRMBillInvoiceToRemoteServer(object billToPost, string billType, PharmacyDbContext dbContext)
+        {
+            IRDLogModel irdLog = new IRDLogModel();
+            if (billType == "phrm-invoice")
+            {
+
+                string responseMsg = null;
+                PHRMInvoiceTransactionModel invoiceTxn = (PHRMInvoiceTransactionModel)billToPost;
+                try
+                {
+                    invoiceTxn.PANNumber = GetPANNumber(dbContext, invoiceTxn.PatientId);
+                    invoiceTxn.ShortName = GetShortName(dbContext, invoiceTxn.PatientId);
+                    invoiceTxn.FiscalYear = GetFiscalYearNameById(dbContext, invoiceTxn.FiscalYearId);
+                    IRD_PHRMBillSaleViewModel invoicebill = IRD_PHRMBillSaleViewModel.GetMappedInvoiceForIRD(invoiceTxn, true);
+                    irdLog.JsonData = JsonConvert.SerializeObject(invoicebill);
+                    responseMsg = DanpheEMR.Sync.IRDNepal.APIs.PostPhrmInvoiceToIRD(invoicebill);
+                }
+                catch (Exception ex)
+                {
+                    responseMsg = "0";
+                    irdLog.ErrorMessage = GetInnerMostException(ex);
+                    irdLog.Status = "failed";
+                }
+
+                dbContext.PHRMInvoiceTransaction.Attach(invoiceTxn);
+                if (responseMsg == "200")
+                {
+                    invoiceTxn.IsRealtime = true;
+                    invoiceTxn.IsRemoteSynced = true;
+                    irdLog.Status = "success";
+                }
+                else
+                {
+                    invoiceTxn.IsRealtime = false;
+                    invoiceTxn.IsRemoteSynced = false;
+                    irdLog.Status = "failed";
+                }
+
+                dbContext.Entry(invoiceTxn).Property(x => x.IsRealtime).IsModified = true;
+                dbContext.Entry(invoiceTxn).Property(x => x.IsRemoteSynced).IsModified = true;
+                dbContext.SaveChanges();
+
+                irdLog.BillType = billType;
+                irdLog.ResponseMessage = responseMsg;
+                PostIRDLog(irdLog, dbContext);
+            }
+            else if (billType == "phrm-invoice-return")
+            {
+                PHRMInvoiceTransactionModel invoiceRet = (PHRMInvoiceTransactionModel)billToPost;
+
+                string responseMsg = null;
+                try
+                {
+                    invoiceRet.PANNumber = GetPANNumber(dbContext, invoiceRet.PatientId);
+                    invoiceRet.ShortName = GetShortName(dbContext, invoiceRet.PatientId);
+                    invoiceRet.FiscalYear = GetFiscalYearNameById(dbContext, invoiceRet.FiscalYearId);
+                    IRD_PHRMBillSaleReturnViewModel salesRetBill = IRD_PHRMBillSaleReturnViewModel.GetMappedPhrmSalesReturnBillForIRD(invoiceRet, true);
+                    salesRetBill.credit_note_number = GetCreditNoteNumberByInvoiceId(dbContext, invoiceRet.InvoiceId).ToString();
+                    irdLog.JsonData = JsonConvert.SerializeObject(salesRetBill);
+                    responseMsg = DanpheEMR.Sync.IRDNepal.APIs.PostPhrmInvoiceReturnToIRD(salesRetBill);
+                }
+                catch (Exception ex)
+                {
+                    responseMsg = "0";
+                    irdLog.ErrorMessage = GetInnerMostException(ex);
+                    irdLog.Status = "failed";
+                }
+
+                dbContext.PHRMInvoiceTransaction.Attach(invoiceRet);
+                if (responseMsg == "200")
+                {
+
+                    invoiceRet.IsRealtime = true;
+                    invoiceRet.IsRemoteSynced = true;
+                    irdLog.Status = "success";
+                }
+                else
+                {
+                    invoiceRet.IsRealtime = false;
+                    invoiceRet.IsRemoteSynced = false;
+                    irdLog.Status = "failed";
+                }
+
+                dbContext.Entry(invoiceRet).Property(x => x.IsRealtime).IsModified = true;
+                dbContext.Entry(invoiceRet).Property(x => x.IsRemoteSynced).IsModified = true;
+                dbContext.SaveChanges();
+                irdLog.BillType = billType;
+                irdLog.ResponseMessage = responseMsg;
+                PostIRDLog(irdLog, dbContext);
+            }
+        }
 
         public static string GetInnerMostException(Exception ex)
         {
@@ -2444,34 +2818,51 @@ namespace DanpheEMR.Controllers
                 throw ex;
             }
         }
-
+        public static string GetStoreRackNameByItemId(int itemId, PharmacyDbContext db)
+        {
+            var rackId = db.PHRMItemMaster.Where(item => item.ItemId == itemId).Select(item => item.StoreRackId).FirstOrDefault();
+            return db.PHRMRack.Where(rack => rack.RackId == rackId).Select(rack => rack.Name).FirstOrDefault() ?? "N/A";
+        }
         #region Add or update dispensary Stock List in PHRM_DispensaryStock table
-        public static Boolean AddUpdateDispensaryStock(PharmacyDbContext phrmdbcontext, List<PHRMDispensaryStockModel> Stock)
+        /// <summary>
+        /// Add or Update Dispensary Stock Based On ItemId,Batch,ExpiryDate,MRP,Price,StockId.
+        /// </summary>
+        /// <param name="phrmdbcontext"> Db Context to be used.</param>
+        /// <param name="Stock">Stock Model to be updated.</param>
+        /// <param name="matchStockId">default is true, bypasses stockId if false.</param>
+        /// <returns></returns>
+        public static Boolean AddUpdateDispensaryStock(PharmacyDbContext phrmdbcontext, List<PHRMDispensaryStockModel> Stock, bool? matchStockId = true)
         {
             try
             {
                 if (Stock.Count > 0)
                 {
-                    Stock.ForEach(stkItm =>
+                    foreach (var stkItm in Stock)
                     {
                         var rec = (from ss in phrmdbcontext.DispensaryStock
-                                   where ss.ItemId == stkItm.ItemId && ss.BatchNo == stkItm.BatchNo &&
-                                   ss.ExpiryDate == stkItm.ExpiryDate && (ss.MRP == stkItm.MRP || ss.Price == stkItm.Price)
-                                   select ss).ToList().FirstOrDefault();
+                                   where (ss.StockId == stkItm.StockId || matchStockId == false) &&
+                                   ss.ItemId == stkItm.ItemId && ss.BatchNo == stkItm.BatchNo &&
+                                   ss.ExpiryDate == stkItm.ExpiryDate && ss.MRP == stkItm.MRP
+                                   select ss).FirstOrDefault();
 
                         if (rec != null)
                         {
+                            if (stkItm.InOut == "out" && rec.AvailableQuantity < stkItm.AvailableQuantity)
+                            {
+                                var ex = new Exception("Quantity is not available");
+                                throw ex;
+                            }
                             rec.AvailableQuantity = (stkItm.InOut == "in") ? (rec.AvailableQuantity + stkItm.AvailableQuantity) : (rec.AvailableQuantity - stkItm.AvailableQuantity);
                             phrmdbcontext.DispensaryStock.Attach(rec);
                             phrmdbcontext.Entry(rec).State = EntityState.Modified;
                             phrmdbcontext.Entry(rec).Property(x => x.AvailableQuantity).IsModified = true;
-
                         }
                         else
                         {
                             phrmdbcontext.DispensaryStock.Add(stkItm);
                         }
-                    });
+                    }
+
                     int i = phrmdbcontext.SaveChanges();
                     return (i > 0) ? true : false;
                 }
@@ -2486,5 +2877,305 @@ namespace DanpheEMR.Controllers
             }
         }
         #endregion
+
+        #region Dispatch Items Complete Transaction 
+        //This function is complete transaction after dispatch items. Transactions as below
+        //1)Save Dispatched Items,                          2)Save Stock Transaction 
+        //3) Update Stock model (available Quantity)        4) Update Requisition and Requisition Items (Status and ReceivedQty,PendingQty, etc)
+        public static Boolean DispatchItemsTransaction(PHRMRequisitionStockVM requisitionStockVMFromClient, PharmacyDbContext pharmacyDbContext)
+        {
+            //Transaction Begin
+            using (var dbContextTransaction = pharmacyDbContext.Database.BeginTransaction())
+            {
+                try
+                {
+                    //Save Dispatched Items 
+                    AddDispatchItems(pharmacyDbContext, requisitionStockVMFromClient.dispatchItems);
+                    #region Logic for -Set ReferenceNo in StockTransaction Model from DispatchItems
+                    //This for get ReferenceNO (DispatchItemsId from Dispatched Items) and save to StockTransaction    
+                    requisitionStockVMFromClient.stockTransactions = requisitionStockVMFromClient.stockTransactions.GroupBy(a => a.ItemId).Select(a => a.First()).ToList();
+                    foreach (var stockTXN in requisitionStockVMFromClient.stockTransactions)
+                    {
+                        var DispatchId = 0;
+                        var stockIdFromsTXN = stockTXN.StoreStockId;
+
+                        foreach (var dItem in requisitionStockVMFromClient.dispatchItems)
+                        {
+                            if (stockTXN.ItemId == dItem.ItemId)
+                            {
+                                DispatchId = dItem.DispatchItemsId;
+                                stockTXN.Quantity = dItem.DispatchedQuantity;
+                            }
+                        }
+                        stockTXN.TransactionType = "StoreRequisition";
+                        stockTXN.FreeQuantity = 0;
+                        stockTXN.ReferenceNo = DispatchId;
+                    }
+                    #endregion
+                    //Save Stock Transaction record
+                    AddStockTransaction(pharmacyDbContext, requisitionStockVMFromClient.stockTransactions);
+                    //Update Stock records
+                    UpdateStock(pharmacyDbContext, requisitionStockVMFromClient.stockTransactions);
+                    //Update Requisition and Requisition Items after Dispatche Items
+                    UpdateRequisitionWithRItems(pharmacyDbContext, requisitionStockVMFromClient.requisition);
+
+                    //Commit Transaction
+                    dbContextTransaction.Commit();
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    //Rollback all transaction if exception occured
+                    dbContextTransaction.Rollback();
+                    throw ex;
+                }
+            }
+        }
+        #endregion
+        #region Add DispatchItems
+        //Save all Disaptch Items in database
+        public static void AddDispatchItems(PharmacyDbContext pharmacyDbContext, List<PHRMDispatchItemsModel> dispatchItems)
+        {
+            try
+            {
+                int dispatchId;
+                //var test= inventoryDbContext.DispatchItems.Last().DispatchId;
+                int maxDispatchId = pharmacyDbContext.StoreDispatchItems.Count();
+                if (maxDispatchId == 0)
+                {
+                    dispatchId = 1;
+                }
+                else
+                {
+                    dispatchId = pharmacyDbContext.StoreDispatchItems.ToList().Last().DispatchId + 1;
+                }
+
+                foreach (var dispatchItem in dispatchItems)
+                {
+                    dispatchItem.CreatedOn = System.DateTime.Now;
+                    dispatchItem.DispatchId = dispatchId;
+                    pharmacyDbContext.StoreDispatchItems.Add(dispatchItem);
+                }
+                //Save Dispatch Items
+                pharmacyDbContext.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+        #endregion
+
+        #region Add Stock Transaction
+        //All the stock transaction save to database
+        public static void AddStockTransaction(PharmacyDbContext pharmacyDbContext, List<PHRMStoreStockModel> stockTransactions)
+        {
+            try
+            {
+                foreach (var stockTransactionItem in stockTransactions)
+                {
+
+                    stockTransactionItem.InOut = "out";
+                    stockTransactionItem.CreatedOn = System.DateTime.Now;
+                    pharmacyDbContext.PHRMStoreStock.Add(stockTransactionItem);
+                    //Save Stock Transactions
+                    pharmacyDbContext.SaveChanges();
+
+                    var dispensarystockTXN = new PHRMStockTransactionItemsModel();
+                    dispensarystockTXN.ItemId = stockTransactionItem.ItemId;
+                    dispensarystockTXN.BatchNo = stockTransactionItem.BatchNo;
+                    dispensarystockTXN.ExpiryDate = stockTransactionItem.ExpiryDate;
+                    dispensarystockTXN.Quantity = stockTransactionItem.Quantity;
+                    dispensarystockTXN.FreeQuantity = stockTransactionItem.FreeQuantity;
+                    dispensarystockTXN.Price = stockTransactionItem.Price;
+                    dispensarystockTXN.DiscountPercentage = stockTransactionItem.DiscountPercentage;
+                    dispensarystockTXN.VATPercentage = stockTransactionItem.VATPercentage;
+                    dispensarystockTXN.SubTotal = stockTransactionItem.SubTotal;
+                    dispensarystockTXN.TotalAmount = stockTransactionItem.TotalAmount;
+                    dispensarystockTXN.InOut = "in";
+                    dispensarystockTXN.ReferenceNo = stockTransactionItem.ReferenceNo;
+                    dispensarystockTXN.ReferenceItemCreatedOn = stockTransactionItem.ReferenceItemCreatedOn;
+                    dispensarystockTXN.TransactionType = stockTransactionItem.TransactionType;
+                    dispensarystockTXN.CreatedBy = stockTransactionItem.CreatedBy;
+                    dispensarystockTXN.CreatedOn = stockTransactionItem.CreatedOn;
+                    dispensarystockTXN.MRP = stockTransactionItem.MRP;
+                    dispensarystockTXN.GoodsReceiptItemId = stockTransactionItem.GoodsReceiptItemId;
+                    dispensarystockTXN.CCCharge = stockTransactionItem.CCCharge;
+                    dispensarystockTXN.IsTransferredToACC = null;
+                    pharmacyDbContext.PHRMStockTransactionModel.Add(dispensarystockTXN);
+                    //Save Stock Transactions
+                    pharmacyDbContext.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+        #endregion
+        #region Update Requisition and Requisition Items
+        //Update Stock records
+        public static void UpdateRequisitionWithRItems(PharmacyDbContext pharmacyDbContext, PHRMStoreRequisitionModel requisition)
+        {
+            try
+            {
+                var checkStatus = true;
+                foreach (var rItems in requisition.RequisitionItems)
+                {
+                    pharmacyDbContext.StoreRequisitionItems.Attach(rItems);
+                    pharmacyDbContext.Entry(rItems).Property(x => x.ReceivedQuantity).IsModified = true;
+                    pharmacyDbContext.Entry(rItems).Property(x => x.PendingQuantity).IsModified = true;
+                    if (rItems.ReceivedQuantity >= rItems.PendingQuantity)
+                    {
+                        pharmacyDbContext.Entry(rItems).Property(x => x.RequisitionItemStatus).IsModified = true;
+                    }
+                    else
+                    {
+                        checkStatus = false;
+                    }
+                }
+                if (checkStatus)
+                {
+                    pharmacyDbContext.StoreRequisition.Attach(requisition);
+                    pharmacyDbContext.Entry(requisition).Property(x => x.RequisitionStatus).IsModified = true;
+                }
+
+                pharmacyDbContext.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+        #endregion
+        #region Update Stock
+        //Update Stock records
+        public static void UpdateStock(PharmacyDbContext pharmacyDbContext, List<PHRMStoreStockModel> StockTXN)
+        {
+            try
+            {
+                var dispensaryStock = new PHRMDispensaryStockModel();
+                dispensaryStock.ItemId = StockTXN[0].ItemId;
+                dispensaryStock.AvailableQuantity = StockTXN[0].Quantity;
+                dispensaryStock.MRP = StockTXN[0].MRP;
+                dispensaryStock.Price = StockTXN[0].Price;
+                dispensaryStock.ExpiryDate = StockTXN[0].ExpiryDate;
+                dispensaryStock.BatchNo = StockTXN[0].BatchNo;
+
+                var availableStock = pharmacyDbContext.DispensaryStock.Where(a => a.ItemId == dispensaryStock.ItemId && a.MRP == dispensaryStock.MRP && a.Price == dispensaryStock.MRP && a.ExpiryDate == dispensaryStock.ExpiryDate && a.BatchNo == dispensaryStock.BatchNo).Select(a => a).FirstOrDefault();
+                if (availableStock != null)
+                {
+                    availableStock.AvailableQuantity += dispensaryStock.AvailableQuantity;
+                    pharmacyDbContext.DispensaryStock.Attach(availableStock);
+                    pharmacyDbContext.Entry(availableStock).State = EntityState.Modified;
+                    pharmacyDbContext.Entry(availableStock).Property(x => x.AvailableQuantity).IsModified = true;
+                }
+                else
+                {
+                    pharmacyDbContext.DispensaryStock.Add(dispensaryStock);
+                }
+                //Update Stock records
+                pharmacyDbContext.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+        #endregion
+        //validate whether stock is available 
+        public static bool SalesValidation(PHRMInvoiceTransactionModel invoiceDataFromClient, PharmacyDbContext phrmdbcontext)
+        {
+            var invoiceItems = invoiceDataFromClient.InvoiceItems;
+
+            bool isStockAvailable = true;
+            PHRMInvoiceTransactionModel testmodel = new PHRMInvoiceTransactionModel();
+            var totalItem = phrmdbcontext.DispensaryStock.ToList();
+            foreach (var totItm in totalItem)
+            {
+                foreach (var invItm in invoiceItems)
+                {
+                    if (totItm.StockId == invItm.StockId && totItm.AvailableQuantity < invItm.Quantity)
+                    {
+                        isStockAvailable = false;
+                    }
+                }
+
+            }
+            return isStockAvailable;
+        }
+        #region UPDATE MRP IN BOTH DISPENSARY AND STORE
+        public static void UpdateMRPForDispensaryStock(PHRMUpdatedStockVM mrpUpdatedStock, PharmacyDbContext db)
+        {
+            var dispensaryStockMRP = db.DispensaryStock.Where(DS => DS.StockId == mrpUpdatedStock.StockId).FirstOrDefault();
+            if (dispensaryStockMRP == null) throw new Exception("Stock Not Found");
+            var OldMRP = dispensaryStockMRP.MRP;
+            dispensaryStockMRP.MRP = mrpUpdatedStock.MRP;
+            //to Update in the history table
+            mrpUpdatedStock.OldMRP = OldMRP ?? 0;
+            db.SaveChanges();
+        }
+
+        public static void UpdateMRPForStoreStock(PHRMUpdatedStockVM mrpUpdatedStock, PharmacyDbContext db, RbacUser currentUser)
+        {
+            var allStoreStock = db.PHRMStoreStock.Where(SS => SS.ItemId == mrpUpdatedStock.ItemId && SS.ExpiryDate == mrpUpdatedStock.ExpiryDate && SS.BatchNo == mrpUpdatedStock.BatchNo && SS.GoodsReceiptItemId == mrpUpdatedStock.GoodsReceiptItemId).ToList();
+            if (allStoreStock == null) throw new Exception("Stock Not Found");
+            allStoreStock.ForEach(SS =>
+            {
+                SS.MRP = mrpUpdatedStock.MRP;
+                SS.SubTotal = Convert.ToDecimal(SS.MRP) * Convert.ToDecimal(SS.Quantity);
+                SS.TotalAmount = SS.SubTotal;
+                SS.ModifiedBy = currentUser.EmployeeId;
+                SS.ModifiedOn = DateTime.Now;
+                mrpUpdatedStock.StockId = SS.StoreStockId;
+                mrpUpdatedStock.StoreStockId = SS.StoreStockId;
+            });
+            db.SaveChanges();
+        }
+
+        public static void UpdateMRPHistory(PHRMUpdatedStockVM mrpUpdatedStock, PharmacyDbContext db, RbacUser currentUser)
+        {
+            var MRPHistoryData = new PHRMMRPHistoryModel();
+            MRPHistoryData.PHRMStockTxnItemId = Convert.ToInt32(mrpUpdatedStock.StockId);
+            MRPHistoryData.MRP = mrpUpdatedStock.MRP;
+            MRPHistoryData.OldMRP = mrpUpdatedStock.OldMRP;
+            MRPHistoryData.StoreStockId = (int)mrpUpdatedStock.StockId;
+            MRPHistoryData.CreatedBy = currentUser.EmployeeId;
+            MRPHistoryData.EndDate = DateTime.Now;
+            MRPHistoryData.LocationId = mrpUpdatedStock.LocationId;
+            db.MRPHistories.Add(MRPHistoryData);
+            db.SaveChanges();
+        }
+        #endregion
+        #region  UPDATE EXPIRY DATE AND BATCHNO IN STORE
+        public static void UpdateStockExpiryDateandBatchNoForStoreStock(PHRMUpdatedStockVM expbatchUpdatedStock, PharmacyDbContext db, RbacUser currentUser)
+        {
+            var allStoreStock = db.PHRMStoreStock.Where(SS => SS.ItemId == expbatchUpdatedStock.ItemId && SS.BatchNo == expbatchUpdatedStock.OldBatchNo && SS.ExpiryDate == expbatchUpdatedStock.OldExpiryDate && SS.GoodsReceiptItemId == expbatchUpdatedStock.GoodsReceiptItemId).ToList();
+            var dt = db;
+            var stockData = dt.PHRMStoreStock.Where(ss => ss.ItemId == expbatchUpdatedStock.ItemId).FirstOrDefault();
+            if (allStoreStock == null) throw new Exception("Stock Not Found");
+
+            allStoreStock.ForEach(SS =>
+            {
+                SS.ExpiryDate = expbatchUpdatedStock.ExpiryDate;
+                SS.BatchNo = expbatchUpdatedStock.BatchNo;
+                SS.ModifiedBy = currentUser.EmployeeId;
+                SS.ModifiedOn = DateTime.Now;
+                expbatchUpdatedStock.StoreStockId = SS.StoreStockId;
+            });
+            db.SaveChanges();
+        }
+        #endregion
+        public static void PostExpiryDateandBatchNoHistory(PHRMUpdatedStockVM storestockData, PharmacyDbContext db, RbacUser currentUser)
+        {
+            var ExpBatchHistoryData = new PHRMExpiryDateBatchNoHistoryModel();
+            ExpBatchHistoryData.StoreStockId = storestockData.StoreStockId;
+            ExpBatchHistoryData.OldExpiryDate = storestockData.OldExpiryDate;
+            ExpBatchHistoryData.OldBatchNo = storestockData.OldBatchNo;
+            ExpBatchHistoryData.CreatedBy = currentUser.EmployeeId;
+            ExpBatchHistoryData.EndDate = DateTime.Now;
+            db.ExpiryDateBatchNoHistories.Add(ExpBatchHistoryData);
+            db.SaveChanges();
+        }
     }
 }

@@ -24,5 +24,6 @@ namespace DanpheEMR.ServerModel.LabModels
         public string GroupName { get; set; }
 
         public int IndentationCount { get; set; }
+        public bool? ShowInSheet { get; set; }
     }
 }

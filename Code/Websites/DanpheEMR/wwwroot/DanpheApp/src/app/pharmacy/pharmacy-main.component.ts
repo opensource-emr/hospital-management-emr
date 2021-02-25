@@ -3,9 +3,7 @@ import { RouterOutlet, RouterModule } from '@angular/router';
 import { SecurityService } from "../security/shared/security.service";
 
 @Component({
-
-    templateUrl: "../../app/view/pharmacy-view/PharmacyMain.html" // "/PharmacyView/PharmacyMain"
-
+    templateUrl: "./pharmacy-main.html"
 })
 //Module's main component class
 export class PharmacyMainComponent {

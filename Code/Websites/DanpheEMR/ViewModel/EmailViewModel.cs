@@ -11,6 +11,6 @@ namespace DanpheEMR.ViewModel
         public string Subject { get; set; }
         public string Content { get; set; }
 
-        public List<string> EmailAddressList { get; set; }
+        public List<String> EmailAddressList { get; set; }
     }
 }

@@ -18,8 +18,7 @@
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
             "tsConfig": "src/tsconfig.app.json",
-            "deployUrl":  "/DanpheApp/dist/DanpheApp/",
-            
+            "deployUrl": "/DanpheApp/dist/DanpheApp/",
             "assets": [
               "src/favicon.ico",
               "src/assets"
@@ -49,8 +48,8 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "2mb",
-                  "maximumError": "5mb"
+                  "maximumWarning": "3mb",
+                  "maximumError": "11mb"
                 }
               ]
             }

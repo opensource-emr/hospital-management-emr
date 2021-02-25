@@ -5,24 +5,27 @@ import { DLService } from "../../../shared/dl.service"
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
 import { RPT_BIL_DialysisReportsModel } from './dialysis-patient.model';
+import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from '../../../shared/danphe-grid/NepaliColGridSettingsModel';
 
 @Component({
   templateUrl: "./dialysis-patient-details.html"
 })
 export class RPT_BIL_DialysisPatientDetailsComponent {
 
-  public FromDate: Date = null;
-  public ToDate: Date = null;
+  public FromDate: string = null;
+  public ToDate: string = null;
 
   DialysisPatientDetailsColumns: Array<any> = null;
   DialysisPatientDetailsData: Array<any> = new Array<RPT_BIL_DialysisReportsModel>();
   public current: RPT_BIL_DialysisReportsModel = new RPT_BIL_DialysisReportsModel();
   dlService: DLService = null;
+  public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
 
   constructor(_dlService: DLService, public msgBoxServ: MessageboxService, public reportServ: ReportingService) {
     this.dlService = _dlService;
     this.current.FromDate = moment().format('YYYY-MM-DD');
     this.current.ToDate = moment().format('YYYY-MM-DD');
+    this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail("Date", false));
   }
 
 
@@ -31,11 +34,16 @@ export class RPT_BIL_DialysisPatientDetailsComponent {
   };
 
   Load() {
-    this.dlService.Read("/BillingReports/DialysisPatientDetail?FromDate="
-      + this.current.FromDate + "&ToDate=" + this.current.ToDate)
-      .map(res => res)
-      .subscribe(res => this.Success(res),
-        res => this.Error(res));
+    if (this.current.FromDate != null && this.current.ToDate != null) {
+      this.dlService.Read("/BillingReports/DialysisPatientDetail?FromDate="
+        + this.current.FromDate + "&ToDate=" + this.current.ToDate)
+        .map(res => res)
+        .subscribe(res => this.Success(res),
+          res => this.Error(res));
+    } else {
+      this.msgBoxServ.showMessage("error", ['Dates Provided is not Proper']);
+    }
+
 
   }
   Error(err) {
@@ -79,5 +87,14 @@ export class RPT_BIL_DialysisPatientDetailsComponent {
   ErrorMsg(err) {
     this.msgBoxServ.showMessage("error", ["Sorry!!! Not able export the excel file."]);
     console.log(err.ErrorMessage);
+  }
+
+  //Anjana:11June'20--reusable From-ToDate-In Reports..
+  OnFromToDateChange($event) {
+    this.FromDate = $event ? $event.fromDate : this.FromDate;
+    this.ToDate = $event ? $event.toDate : this.ToDate;
+
+    this.current.FromDate = this.FromDate;
+    this.current.ToDate = this.ToDate;
   }
 }

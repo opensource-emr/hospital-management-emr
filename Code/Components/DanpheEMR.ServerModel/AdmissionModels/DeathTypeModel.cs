@@ -12,5 +12,6 @@ namespace DanpheEMR.ServerModel
         [Key]
         public int DeathTypeId { get; set; }
         public string DeathType { get; set; }
+        public int? DischargeTypeId { get; set; }
     }
 }

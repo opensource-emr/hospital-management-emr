@@ -1,4 +1,4 @@
-﻿import { Injectable, Directive } from '@angular/core';
+import { Injectable, Directive } from '@angular/core';
 import { HttpClient,HttpHeaders} from '@angular/common/http';
 
 @Injectable()
@@ -44,4 +44,20 @@ export class CoreDLService {
         return this.http.get<any>('/api/billing?reqType=getCounter', this.options);
     }
 
+    // GetCodeDetails
+     public GetCodeDetails() {
+        return this.http.get<any>("/api/Accounting?reqType=code-details", this.options);
+     }
+     // GetFiscalYearList
+  public GetFiscalYearList() {
+    return this.http.get<any>("/api/Accounting?reqType=fiscalyear-list", this.options);    
+    }
+       //GET section  list
+       public GetsectionList() {
+        return this.http.get<any>("/api/AccountingSettings?reqType=SectionsList");
+    }
+    //getCalenderDatePreference
+    public getCalenderDatePreference() {
+        return this.http.get<any>("/api/Core?reqType=get-emp-datepreference");
+    }
 }

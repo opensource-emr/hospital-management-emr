@@ -195,6 +195,8 @@ namespace DanpheEMR.DalLayer
             return dReport;
         }
         #endregion
+
+
         #region BillDocDeptSummary
         public DynamicReport BillDocDeptSummary(DateTime FromDate, DateTime ToDate, int ProviderId)
         {
@@ -244,6 +246,7 @@ namespace DanpheEMR.DalLayer
             return dReport;
         }
         #endregion
+
         #region Bill- Department Summary report
         public DynamicReport BillDepartmentSummary(DateTime FromDate, DateTime ToDate)
         {
@@ -319,7 +322,10 @@ namespace DanpheEMR.DalLayer
 
         public DynamicReport CustomReport(DateTime FromDate, DateTime ToDate, string ReportName)
         {
-            List<SqlParameter> paramList = new List<SqlParameter>() { new SqlParameter("@FromDate", FromDate), new SqlParameter("@ToDate", ToDate), new SqlParameter("@ReportName", ReportName) };
+            List<SqlParameter> paramList = new List<SqlParameter>() {
+                new SqlParameter("@FromDate", FromDate),
+                new SqlParameter("@ToDate", ToDate),
+                new SqlParameter("@ReportName", ReportName) };
             DataSet customReportData = DALFunctions.GetDatasetFromStoredProc("SP_Report_BILL_CustomReport", paramList, this);
             DynamicReport dReport = new DynamicReport();
             if (customReportData.Tables.Count > 1)
@@ -444,6 +450,16 @@ namespace DanpheEMR.DalLayer
             return patneighbourcardData;
         }
         #endregion
+        #region Package Sales Detail Report
+        public DataTable PackageSalesDetail(DateTime FromDate, DateTime ToDate)
+        {
+            List<SqlParameter> paramList = new List<SqlParameter>() {
+                new SqlParameter("@FromDate", FromDate),
+                new SqlParameter("@ToDate", ToDate) };
+            DataTable patneighbourcardData = DALFunctions.GetDataTableFromStoredProc("SP_Report_BIL_PAT_PackageSalesDetail", paramList, this);
+            return patneighbourcardData;
+        }
+        #endregion
 
         #region Dialysis Patient Details Report
         public DataTable DialysisPatientDetail(DateTime FromDate, DateTime ToDate)
@@ -560,6 +576,31 @@ namespace DanpheEMR.DalLayer
         }
         #endregion
 
+        #region PhoneBook Appointment Report
+        public DataTable PhoneBookAppointmentReport(DateTime FromDate, DateTime ToDate, string Doctor_Name, string AppointmentStatus)
+        {
+            List<SqlParameter> paramList = new List<SqlParameter>() {
+                new SqlParameter("@FromDate", FromDate),
+                new SqlParameter("@ToDate", ToDate),
+                new SqlParameter("@Doctor_Name", Doctor_Name),
+                new SqlParameter("@AppointmentStatus", AppointmentStatus)
+            };
+            DataTable phonebookAppointmentRptData = DALFunctions.GetDataTableFromStoredProc("SP_Report_Appointment_PhoneBookAppointmentReport", paramList, this);
+            return phonebookAppointmentRptData;
+        }
+        #endregion
+        #region Diagnosis Wise Patient Report 
+        public DataTable DiagnosisWisePatientReport(DateTime FromDate, DateTime ToDate, string Diagnosis)
+        {
+            List<SqlParameter> paramList = new List<SqlParameter>() {
+                new SqlParameter("@FromDate", FromDate),
+                new SqlParameter("@ToDate", ToDate),
+                new SqlParameter("@Diagnosis", Diagnosis)
+            };
+            DataTable diagnosiswisePtReportData = DALFunctions.GetDataTableFromStoredProc("SP_Report_ADT_DiagnosisWiseReport", paramList, this);
+            return diagnosiswisePtReportData;
+        }
+        #endregion
         #region Get Billing IncomeSegregation Report
         public DataTable Get_Bill_IncomeSegregationStaticReport(DateTime FromDate, DateTime ToDate, bool IsInsurance)
         {
@@ -612,10 +653,10 @@ namespace DanpheEMR.DalLayer
         #endregion
 
         #region Total Admitted Patients
-        public DataTable TotalAdmittedPatient()
+        public DataTable TotalAdmittedPatient(DateTime FromDate, DateTime ToDate)
         {
-            // List<SqlParameter> paramList = new List<SqlParameter>() { new SqlParameter("@FromDate", FromDate), new SqlParameter("@ToDate", ToDate) };
-            DataTable data = DALFunctions.GetDataTableFromStoredProc("SP_Report_ADT_TotalAdmittedPatient", this);
+            List<SqlParameter> paramList = new List<SqlParameter>() { new SqlParameter("@FromDate", FromDate), new SqlParameter("@ToDate", ToDate) };
+            DataTable data = DALFunctions.GetDataTableFromStoredProc("SP_Report_ADT_TotalAdmittedPatient", paramList, this);
             return data;
         }
         #endregion
@@ -672,29 +713,81 @@ namespace DanpheEMR.DalLayer
         #endregion
 
         #region Category Wise Lab Report
-        public DynamicReport CategoryWiseLabReport(DateTime FromDate, DateTime ToDate)
+
+        public DataTable CategoryWiseLabReport(DateTime FromDate, DateTime ToDate)
         {
-            List<SqlParameter> paramsList = new List<SqlParameter>();
-            paramsList.Add(new SqlParameter("@FromDate", FromDate));
-            paramsList.Add(new SqlParameter("@ToDate", ToDate));
-            //cmd.Parameters.Add();
-            //cmd.Parameters.Add(new SqlParameter("@ToDate", ToDate));
+            List<SqlParameter> paramList = new List<SqlParameter>()
+            { new SqlParameter("@FromDate", FromDate), new SqlParameter("@ToDate", ToDate) };
+            DataTable CategoryWiseLabData = DALFunctions.GetDataTableFromStoredProc("SP_Report_Lab_CategoryWiseLabReport", paramList, this);
+            return CategoryWiseLabData;
+        }
+        //public DynamicReport CategoryWiseLabReport(DateTime FromDate, DateTime ToDate)
+        //{
+        //    List<SqlParameter> paramsList = new List<SqlParameter>();
+        //    paramsList.Add(new SqlParameter("@FromDate", FromDate));
+        //    paramsList.Add(new SqlParameter("@ToDate", ToDate));
+        //    //cmd.Parameters.Add();
+        //    //cmd.Parameters.Add(new SqlParameter("@ToDate", ToDate));
 
-            DataSet dsCategoryWiseLabReport = GetDatasetFromStoredProc2("SP_Report_Lab_CategoryWiseLabReport", paramsList, this.connStr);
-            DynamicReport dReport = new DynamicReport();
-            dReport.Schema = JsonConvert.SerializeObject(dsCategoryWiseLabReport.Tables[0]);
-            //wee need datetime in yyyy-MM-dd format.
-            //sud: 5June'18-- it was crashing when only one table comes from db.
-            if (dsCategoryWiseLabReport.Tables.Count > 1)
-            {
-                dReport.JsonData = JsonConvert.SerializeObject(dsCategoryWiseLabReport.Tables[1],
-                                                    new IsoDateTimeConverter() { DateTimeFormat = "yyyy-MM-dd" });
-            }
+        //    DataSet dsCategoryWiseLabReport = GetDatasetFromStoredProc2("SP_Report_Lab_CategoryWiseLabReport_old", paramsList, this.connStr);
+        //    DynamicReport dReport = new DynamicReport();
+        //    dReport.Schema = JsonConvert.SerializeObject(dsCategoryWiseLabReport.Tables[0]);
+        //    //wee need datetime in yyyy-MM-dd format.
+        //    //sud: 5June'18-- it was crashing when only one table comes from db.
+        //    if (dsCategoryWiseLabReport.Tables.Count > 1)
+        //    {
+        //        dReport.JsonData = JsonConvert.SerializeObject(dsCategoryWiseLabReport.Tables[1],
+        //                                            new IsoDateTimeConverter() { DateTimeFormat = "yyyy-MM-dd" });
+        //    }
 
 
-            return dReport;
+        //    return dReport;
+        //}
+        #endregion
+
+        public DataTable DoctorWisePatientCountLabReport(DateTime FromDate, DateTime ToDate)
+        {
+            List<SqlParameter> paramList = new List<SqlParameter>()
+            { new SqlParameter("@FromDate", FromDate), new SqlParameter("@ToDate", ToDate) };
+            DataTable DoctorWiseLabData = DALFunctions.GetDataTableFromStoredProc("SP_Report_Lab_DoctorWisePatientCountLabReport", paramList, this);
+            return DoctorWiseLabData;
+        }
+
+
+        #region Category wise total Item Count Lab Report
+        public DataTable CategoryWiseLabItemCountLabReport(DateTime FromDate, DateTime ToDate)
+        {
+            List<SqlParameter> paramList = new List<SqlParameter>()
+            { new SqlParameter("@FromDate", FromDate), new SqlParameter("@ToDate", ToDate) };
+            DataTable CategoryWiseLabItem = DALFunctions.GetDataTableFromStoredProc("SP_LAB_CategoryWiseLabTestTotalCount", paramList, this);
+            return CategoryWiseLabItem;
+        }
+        #endregion   
+
+        #region Item wise total Count Lab Report
+        public DataTable ItemWiseLabItemCountLabReport(DateTime FromDate, DateTime ToDate, int? categoryId)
+        {
+            List<SqlParameter> paramList = new List<SqlParameter>()
+            { new SqlParameter("@FromDate", FromDate), new SqlParameter("@ToDate", ToDate), new SqlParameter("@catId", categoryId) };
+            DataTable ItemWiseData = DALFunctions.GetDataTableFromStoredProc("SP_LAB_TestWiseTotalCount", paramList, this);
+            return ItemWiseData;
         }
         #endregion
+
+        #region Test Status wise detail report
+        public DataTable TestStatusDetailReport(DateTime FromDate, DateTime ToDate)
+        {
+            List<SqlParameter> paramList = new List<SqlParameter>()
+            {
+                new SqlParameter("@FromDate", FromDate),
+                new SqlParameter("@ToDate", ToDate)
+            };
+            DataTable TestStatusWiseData = DALFunctions.GetDataTableFromStoredProc("SP_LAB_Statuswise_Test_Detail", paramList, this);
+            return TestStatusWiseData;
+        }
+
+        #endregion
+
 
         #region Doctor Wise patient report
         public DynamicReport DoctorWisePatientReport(DateTime FromDate, DateTime ToDate, string ProviderName)
@@ -747,9 +840,13 @@ namespace DanpheEMR.DalLayer
         #endregion
 
         #region BIL Cancel Summary
-        public DataTable BIL_BillCancelSummary()
+        public DataTable BIL_BillCancelSummary(DateTime FromDate, DateTime ToDate)
         {
-            DataTable billCancelSummaryData = DALFunctions.GetDataTableFromStoredProc("SP_Report_BILL_BillCancelReport", this);
+            List<SqlParameter> paramList = new List<SqlParameter>() {
+                new SqlParameter("@FromDate", FromDate)
+               , new SqlParameter("@ToDate", ToDate)
+            };
+            DataTable billCancelSummaryData = DALFunctions.GetDataTableFromStoredProc("SP_Report_BILL_BillCancelReport", paramList, this);
             return billCancelSummaryData;
         }
         #endregion
@@ -889,6 +986,17 @@ namespace DanpheEMR.DalLayer
         }
         #endregion
 
+        #region Item Wise From Lab
+        public DataTable ItemWiseFromLab(DateTime FromDate, DateTime ToDate)
+        {
+            List<SqlParameter> paramList = new List<SqlParameter>() {
+                new SqlParameter("@FromDate", FromDate), new SqlParameter("@ToDate", ToDate)
+            };
+            DataTable data = DALFunctions.GetDataTableFromStoredProc("SP_Report_ItemwiseFromLab", paramList, this);
+            return data;
+        }
+        #endregion
+
         #region For Dashboards
         public DynamicReport BIL_Daily_IncomeSegregation(DateTime FromDate, DateTime ToDate)
         {
@@ -974,19 +1082,19 @@ namespace DanpheEMR.DalLayer
             return dReport;
         }
 
-        //public DynamicReport Home_PatientZoneMap()
-        //{
-        //    List<SqlParameter> paramsList = new List<SqlParameter>();
-        //    ReportingDbContext reportingDbContext = new ReportingDbContext(this.connStr);
-        //    DataSet dsHomeDsbStats = DALFunctions.GetDatasetFromStoredProc("SP_DSB_Home_PatientDistributionMap_Nepal", paramsList, reportingDbContext);
+        public DynamicReport Home_PatientZoneMap()
+        {
+            List<SqlParameter> paramsList = new List<SqlParameter>();
+            ReportingDbContext reportingDbContext = new ReportingDbContext(this.connStr);
+            DataSet dsHomeDsbStats = DALFunctions.GetDatasetFromStoredProc("SP_DSB_Home_PatientDistributionMap_Nepal", paramsList, reportingDbContext);
 
-        //    DynamicReport dReport = new DynamicReport();
+            DynamicReport dReport = new DynamicReport();
 
-        //    dReport.Schema = null;//we have only one table returning from the database.. 
-        //    dReport.JsonData = JsonConvert.SerializeObject(dsHomeDsbStats.Tables[0],
-        //                                 new IsoDateTimeConverter() { DateTimeFormat = "yyyy-MM-dd" });
-        //    return dReport;
-        //}
+            dReport.Schema = null;//we have only one table returning from the database.. 
+            dReport.JsonData = JsonConvert.SerializeObject(dsHomeDsbStats.Tables[0],
+                                         new IsoDateTimeConverter() { DateTimeFormat = "yyyy-MM-dd" });
+            return dReport;
+        }
         public DynamicReport Home_DeptWise_TotalAppointmentCount()
         {
             /////This TodaysDate is Required Because We Want Data of PerDay DepartmentWise Appointment Count
@@ -1116,14 +1224,14 @@ namespace DanpheEMR.DalLayer
         }
         #endregion
         #region AuditTrail Details        
-        public DataTable AuditTrails(DateTime FromDate, DateTime ToDate, string Table_Name, string UserName)
+        public DataTable AuditTrails(DateTime FromDate, DateTime ToDate, string Table_Name, string UserName, string ActionName)
         {
             List<SqlParameter> paramList = new List<SqlParameter>() {
                 new SqlParameter("@FromDate", FromDate),
                 new SqlParameter("@ToDate", ToDate),
                 new SqlParameter("@UserName", UserName),
-                new SqlParameter("@Table_Name", Table_Name)
-
+                new SqlParameter("@Table_Name", Table_Name),
+                new SqlParameter("@Action", ActionName)
 
             };
             DataTable returnAuditData = DALFunctions.GetDataTableFromStoredProc("SP_Danphe_Audit", paramList, this);
@@ -1131,6 +1239,199 @@ namespace DanpheEMR.DalLayer
         }
         #endregion
 
-    }
 
+
+        #region BillReferralSummaryReport
+        public DynamicReport Bill_ReferralSummary(DateTime FromDate, DateTime ToDate, bool? isExternal)
+        {
+            List<SqlParameter> paramList = new List<SqlParameter>() {
+                new SqlParameter("@FromDate", FromDate),
+                new SqlParameter("@ToDate", ToDate),
+                new SqlParameter("@isExternal", isExternal)
+            };
+            DataSet rData = DALFunctions.GetDatasetFromStoredProc("SP_Report_BIL_ReferralSummary", paramList, this);
+            DynamicReport dReport = new DynamicReport();
+            if (rData.Tables.Count > 1)
+            {
+                var data = new
+                {
+                    ReportData = rData.Tables[0],
+                    Summary = rData.Tables[1]
+                };
+                dReport.Schema = null;
+                dReport.JsonData = JsonConvert.SerializeObject(data);
+            }
+            return dReport;
+        }
+        #endregion
+
+
+
+        #region Referral Item Summary
+        public DynamicReport Bill_ReferralItemSumamry(DateTime FromDate, DateTime ToDate, int ReferrerId)
+        {
+            List<SqlParameter> paramList = new List<SqlParameter>()
+            {
+                new SqlParameter("@FromDate", FromDate),
+                new SqlParameter("@ToDate", ToDate),
+                new SqlParameter("@ReferrerId", ReferrerId)
+            };
+            DataSet rData = DALFunctions.GetDatasetFromStoredProc("SP_Report_BIL_ReferralItemsSummary", paramList, this);
+            DynamicReport dReport = new DynamicReport();
+            if (rData.Tables.Count > 1)
+            {
+                var data = new
+                {
+                    ReportData = rData.Tables[0],
+                    Summary = rData.Tables[1]
+                };
+                dReport.Schema = null;
+                dReport.JsonData = JsonConvert.SerializeObject(data);
+            }
+            return dReport;
+        }
+        #endregion
+
+
+        #region IncentiveSummaryReport
+        public DynamicReport INCTV_DoctorSummary(DateTime FromDate, DateTime ToDate)
+        {
+            List<SqlParameter> paramList = new List<SqlParameter>() {
+                new SqlParameter("@FromDate", FromDate),
+                new SqlParameter("@ToDate", ToDate)
+            };
+            DataTable rptDataTable = DALFunctions.GetDataTableFromStoredProc("SP_Report_INCTV_DoctorSummary", paramList, this);
+            DynamicReport dReport = new DynamicReport();
+            if (rptDataTable != null)
+            {
+                dReport.Schema = null;
+                dReport.JsonData = JsonConvert.SerializeObject(rptDataTable);
+            }
+            return dReport;
+        }
+        #endregion
+
+        #region Incentive Item Summary Report
+        public DynamicReport INCTV_SummaryItemReport(DateTime FromDate, DateTime ToDate, int employeeId)
+        {
+            List<SqlParameter> paramList = new List<SqlParameter>()
+            {
+                new SqlParameter("@FromDate", FromDate),
+                new SqlParameter("@ToDate", ToDate),
+                new SqlParameter("@employeeId", employeeId)
+            };
+            DataSet rData = DALFunctions.GetDatasetFromStoredProc("SP_Report_INCTV_ReferralItemsSummary", paramList, this);
+            DynamicReport dReport = new DynamicReport();
+            if (rData != null)
+            {
+                dReport.Schema = null;
+                dReport.JsonData = JsonConvert.SerializeObject(rData);
+            }
+            return dReport;
+        }
+        #endregion
+
+        #region Incentive Doc ItemGroup Summary
+        public DynamicReport INCTV_Doc_ItemGroupSummary(DateTime FromDate, DateTime ToDate, int employeeId)
+        {
+            List<SqlParameter> paramList = new List<SqlParameter>()
+            {
+                new SqlParameter("@FromDate", FromDate),
+                new SqlParameter("@ToDate", ToDate),
+                new SqlParameter("@employeeId", employeeId)
+            };
+            DataSet rData = DALFunctions.GetDatasetFromStoredProc("SP_Report_INCTV_Doc_ItemGroupSummary", paramList, this);
+            DynamicReport dReport = new DynamicReport();
+            if (rData != null)
+            {
+                dReport.Schema = null;
+                dReport.JsonData = JsonConvert.SerializeObject(rData);
+            }
+            return dReport;
+        }
+        #endregion
+
+        //PatientRegistrationReport
+        public DataTable PatientRegistrationReport(DateTime FromDate, DateTime ToDate, string Gender, string Country)
+        {
+            List<SqlParameter> paramList = new List<SqlParameter>() {
+                new SqlParameter("@FromDate", FromDate),
+                new SqlParameter("@ToDate", ToDate),
+                new SqlParameter("@Gender", Gender),
+                new SqlParameter("@Country", Country)
+            };
+            DataTable PatientRegRptdata = DALFunctions.GetDataTableFromStoredProc("SP_Report_Patient_RegistrationReport", paramList, this);
+            return PatientRegRptdata;
+        }
+
+        //For handover Amount 
+        #region 
+        public DynamicReport GetHandoverCalculationDateWise(DateTime FromDate, DateTime ToDate)
+        {
+            List<SqlParameter> paramList = new List<SqlParameter>()
+            {
+                new SqlParameter("@FromDate", FromDate),
+                new SqlParameter("@ToDate", ToDate)
+            };
+            DataSet rData = DALFunctions.GetDatasetFromStoredProc("SP_BIL_TXN_GetHandoverCalculationDateWise", paramList, this);
+            DynamicReport dReport = new DynamicReport();
+            if (rData != null)
+            {
+                dReport.Schema = null;
+                dReport.JsonData = JsonConvert.SerializeObject(rData);
+            }
+            return dReport;
+        }
+        #endregion
+
+        #region IncentivePaymentSummaryReport
+        public DynamicReport INCTV_DoctorPaymentSummary(DateTime FromDate, DateTime ToDate)
+        {
+            List<SqlParameter> paramList = new List<SqlParameter>() {
+                new SqlParameter("@FromDate", FromDate),
+                new SqlParameter("@ToDate", ToDate)
+            };
+            DataTable rptDataTable = DALFunctions.GetDataTableFromStoredProc("SP_Report_INCTV_DoctorPayment", paramList, this);
+            DynamicReport dReport = new DynamicReport();
+            if (rptDataTable != null)
+            {
+                dReport.Schema = null;
+                dReport.JsonData = JsonConvert.SerializeObject(rptDataTable);
+            }
+            return dReport;
+        }
+        #endregion
+
+        #region Bill Item Summary Report
+        public DynamicReport RPT_Bil_ItemSummaryReport(DateTime FromDate, DateTime ToDate)
+        {
+            List<SqlParameter> paramList = new List<SqlParameter>()
+            {
+                new SqlParameter("@FromDate", FromDate),
+                new SqlParameter("@ToDate", ToDate)
+            };
+            DataSet rData = DALFunctions.GetDatasetFromStoredProc("SP_Report_ItemSummaryReport", paramList, this);
+            DynamicReport dReport = new DynamicReport();
+            if (rData != null)
+            {
+                dReport.Schema = null;
+                dReport.JsonData = JsonConvert.SerializeObject(rData);
+            }
+            return dReport;
+        }
+        #endregion
+
+
+        public DataTable PoliceCaseReport(DateTime FromDate, DateTime ToDate)
+        {
+            List<SqlParameter> paramList = new List<SqlParameter>()
+            {
+                new SqlParameter("@FromDate", FromDate),
+                new SqlParameter("@ToDate", ToDate),
+            };
+
+            DataTable policecasedata = DALFunctions.GetDataTableFromStoredProc("SP_Report_PoliceCasePatient", paramList, this);
+            return policecasedata;
+        }
+    }
 }

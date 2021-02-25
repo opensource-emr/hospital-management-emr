@@ -10,6 +10,8 @@ import GridColumnSettings from '../../shared/danphe-grid/grid-column-settings.co
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { BillingReceiptModel } from '../shared/billing-receipt.model';
 import { APIsByType } from '../../shared/search.service';
+import { CoreService } from '../../core/shared/core.service';
+import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from '../../shared/danphe-grid/NepaliColGridSettingsModel';
 
 @Component({
   selector: 'provisional-receipt',
@@ -31,17 +33,25 @@ export class DuplicateProvisionalReceiptComponent {
   nextInvoiceNo: any;
   currentData: any;
   public patGirdDataApi:string="";
+  searchText:string='';
+  public enableServerSideSearch: boolean = false;
 
+
+  public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
 
   constructor(
     public BillingBLService: BillingBLService,
-    public msgBoxServ: MessageboxService) {
+    public msgBoxServ: MessageboxService, public coreService:CoreService) {
     this.dateRange = "None";
     this.duplicateProvisionalBillGridColumns = GridColumnSettings.DuplicateProvisionalReceiptList;
+    this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('CreatedOn', true));
+
     // this.GetInvoiceListForDuplicatebill(this.fromDate,this.toDate);
     //this.GetDoctorsList();
-    this.patGirdDataApi=APIsByType.BillingProvisional;
-    this.GetInvoiceListForDuplicatebill();
+    //this.patGirdDataApi=APIsByType.BillingProvisional;
+    this.getParamter();
+    this.GetInvoiceListForDuplicatebill("");
+
   }
 
   // onDateChange($event) {
@@ -51,9 +61,17 @@ export class DuplicateProvisionalReceiptComponent {
   //     this.GetInvoiceListForDuplicatebill(this.fromDate, this.toDate);
   //   }
   // }
-
-  GetInvoiceListForDuplicatebill() {
-    this.BillingBLService.GetProvisionalReceiptDetailsForDuplicatebill()
+  serverSearchTxt(searchTxt) {
+    this.searchText = searchTxt;
+    this.GetInvoiceListForDuplicatebill(this.searchText);
+}
+getParamter(){
+  let parameterData = this.coreService.Parameters.find(p => p.ParameterGroupName == "Common" && p.ParameterName == "ServerSideSearchComponent").ParameterValue;
+  var data= JSON.parse(parameterData);
+  this.enableServerSideSearch = data["BillingProvisional"];
+}
+  GetInvoiceListForDuplicatebill(searchTxt) {
+    this.BillingBLService.GetProvisionalReceiptDetailsForDuplicatebill(searchTxt)
       .subscribe(res => {
         this.provisionalInvoiceList = res.Results;
       });

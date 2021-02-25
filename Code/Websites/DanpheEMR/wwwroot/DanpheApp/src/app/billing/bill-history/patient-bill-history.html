@@ -1,666 +1,238 @@
-<style>
-  .paid {
-    background-color: darkseagreen;
-    color: white;
-  }
-
-    .paid:hover {
-      background-color: mediumseagreen;
-      color: white;
-    }
-
-  .unpaid {
-    background-color: lightsalmon;
-    color: white;
-  }
-
-    .unpaid:hover {
-      background-color: orange;
-      color: white;
-    }
-
-  .returned {
-    background-color: steelblue;
-    color: white;
-  }
-
-    .returned:hover {
-      background-color: slategray;
-      color: white;
-    }
-
-  .cancel {
-    background-color: red;
-    color: white;
-  }
-
-    .cancel:hover {
-      background-color: darkred;
-      color: white;
-    }
-
-  .insurance {
-    background-color: #8775a7;
-    color: white;
-  }
-
-    .insurance:hover {
-      background-color: #8e44ad;
-      color: white;
-    }
-
-  .only-print {
-    display: none;
-  }
-</style>
-
-<div class="col-md-12" *ngIf="showPatientBillHistory">
-
-  <div class="col-md-8">
-    <div class="row" style="margin-top: 17px;">
-      <div class="col-md-7 col-xs-12">
-        <div class="caption">
-          <div style="text-decoration: underline;color: green;">
-            <span>Bill History of <b>{{patient.ShortName}} ({{patient.PatientCode}})</b></span>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-4 col-xs-12">
-        <div class="input-group">
-          <div class="icheck-inline">
-            <label class="mt-checkbox mt-checkbox-outline" style="color:blue;">
-              <input type="checkbox" value="" [(ngModel)]="showView" (change)="showDetailedView((showView?'true':'false'))">
-              <span></span><b>Show Detailed View</b>
-            </label>
-          </div>
+<div class="wrapper">
+  <div class="row" *ngIf="showPatientBillHistory">
+    <div class="col-md-12">
+      <div class="caption lb-caption">
+        <h1 class="heading display-inline"> &nbsp;&nbsp;<i class="fa fa-file-o"
+            style="font-size: 13px;"></i>&nbsp;&nbsp;Bill History of:<span>{{patient.ShortName}}
+            ({{patient.PatientCode}})</span> </h1>
+        <div class="icheck-inline display-inline list-inline" style="margin-left: 15px;">
+          <label class="mt-checkbox mt-checkbox-outline" style="color:#777; font-size: 12px; font-family:Quicksand">
+            <input type="checkbox" value="" [(ngModel)]="showView"
+              (change)="showDetailedView((showView?'true':'false'))">
+            <span></span>
+            <label style="position: relative; top: -2px;" class="text-primary">Show Detailed View</label>
+          </label>
         </div>
       </div>
     </div>
-  </div>
-  <div *ngIf="!showView">
-    <div class="col-md-12" style="margin-right: 24px;">
-      <table class="table table-striped table-hover table-bordered" style="background-color:initial;margin-top:10px"
-             *ngIf="patBillHistory.IsLoaded">
-        <thead>
-          <tr>
-            <th sortable-header col="quantity"><b>Paid Amount</b></th>
-            <th sortable-header col="quantity">{{currencyUnit}} {{patBillHistory.PaidAmount}}</th>
-            <th sortable-header col="itemnames"><b>Unpaid</b></th>
-            <th sortable-header col="itemnames">{{currencyUnit}} {{patBillHistory.CreditAmount}}</th>
-            <th sortable-header col="quantity"><b>Provisional Amount</b></th>
-            <th sortable-header col="quantity">{{currencyUnit}} {{patBillHistory.ProvisionalAmt}}</th>
-          </tr>
-          <tr>
-            <th sortable-header col="itemnames"><b>Deposit Balance</b></th>
-            <th sortable-header col="itemnames">{{currencyUnit}} {{patBillHistory.DepositBalance}}</th>
-            <th sortable-header col="quantity"><b>Balance Amount</b></th>
-            <th sortable-header col="quantity">{{currencyUnit}} {{patBillHistory.BalanceAmount}}</th>
-            <th sortable-header col="quantity"><b>Total Due</b></th>
-            <th sortable-header col="quantity">{{currencyUnit}} {{patBillHistory.TotalDue}}</th>
-          </tr>
-          <tr>
-            <th sortable-header col="itemnames"><b>Returned Amount</b></th>
-            <th sortable-header col="itemnames">{{currencyUnit}} {{patBillHistory.ReturnedAmount}}</th>
-            <th sortable-header col="itemnames"><b>Cancelled Amount</b></th>
-            <th sortable-header col="itemnames">{{currencyUnit}} {{patBillHistory.CancelAmount}}</th>
-          </tr>
-        </thead>
-      </table>
-    </div>
-    <hr />
-
-    <div *ngIf="patBillHistoryDetail.IsLoaded">
-      <div class="col-md-6" style="padding-bottom: 20px;">
-        <div class="row">
-          <!--Paid Bills-->
-          <div class="col-md-12">
-            <h4 class="clp clp-hd" data-toggle="collapse" data-target="#paid">
-              Paid Bills
-              <span style="margin-left:10px;">({{paidPatBillHistoryDetail.length}})</span>
-            </h4>
-            <div id="paid" class="collapse clp-cntnt" style="max-height:300px;overflow-y:scroll;">
-              <p *ngIf="!paidPatBillHistoryDetail.length">No records found</p>
-              <table class="table table-bordered" *ngIf="paidPatBillHistoryDetail.length">
-                <thead style="background-color:whitesmoke">
-                  <tr>
-                    <th sortable-header col="itemnames"><b>Date</b></th>
-                    <th sortable-header col="itemnames"><b>Invoice No</b></th>
-                    <th sortable-header col="itemnames"><b>Amount</b></th>
-                    <th sortable-header col="itemnames"><b>PaymentMode</b></th>
-                    <th sortable-header col="itemnames"><b>Bill Status</b></th>
-                  </tr>
-                </thead>
-
-                <tr *ngFor="let invoice of paidPatBillHistoryDetail" class="paid">
-                  <td>{{invoice.Date | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
-                  <td>{{invoice.InvoiceNo}}</td>
-                  <td>{{invoice.Amount}}</td>
-                  <td>{{invoice.PaymentMode}}</td>
-                  <td>{{invoice.BillStatus}}</td>
-                </tr>
-
-              </table>
-            </div>
-          </div>
-          <!--Credit/Unpaid Bills-->
-          <div class="col-md-12" style="padding-top:15px;">
-            <div>
-              <h4 class="clp clp-hd" data-toggle="collapse" data-target="#unpaid">
-                Unpaid Bills
-                <span style="margin-left:10px;">({{unPaidPatBillHistoryDetail.length}})</span>
-              </h4>
-              <div id="unpaid" class="collapse clp-cntnt" style="max-height:300px;"
-                   [ngStyle]="{'overflow-y': unPaidPatBillHistoryDetail.length ? 'scroll' : ''}">
-                <p *ngIf="!unPaidPatBillHistoryDetail.length">No records found</p>
-                <table class="table table-bordered" *ngIf="unPaidPatBillHistoryDetail.length">
-                  <thead style="background-color:whitesmoke">
-                    <tr>
-                      <th sortable-header col="itemnames"><b>Date</b></th>
-                      <th sortable-header col="itemnames"><b>Invoice No</b></th>
-                      <th sortable-header col="itemnames"><b>Amount</b></th>
-                      <th sortable-header col="itemnames"><b>PaymentMode</b></th>
-                      <th sortable-header col="itemnames"><b>Bill Status</b></th>
-                    </tr>
-                  </thead>
-                  <tr *ngFor="let invoice of unPaidPatBillHistoryDetail" class="unpaid">
-                    <td>{{invoice.Date | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
-                    <td>{{invoice.InvoiceNo}}</td>
-                    <td>{{invoice.Amount}}</td>
-                    <td>{{invoice.PaymentMode}}</td>
-                    <td>{{invoice.BillStatus}}</td>
-                  </tr>
-
-                </table>
-              </div>
-            </div>
-          </div>
-          <!--Returned Bills-->
-          <div class="col-md-12" style="padding-top:15px;">
-            <h4 class="clp clp-hd" data-toggle="collapse" data-target="#returned">
-              Returned Bills
-              <span style="margin-left:10px;">({{returnedPatBillHistoryDetail.length}})</span>
-            </h4>
-            <div id="returned" class="collapse clp-cntnt" style="max-height:300px;overflow-y:scroll;">
-              <p *ngIf="!returnedPatBillHistoryDetail.length">No records found</p>
-              <table class="table table-bordered" *ngIf="returnedPatBillHistoryDetail.length">
-                <thead style="background-color:whitesmoke">
-                  <tr>
-                    <th sortable-header col="itemnames"><b>Date</b></th>
-                    <th sortable-header col="itemnames"><b>Invoice No</b></th>
-                    <th sortable-header col="itemnames"><b>Amount</b></th>
-                    <th sortable-header col="itemnames"><b>PaymentMode</b></th>
-                    <th sortable-header col="itemnames"><b>Bill Status</b></th>
-                  </tr>
-                </thead>
-
-                <tr *ngFor="let invoice of returnedPatBillHistoryDetail" class="returned">
-                  <td>{{invoice.Date | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
-                  <td>{{invoice.InvoiceNo}}</td>
-                  <td>{{invoice.Amount}}</td>
-                  <td>{{invoice.PaymentMode}}</td>
-                  <td>{{invoice.BillStatus}}</td>
-                </tr>
-
-              </table>
-            </div>
-          </div>
-          <!--Insurance Bills-->
-          <div class="col-md-12" style="padding-top:15px;">
-            <h4 class="clp clp-hd" data-toggle="collapse" data-target="#insurance">
-              Insurance Bills
-              <span style="margin-left:10px;">({{insuranceBillDetail.length}})</span>
-            </h4>
-            <div id="insurance" class="collapse clp-cntnt" style="max-height:300px;overflow-y:scroll;">
-              <p *ngIf="!insuranceBillDetail.length">No records found</p>
-              <table class="table table-bordered" *ngIf="insuranceBillDetail.length">
-                <thead style="background-color:whitesmoke">
-                  <tr>
-                    <th sortable-header col="itemnames"><b>Date</b></th>
-                    <th sortable-header col="itemnames"><b>Invoice No</b></th>
-                    <th sortable-header col="itemnames"><b>Amount</b></th>
-                    <th sortable-header col="itemnames"><b>PaymentMode</b></th>
-                    <th sortable-header col="itemnames"><b>Bill Status</b></th>
-                  </tr>
-                </thead>
-
-                <tr *ngFor="let invoice of insuranceBillDetail" class="insurance">
-                  <td>{{invoice.Date | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
-                  <td>{{invoice.InvoiceNo}}</td>
-                  <td>{{invoice.Amount}}</td>
-                  <td>{{invoice.PaymentMode}}</td>
-                  <td>{{invoice.BillStatus}}</td>
-                </tr>
-
-              </table>
-            </div>
-          </div>
-          <hr />
-        </div>
-      </div>
-
-
-      <div class="col-md-6" style="padding-bottom: 20px;">
-        <div class="row">
-          <!--Provisional Items-->
-          <div class="col-md-12">
-            <h4 class="clp clp-hd" data-toggle="collapse" data-target="#provItems">
-              Provisional Items
-              <span>({{patBillHistoryDetail.ProvisionalItems.length}})</span>
-            </h4>
-            <div id="provItems" class="collapse clp-cntnt" style="max-height: 200px;overflow-y: scroll;">
-              <p *ngIf="!patBillHistoryDetail.ProvisionalItems.length">No records found.</p>
-              <table class="table table-striped table-hover  table-bordered"
-                     style="background-color:initial;margin-top:10px"
-                     *ngIf="patBillHistoryDetail.ProvisionalItems.length">
-                <thead style="background-color:whitesmoke">
-                  <tr>
-                    <th style="width: 140px;" sortable-header col="itemnames"><b>Date</b></th>
-                    <th style="width: 150px;" sortable-header col="itemnames"><b>Department</b></th>
-                    <th style="width: 200px;" sortable-header col="itemnames"><b>Item</b></th>
-                    <th sortable-header col="itemnames"><b>Amount</b></th>
-                  </tr>
-                </thead>
-                <tr *ngFor="let prItems of patBillHistoryDetail.ProvisionalItems">
-                  <td>{{prItems.Date | DanpheDateTime:'format':'YYYY.MM.DD HH:mm'}}</td>
-                  <td>{{prItems.ServiceDepartmentName}}</td>
-                  <td>{{prItems.ItemName}}</td>
-                  <td>{{prItems.Amount}}</td>
-                </tr>
-
-              </table>
-            </div>
-
-          </div>
-          <!--Deposits-->
-          <div class="col-md-12" style="padding-top:15px;">
-            <h4 class="clp clp-hd" data-toggle="collapse" data-target="#deposits">
-              Deposits
-              <span style="margin-left:10px;color: green;">
-                (Balance:
-                {{patBillHistory.DepositBalance}})
-              </span>
-            </h4>
-            <div id="deposits" class="collapse clp-cntnt" style="max-height:300px;overflow-y:scroll;">
-              <p *ngIf="!patBillHistoryDetail.Deposits.length">No records found</p>
-              <table class="table table-striped table-hover table-bordered"
-                     *ngIf="patBillHistoryDetail.Deposits.length">
-                <thead style="background-color:whitesmoke">
-                  <tr>
-                    <th sortable-header col="itemnames"><b>Receipt No</b></th>
-                    <th sortable-header col="itemnames"><b>Date</b></th>
-                    <th sortable-header col="itemnames"><b>Deposit (+)</b></th>
-                    <th sortable-header col="itemnames"><b>Deposit (-)</b></th>
-                    <th sortable-header col="itemnames"><b>Balance</b></th>
-                    <th sortable-header col="itemnames"><b>Reference Invoice</b></th>
-                  </tr>
-                </thead>
-                <tr *ngFor="let deposit of patBillHistoryDetail.Deposits">
-                  <td *ngIf="deposit.ReceiptNum">{{deposit.ReceiptNo}}</td>
-                  <td *ngIf="!deposit.ReceiptNum"></td>
-                  <td>{{deposit.Date | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</td>
-                  <td>
-                    <p *ngIf="deposit.DepositType=='Deposit'">{{deposit.Amount}}</p>
-                  </td>
-                  <td>
-                    <p *ngIf="deposit.DepositType !='Deposit'">{{deposit.Amount}}</p>
-                  </td>
-                  <td>{{deposit.Balance}}</td>
-                  <td *ngIf="deposit.ReferenceInvoice">{{deposit.ReferenceInvoice}}</td>
-                  <td *ngIf="deposit.SettlementInvoice">{{deposit.SettlementInvoice}}</td>
-                </tr>
-
-              </table>
-            </div>
-          </div>
-          <!--Settlements-->
-          <div class="col-md-12" style="padding-top:15px;">
-            <h4 class="clp clp-hd" data-toggle="collapse" data-target="#settlements">
-              Settlements
-              <span style="margin-left:10px;">({{patBillHistoryDetail.Settlements.length}})</span>
-            </h4>
-            <div id="settlements" class="collapse clp-cntnt" style="max-height:300px;overflow-y:scroll;">
-              <p *ngIf="!patBillHistoryDetail.Settlements.length">No records found</p>
-              <table class="table table-striped table-hover  table-bordered"
-                     *ngIf="patBillHistoryDetail.Settlements.length">
-                <thead style="background-color:whitesmoke">
-                  <tr>
-                    <th sortable-header col="itemnames"><b>Date</b></th>
-                    <th sortable-header col="itemnames"><b>Receipt No</b></th>
-                    <th sortable-header col="itemnames"><b>Paid Amount</b></th>
-                  </tr>
-                </thead>
-                <tr *ngFor="let settlement of patBillHistoryDetail.Settlements">
-                  <td>{{settlement.SettlementDate | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</td>
-                  <td>{{settlement.SettlementReceipt}}</td>
-                  <td>{{settlement.PaidAmount}}</td>
-                </tr>
-
-              </table>
-            </div>
-          </div>
-          <!--Cancelled Items-->
-          <div class="col-md-12" style="padding-top:15px;">
-            <h4 class="clp clp-hd" data-toggle="collapse" data-target="#CancelledItems">
-              Cancelled Items
-              <span style="margin-left:10px;">({{patBillHistoryDetail.CancelledItems.length}})</span>
-            </h4>
-            <div id="CancelledItems" class="collapse clp-cntnt" style="max-height:300px;overflow-y:scroll;">
-              <p *ngIf="!patBillHistoryDetail.CancelledItems.length">No records found</p>
-              <table class="table table-bordered" *ngIf="patBillHistoryDetail.CancelledItems.length">
-                <thead style="background-color:whitesmoke">
-                  <tr>
-                    <th sortable-header col="itemnames"><b>Cancelled Date</b></th>
-                    <th sortable-header col="itemnames"><b>Service Department</b></th>
-                    <th sortable-header col="itemnames"><b>Item Name</b></th>
-                    <th sortable-header col="itemnames"><b>Amount</b></th>
-                    <th sortable-header col="itemnames"><b>Bill Status</b></th>
-                  </tr>
-                </thead>
-
-                <tr *ngFor="let canItems of patBillHistoryDetail.CancelledItems" class="cancel">
-                  <td>{{canItems.CancelledDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
-                  <td>{{canItems.ServiceDepartmentName}}</td>
-                  <td>{{canItems.ItemName}}</td>
-                  <td>{{canItems.Amount}}</td>
-                  <td>{{canItems.BillStatus}}</td>
-                </tr>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-12" *ngIf="showView">
-    <div class="text-right">
-      <p style="text-align:center;"><button class="btn blue" (click)="printDetailedView()">Print <i class="glyphicon glyphicon-print"></i></button></p>
-    </div>
-    <div id="printpage">
-      <div class="col-md-12 only-print">
-        <div class="col-md-12" style="text-align:center">
-          <p>Bill History</p>
-          <table>
+    <div *ngIf="!showView" class="p2 clearfix">
+      <div class="col-md-3">
+        <table class="table tbl-primary" *ngIf="patBillHistory.IsLoaded">
+          <thead>
             <tr>
-              <td align="left">Hospital No: <b>{{patient.PatientCode}} </b></td>
-              <td align="left"> Patient: <b>{{patient.ShortName}} </b>  ( {{patient.DateOfBirth | DanpheDateTime:'age' }}/{{patient.Gender}} )</td>
+              <th sortable-header col="quantity"><b><i class="fa fa-arrow-circle-o-right "></i>Paid Amount</b></th>
+              <th sortable-header col="quantity">{{currencyUnit}} {{patBillHistory.PaidAmount}}</th>
             </tr>
             <tr>
-              <td align="left">Phone No: {{patient.PhoneNumber}} </td>
-              <td align="left">Address: {{patient.Address}}</td>
+              <th sortable-header col="itemnames"><b><i class="fa fa-arrow-circle-o-right "></i>Unpaid</b></th>
+              <th sortable-header col="itemnames">{{currencyUnit}} {{patBillHistory.CreditAmount}}</th>
             </tr>
-          </table>
-        </div>
-        <hr />
+            <tr>
+              <th sortable-header col="quantity"><b><i class="fa fa-arrow-circle-o-right "></i>Provisional Amount</b>
+              </th>
+              <th sortable-header col="quantity">{{currencyUnit}} {{patBillHistory.ProvisionalAmt}}</th>
+            </tr>
+            <tr>
+              <th sortable-header col="itemnames"><b><i class="fa fa-arrow-circle-o-right "></i>Deposit Balance</b></th>
+              <th sortable-header col="itemnames">{{currencyUnit}} {{patBillHistory.DepositBalance}}</th>
+            </tr>
+            <tr>
+              <th sortable-header col="quantity"><b><i class="fa fa-arrow-circle-o-right "></i>Balance Amount</b></th>
+              <th sortable-header col="quantity">{{currencyUnit}} {{patBillHistory.BalanceAmount}}</th>
+            </tr>
+            <tr>
+              <th sortable-header col="quantity"><b><i class="fa fa-arrow-circle-o-right "></i>Total Due</b></th>
+              <th sortable-header col="quantity">{{currencyUnit}} {{patBillHistory.TotalDue}}</th>
+            </tr>
+            <tr>
+              <th sortable-header col="itemnames"><b><i class="fa fa-arrow-circle-o-right "></i>Returned Amount</b></th>
+              <th sortable-header col="itemnames">{{currencyUnit}} {{patBillHistory.ReturnedAmount}}</th>
+            </tr>
+            <tr>
+              <th sortable-header col="itemnames"><b><i class="fa fa-arrow-circle-o-right "></i>Cancelled Amount</b>
+              </th>
+              <th sortable-header col="itemnames">{{currencyUnit}} {{patBillHistory.CancelAmount}}</th>
+            </tr>
+          </thead>
+        </table>
       </div>
-
-      <div class="col-md-12">
-        <!--<h4 class="clp clp-hd" data-toggle="collapse" data-target="#detailed" style="text-align: center;" aria-expanded="true">-->
-        <h4 class="clp" style="text-align: center;">
-
-          Detailed View
-          <!-- <span style="margin-left:10px;">({{unPaidPatBillHistoryDetail.length}})</span> -->
-        </h4>
-
-        <div>
-          <!--Paid Items-->
-          <div *ngIf="patBillHistoryDetail.PaidItems">
-            <div *ngIf="patBillHistoryDetail.PaidItems.length">
-              <div>
-                <!--[ngClass]="showHeader ? 'clp' : 'clp clp-hd'"-->
-                <h5 class="clp clp-hd" data-toggle="collapse" data-target="#PaidItems" aria-expanded="true">
-                  <b>Paid Bill Items <span>({{patBillHistoryDetail.PaidItems.length}})</span></b>
-                </h5>
-                <div id="PaidItems" class="collapse in clp-cntnt">
-                  <!--<p *ngIf="!patBillHistoryDetail.PaidItems.length">No records found</p>-->
-                  <table class="table table-bordered" *ngIf="patBillHistoryDetail.PaidItems.length">
-                    <thead>
-                      <tr style="background-color:whitesmoke">
-                        <th>Date</th>
-                        <th>Invoice No.</th>
-                        <th>Department</th>
-                        <th>Item</th>
-                        <th>Quantity</th>
-                        <th>SubTotal</th>
-                        <th>Discount</th>
-                        <th>Tax</th>
-                        <th>Total Amount</th>
-                      </tr>
-                    </thead>
-                    <tr *ngFor="let bill of patBillHistoryDetail.PaidItems">
-                      <td>{{bill.Date | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</td>
-                      <td>{{bill.InvoiceNo}}</td>
-                      <td>{{bill.ServiceDepartmentName}}</td>
-                      <td>{{bill.ItemName}}</td>
-                      <td>{{bill.Quantity}}</td>
-                      <td>{{bill.SubTotal}}</td>
-                      <td>{{bill.Discount}}</td>
-                      <td>{{bill.Tax}}</td>
-                      <td>{{bill.Amount | ParseAmount:'bill.Amount'}}</td>
-                    </tr>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-          <!--UnPaid Items-->
-          <div *ngIf="patBillHistoryDetail.UnpaidItems">
-            <div *ngIf="patBillHistoryDetail.UnpaidItems.length">
-              <div>
-                <h5 class="clp clp-hd" data-toggle="collapse" data-target="#UnpaidItems" aria-expanded="true">
-                  <b>Unpaid Bill Items <span>({{patBillHistoryDetail.UnpaidItems.length}})</span></b>
-                </h5>
-                <div id="UnpaidItems" class="collapse in clp-cntnt">
-                  <!--<p *ngIf="!patBillHistoryDetail.PaidItems.length">No records found</p>-->
-                  <table class="table table-bordered" *ngIf="patBillHistoryDetail.UnpaidItems.length">
-                    <thead>
-                      <tr style="background-color:whitesmoke">
-                        <th>Date</th>
-                        <th>Invoice No.</th>
-                        <th>Department</th>
-                        <th>Item</th>
-                        <th>Quantity</th>
-                        <th>SubTotal</th>
-                        <th>Discount</th>
-                        <th>Tax</th>
-                        <th>Total Amount</th>
-                      </tr>
-                    </thead>
-                    <tr *ngFor="let bill of patBillHistoryDetail.UnpaidItems">
-                      <td>{{bill.Date | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</td>
-                      <td>{{bill.InvoiceNo}}</td>
-                      <td>{{bill.ServiceDepartmentName}}</td>
-                      <td>{{bill.ItemName}}</td>
-                      <td>{{bill.Quantity}}</td>
-                      <td>{{bill.SubTotal}}</td>
-                      <td>{{bill.Discount}}</td>
-                      <td>{{bill.Tax}}</td>
-                      <td>{{bill.Amount | ParseAmount:'bill.Amount'}}</td>
-                    </tr>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-          <!--Returned Items-->
-          <div *ngIf="patBillHistoryDetail.ReturnedItems">
-            <div *ngIf="patBillHistoryDetail.ReturnedItems.length">
-
-              <div>
-                <h5 class="clp clp-hd" data-toggle="collapse" data-target="#ReturnedItems" aria-expanded="true">
-                  <b>Returned Bill Items <span>({{patBillHistoryDetail.ReturnedItems.length}})</span></b>
-                </h5>
-                <div id="ReturnedItems" class="collapse in clp-cntnt">
-                  <!--<p *ngIf="!patBillHistoryDetail.ReturnedItems.length">No records</p>-->
-                  <table class="table table-bordered" *ngIf="patBillHistoryDetail.ReturnedItems.length">
-                    <thead>
-                      <tr style="background-color:whitesmoke">
-                        <th>Returned Date</th>
-                        <th>Invoice No.</th>
-                        <th>Department</th>
-                        <th>Item</th>
-                        <th>Quantity</th>
-                        <th>SubTotal</th>
-                        <th>Discount</th>
-                        <th>Tax</th>
-                        <th>Total Amount</th>
-                      </tr>
-                    </thead>
-                    <tr *ngFor="let bill of patBillHistoryDetail.ReturnedItems">
-                      <td>{{bill.Date | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</td>
-                      <td>{{bill.InvoiceNo}}</td>
-                      <td>{{bill.ServiceDepartmentName}}</td>
-                      <td>{{bill.ItemName}}</td>
-                      <td>{{bill.Quantity}}</td>
-                      <td>{{bill.SubTotal}}</td>
-                      <td>{{bill.Discount}}</td>
-                      <td>{{bill.Tax}}</td>
-                      <td>{{bill.Amount | ParseAmount:'bill.Amount'}}</td>
-                    </tr>
-                  </table>
-                </div>
-              </div>
-
-
-            </div>
-          </div>
-          <!--Provisional Items-->
-          <div *ngIf="patBillHistoryDetail.ProvisionalItems">
-            <div *ngIf="patBillHistoryDetail.ProvisionalItems.length">
-
-              <div>
-                <h5 class="clp clp-hd" data-toggle="collapse" data-target="#ProvisionalItems" aria-expanded="true">
-                  <b>Provisional Bill Items <span>({{patBillHistoryDetail.ProvisionalItems.length}})</span></b>
-                </h5>
-                <div id="ProvisionalItems" class="collapse in clp-cntnt">
-                  <!--<p *ngIf="!patBillHistoryDetail.PaidItems.length">No records found</p>-->
-                  <table class="table table-bordered" *ngIf="patBillHistoryDetail.ProvisionalItems.length">
-                    <thead>
-                      <tr style="background-color:whitesmoke">
-                        <th>Date</th>
-                        <th>Receipt No.</th>
-                        <th>Department</th>
-                        <th>Item</th>
-                        <th>Quantity</th>
-                        <th>SubTotal</th>
-                        <th>Discount</th>
-                        <th>Tax</th>
-                        <th>Total Amount</th>
-                      </tr>
-                    </thead>
-                    <tr *ngFor="let bill of patBillHistoryDetail.ProvisionalItems">
-                      <td>{{bill.Date | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</td>
-                      <td>{{bill.ReceiptNo}}</td>
-                      <td>{{bill.ServiceDepartmentName}}</td>
-                      <td>{{bill.ItemName}}</td>
-                      <td>{{bill.Quantity}}</td>
-                      <td>{{bill.SubTotal}}</td>
-                      <td>{{bill.Discount}}</td>
-                      <td>{{bill.Tax}}</td>
-                      <td>{{bill.Amount | ParseAmount:'bill.Amount'}}</td>
-                    </tr>
-                  </table>
-                </div>
-              </div>
-
-            </div>
-          </div>
-          <!--Cancelled Items-->
-          <div *ngIf="patBillHistoryDetail.CancelledItems">
-            <div *ngIf="patBillHistoryDetail.CancelledItems.length">
-
-              <div>
-                <h5 class="clp clp-hd" data-toggle="collapse" data-target="#CancelledItems" aria-expanded="true">
-                  <b>Cancelled Bill Items <span>({{patBillHistoryDetail.CancelledItems.length}})</span></b>
-                </h5>
-                <div id="CancelledItems" class="collapse in clp-cntnt">
-                  <!--<p *ngIf="!patBillHistoryDetail.ReturnedItems.length">No records</p>-->
-                  <table class="table table-bordered" *ngIf="patBillHistoryDetail.CancelledItems.length">
-                    <thead>
-                      <tr style="background-color:whitesmoke">
-                        <th>Cancelled Date</th>
-                        <th>Department</th>
-                        <th>Item</th>
-                        <th>Quantity</th>
-                        <th>SubTotal</th>
-                        <th>Discount</th>
-                        <th>Tax</th>
-                        <th>Total Amount</th>
-                      </tr>
-                    </thead>
-                    <tr *ngFor="let bill of patBillHistoryDetail.CancelledItems">
-                      <td>{{bill.CancelledDate | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</td>
-                      <td>{{bill.ServiceDepartmentName}}</td>
-                      <td>{{bill.ItemName}}</td>
-                      <td>{{bill.Quantity}}</td>
-                      <td>{{bill.SubTotal}}</td>
-                      <td>{{bill.Discount}}</td>
-                      <td>{{bill.Tax}}</td>
-                      <td>{{bill.Amount | ParseAmount:'bill.Amount'}}</td>
-                    </tr>
-                  </table>
-                </div>
-              </div>
-
-
-            </div>
-          </div>
-          <!--Insurance Items-->
-          <div *ngIf="patBillHistoryDetail.InsuranceItems">
-            <div *ngIf="patBillHistoryDetail.InsuranceItems.length">
-
-              <div>
-                <h5 class="clp clp-hd" data-toggle="collapse" data-target="#InsuranceItems" aria-expanded="true">
-                  <b>Insurance Bill Items <span>({{patBillHistoryDetail.ReturnedItems.length}})</span></b>
-                </h5>
-                <div id="InsuranceItems" class="collapse in clp-cntnt">
-                  <!--<p *ngIf="!patBillHistoryDetail.PaidItems.length">No records found</p>-->
-                  <table class="table table-bordered" *ngIf="patBillHistoryDetail.InsuranceItems.length">
-                    <thead>
-                      <tr style="background-color:whitesmoke">
-                        <th>Paid Date</th>
-                        <th>Invoice No.</th>
-                        <th>Department</th>
-                        <th>Item</th>
-                        <th>Quantity</th>
-                        <th>SubTotal</th>
-                        <!--<th>Discount</th>-->
-                        <th>Tax</th>
-                        <th>Total Amount</th>
-                      </tr>
-                    </thead>
-                    <tr *ngFor="let bill of patBillHistoryDetail.InsuranceItems">
-                      <td>{{bill.Date | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</td>
-                      <td>{{bill.InvoiceNo}}</td>
-                      <td>{{bill.ServiceDepartmentName}}</td>
-                      <td>{{bill.ItemName}}</td>
-                      <td>{{bill.Quantity}}</td>
-                      <td>{{bill.SubTotal}}</td>
-
-                      <!--<td>{{bill.Discount}}</td>-->
-                      <td>{{bill.Tax}}</td>
-                      <td>{{bill.Amount | ParseAmount:'bill.Amount'}}</td>
-                    </tr>
-                  </table>
-                </div>
-              </div>
-
-            </div>
-          </div>
-          <!--Deposit Bill Items-->
-          <div *ngIf="patBillHistoryDetail.Deposits">
-            <div *ngIf="patBillHistoryDetail.Deposits.length">
-
-              <div>
-                <h5 class="clp clp-hd" data-toggle="collapse" data-target="#Deposits" aria-expanded="true">
-                  <b>Deposit Bill Items <span>({{patBillHistoryDetail.Deposits.length}})</span></b>
-                </h5>
-                <div id="Deposits" class="collapse in clp-cntnt">
-                  <!--<p *ngIf="!patBillHistoryDetail.PaidItems.length">No records found</p>-->
-                  <table class="table table-bordered" *ngIf="patBillHistoryDetail.Deposits.length">
-                    <thead>
+      <div *ngIf="patBillHistoryDetail.IsLoaded" class="col-md-9">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="row">
+              <!--Paid Bills-->
+              <div class="col-md-12">
+                <h4 class="clp clp-hd  text-seconday" data-toggle="collapse" data-target="#paid"> <i
+                    class="fa fa-check-circle"></i>Paid Bills <span style="margin-left:10px;"
+                    class="text-primary">({{paidPatBillHistoryDetail.length}})</span> </h4>
+                <div id="paid" class="collapse clp-cntnt" style="max-height:300px;overflow-y:auto; padding: 0;">
+                  <p *ngIf="!paidPatBillHistoryDetail.length" class="no-data-div">No records found</p>
+                  <table class="table doc-tbl" *ngIf="paidPatBillHistoryDetail.length">
+                    <thead style="background-color:whitesmoke">
                       <tr>
                         <th sortable-header col="itemnames"><b>Date</b></th>
+                        <th sortable-header col="itemnames"><b>Invoice No</b></th>
+                        <th sortable-header col="itemnames"><b>Amount</b></th>
+                        <th sortable-header col="itemnames"><b>PaymentMode</b></th>
+                        <th sortable-header col="itemnames"><b>Bill Status</b></th>
+                      </tr>
+                    </thead>
+                    <tr *ngFor="let invoice of paidPatBillHistoryDetail" class="paid">
+                      <td>
+                        <date-lbl [value]="invoice.Date"> </date-lbl>
+                      </td>
+                      <td>{{invoice.InvoiceNo}}</td>
+                      <td>{{invoice.Amount}}</td>
+                      <td>{{invoice.PaymentMode}}</td>
+                      <td><span class="badge badge-success">{{invoice.BillStatus}}</span></td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+              <!--Credit/Unpaid Bills-->
+              <div class="col-md-12" style="padding-top:15px;">
+                <div>
+                  <h4 class="clp clp-hd text-seconday" data-toggle="collapse" data-target="#unpaid"> <i
+                      class="fa fa-times"></i>Unpaid Bills <span style="margin-left:10px;"
+                      class="text-primary">({{unPaidPatBillHistoryDetail.length}})</span> </h4>
+                  <div id="unpaid" class="collapse clp-cntnt" style="max-height:300px;"
+                    [ngStyle]="{'overflow-y': unPaidPatBillHistoryDetail.length ? 'scroll' : ''}">
+                    <p *ngIf="!unPaidPatBillHistoryDetail.length" class="no-data-div">No records found</p>
+                    <table class="table doc-tbl" *ngIf="unPaidPatBillHistoryDetail.length">
+                      <thead style="background-color:whitesmoke">
+                        <tr>
+                          <th sortable-header col="itemnames"><b>Date</b></th>
+                          <th sortable-header col="itemnames"><b>Invoice No</b></th>
+                          <th sortable-header col="itemnames"><b>Amount</b></th>
+                          <th sortable-header col="itemnames"><b>PaymentMode</b></th>
+                          <th sortable-header col="itemnames"><b>Bill Status</b></th>
+                        </tr>
+                      </thead>
+                      <tr *ngFor="let invoice of unPaidPatBillHistoryDetail" class="unpaid">
+                        <td>
+                          <date-lbl [value]="invoice.Date"> </date-lbl>
+                        </td>
+                        <td>{{invoice.InvoiceNo}}</td>
+                        <td>{{invoice.Amount}}</td>
+                        <td>{{invoice.PaymentMode}}</td>
+                        <td><span class="badge badge-danger">{{invoice.BillStatus}}</span></td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+              </div>
+              <!--Returned Bills-->
+              <div class="col-md-12" style="padding-top:15px;">
+                <h4 class="clp clp-hd text-seconday" data-toggle="collapse" data-target="#returned"> <i
+                    class="fa fa-refresh"></i> Returned Bills <span style="margin-left:10px;"
+                    class="text-primary">({{returnedPatBillHistoryDetail.length}})</span> </h4>
+                <div id="returned" class="collapse clp-cntnt" style="max-height:300px;overflow-y:auto; padding: 0;">
+                  <p *ngIf="!returnedPatBillHistoryDetail.length" class="no-data-div">No records found</p>
+                  <table class="table doc-" *ngIf="returnedPatBillHistoryDetail.length">
+                    <thead style="background-color:whitesmoke">
+                      <tr>
+                        <th sortable-header col="itemnames"><b>Date</b></th>
+                        <th sortable-header col="itemnames"><b>Invoice No</b></th>
+                        <th sortable-header col="itemnames"><b>Amount</b></th>
+                        <th sortable-header col="itemnames"><b>PaymentMode</b></th>
+                        <th sortable-header col="itemnames"><b>Bill Status</b></th>
+                      </tr>
+                    </thead>
+                    <tr *ngFor="let invoice of returnedPatBillHistoryDetail" class="returned">
+                      <td>
+                        <!-- {{invoice.Date | DanpheDateTime:'format':'YYYY-MM-DD'}} -->
+                        <date-lbl [value]="invoice.Date"> </date-lbl>
+
+                      </td>
+                      <td>{{invoice.InvoiceNo}}</td>
+                      <td>{{invoice.Amount}}</td>
+                      <td>{{invoice.PaymentMode}}</td>
+                      <td><span class="badge badge-info">{{invoice.BillStatus}}</span></td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+              <!--Insurance Bills-->
+              <div class="col-md-12" style="padding-top:15px;">
+                <h4 class="clp clp-hd" data-toggle="collapse" data-target="#insurance"> <i
+                    class="fa fa-file-text-o"></i>Insurance Bills <span style="margin-left:10px;"
+                    class="text-primary">({{insuranceBillDetail.length}})</span> </h4>
+                <div id="insurance" class="collapse clp-cntnt" style="max-height:300px;overflow-y:auto; padding: 0;">
+                  <p *ngIf="!insuranceBillDetail.length" class="no-data-div">No records found</p>
+                  <table class="table doc-tbl" *ngIf="insuranceBillDetail.length">
+                    <thead style="background-color:whitesmoke">
+                      <tr>
+                        <th sortable-header col="itemnames"><b>Date</b></th>
+                        <th sortable-header col="itemnames"><b>Invoice No</b></th>
+                        <th sortable-header col="itemnames"><b>Amount</b></th>
+                        <th sortable-header col="itemnames"><b>PaymentMode</b></th>
+                        <th sortable-header col="itemnames"><b>Bill Status</b></th>
+                      </tr>
+                    </thead>
+                    <tr *ngFor="let invoice of insuranceBillDetail" class="insurance">
+                      <td>
+                        <!-- {{invoice.Date | DanpheDateTime:'format':'YYYY-MM-DD'}} -->
+                        <date-lbl [value]="invoice.Date"> </date-lbl>
+                      </td>
+                      <td>{{invoice.InvoiceNo}}</td>
+                      <td>{{invoice.Amount}}</td>
+                      <td>{{invoice.PaymentMode}}</td>
+                      <td><span class="badge badge-info">{{invoice.BillStatus}}</span></td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+              <hr />
+            </div>
+          </div>
+          <div class="col-md-6" style="padding-bottom: 20px;">
+            <div class="row">
+              <!--Provisional Items-->
+              <div class="col-md-12">
+                <h4 class="clp clp-hd text-seconday" data-toggle="collapse" data-target="#provItems"> <i
+                    class="fa fa-align-justify"></i>Provisional Items <span
+                    class="text-primary">({{patBillHistoryDetail.ProvisionalItems.length}})</span> </h4>
+                <div id="provItems" class="collapse clp-cntnt" style="max-height: 200px;overflow-y: scroll;">
+                  <p *ngIf="!patBillHistoryDetail.ProvisionalItems.length" class="no-data-div">No records found.</p>
+                  <table class="table table-striped table-hover  table-bordered"
+                    style="background-color:initial;margin-top:10px"
+                    *ngIf="patBillHistoryDetail.ProvisionalItems.length">
+                    <thead style="background-color:whitesmoke">
+                      <tr>
+                        <th style="width: 140px;" sortable-header col="itemnames"><b>Date</b></th>
+                        <th style="width: 150px;" sortable-header col="itemnames"><b>Department</b></th>
+                        <th style="width: 200px;" sortable-header col="itemnames"><b>Item</b></th>
+                        <th sortable-header col="itemnames"><b>Amount</b></th>
+                      </tr>
+                    </thead>
+                    <tr *ngFor="let prItems of patBillHistoryDetail.ProvisionalItems">
+                      <td>
+                        <!-- {{prItems.Date | DanpheDateTime:'format':'YYYY.MM.DD HH:mm'}} -->
+                        <date-lbl [value]="prItems.Date" [show-time]="true"></date-lbl>
+                      </td>
+                      <td>{{prItems.ServiceDepartmentName}}</td>
+                      <td>{{prItems.ItemName}}</td>
+                      <td><span class="text-primary">{{prItems.Amount}}</span></td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+              <!--Deposits-->
+              <div class="col-md-12" style="padding-top:15px;">
+                <h4 class="clp clp-hd text-seconday" data-toggle="collapse" data-target="#deposits">
+                  <i class="fa fa-check-square-o"></i>Deposits <span class="text-primary">
+                    (Balance:
+                    {{patBillHistory.DepositBalance}})
+                  </span>
+                </h4>
+                <div id="deposits" class="collapse clp-cntnt" style="max-height:300px;overflow-y:auto; padding: 0;">
+                  <p *ngIf="!patBillHistoryDetail.Deposits.length" class="no-data-div">No records found</p>
+                  <table class="table table-striped table-hover table-bordered"
+                    *ngIf="patBillHistoryDetail.Deposits.length">
+                    <thead style="background-color:whitesmoke">
+                      <tr>
                         <th sortable-header col="itemnames"><b>Receipt No</b></th>
+                        <th sortable-header col="itemnames"><b>Date</b></th>
                         <th sortable-header col="itemnames"><b>Deposit (+)</b></th>
                         <th sortable-header col="itemnames"><b>Deposit (-)</b></th>
                         <th sortable-header col="itemnames"><b>Balance</b></th>
@@ -668,9 +240,12 @@
                       </tr>
                     </thead>
                     <tr *ngFor="let deposit of patBillHistoryDetail.Deposits">
-                      <td>{{deposit.Date | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</td>
-                      <td *ngIf="!deposit.ReceiptNum"></td>
                       <td *ngIf="deposit.ReceiptNum">{{deposit.ReceiptNo}}</td>
+                      <td *ngIf="!deposit.ReceiptNum"></td>
+                      <td>
+                        <!-- {{deposit.Date | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}} -->
+                        <date-lbl [value]="deposit.Date" [show-time]="true"></date-lbl>
+                      </td>
                       <td>
                         <p *ngIf="deposit.DepositType=='Deposit'">{{deposit.Amount}}</p>
                       </td>
@@ -684,71 +259,722 @@
                   </table>
                 </div>
               </div>
-
+              <!--Settlements-->
+              <div class="col-md-12" style="padding-top:15px;">
+                <h4 class="clp clp-hd  text-seconday" data-toggle="collapse" data-target="#settlements"> <i
+                    class="fa fa-bell"></i>Settlements <span style="margin-left:10px;"
+                    class="text-primary">({{patBillHistoryDetail.Settlements.length}})</span> </h4>
+                <div id="settlements" class="collapse clp-cntnt" style="max-height:300px;overflow-y:auto; padding: 0;">
+                  <p *ngIf="!patBillHistoryDetail.Settlements.length" class="no-data-div">No records found</p>
+                  <table class="table table-striped table-hover  table-bordered"
+                    *ngIf="patBillHistoryDetail.Settlements.length">
+                    <thead style="background-color:whitesmoke">
+                      <tr>
+                        <th sortable-header col="itemnames"><b>Date</b></th>
+                        <th sortable-header col="itemnames"><b>Receipt No</b></th>
+                        <th sortable-header col="itemnames"><b>Paid Amount</b></th>
+                      </tr>
+                    </thead>
+                    <tr *ngFor="let settlement of patBillHistoryDetail.Settlements">
+                      <td>
+                        <!-- {{settlement.SettlementDate | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}} -->
+                        <date-lbl [value]="settlement.SettlementDate" [show-time]="true"></date-lbl>
+                      </td>
+                      <td>{{settlement.SettlementReceipt}}</td>
+                      <td>{{settlement.PaidAmount}}</td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+              <!--Cancelled Items-->
+              <div class="col-md-12" style="padding-top:15px;">
+                <h4 class="clp clp-hd text-seconday" data-toggle="collapse" data-target="#CancelledItems"> <i
+                    class="fa fa-times-circle"></i>Cancelled Items <span style="margin-left:10px;"
+                    class="text-primary">({{patBillHistoryDetail.CancelledItems.length}})</span> </h4>
+                <div id="CancelledItems" class="collapse clp-cntnt"
+                  style="max-height:300px;overflow-y:auto; padding: 0;">
+                  <p *ngIf="!patBillHistoryDetail.CancelledItems.length" class="no-data-div">No records found</p>
+                  <table class="table doc-tbl" *ngIf="patBillHistoryDetail.CancelledItems.length">
+                    <thead style="background-color:whitesmoke">
+                      <tr>
+                        <th sortable-header col="itemnames"><b>Cancelled Date</b></th>
+                        <th sortable-header col="itemnames"><b>Service Department</b></th>
+                        <th sortable-header col="itemnames"><b>Item Name</b></th>
+                        <th sortable-header col="itemnames"><b>Amount</b></th>
+                        <th sortable-header col="itemnames"><b>Bill Status</b></th>
+                      </tr>
+                    </thead>
+                    <tr *ngFor="let canItems of patBillHistoryDetail.CancelledItems" class="cancel">
+                      <td>
+                        <!-- {{canItems.CancelledDate | DanpheDateTime:'format':'YYYY-MM-DD'}} -->
+                        <date-lbl [value]="canItems.CancelledDate"></date-lbl>
+                      </td>
+                      <td>{{canItems.ServiceDepartmentName}}</td>
+                      <td>{{canItems.ItemName}}</td>
+                      <td>{{canItems.Amount}}</td>
+                      <td>{{canItems.BillStatus}}</td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
-
-      <hr />
-      <!--Summary-->
-      <div class="col-md-12" style="margin:0px 0px 0px 0px">
-        <h5 class="clp clp-hd" data-toggle="collapse" data-target="#Summary" aria-expanded="true">
-          <b>Summary</b>
-        </h5>
-        <div id="Summary" class="collapse in clp-cntnt">
-          <div class="row">
-            <div class="col-md-6 col-xs-12">
-              <table class="table table-striped table-hover">
-                <tr>
-                  <th><u>Paid Amount:</u></th>
-                  <td><u>{{currencyUnit}} {{patBillHistory.PaidAmount}}</u></td>
-                </tr>
-                <tr>
-                  <th>Unpaid Amount:</th>
-                  <td>{{currencyUnit}} {{patBillHistory.CreditAmount}}</td>
-                </tr>
-                <tr>
-                  <th>Returned Amount:</th>
-                  <td><u>{{currencyUnit}} {{patBillHistory.ReturnedAmount}}</u></td>
-                </tr>
-                <tr>
-                  <th>Provisional Amount:</th>
-                  <td><u>{{currencyUnit}} {{patBillHistory.ProvisionalAmt}}</u></td>
-                </tr>
-                <tr>
-                  <th>Total Cancelled Amount:</th>
-                  <td>{{currencyUnit}} {{patBillHistory.CancelAmount}}</td>
-                </tr>
-                <tr>
-                  <th><u>Balance:</u></th>
-                  <td><u><b>{{currencyUnit}} {{patBillHistory.BalanceAmount}}</b></u></td>
-                </tr>
-              </table>
-
+    </div>
+    <div class="col-md-12" *ngIf="showView">
+      <div id="printpage">
+        <div class="col-md-12 only-print">
+          <div class="col-md-12" style="text-align:center; padding-left:0; padding-right: 0">
+            <h5 style="font-weight: 600; margin-bottom: 20px;">Bill History</h5>
+            <table class="table tbl-doc" style="margin-bottom:0">
+              <tr>
+                <td align="left" style="border: none; padding:0px">
+                  <label
+                    style="display: block; font-weight: 600; border: none;font-family: 'Verdana'; padding: 3px; font-size: 12px;">Hospital
+                    No:{{patient.PatientCode}}</label>
+                  <label
+                    style="display: block; font-weight: 600; border: none;font-family: 'Verdana'; padding: 3px; font-size: 12px;">Patient:
+                    {{patient.ShortName}} | ( {{patient.DateOfBirth | DanpheDateTime:'age' }}/{{patient.Gender}}
+                    )</label>
+                </td>
+                <td align="right" style="border: none; padding:0px">
+                  <label
+                    style="display: block; font-weight: 600; border: none;font-family: 'Verdana'; padding: 3px; font-size: 12px;">Phone
+                    No: {{patient.PhoneNumber}}</label>
+                  <label
+                    style="display: block; font-weight: 600; border: none;font-family: 'Verdana'; padding: 3px; font-size: 12px;">Address:
+                    {{patient.Address}}</label>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        <div class="col-md-12">
+          <div>
+            <!--Paid Items-->
+            <div *ngIf="patBillHistoryDetail.PaidItems">
+              <div *ngIf="patBillHistoryDetail.PaidItems.length">
+                <div>
+                  <!--[ngClass]="showHeader ? 'clp' : 'clp clp-hd'"-->
+                  <h5 class="clp clp-hd" data-toggle="collapse" data-target="#PaidItems" aria-expanded="true"
+                    style="padding: 0px;"> <b style="text-decoration: underline">Paid Bill Items
+                      <span>({{patBillHistoryDetail.PaidItems.length}})</span></b> </h5>
+                  <div id="PaidItems" class="collapse in clp-cntnt" style="padding: 0">
+                    <!--<p *ngIf="!patBillHistoryDetail.PaidItems.length">No records found</p>-->
+                    <table class="table" *ngIf="patBillHistoryDetail.PaidItems.length">
+                      <thead>
+                        <tr style="background-color:whitesmoke">
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Date</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Invoice No.</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Department</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Item</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Quantity</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            SubTotal</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Discount</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Tax</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Total Amount</th>
+                        </tr>
+                      </thead>
+                      <tr *ngFor="let bill of patBillHistoryDetail.PaidItems">
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          <!-- {{bill.Date | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}} -->
+                          <date-lbl [value]="bill.Date" [show-time]="true"></date-lbl>
+                        </td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.InvoiceNo}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.ServiceDepartmentName}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.ItemName}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.Quantity}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.SubTotal}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.Discount}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.Tax}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.Amount | ParseAmount:'bill.Amount'}}</td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="col-md-6 col-xs-12">
-              <table class="table table-striped table-hover">
-                <tr>
-                  <th>Total Discount Amount:</th>
-                  <td>{{currencyUnit}} {{patBillHistory.DiscountAmount}}</td>
-                </tr>
-                <tr>
-                  <th>Deposit Amount:</th>
-                  <td>{{currencyUnit}} {{patBillHistory.DepositBalance}}</td>
-                </tr>
-                <tr>
-                  <th>Total Due:</th>
-                  <td>{{currencyUnit}} {{patBillHistory.TotalDue}}</td>
-                </tr>
-                <tr *ngIf="RefundAmount">
-                  <th>Total Refund Amount:</th>
-                  <td><b>{{currencyUnit}} {{patBillHistory.BalanceAmount}}</b></td>
-                </tr>
-              </table>
+            <!--UnPaid Items-->
+            <div *ngIf="patBillHistoryDetail.UnpaidItems">
+              <div *ngIf="patBillHistoryDetail.UnpaidItems.length">
+                <div>
+                  <h5 class="clp clp-hd" data-toggle="collapse" data-target="#UnpaidItems" aria-expanded="true"
+                    style="padding: 0"> <b style="text-decoration: underline">Unpaid Bill Items
+                      <span>({{patBillHistoryDetail.UnpaidItems.length}})</span></b> </h5>
+                  <div id="UnpaidItems" class="collapse in clp-cntnt" style="padding: 0">
+                    <!--<p *ngIf="!patBillHistoryDetail.PaidItems.length">No records found</p>-->
+                    <table class="table" *ngIf="patBillHistoryDetail.UnpaidItems.length">
+                      <thead>
+                        <tr style="background-color:whitesmoke">
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Date</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Invoice No.</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Department</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Item</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Quantity</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            SubTotal</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Discount</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Tax</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Total Amount</th>
+                        </tr>
+                      </thead>
+                      <tr *ngFor="let bill of patBillHistoryDetail.UnpaidItems">
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          <!-- {{bill.Date | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}} -->
+                          <date-lbl [value]="bill.Date" [show-time]="true"></date-lbl>
+                        </td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.InvoiceNo}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.ServiceDepartmentName}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.ItemName}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.Quantity}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.SubTotal}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.Discount}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.Tax}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.Amount | ParseAmount:'bill.Amount'}}</td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!--Returned Items-->
+            <div *ngIf="patBillHistoryDetail.ReturnedItems">
+              <div *ngIf="patBillHistoryDetail.ReturnedItems.length">
+                <div>
+                  <h5 class="clp clp-hd" data-toggle="collapse" data-target="#ReturnedItems" aria-expanded="true"
+                    style="padding: 0"> <b style="text-decoration: underline">Returned Bill Items
+                      <span>({{patBillHistoryDetail.ReturnedItems.length}})</span></b> </h5>
+                  <div id="ReturnedItems" class="collapse in clp-cntnt" style="padding: 0">
+                    <!--<p *ngIf="!patBillHistoryDetail.ReturnedItems.length">No records</p>-->
+                    <table class="table" *ngIf="patBillHistoryDetail.ReturnedItems.length">
+                      <thead>
+                        <tr style="background-color:whitesmoke">
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Returned Date</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Invoice No.</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Department</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Item</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Quantity</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            SubTotal</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Discount</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Tax</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Total Amount</th>
+                        </tr>
+                      </thead>
+                      <tr *ngFor="let bill of patBillHistoryDetail.ReturnedItems">
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          <!-- {{bill.Date | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}} -->
+                          <date-lbl [value]="bill.Date" [show-time]="true"></date-lbl>
+                        </td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.InvoiceNo}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.ServiceDepartmentName}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.ItemName}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.Quantity}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.SubTotal}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.Discount}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.Tax}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.Amount | ParseAmount:'bill.Amount'}}</td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!--Provisional Items-->
+            <div *ngIf="patBillHistoryDetail.ProvisionalItems">
+              <div *ngIf="patBillHistoryDetail.ProvisionalItems.length">
+                <div>
+                  <h5 class="clp clp-hd" data-toggle="collapse" data-target="#ProvisionalItems" aria-expanded="true"
+                    style="padding: 0"> <b style="text-decoration: underline">Provisional Bill Items
+                      <span>({{patBillHistoryDetail.ProvisionalItems.length}})</span></b> </h5>
+                  <div id="ProvisionalItems" class="collapse in clp-cntnt" style="padding: 0">
+                    <!--<p *ngIf="!patBillHistoryDetail.PaidItems.length">No records found</p>-->
+                    <table class="table" *ngIf="patBillHistoryDetail.ProvisionalItems.length">
+                      <thead>
+                        <tr style="background-color:whitesmoke">
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Date</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Receipt No.</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Department</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Item</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Quantity</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            SubTotal</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Discount</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Tax</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Total Amount</th>
+                        </tr>
+                      </thead>
+                      <tr *ngFor="let bill of patBillHistoryDetail.ProvisionalItems">
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          <!-- {{bill.Date | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}} -->
+                          <date-lbl [value]="bill.Date" [show-time]="true"></date-lbl>
+                        </td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.ReceiptNo}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.ServiceDepartmentName}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.ItemName}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.Quantity}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.SubTotal}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.Discount}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.Tax}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.Amount | ParseAmount:'bill.Amount'}}</td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!--Cancelled Items-->
+            <div *ngIf="patBillHistoryDetail.CancelledItems">
+              <div *ngIf="patBillHistoryDetail.CancelledItems.length">
+                <div>
+                  <h5 class="clp clp-hd" data-toggle="collapse" data-target="#CancelledItems" aria-expanded="true"
+                    style="padding: 0"> <b style="text-decoration: underline">Cancelled Bill Items
+                      <span>({{patBillHistoryDetail.CancelledItems.length}})</span></b> </h5>
+                  <div id="CancelledItems" class="collapse in clp-cntnt" style="padding: 0">
+                    <!--<p *ngIf="!patBillHistoryDetail.ReturnedItems.length">No records</p>-->
+                    <table class="table" *ngIf="patBillHistoryDetail.CancelledItems.length">
+                      <thead>
+                        <tr style="background-color:whitesmoke">
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Cancelled Date</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Department</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Item</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Quantity</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            SubTotal</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Discount</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Tax</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Total Amount</th>
+                        </tr>
+                      </thead>
+                      <tr *ngFor="let bill of patBillHistoryDetail.CancelledItems">
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          <!-- {{bill.CancelledDate | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}} -->
+                          <date-lbl [value]="bill.CancelledDate" [show-time]="true"></date-lbl>
+                        </td>
+                        <td
+                          style="font-weight: 500;border: 1px solid #000;font-family: 'Verdana';padding: 7px;font-size: 12px;">
+                          {{bill.ServiceDepartmentName}}
+                        </td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.ItemName}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.Quantity}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.SubTotal}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.Discount}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.Tax}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.Amount | ParseAmount:'bill.Amount'}}</td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!--Insurance Items-->
+            <div *ngIf="patBillHistoryDetail.InsuranceItems">
+              <div *ngIf="patBillHistoryDetail.InsuranceItems.length">
+                <div>
+                  <h5 class="clp clp-hd" data-toggle="collapse" data-target="#InsuranceItems" aria-expanded="true"
+                    style="padding: 0"> <b style="text-decoration: underline">Insurance Bill Items
+                      <span>({{patBillHistoryDetail.ReturnedItems.length}})</span></b> </h5>
+                  <div id="InsuranceItems" class="collapse in clp-cntnt" style="padding: 0">
+                    <!--<p *ngIf="!patBillHistoryDetail.PaidItems.length">No records found</p>-->
+                    <table class="table" *ngIf="patBillHistoryDetail.InsuranceItems.length">
+                      <thead>
+                        <tr style="background-color:whitesmoke">
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Paid Date</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Invoice No.</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Department</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Item</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            Quantity</th>
+                          <th
+                            style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            SubTotal</th>
+                          <!--<th>Discount</th>-->
+                          <th>Tax</th>
+                          <th>Total Amount</th>
+                        </tr>
+                      </thead>
+                      <tr *ngFor="let bill of patBillHistoryDetail.InsuranceItems">
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          <!-- {{bill.Date | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}} -->
+                          <date-lbl [value]="bill.Date" [show-time]="true"></date-lbl>
+                        </td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.InvoiceNo}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.ServiceDepartmentName}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.ItemName}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.Quantity}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.SubTotal}}</td>
+
+                        <!--<td>{{bill.Discount}}</td>-->
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.Tax}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{bill.Amount | ParseAmount:'bill.Amount'}}</td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!--Deposit Bill Items-->
+            <div *ngIf="patBillHistoryDetail.Deposits">
+              <div *ngIf="patBillHistoryDetail.Deposits.length">
+                <div>
+                  <h5 class="clp clp-hd" data-toggle="collapse" data-target="#Deposits" aria-expanded="true"
+                    style="padding: 0"> <b style="text-decoration: underline">Deposit Bill Items
+                      <span>({{patBillHistoryDetail.Deposits.length}})</span></b> </h5>
+                  <div id="Deposits" class="collapse in clp-cntnt" style="padding: 0">
+                    <!--<p *ngIf="!patBillHistoryDetail.PaidItems.length">No records found</p>-->
+                    <table class="table" *ngIf="patBillHistoryDetail.Deposits.length">
+                      <thead>
+                        <tr>
+                          <th sortable-header col="itemnames"
+                            style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            <b>Date</b></th>
+                          <th sortable-header col="itemnames"
+                            style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            <b>Receipt No</b></th>
+                          <th sortable-header col="itemnames"
+                            style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            <b>Deposit (+)</b></th>
+                          <th sortable-header col="itemnames"
+                            style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            <b>Deposit (-)</b></th>
+                          <th sortable-header col="itemnames"
+                            style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            <b>Balance</b></th>
+                          <th sortable-header col="itemnames"
+                            style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                            <b>Reference Invoice</b></th>
+                        </tr>
+                      </thead>
+                      <tr *ngFor="let deposit of patBillHistoryDetail.Deposits">
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          <!-- {{deposit.Date | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}} -->
+                          <date-lbl [value]="deposit.Date" [show-time]="true"></date-lbl>
+                        </td>
+                        <td *ngIf="!deposit.ReceiptNum"
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                        </td>
+                        <td *ngIf="deposit.ReceiptNum"
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{deposit.ReceiptNo}}</td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          <p *ngIf="deposit.DepositType=='Deposit'">{{deposit.Amount}}</p>
+                        </td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          <p *ngIf="deposit.DepositType !='Deposit'">{{deposit.Amount}}</p>
+                        </td>
+                        <td
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{deposit.Balance}}</td>
+                        <td *ngIf="deposit.ReferenceInvoice"
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{deposit.ReferenceInvoice}}</td>
+                        <td *ngIf="deposit.SettlementInvoice"
+                          style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                          {{deposit.SettlementInvoice}}</td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+        <!--Summary-->
+        <div class="col-md-12" style="margin:0px 0px 0px 0px">
+          <h5 class="clp clp-hd" data-toggle="collapse" data-target="#Summary" aria-expanded="true" style="padding: 0">
+            <b style="text-decoration: underline">Summary</b> </h5>
+          <div id="Summary" class="collapse in clp-cntnt" style="padding: 0">
+            <div class="row">
+              <div class="col-md-6 col-xs-12" style="width: 50%;">
+                <table class="table">
+                  <tr>
+                    <th
+                      style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                      Paid Amount:</th>
+                    <td
+                      style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                      {{currencyUnit}} {{patBillHistory.PaidAmount}}</td>
+                  </tr>
+                  <tr>
+                    <th
+                      style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                      Unpaid Amount:</th>
+                    <td
+                      style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                      {{currencyUnit}} {{patBillHistory.CreditAmount}}</td>
+                  </tr>
+                  <tr>
+                    <th
+                      style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                      Returned Amount:</th>
+                    <td
+                      style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                      {{currencyUnit}} {{patBillHistory.ReturnedAmount}}</td>
+                  </tr>
+                  <tr>
+                    <th
+                      style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                      Provisional Amount:</th>
+                    <td
+                      style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                      {{currencyUnit}} {{patBillHistory.ProvisionalAmt}}</td>
+                  </tr>
+                  <tr>
+                    <th
+                      style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                      Total Cancelled Amount:</th>
+                    <td
+                      style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                      {{currencyUnit}} {{patBillHistory.CancelAmount}}</td>
+                  </tr>
+                  <tr>
+                    <th
+                      style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                      Balance:</th>
+                    <td
+                      style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                      <b>{{currencyUnit}} {{patBillHistory.BalanceAmount}}</b></td>
+                  </tr>
+                </table>
+              </div>
+              <div class="col-md-6 col-xs-12" style="width: 50%;">
+                <table class="table">
+                  <tr>
+                    <th
+                      style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                      Total Discount Amount:</th>
+                    <td
+                      style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                      {{currencyUnit}} {{patBillHistory.DiscountAmount}}</td>
+                  </tr>
+                  <tr>
+                    <th
+                      style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                      Deposit Amount:</th>
+                    <td
+                      style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                      {{currencyUnit}} {{patBillHistory.DepositBalance}}</td>
+                  </tr>
+                  <tr>
+                    <th
+                      style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                      Total Due:</th>
+                    <td
+                      style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                      {{currencyUnit}} {{patBillHistory.TotalDue}}</td>
+                  </tr>
+                  <tr *ngIf="RefundAmount">
+                    <th
+                      style="font-weight: 600; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                      Total Refund Amount:</th>
+                    <td
+                      style="font-weight: 500; border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
+                      <b>{{currencyUnit}} {{patBillHistory.BalanceAmount}}</b></td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="text-center">
+        <p style="text-align:center;">
+          <button class="btn blue" (click)="printDetailedView()">Print <i
+              class="glyphicon glyphicon-print"></i></button>
+        </p>
       </div>
     </div>
   </div>

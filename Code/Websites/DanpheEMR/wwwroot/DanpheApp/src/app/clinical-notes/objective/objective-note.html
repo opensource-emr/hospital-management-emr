@@ -1,0 +1,190 @@
+<style>    
+    input.cstm-form-control{width: 89%;}
+    .cstm-form-group{
+        width: 100%;
+        display: table;
+    }
+</style>
+<div class="row" *ngIf="objectiveNote">
+    <div class="col-md-6">
+        <div class="prob-entry hm-bg-white hm-form">
+             <div class="text-head-wrapper mt0 clearfix">
+              <h3 class="text-head cstm-add-heading">Clinical Objective Notes</h3> 
+            </div>
+            <div class="cstm-form-group">
+                <div class="row">
+                    <label class="cstm-control-label control-label col-md-4">HEENT<b>:</b></label>
+                    <div class="col-md-8">
+                        <textarea [(ngModel)]="objectiveNote.HEENT" (focusout)="Focusit()"   rows="3"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cstm-form-group">
+                <div class="row">
+                    <label class="cstm-control-label control-label col-md-4">Chest<b>:</b></label>
+                    <div class="col-md-8">
+                        <textarea [(ngModel)]="objectiveNote.Chest"  (focusout)="Focusit()"  rows="3"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cstm-form-group">
+                <div class="row">
+                    <label class="cstm-control-label control-label col-md-4">CVS<b>:</b></label>
+                    <div class="col-md-8"> 
+                        <textarea [(ngModel)]="objectiveNote.CVS" (focusout)="Focusit()"  rows="3"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cstm-form-group">
+                <div class="row">
+                    <label class="cstm-control-label control-label col-md-4">Abdomen<b>:</b></label>
+                    <div class="col-md-8">
+                        <textarea [(ngModel)]="objectiveNote.Abdomen" (focusout)="Focusit()"  rows="3"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cstm-form-group">
+                <div class="row">
+                    <label class="cstm-control-label control-label col-md-4">Extremity<b>:</b></label>
+                    <div class="col-md-8">
+                        <textarea [(ngModel)]="objectiveNote.Extremity" (focusout)="Focusit()"  rows="3"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cstm-form-group">
+                <div class="row">
+                    <label class="cstm-control-label control-label col-md-4">Skin<b>:</b></label>
+                    <div class="col-md-8">
+                        <textarea [(ngModel)]="objectiveNote.Skin" (focusout)="Focusit()"  rows="3"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cstm-form-group">
+                <div class="row">
+                    <label class="cstm-control-label control-label col-md-4">Neurological<b>:</b></label>
+                    <div class="col-md-8">
+                        <textarea [(ngModel)]="objectiveNote.Neurological" (focusout)="Focusit()"  rows="3"></textarea>
+                    </div>
+                </div>
+            </div>        
+
+        </div>
+    </div>
+    <!--<div class="col-md-6">
+        <vitals-add [showVitalAddBox]="showVitalAddBox"></vitals-add>
+    </div>-->
+
+    <div class="col-md-6">
+        <div class="hm-bg-white hm-ecard">
+             <div class="row">
+            <div class="col-md-12">
+                <h4 class="clp clp-hd" data-toggle="collapse" data-target="#vitals" aria-expanded="true">
+                    Vitals
+                    <span>[{{vitalsList.length}}]</span>
+                    <button class="btn primary-btn" (click)="openAddVital()">
+                            <i class="fa fa-plus"></i>
+                            Add
+                        </button>
+                </h4>
+                <div id="vitals" class="collapse in clp-cntnt">
+                    <p *ngIf="!vitalsList.length">No records found</p>
+                    <!--<table class="table table-bordered" *ngIf="clinicalDetail.Allergies.length">
+                        <thead style="background-color:whitesmoke">
+                            <tr>
+                                <th sortable-header col="itemnames"><b>Recorded On</b></th>
+                                <th sortable-header col="itemnames"><b>Allergy Type</b></th>
+                                <th sortable-header col="itemnames"><b>Allergy Name</b></th>
+                                <th sortable-header col="itemnames"><b>Sevirity</b></th>
+                                <th sortable-header col="itemnames"><b>IsVerified</b></th>
+                            </tr>
+                        </thead>
+                        <tr *ngFor="let allergy of clinicalDetail.Allergies">
+                            <td>{{allergy.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                            <td>{{allergy.AllergyType}}</td>
+                            <td>{{allergy.AllergenAdvRecName}}</td>
+                            <td>{{allergy.Verified}}</td>
+                        </tr>
+                    </table>-->
+
+                    <div class="table-responsive">
+                        <table class="table table-striped table-condensed flip-content">
+                            <tbody>
+                                <tr>
+                                    <td>Taken On</td>
+                                    <td *ngFor="let vitals of vitalsList"><strong>{{vitals.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</strong></td>
+                                </tr>
+                                <tr>
+                                    <td>Height</td>
+                                    <td *ngFor="let vitals of vitalsList">
+                                        <div *ngIf="vitals.HeightUnit!='inch'">{{vitals.Height |HasValue: vitals.HeightUnit}}</div>
+                                        <div *ngIf="vitals.HeightUnit=='inch'">{{vitals.Height}}</div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Weight</td>
+                                    <td *ngFor="let vitals of vitalsList">{{vitals.Weight | HasValue: vitals.WeightUnit}}</td>
+                                </tr>
+                                <tr>
+                                    <td>BMI</td>
+                                    <td *ngFor="let vitals of vitalsList">{{vitals.BMI}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Temp.</td>
+                                    <td *ngFor="let vitals of vitalsList">{{vitals.Temperature | HasValue: vitals.TemperatureUnit}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Pulse</td>
+                                    <td *ngFor="let vitals of vitalsList">{{vitals.Pulse | HasValue:'/min'}}</td>
+                                </tr>
+                                <tr>
+                                    <td>B.P</td>
+                                    <td *ngFor="let vitals of vitalsList">{{vitals.BPSystolic | HasValue:'/'}}{{vitals.BPDiastolic}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Resp. Rate</td>
+                                    <td *ngFor="let vitals of vitalsList">{{vitals.RespiratoryRatePerMin | HasValue:'/min'}}</td>
+                                </tr>
+                                <tr>
+                                    <td>SpO2</td>
+                                    <td *ngFor="let vitals of vitalsList">{{vitals.SpO2 | HasValue:'percent'}}</td>
+                                </tr>
+                                <tr>
+                                    <td>O<sub>2</sub> Supply Method</td>
+                                    <td *ngFor="let vitals of vitalsList">{{vitals.OxygenDeliveryMethod}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Body Pain</td>
+                                    <td *ngFor="let painList of painDataList">
+                                        <div *ngFor="let pnlist of painList">
+                                            <span>{{pnlist.BodyPart}}-{{pnlist.PainScale}} </span>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+       
+    </div>
+    
+    
+    <div class="popup-static portlet box portlet-fullscreen" *ngIf="addVitalBox">
+        <div class="portlet-body form" style="background-color:white; width: 50%; margin: 0 auto; margin-top: 100px;">
+            <vitals-add *ngIf="showAddVitalBox" (callBackShowHide)="showHideFunc($event)"></vitals-add>
+        </div>
+    </div>       
+
+
+</div>

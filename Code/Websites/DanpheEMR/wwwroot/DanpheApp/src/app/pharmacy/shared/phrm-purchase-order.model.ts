@@ -24,6 +24,7 @@ export class PHRMPurchaseOrder {
     public Remarks: string = null;
     public CreatedBy: number = 0;
     public CreatedOn: string = null;
+    public TermsId: number = null;
     public SupplierName: string = null;
     public PHRMPurchaseOrderItems: Array<PHRMPurchaseOrderItems> = new Array<PHRMPurchaseOrderItems>();
     public PurchaseOrderValidator: FormGroup = null;

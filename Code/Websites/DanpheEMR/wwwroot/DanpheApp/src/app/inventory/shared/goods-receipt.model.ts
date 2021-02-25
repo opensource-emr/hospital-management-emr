@@ -1,30 +1,44 @@
-import {
+import { 
   FormGroup,
   FormControl,
   Validators,
   FormBuilder,
 } from '@angular/forms'
 import { GoodsReceiptItems } from "./goods-receipt-item.model"
+import { ENUM_GRCategory } from "../../shared/shared-enums";
 import * as moment from 'moment/moment';
 export class GoodsReceipt {
-  public Sno: number = 0;
   public GoodsReceiptValidator: FormGroup = null;
   public VendorName: string = "";
   public VendorNo: string = "";
-    AgingDays: number;
-    IsCancel: boolean;
-    SupplierId: number;
-    GoodReceiptDate: string | number | Date;
-    length: number;
+  public GRCategory: string = ENUM_GRCategory.Consumables;
+  public IsCancel: boolean = false;
+  AgingDays: number;
+  SupplierId: number;
+  GoodReceiptDate: string | number | Date;
+  length: number;
   public FromDate: string = "";
   public ToDate: string = "";
+  public CancelRemarks: string = "";
+  //added for Verification
+  public IsVerificationEnabled: boolean = false;
+  public VerifierList: any[] = [];
+  public VerifierIds: string;
+  public CurrentVerificationLevel: number;
+  public CurrentVerificationLevelCount: any;
+  public MaxVerificationLevel: any;
+  public IsVerificationAllowed: boolean;
+  public VerificationStatus: string;
+  public GRStatus: string;
   constructor() {
 
     var _formBuilder = new FormBuilder();
     this.GoodsReceiptValidator = _formBuilder.group({
-      'GoodsReceiptDate': ['', Validators.compose([Validators.required, this.dateValidator])],
+      //sanjit: 2Apr'20: GoodsReceiptDate somehow throws validation error when use with danphe-date-picker, so it is commented. 
+      // 'GoodsReceiptDate': ['', Validators.compose([Validators.required])],
       'BillNo': ['', Validators.compose([Validators.required])],
       'VendorId': ['', Validators.compose([Validators.required])],
+      'GRCategory': ['', Validators.compose([Validators.required])],
       'PaymentMode': ['', Validators.compose([Validators.required])],
     });
   }
@@ -62,16 +76,18 @@ export class GoodsReceipt {
 
   }
   public GoodsReceiptID: number = 0;
-  public GoodsReceiptDate: string = "";
+  public GoodsReceiptNo: number = 0;
+  public GoodsReceiptDate: string = moment().format('YYYY-MM-DD');
   public PurchaseOrderId: number = null;
   public TotalAmount: number = 0;
   public Remarks: string = "";
   public CreatedBy: number = 0;
-  public CreatedOn: Date = null;
+  public CreatedOn: string = null;
   public VendorId: number = 0;
-
+  public FiscalYearId: number = 0;
+  public CurrentFiscalYear: string = "";
   public BillNo: string = null;
-  public ReceivedDate: string = moment().format('YYYY-MM-DD');
+  public ReceivedDate: string = moment().format('YYYY-MM-DD HH:MM:ss');
   public ReceiptNo: string = null;
   public OrderDate: string = null;
 
@@ -85,7 +101,7 @@ export class GoodsReceipt {
   public TDSAmount: number = 0;
   public TotalWithTDS: number = 0;
   public PrintCount: number = 0;
-  public SelectedItem: any = null;
+  //public SelectedItem: any = null;//sud:11Apr'20-- this was misused.. hence removing.
   public CreditPeriod: number = 0;
   public PaymentMode: string;
   public OtherCharges: number = 0;

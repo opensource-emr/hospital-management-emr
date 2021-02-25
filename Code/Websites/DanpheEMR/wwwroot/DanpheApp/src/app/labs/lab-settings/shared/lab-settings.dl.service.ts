@@ -1,5 +1,6 @@
 import { Injectable, Directive } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { _ } from 'ag-grid-community';
 
 @Injectable()
 export class LabSettingsDLService {
@@ -31,6 +32,12 @@ export class LabSettingsDLService {
   GetAllLookUpNames() {
     return this.http.get<any>("/api/LabSetting?reqType=allLookUp", this.options);
   }
+  public GetAllLabCategory() {
+    return this.http.get<any>("/api/Lab?reqType=all-lab-category", this.options);
+  }
+  public GetAllLabSpecimen() {
+    return this.http.get<any>("/api/Lab?reqType=all-lab-specimen", this.options);
+  }
 
 
 
@@ -55,7 +62,21 @@ export class LabSettingsDLService {
     return this.http.post<any>("/api/LabSetting?reqType=postLabLookUp", data, this.options);
   }
 
+  PostNewLabCategory(data: string) {
+    let stringData = data;
+    return this.http.post<any>("/api/LabSetting?reqType=postLabCategory", stringData, this.options);
+  }
+  PostNewLabSpecimen(data: string) {
+    let stringData = data;
+    return this.http.post<any>("/api/LabSetting?reqType=postLabSpecimen", stringData, this.options);
+  }
 
+
+
+  PutLabCategory(labCategory: string) {
+    let data = labCategory;
+    return this.http.put<any>("/api/LabSetting?reqType=updateLabCategory", data, this.options);
+  }
 
   PutNewReportTemplate(reportTemplateData: string) {
     let data = reportTemplateData;
@@ -97,4 +118,24 @@ export class LabSettingsDLService {
     return this.http.put<any>("/api/LabSetting?reqType=updateLabVendor", data, this.options);
   }
   //end: sud:28Apr'19--for lab-external vendors.
+
+  //start: Anjana: 8/31/2020 : getting all gov specified lab components
+  GetAllGovLabComponents(){
+    return this.http.get<any>("/api/LabSetting?reqType=allGovLabTestComponentList", this.options);
+  }
+
+  GetAllMappedComponents(){
+    return this.http.get<any>("/api/LabSetting?reqType=all-mapped-components", this.options);
+  }
+
+  MapGovLabComponent(comp){
+    let data = comp;
+    return this.http.post<any>("/api/LabSetting?reqType=post-mapped-component", data, this.options);
+  }
+
+  UpdateMappedGovLabComponent(comp){
+    let data = comp;
+    return this.http.put<any>("/api/LabSetting?reqType=edit-mapped-component", data, this.options);
+  }
+  //end: Anjana: 8/31/2020 : getting all gov specified lab components
 }

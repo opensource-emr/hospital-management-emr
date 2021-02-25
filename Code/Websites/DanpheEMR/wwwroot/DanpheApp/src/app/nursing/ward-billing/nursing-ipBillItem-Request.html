@@ -1,38 +1,56 @@
 ﻿<style>
-    .table thead tr th {
-        font-size: 13px;
-    }
+  .table thead tr th {
+    font-size: 13px;
+  }
 
-    .delBtn {
-        padding: 1px 7px;
-        margin-top: 1px;
-        margin-right: 0px;
-    }
+  .delBtn {
+    padding: 1px 7px;
+    margin-top: 1px;
+    margin-right: 0px;
+  }
 
-    table.billing-table tr td {
-        padding: 8px 4px;
-    }
+  table.billing-table tr td {
+    padding: 8px 4px;
+  }
 
-    input[type="number"]::-webkit-outer-spin-button,
-    input[type="number"]::-webkit-inner-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-    }
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
 
-    input[type="number"] {
-        -moz-appearance: textfield;
-    }
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
 </style>
 
-<div class="popup-static portlet box portlet-fullscreen" *ngIf="showIpBillRequest">
-    <div class="portlet-body form">
-        <div class="modelbox-div" style="margin-left:5%;margin-right:5%;margin-top:1%;min-height:630px;height: auto;padding-bottom: 30px;">
-            <div style="margin-left:30px">
-                <i class="btn btn-danger" style="float: right" (click)="CloseLabRequestsPage()">X</i>
+<div
+  class="popup-static portlet box portlet-fullscreen"
+  *ngIf="showIpBillRequest"
+>
+  <div class="portlet-body form">
+    <div
+      class="modelbox-div"
+      style="
+        margin-left: 5%;
+        margin-right: 5%;
+        margin-top: 1%;
+        min-height: 630px;
+        height: auto;
+        padding-bottom: 30px;
+      "
+    >
+      <div style="margin-left: 30px;">
+        <i
+          class="btn btn-danger"
+          style="float: right;"
+          (click)="CloseLabRequestsPage()"
+          >X</i
+        >
 
-                <!--form starts here-->
-                <!--start: patient autocomplete-->
-                <!--<div class="row" *ngIf="showPatientSearch">
+        <!--form starts here-->
+        <!--start: patient autocomplete-->
+        <!--<div class="row" *ngIf="showPatientSearch">
                     <div class="col-md-12">
                         <label class="control-label col-md-2">Search Patient<b class="color-red">  *</b><b style="float:right;">:</b></label>
                         <div class="col-md-4">
@@ -64,140 +82,229 @@
                     </div>
 
                 </div>-->
-                <!--end: patient autocomplete-->
-                <!--start: billing row-->
-                <div class="row">
-                    <div class="col-md-12">
-                        <div>
-                            <table class="table billing-table" style="background-color:initial;margin-top:10px">
-                                <thead>
-                                    <tr>
-                                        <th></th>
-                                        <th sortable-header col="department"><b>Department</b></th>
-                                        <th sortable-header col="doctorname"><b>RequestedBy Dr.</b></th>
-                                        <th sortable-header col="doctorname"><b>AssignedTo Dr.</b></th>
-                                        <th></th>
-                                        <th sortable-header col="itemnames"><b>ItemName</b></th>
-                                        <th sortable-header col="quantity"><b>Qty</b></th>
-                                        <th sortable-header col="price"><b>Price</b></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
+        <!--end: patient autocomplete-->
+        <!--start: billing row-->
+        <div class="row">
+          <div class="col-md-12">
+            <div>
+              <table
+                class="table billing-table"
+                style="background-color: initial; margin-top: 10px;"
+              >
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th sortable-header col="department"><b>Department</b></th>
+                    <th sortable-header col="doctorname">
+                      <b>RequestedBy Dr.</b>
+                    </th>
+                    <th sortable-header col="doctorname">
+                      <b>AssignedTo Dr.</b>
+                    </th>
+                    <th></th>
+                    <th sortable-header col="itemnames"><b>ItemName</b></th>
+                    <th sortable-header col="quantity"><b>Qty</b></th>
+                    <th sortable-header col="price"><b>Price</b></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    *ngFor="let row of billingTransaction.BillingTransactionItems; let i = index"
+                  >
+                    <td style="padding: 7px 0px 0px 0px;">
+                      <a
+                        class="btn btn-danger delBtn"
+                        (click)="deleteRow(i)"
+                        title="Click to remove this item"
+                        ><i class="fa fa-cross">X</i></a
+                      >
+                    </td>
+                    <td>
+                      <form
+                        [formGroup]="row.BillingTransactionItemValidator"
+                        class="bill-itemname"
+                      >
+                        <input
+                          class="form-control cstm-form-control"
+                          danphe-auto-complete
+                          title="{{row.ServiceDepartmentName}}"
+                          formControlName="ServiceDepartmentId"
+                          [ngClass]="{'border-red': row.IsDirty('ServiceDepartmentId') && !row.IsValidCheck('ServiceDepartmentId','required'), 'border-red': !row.IsValidSelDepartment }"
+                          [(ngModel)]="selectedServDepts[i]"
+                          [list-formatter]="ServiceDeptListFormatter"
+                          [source]="serviceDeptList"
+                          placeholder="Enter Department"
+                          display-property-name="ServiceDepartmentName"
+                          value-property-name="null"
+                          (focusout)="ServiceDeptOnChange(i)"
+                          onClick="this.select();"
+                          max-num-list="10"
+                        />
+                        <div
+                          class="color-red font-sm"
+                          *ngIf="row.IsDirty('ServiceDepartmentId')"
+                          [hidden]="row.IsValidSelDepartment"
+                        >
+                          Select Department from the list.
+                        </div>
+                      </form>
+                    </td>
+                    <td>
+                      <form [formGroup]="row.BillingTransactionItemValidator">
+                        <input
+                          [disabled]="disableTextBox"
+                          class="form-control cstm-form-control"
+                          danphe-auto-complete
+                          formControlName="RequestedBy"
+                          [ngClass]="{'border-red': row.IsDirty('RequestedBy') && !row.IsValidCheck('RequestedBy','required'), 'border-red': !row.IsValidSelRequestedByDr }"
+                          [(ngModel)]="selectedRequestedByDr[i]"
+                          [source]="doctorsList"
+                          [list-formatter]="DoctorListFormatter"
+                          placeholder="Enter Name"
+                          display-property-name="FullName"
+                          value-property-name="null"
+                          match-formatted="true"
+                          (focusout)="AssignRequestedByDoctor(i)"
+                          onClick="this.select();"
+                          max-num-list="10"
+                        />
+                        <div
+                          class="color-red font-sm"
+                          *ngIf="row.IsDirty('RequestedBy')"
+                          [hidden]="row.IsValidCheck('RequestedBy','required')"
+                        >
+                          Requesting Dr is mandatory.
+                        </div>
+                      </form>
+                    </td>
+                    <td>
+                      <form
+                        [formGroup]="row.BillingTransactionItemValidator"
+                        class="bill-itemname"
+                      >
+                        <input
+                          [disabled]="disableTextBox"
+                          class="form-control cstm-form-control"
+                          danphe-auto-complete
+                          formControlName="ProviderId"
+                          [ngClass]="{'border-red': row.IsDirty('ProviderId') && !row.IsValidCheck('ProviderId','required'), 'border-red': !row.IsValidSelAssignedToDr }"
+                          [(ngModel)]="selectedAssignedToDr[i]"
+                          [source]="doctorsList"
+                          [list-formatter]="DoctorListFormatter"
+                          placeholder="Enter Name"
+                          display-property-name="FullName"
+                          value-property-name="null"
+                          match-formatted="true"
+                          (focusout)="AssignSelectedDoctor(i)"
+                          onClick="this.select();"
+                          max-num-list="10"
+                        />
+                        <div
+                          class="color-red font-sm"
+                          *ngIf="row.IsDirty('ProviderId')"
+                          [hidden]="row.IsValidCheck('ProviderId','required')"
+                        >
+                          Assigned Doctor is mandatory
+                        </div>
+                      </form>
+                    </td>
+                    <td style="padding: 7px 0px 0px 0px;">
+                      <a
+                        class="btn btn-success delBtn"
+                        (click)="AddNewBillTxnItemRow(i)"
+                        title="Click to add new item"
+                        ><i class="fa fa-plus"></i
+                      ></a>
+                    </td>
+                    <td>
+                      <form
+                        [formGroup]="row.BillingTransactionItemValidator"
+                        class="bill-itemname"
+                      >
+                        <input
+                          (keyup.enter)="AddNewBillTxnItemRow(i)"
+                          class="form-control cstm-form-control"
+                          danphe-auto-complete
+                          title="{{row.ItemName}}"
+                          autocomplete="off"
+                          formControlName="ItemName"
+                          [ngClass]="{'border-red': row.IsDirty('ItemName') && !row.IsValidCheck('ItemName','required'), 'border-red': !row.IsValidSelItemName}"
+                          [(ngModel)]="selectedItems[i]"
+                          [list-formatter]="ItemsListFormatter"
+                          [source]="row.ItemList"
+                          placeholder="Enter Item Name"
+                          display-property-name="ItemName"
+                          value-property-name="null"
+                          style="width: 190px;"
+                          match-formatted="true"
+                          (focusout)="AssignSelectedItem(i)"
+                          max-num-list="20"
+                          onClick="this.select();"
+                          id="{{ 'items-box'+i }}"
+                        />
 
+                        <div
+                          class="color-red font-sm"
+                          *ngIf="row.IsDuplicateItem"
+                        >
+                          Duplicate Item not allowed
+                        </div>
+                        <div
+                          class="color-red font-sm"
+                          *ngIf="row.IsDirty('ItemName')"
+                          [hidden]="row.IsValidCheck('ItemName','required')"
+                        >
+                          Item Name is required
+                        </div>
+                      </form>
+                    </td>
+                    <td>
+                      <form [formGroup]="row.BillingTransactionItemValidator">
+                        <input
+                          [(ngModel)]="row.Quantity"
+                          style="width: 70px;"
+                          min="0"
+                          class="form-control cstm-form-control"
+                          name="quantity"
+                          type="number"
+                          onClick="this.select();"
+                          onwheel="this.blur();"
+                          formControlName="Quantity"
+                        />
+                        <div
+                          class="color-red font-sm"
+                          *ngIf="row.IsDirty('Quantity')"
+                          [hidden]="row.IsValidCheck('Quantity','invalidNumber')"
+                        >
+                          Enter valid number.
+                        </div>
+                      </form>
+                    </td>
 
-                                    <tr *ngFor="let row of billingTransaction.BillingTransactionItems; let i = index">
-
-                                        <td style="padding: 7px 0px 0px 0px;">
-                                            <a class="btn btn-danger delBtn" (click)="deleteRow(i)" title="Click to remove this item"><i class=" fa fa-cross">X</i></a>
-                                        </td>
-                                        <td>
-                                            <form [formGroup]="row.BillingTransactionItemValidator" class="bill-itemname">
-                                                <input class="form-control cstm-form-control" danphe-auto-complete
-                                                       title="{{row.ServiceDepartmentName}}"
-                                                       formControlName="ServiceDepartmentId"
-                                                       [ngClass]="{'border-red': row.IsDirty('ServiceDepartmentId') && !row.IsValidCheck('ServiceDepartmentId','required'), 'border-red': !row.IsValidSelDepartment }"
-                                                       [(ngModel)]="selectedServDepts[i]"
-                                                       [list-formatter]="ServiceDeptListFormatter"
-                                                       [source]="serviceDeptList"
-                                                       placeholder="Enter Department"
-                                                       display-property-name="ServiceDepartmentName"
-                                                       value-property-name=null
-                                                       (focusout)="ServiceDeptOnChange(i)"
-                                                       onClick="this.select();"
-                                                       max-num-list="10" />
-                                                <div class="color-red font-sm" *ngIf="row.IsDirty('ServiceDepartmentId')" [hidden]="row.IsValidSelDepartment">Select Department from the list.</div>
-                                            </form>
-                                        </td>
-                                        <td>
-                                            <form [formGroup]="row.BillingTransactionItemValidator">
-                                                <input [disabled]="disableTextBox" class="form-control cstm-form-control" danphe-auto-complete
-                                                       formControlName="RequestedBy"
-                                                       [ngClass]="{'border-red': row.IsDirty('RequestedBy') && !row.IsValidCheck('RequestedBy','required'), 'border-red': !row.IsValidSelRequestedByDr }"
-                                                       [(ngModel)]="selectedRequestedByDr[i]"
-                                                       [source]="doctorsList"
-                                                       [list-formatter]="DoctorListFormatter"
-                                                       placeholder="Enter Name"
-                                                       display-property-name="FullName"
-                                                       value-property-name=null
-                                                       match-formatted="true"
-                                                       (focusout)="AssignRequestedByDoctor(i)"
-                                                       onClick="this.select();"
-                                                       max-num-list="10" />
-                                                <div class="color-red font-sm" *ngIf="row.IsDirty('RequestedBy')" [hidden]="row.IsValidCheck('RequestedBy','required')">Requesting Dr is mandatory.</div>
-                                            </form>
-                                        </td>
-                                        <td>
-                                            <form [formGroup]="row.BillingTransactionItemValidator" class="bill-itemname">
-                                                <input [disabled]="disableTextBox" class="form-control cstm-form-control" danphe-auto-complete
-                                                       formControlName="ProviderId"
-                                                       [ngClass]="{'border-red': row.IsDirty('ProviderId') && !row.IsValidCheck('ProviderId','required'), 'border-red': !row.IsValidSelAssignedToDr }"
-                                                       [(ngModel)]="selectedAssignedToDr[i]"
-                                                       [source]="doctorsList"
-                                                       [list-formatter]="DoctorListFormatter"
-                                                       placeholder="Enter Name"
-                                                       display-property-name="FullName"
-                                                       value-property-name=null
-                                                       match-formatted="true"
-                                                       (focusout)="AssignSelectedDoctor(i)"
-                                                       onClick="this.select();"
-                                                       max-num-list="10" />
-                                                <div class="color-red font-sm" *ngIf="row.IsDirty('ProviderId')" [hidden]="row.IsValidCheck('ProviderId','required')">Assigned Doctor is mandatory</div>
-                                            </form>
-                                        </td>
-                                        <td style="padding: 7px 0px 0px 0px;">
-                                            <a class="btn btn-success delBtn" (click)="AddNewBillTxnItemRow(i)" title="Click to add new item"><i class="fa fa-plus"></i></a>
-                                        </td>
-                                        <td>
-                                            <form [formGroup]="row.BillingTransactionItemValidator" class="bill-itemname">
-                                                <input (keyup.enter)="AddNewBillTxnItemRow(i)" class="form-control cstm-form-control" danphe-auto-complete title="{{row.ItemName}}" autocomplete="off"
-                                                       formControlName="ItemName"
-                                                       [ngClass]="{'border-red': row.IsDirty('ItemName') && !row.IsValidCheck('ItemName','required'), 'border-red': !row.IsValidSelItemName}"
-                                                       [(ngModel)]="selectedItems[i]"
-                                                       [list-formatter]="ItemsListFormatter"
-                                                       [source]="row.ItemList"
-                                                       placeholder="Enter Item Name"
-                                                       display-property-name="ItemName"
-                                                       value-property-name=null
-                                                       style="width:190px"
-                                                       match-formatted="true"
-                                                       (focusout)="AssignSelectedItem(i)"
-                                                       max-num-list="20"
-                                                       onClick="this.select();"
-                                                       id="{{ 'items-box'+i }}" />
-
-                                                <div class="color-red font-sm" *ngIf="row.IsDuplicateItem">Duplicate Item not allowed</div>
-                                                <div class="color-red font-sm" *ngIf="row.IsDirty('ItemName')" [hidden]="row.IsValidCheck('ItemName','required')"> Item Name is required</div>
-                                            </form>
-                                        </td>
-                                        <td>
-                                            <form [formGroup]="row.BillingTransactionItemValidator">
-                                                <input [(ngModel)]="row.Quantity"
-                                                       style="width:70px" min="0"
-                                                       class="form-control cstm-form-control "
-                                                       name="quantity"
-                                                       type="number"
-                                                       onClick="this.select();"
-                                                       onwheel="this.blur();"
-                                                       formControlName="Quantity">
-                                                <div class="color-red font-sm" *ngIf="row.IsDirty('Quantity')" [hidden]="row.IsValidCheck('Quantity','invalidNumber')">Enter valid number.</div>
-                                            </form>
-                                        </td>
-
-                                        <td>
-                                            <form [formGroup]="row.BillingTransactionItemValidator">
-                                                <input [(ngModel)]="row.Price"
-                                                       style="width:90px"
-                                                       min="0"
-                                                       formControlName="Price"
-                                                       onClick="this.select();"
-                                                       onwheel="this.blur();"
-                                                       class="form-control cstm-form-control" name="price"
-                                                       type="number"
-                                                       value="row.Price">
-                                                <div class="color-red font-sm" *ngIf="row.IsDirty('Price')" [hidden]="row.IsValidCheck('Price','invalidNumber')">Enter valid number.</div>
-                                            </form>
-                                        </td>
-                                        <!--<td>
+                    <td>
+                      <form [formGroup]="row.BillingTransactionItemValidator">
+                        <input
+                          [(ngModel)]="row.Price"
+                          style="width: 90px;"
+                          min="0"
+                          formControlName="Price"
+                          onClick="this.select();"
+                          onwheel="this.blur();"
+                          class="form-control cstm-form-control"
+                          name="price"
+                          type="number"
+                          value="row.Price"
+                        />
+                        <div
+                          class="color-red font-sm"
+                          *ngIf="row.IsDirty('Price')"
+                          [hidden]="row.IsValidCheck('Price','invalidNumber')"
+                        >
+                          Enter valid number.
+                        </div>
+                      </form>
+                    </td>
+                    <!--<td>
                                             <form [formGroup]="row.BillingTransactionItemValidator">
                                                 <input [(ngModel)]="row.DiscountPercent"
                                                       onClick="this.select();"
@@ -222,9 +329,8 @@
                                         <td>
                                             <input [(ngModel)]="row.TotalAmount" style="width:90px" disabled class="form-control cstm-form-control" name="total" type="number">
                                         </td>-->
-
-                                    </tr>
-                                    <!--<tr>
+                  </tr>
+                  <!--<tr>
                                         <th></th>
                                         <th></th>
                                         <th></th>
@@ -241,12 +347,11 @@
                                         <th></th>
                                         <td colspan="3" class="text-capitalize">In Words : <b>{{billingTransaction.TotalAmount | NumberInWords}} </b>Only.</td>
                                     </tr>-->
-                                </tbody>
-                            </table>
-
-                        </div>
-                    </div>
-                    <!--<div class="col-md-offset-4">
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <!--<div class="col-md-offset-4">
 
                         <div *ngIf="billingTransaction !=null">
 
@@ -293,22 +398,27 @@
                             </table>
                         </div>
                     </div>-->
+        </div>
+        <!--end: billing row-->
+        <!--form ends here-->
 
-                </div>
-                <!--end: billing row-->
-                <!--form ends here-->
+        <div class="form-group">
+          <div class="col-sm-offset-5 col-sm-5">
+            <input
+              type="submit"
+              class="btn btn-success"
+              [disabled]="loading"
+              value="Request"
+              (click)="loading=true;SubmitBillingTransaction();"
+            />
+          </div>
+        </div>
 
-                <div class="form-group">
-                    <div class="col-sm-offset-5 col-sm-5">
-                        <input type="submit" class="btn btn-success" [disabled]="loading" value="Request" (click)="loading=true;SubmitBillingTransaction();" />
-                    </div>
-                </div>
-
-                <!--<div class="row" *ngIf="selectedPatient && patBillHistory">
+        <!--<div class="row" *ngIf="selectedPatient && patBillHistory">
                     Deposit Balance Amount : <b>{{patBillHistory.BalanceAmount}}</b>
                 </div>-->
-                <!--start: deposit pop up-->
-                <!--<div class="popup-static portlet box portlet-fullscreen" *ngIf="showIpBillingWarningBox">
+        <!--start: deposit pop up-->
+        <!--<div class="popup-static portlet box portlet-fullscreen" *ngIf="showIpBillingWarningBox">
                     <div class="portlet-body form">
                         <div class="modelbox-div" style="margin-left:30%;margin-right:25%;margin-top:2%">
                             <div class="row">
@@ -331,9 +441,8 @@
                         </div>
                     </div>
                 </div>-->
-                <!--end: deposit pop up-->
-
-            </div>
-        </div>
+        <!--end: deposit pop up-->
+      </div>
     </div>
+  </div>
 </div>

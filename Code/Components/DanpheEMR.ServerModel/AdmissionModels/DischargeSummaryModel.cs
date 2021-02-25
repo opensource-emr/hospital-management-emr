@@ -54,5 +54,13 @@ namespace DanpheEMR.ServerModel
         public virtual List<DischargeSummaryMedication> DischargeSummaryMedications { get; set; }
         [NotMapped]
         public virtual List<BabyBirthDetailsModel> BabyBirthDetails { get; set; }
+
+        public int? NotesId { get; set; }
+        public string ChiefComplaint { get; set; }
+        public string PendingReports { get; set; }
+        public string HospitalCourse { get; set; }
+        public string PresentingIllness { get; set; }
+        public string ProcedureNts { get; set; }
+        public string SelectedImagingItems { get; set; }
     }
 }

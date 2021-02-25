@@ -2,7 +2,7 @@
 import { RouterOutlet, RouterModule } from '@angular/router'
 import { SecurityService } from "../../security/shared/security.service"
 @Component({
-    templateUrl: '../../view/pharmacy-view/Stock/StockMain.html' //"/PharmacyView/StockMain"
+    templateUrl: "./stock-main.html"
 })
 export class StockMainComponent {
     validRoutes: any;

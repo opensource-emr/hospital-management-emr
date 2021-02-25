@@ -13,6 +13,7 @@ import { QuotationUpLoadFileModel } from '../shared/quotation-upload-file.model'
 import { GoodReceiptService } from '../shared/good-receipt/good-receipt.service';
 import { VendorMaster } from '../shared/vendor-master.model';
 import { RequestForQuotationModel } from '../shared/request-for-quotaion.model';
+import { CoreService } from '../../core/shared/core.service';
 
 @Component({
   templateUrl: "../../view/inventory-view/RequestForQuotation.html"  
@@ -41,18 +42,20 @@ export class RequestForQuotationComponent {
   public RFQList: any;
 
   @ViewChild("fileInput") fileInput;
+    msgBoxServ: any;
 
   constructor(public inventoryBLService: InventoryBLService,
     public inventoryService: InventoryService,
     public changeDetectorRef: ChangeDetectorRef,
     public messageBoxService: MessageboxService,
     public securityService: SecurityService,
+    public coreService: CoreService,
     public goodReceiptService: GoodReceiptService,
     public router: Router) {
     this.ReqForQuotationGridColumns = GridColumnSettings.ReqQuotationList;
     this.LoadPOListByStatus();
     this.LoadVendorList();
-
+    this.GetInventoryBillingHeaderParameter();
   }
 
   closeQuotationUpload() {
@@ -164,12 +167,12 @@ export class RequestForQuotationComponent {
         this.RFQList = [];
         this.RFQList = $event.Data;
         this.showQuotationItmsPage = true;
-        this.inventoryService._ReqForQuotationId = $event.Data.ReqForQuotationId
+        this.inventoryService.ReqForQuotationId = $event.Data.ReqForQuotationId
       }
         break;
       case "AnalyseQuotation": {
         this.router.navigate(['/Inventory/ProcurementMain/QuotationAnalysis']);
-        this.inventoryService._ReqForQuotationId = $event.Data.ReqForQuotationId
+        this.inventoryService.ReqForQuotationId = $event.Data.ReqForQuotationId
 
       }
         break;
@@ -180,7 +183,7 @@ export class RequestForQuotationComponent {
         break;
       case "QuotationList": {
         this.showSelectedQuotation = true;
-        this.inventoryService._ReqForQuotationId = $event.Data.ReqForQuotationId;
+        this.inventoryService.ReqForQuotationId = $event.Data.ReqForQuotationId;
       }
         break;
       default:
@@ -260,8 +263,22 @@ export class RequestForQuotationComponent {
     var printContents = document.getElementById("printpage").innerHTML;
     popupWinindow = window.open('', '_blank', 'width=800,heigth=600,scrollbars=no,menubar=no,toolbar=no,location=no,status=no,titlebar=no');
     popupWinindow.document.open();
-    popupWinindow.document.write('<html><head><link rel="stylesheet" type="text/css" href="../../../themes/theme-default/ReceiptList.css" /></head><body onload="window.print()">' + printContents + '</body></html>');
+    popupWinindow.document.write(`<html><head><link rel="stylesheet" type="text/css" href="../../../themes/theme-default/ReceiptList.css" /></head><body onload="window.print()">`+
+      `<link rel="stylesheet" type="text/css" href="../../../../../../themes/theme-default/DanpheStyle.css" />` +
+      `<link rel="stylesheet" type="text/css" href="../../../../../../themes/theme-default/DanphePrintStyle.css" />`+ printContents +
+      `</body></html>`);
     popupWinindow.document.close();
+  }
+
+  public headerDetail: { hospitalName, address, email, PANno, tel, DDA };
+
+  //Get Pharmacy Billing Header Parameter from Core Service (Database) assign to local variable
+  GetInventoryBillingHeaderParameter() {
+    var paramValue = this.coreService.Parameters.find(a => a.ParameterName == 'Inventory BillingHeader').ParameterValue;
+    if (paramValue)
+      this.headerDetail = JSON.parse(paramValue);
+    else
+      this.msgBoxServ.showMessage("error", ["Please enter parameter values for BillingHeader"]);
   }
 }
 

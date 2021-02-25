@@ -1,4 +1,4 @@
-﻿<style>
+<style>
     .bg-red {
         color: green !important;
     }
@@ -7,10 +7,13 @@
         color: blue !important;
     }
 </style>
+
+
+
 <div class="row">
-    <div class="col-md-12 col-xs-12" *ngIf="lastDBBackupDetail!=null">
-        <div class="col-md-5 col-xs-12 col-sm-12" style="margin:10px; border:solid 1px black; color:rgb(52, 73, 94)">
-            <h4><b><u>Earlier Backup Detail &You can Restore It</u></b></h4>
+    <div class="col-md-12 col-xs-12">
+        <div class="col-md-5 col-xs-12 col-sm-12" *ngIf="lastDBBackupDetail != null"style="margin:10px; border:solid 1px black; color:rgb(52, 73, 94)">
+            <h4><b><u>Database Information for Backup</u></b></h4>
             <h5><b>Database Name:</b>&nbsp; &nbsp;{{lastDBBackupDetail.DatabaseName}}</h5>
             <h5><b>Database Version:</b>&nbsp;&nbsp;{{lastDBBackupDetail.DatabaseVersion}}</h5>
             <h5><b>Backup File Name:</b>&nbsp;&nbsp;{{lastDBBackupDetail.FileName}}</h5>
@@ -22,12 +25,12 @@
                 <i class="fa fa-database"></i> Take Database Backup
             </button>
             <span class="hidden-sm"><br /><br /></span>
-            <div  [rbac-permission]="{'name':'systemadmin-restore-database-btn','action':'hidden'}">
+            <div  [rbac-permission]="{'name':'systemadmin-restore-database-btn','actionOnInvalid':'hidden'}">
              <button class="btn btn-primary" (click)="PostRestoreDatabase()" style="width: 181px;" [disabled]="loading">
                 <i class="fa fa-database"></i> <i class="fa fa-mail-reply-all"></i> Restore Database
             </button> </div>
             <span class="hidden-sm"><br /><br /></span>
-            <div class="btn-group">
+            <div [rbac-permission]="{'name':'sysadmin-btn-dbexport', 'actionOnInvalid':'hidden'}" class="btn-group">
                 <button class="btn btn-primary dropdown-toggle" type="button" [disabled]="loading" data-toggle="dropdown" aria-expanded="false">
                     <i class="fa fa-share-square"></i> Database Export To
                     <i class="fa fa-angle-down"></i>
@@ -55,9 +58,9 @@
         </div>
     </div>
     <div class="col-md-12 col-xs-12">
-        <div class="caption">
-            <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
-            <span class="caption-subject font-blue bold uppercase">
+        <div class="caption custom-caption">
+            <i class="glyphicon glyphicon-asterisk"></i>
+            <span class="caption-subject" style="text-transform: uppercase;">
                 <b>Database Backup/Restore Details</b>
             </span>
         </div>

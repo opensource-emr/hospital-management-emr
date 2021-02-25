@@ -1,7 +1,7 @@
-﻿import { LabTestRequisition } from "../../labs/shared/lab-requisition.model";
+import { LabTestRequisition } from "../../labs/shared/lab-requisition.model";
 import { ImagingItemRequisition } from "../../radiology/shared/imaging-item-requisition.model";
 import { PHRMPrescriptionItem } from "../../pharmacy/shared/phrm-prescription-item.model";
-import { AssessmentAndPlanModel } from "./assessment-and-plan.model";
+import { AssessmentAndPlanModel } from "../../clinical-notes/shared/assessment-and-plan.model";
 
 export class IcdWithOrdersViewModel {
     public DiagnosisId: number = 0;
@@ -22,5 +22,6 @@ export class IcdWithOrdersViewModel {
     public ModifiedBy: number = null;
     public CreatedOn: string = null;
     public ModifiedOn: string = null;
-
+    public IsActive: boolean = true;
+    
 }

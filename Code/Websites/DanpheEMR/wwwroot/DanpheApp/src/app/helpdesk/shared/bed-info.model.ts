@@ -1,4 +1,4 @@
-﻿import {
+import {
     NgForm,
     FormGroup,
     FormControl,
@@ -8,7 +8,7 @@
 } from '@angular/forms'
 import * as moment from 'moment/moment';
 
-export class BedInfo {
+export class HlpDskBedInfo {
     public BedNumber: number = 0;
     public BedTypeName: string = null;
     public Price: number = 0;

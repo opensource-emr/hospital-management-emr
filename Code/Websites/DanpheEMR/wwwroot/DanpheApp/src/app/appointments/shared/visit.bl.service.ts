@@ -13,6 +13,7 @@ import * as moment from 'moment/moment';
 import { BillingTransaction } from '../../billing/shared/billing-transaction.model';
 import { BillInvoiceReturnModel } from '../../billing/shared/bill-invoice-return.model';
 import { QuickVisitVM } from './quick-visit-view.model';
+import { ENUM_BillingStatus, ENUM_AppointmentType, ENUM_VisitType, ENUM_VisitStatus } from '../../shared/shared-enums';
 
 @Injectable()
 export class VisitBLService {
@@ -35,11 +36,14 @@ export class VisitBLService {
   }
 
   public GetPatientVisits_Today(patientId: number) {
-    return this.visitDLService.GetPatientVisitList_Today(patientId)
+    return this.visitDLService.GetPatientVisitList_Today(patientId )
       .map(res => res);
   }
 
-
+  public GetPatientVisitEarlierList(patientId: number, followup: boolean) {
+    return this.visitDLService.GetPatientVisitEarlierList(patientId, followup)
+      .map(res => res);
+  }
 
   public GetVisitList(claimCode: string) {
     return this.visitDLService.GetVisitList(claimCode)
@@ -56,15 +60,15 @@ export class VisitBLService {
   }
   //post new visit
   public AddVisit(currentVisit: Visit) {
-    currentVisit.VisitStatus = "initiated";
+    currentVisit.VisitStatus = ENUM_VisitStatus.initiated;// "initiated";
     var tempVisitModel = _.omit(currentVisit, ['VisitValidator']);
     return this.visitDLService.PostVisit(tempVisitModel)
       .map(res => res);
   }
   //get visit list according to status
-  public GetVisitsByStatus(status: string, maxlimitdays: number) {
+  public GetVisitsByStatus(status: string, maxlimitdays: number,searchTxt) {
     //var status = "initiated";
-    return this.visitDLService.GetVisitsByStatus(status, maxlimitdays)
+    return this.visitDLService.GetVisitsByStatus(status, maxlimitdays,searchTxt)
       .map(res => res);
   }
 
@@ -102,8 +106,8 @@ export class VisitBLService {
   }
 
   //once visit is created updating the appointment status
-  public UpdateAppointmentStatus(appointmentId: number, status: string) {
-    return this.appointmentDLService.PutAppointmentStatus(appointmentId, status)
+  public UpdateAppointmentStatus(appointmentId: number, status: string, providerId:number, providerName:string) {
+    return this.appointmentDLService.PutAppointmentStatus(appointmentId, status, providerId, providerName)
       .map((responseData) => {
         return responseData;
       });
@@ -143,8 +147,8 @@ export class VisitBLService {
     visit.VisitCode = null;
     visit.IsVisitContinued = false;
     visit.IsActive = true;
-    visit.BillingStatus = 'paid';
-    visit.VisitStatus = 'initiated';
+    visit.BillingStatus = ENUM_BillingStatus.paid;// 'paid';
+    visit.VisitStatus = ENUM_VisitStatus.initiated;// 'initiated';
     visit.VisitDuration = 0;
     //added createdon and createdby for referral visit--sud:19Aug
     visit.CreatedOn = moment().format('YYYY-MM-DD HH:mm:ss');
@@ -230,13 +234,15 @@ export class VisitBLService {
 
 
   //Get Matching Patient Details by FirstName,LastName,PhoneNumber for showing registered matching patient on Visit Creation time
-  public GetExistedMatchingPatientList(FirstName, LastName, PhoneNumber, IsInsurance = false, IMISCode = null) {
-    return this.patientDLService.GetExistedMatchingPatientList(FirstName, LastName, PhoneNumber, IsInsurance,IMISCode)
+  public GetExistedMatchingPatientList(FirstName, LastName, PhoneNumber, Age, Gender, IsInsurance = false, IMISCode = null) {
+    return this.patientDLService.GetExistedMatchingPatientList(FirstName, LastName, PhoneNumber, Age, Gender, IsInsurance,IMISCode)
       .map(res => { return res });
   }
   //ashim: 17Aug'2018
   //this function is used in return visit billing during transfer visit case.
   public PostReturnTransaction(billingTransaction: BillingTransaction, returnRemarks: string) {
+    let input = new FormData();
+   
     let returnReceipt = new BillInvoiceReturnModel();
     returnReceipt.RefInvoiceNum = billingTransaction.InvoiceNo;
     returnReceipt.PatientId = billingTransaction.PatientId;
@@ -251,7 +257,13 @@ export class VisitBLService {
     returnReceipt.IsActive = true;
     returnReceipt.InvoiceCode = billingTransaction.InvoiceCode;
     returnReceipt.TaxId = billingTransaction.TaxId;
-    return this.billingDLService.PostReturnReceipt(returnReceipt)
+    returnReceipt.Tender = billingTransaction.Tender;
+
+    var data = JSON.stringify(returnReceipt);
+    input.append("billInvReturnModel", data);
+
+
+    return this.billingDLService.PostReturnReceipt(input)
       .map(res => res);
   }
   public GetHealthCardBillItem() {
@@ -312,6 +324,13 @@ export class VisitBLService {
     return this.visitDLService.GetDoctorOldPatientPrices();
   }
 
+  // getting department list 
+  public GetDepartment() {
+    return this.appointmentDLService.GetDepartment()
+      .map(res => { return res })
+
+  }
+
   //sud: 31Jul'19-For Old Patient Opd
   public GetDepartmentOldPatientPrices() {
     return this.visitDLService.GetDepartmentOldPatientPrices();
@@ -321,6 +340,9 @@ export class VisitBLService {
     return this.visitDLService.GetVisitDoctors();
   }
 
+  public GetBillItemList() {
+    return this.visitDLService.GetBillItemList();
+  }
   public PostFreeFollowupVisit(fwUpVisit: Visit, parentVisitId: number) {
 
     let fwUpVisToPost = new Visit();
@@ -328,15 +350,15 @@ export class VisitBLService {
     fwUpVisToPost.ProviderId = fwUpVisit.ProviderId;
     fwUpVisToPost.ProviderName = fwUpVisit.ProviderName;
     fwUpVisToPost.DepartmentId = fwUpVisit.DepartmentId;
-    fwUpVisToPost.AppointmentType = "followup";
-    fwUpVisToPost.VisitType = "outpatient";
-    fwUpVisToPost.VisitStatus = "Initiated";
+    fwUpVisToPost.AppointmentType = ENUM_AppointmentType.followup;
+    fwUpVisToPost.VisitType = ENUM_VisitType.outpatient;
+    fwUpVisToPost.VisitStatus = ENUM_VisitStatus.initiated;
     fwUpVisToPost.ParentVisitId = parentVisitId;
 
     fwUpVisToPost.VisitDate = moment().format('YYYY-MM-DD');
     fwUpVisToPost.VisitTime = moment().add((5 - moment().minute() % 5), 'minutes').format('HH:mm');
     fwUpVisToPost.IsActive = true;
-    fwUpVisToPost.BillingStatus = 'paid';
+    fwUpVisToPost.BillingStatus = ENUM_BillingStatus.free;//sud:9Aug
     fwUpVisToPost.VisitDuration = 0;
 
     //added createdon and createdby for fwup visit-sud:26une'19

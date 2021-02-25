@@ -5,7 +5,7 @@ import * as _ from 'lodash';
 @Injectable()
 export class HelpDeskDLService {
    public options =  {
-        headers: new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' })}; 
+        headers: new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' })};
 	constructor(public http: HttpClient) { }
 
     //get Bedinfo using status.
@@ -23,4 +23,12 @@ export class HelpDeskDLService {
         return this.http.get<any>("/api/Helpdesk?&reqType=getWardinfo"
             + "&status=" + status, this.options);
     }
+
+  GetBedFeature() {
+    return this.http.get<any>('/api/Helpdesk?&reqType=getBedFeature', this.options);
+  }
+
+  GetBedPatientInfo() {
+    return this.http.get<any>('/api/Helpdesk?&reqType=getBedPatientInfo', this.options);
+  }
 }

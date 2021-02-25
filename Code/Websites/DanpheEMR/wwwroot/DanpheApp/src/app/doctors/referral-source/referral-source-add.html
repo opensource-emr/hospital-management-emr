@@ -1,0 +1,97 @@
+<style>
+  .cstm-add-heading
+  {
+    font-size: 18px !important;
+  }
+
+  .right-text{
+    color:white;
+    padding-top: 0px;
+  }
+
+  .left-box{
+      padding-left: 0px;
+  }
+  .margin-btn{
+    margin-bottom: 10px;
+  }
+
+</style>
+
+<div *ngIf="showReferralSourceBox && CurrentReferralSource && CurrentReferralSource.ReferralSourceValidator" class="prob-entry" style="padding: 10px; background: #006687;">
+  <form [formGroup]="CurrentReferralSource && CurrentReferralSource.ReferralSourceValidator" class="form-horizontal">
+    <div style="padding: 3px" class="cstm-close" (click)="CloseReferralSourceBox(0)">
+      <a><i class="fa fa-close"></i> </a>
+    </div>
+    <h3 class="cstm-add-heading">{{CurrentReferralSource.ReferralSourceId ? 'Update' : 'Add'}} Referral Source</h3>
+    <div class="col-md-12" style="padding-left: 0px;">
+      <div class="margin-btn form-group">
+        <label class="control-label right-text col-md-10">Newspaper<b style="float:right;">:</b></label>
+        <div class="left-box col-md-2">
+          <input type="checkbox" name="Newspaper" ngDefaultControl [ngModelOptions]="{standalone: true}" [(ngModel)]="CurrentReferralSource.Newspaper" value="Newspaper">
+        </div>
+      </div>
+      <div class="margin-btn form-group">
+        <label class="control-label right-text col-md-10" >Doctor<b style="float:right;">:</b></label>
+        <div class="left-box col-md-2">
+          <input type="checkbox" name="Doctor" ngDefaultControl [ngModelOptions]="{standalone: true}" [(ngModel)]="CurrentReferralSource.Doctor" value="Doctor">
+        </div>
+      </div>
+      <div class="margin-btn form-group">
+        <label class="control-label right-text col-md-10" >Radio<b style="float:right;">:</b></label>
+        <div class="left-box col-md-2">
+          <input type="checkbox" name="Radio" ngDefaultControl [ngModelOptions]="{standalone: true}" [(ngModel)]="CurrentReferralSource.Radio" value="Radio">
+        </div>
+      </div>
+      <div class="margin-btn form-group">
+        <label class="control-label right-text col-md-10" >Web Page <b style="float:right;">:</b></label>
+        <div class="left-box col-md-2">
+          <input type="checkbox" name="WebPage" ngDefaultControl [ngModelOptions]="{standalone: true}" [(ngModel)]="CurrentReferralSource.WebPage" value="WebPage">
+        </div>
+      </div>
+      <div class="margin-btn form-group">
+        <label class="control-label right-text col-md-10" >Staff <b style="float:right;">:</b></label>
+        <div class="left-box col-md-2">
+          <input type="checkbox" name="Staff" ngDefaultControl [ngModelOptions]="{standalone: true}" [(ngModel)]="CurrentReferralSource.Staff" value="Staff">
+        </div>
+      </div>
+      <div class="margin-btn form-group">
+        <label class="control-label right-text col-md-10" >Friends and Family<b style="float:right;">:</b></label>
+        <div class="left-box col-md-2">
+          <input type="checkbox" name="FriendAndFamily" ngDefaultControl [ngModelOptions]="{standalone: true}" [(ngModel)]="CurrentReferralSource.FriendAndFamily" value="FriendAndFamily">
+        </div>
+      </div>
+      <div class="margin-btn form-group">
+        <label class="control-label right-text col-md-10" >TV<b style="float:right;">:</b></label>
+        <div class="left-box col-md-2">
+          <input type="checkbox" name="TV" ngDefaultControl [(ngModel)]="CurrentReferralSource.TV" [ngModelOptions]="{standalone: true}" value="TV">
+        </div>
+      </div>
+      <div class="margin-btn form-group">
+        <label class="control-label right-text col-md-10" >Magazine<b style="float:right;">:</b></label>
+        <div class="left-box col-md-2">
+          <input type="checkbox" name="Magazine" ngDefaultControl [(ngModel)]="CurrentReferralSource.Magazine" [ngModelOptions]="{standalone: true}" value="Magazine">
+        </div>
+      </div>
+      <div class="margin-btn form-group">
+        <label class="control-label right-text col-md-10" >Unknown<b style="float:right;">:</b></label>
+        <div class="left-box col-md-2">
+          <input type="checkbox" name="Unknown" ngDefaultControl [(ngModel)]="CurrentReferralSource.Unknown" [ngModelOptions]="{standalone: true}" value="Unknown">
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="col-md-12">
+          <label class="control-label">Others</label>
+        </div>
+        <div class="col-md-12">
+          <textarea type="text" style="" maxlength="100" [(ngModel)]="CurrentReferralSource.Others" [ngModelOptions]="{standalone: true}"></textarea>
+
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <button (click)="SaveReferralSource()" [disabled]="loading" class="btn btn-primary">{{CurrentReferralSource.ReferralSourceId ? 'Update' : 'Add' }}</button>
+    </div>
+  </form>
+</div>

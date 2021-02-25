@@ -1,0 +1,226 @@
+<style>
+.tabbable-custom {
+	padding: 0 0 15px 0;
+}
+.ipd-title .btn-default {
+	margin-right: 0;
+	margin-left: 0 !important;
+	
+}
+	.danphe-tab-wrapper .ipd-title {
+		padding-bottom: 0;
+		position: relative;
+		
+	}
+	.danphe-tab-wrapper .ipd-title .btn {
+		background-image: linear-gradient(to top, #e6e9f0 0%, #eef1f5 100%);
+    border: 1px solid #8c8c8e !important;
+    color: #696969;
+    font-weight: normal;
+    font-size: 14px;
+    padding: 7px 25px;
+    margin: 0 -1px 0px 0;
+    border-radius: 7px 7px 0 0 !important;
+    /* border-left: none;*/
+	}
+	.danphe-tab-wrapper .ipd-title .btn-primary {
+		background-image: linear-gradient(to top, #48c6ef 0%, #6f86d6 100%);
+    border: 1px solid #5c79bf !important;
+    border-bottom: none !important;
+    color: #fff;
+	}
+	.danphe-tab-wrapper .ipd-title:before {
+		content: "";
+    width: 100%;
+    height: 5px;
+    display: block;
+    position: absolute;
+    top: auto;
+    bottom: -4px;
+    left: 0;
+    background: #48c5ee;
+    border-bottom: 1px solid #49a0ca;
+    border-left: 1px solid #446ea0;
+		
+	}
+</style>
+<!--Start : Title Tabs of Admitted Patient and Discharged Patient-->
+<div class="danphe-tab-wrapper">
+<!--
+	<ul class="nav nav-tabs">
+      <li role="presentation" class=""><a class="btn btn-default"
+        role="button" (click)="DischargeListTabClicked()">Discharged Patients</a></li>
+      <li role="presentation" class=""><a class="btn btn-default" (click)="AdmittedListTabClicked()"> Admitted Patients</a></li>
+    </ul> 
+-->
+  <div class="well ipd-title">
+    <div class="row clearfix">
+      <div class="col-md-6 col-sm-6">
+        <div class="left">
+          <button [ngClass]="showDischargedList?selectedClassObj.sel:selectedClassObj.dis"
+                  (click)="DischargeListTabClicked()"> Discharged Patients </button>
+        </div>
+        <div class="middle">
+          <button style="margin-left:10px!important;"
+                  [ngClass]="showAdmittedList?selectedClassObj.sel:selectedClassObj.dis"
+                  (click)="AdmittedListTabClicked()"> Admitted Patients </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--End : Title Tabs of Admitted Patient and Discharged Patient--> 
+  <!--Start : body of collapse Tabs-->	
+  <div>
+    <div *ngIf="showDischargedList">
+      <div class="tabbable-custom" >
+        <div class="tab-content">           
+          <!--Start:Search and Date contorls 
+          <danphe-cust-date (onDateChange)="onDateChangeDischargedList($event)" [rangeType]="dateRangeDischargedList"></danphe-cust-date>
+          <br>
+          End:Search and Date contorls -->
+          
+          <div>
+            <div class="row">
+              <div class="col-lg-12 col-sm-12">
+                <danphe-grid [grid-colDefaults]="dischargedListGridColumns" [grid-data]="dischargedList" (grid-actions)="DischargedListGridActions($event)"
+                  [show-CustomDate]="true" (onDateChange)="onDateChangeDischargedList($event)" [rangeType]="dateRangeDischargedList" [NepaliDateInGridParams]="NepaliDateInGridSettings"> </danphe-grid>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="showAdmittedList">
+      <div class="tabbable-custom">
+        <div class="tab-content"> 
+          <!--Start:Search and Date contorls
+          <danphe-cust-date (onDateChange)="onDateChangeAdmittedList($event)" [rangeType]="dateRangeAdmittedList"></danphe-cust-date>
+          <br>
+          End:Search and Date contorls -->
+          
+          <div>
+            <div class="row">
+              <div class="col-lg-12 col-sm-12">
+                <danphe-grid [grid-colDefaults]="dischargeSummaryAdmittedListGridColumns" [grid-data]="dischargeSummaryAdmittedList" (grid-actions)="DischargeSummaryAdmittedListGridActions($event)" [NepaliDateInGridParams]="NepaliDateForAdmittedPatientsInGridSettings"> </danphe-grid>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--End : body of collapse Tabs-->
+  
+  <div *ngIf="showDischargeSummaryAdd">
+    <button class="btn btn-primary btn-sm" (click)="HideDischargeSummary()"> <i class="fa fa-backward"></i>&nbsp;&nbsp;&nbsp;Back </button>
+    <discharge-summary-add [selectedDischarge]="selectedDischarge"
+                           [fromClinical]="false"
+                           [showDischargeSummary]="showDischargeSummaryAdd"></discharge-summary-add>
+  </div>
+  <div *ngIf="showSummaryView">
+    <button class="btn btn-primary btn-sm" (click)="HideDischargeSummary()"> <i class="fa fa-backward"></i>&nbsp;&nbsp;&nbsp;Back </button>
+    <discharge-summary-view [selectedADT]="selectedDischarge"
+                            [showSummaryView]="showSummaryView"></discharge-summary-view>
+  </div>
+  <!--<div class="popup-static portlet box portlet-fullscreen" *ngIf="IsCancelDischargePage">
+    <div class="portlet-body form" style="background-color:white">
+      <div class="form-body">
+        <div class="col-md-12 form-horizontal">
+          <div class="col-md-3 hidden-xs hidden-sm" style="margin-right: 24px;"> </div>
+          <div class="col-md-6 col-sm-10 col-xs-10 modelbox-div" style="margin-right: 24px;">
+            <div class="col-md-12">
+              <div class="caption" style="color:blue;">
+                <h3> <span>Are you Sure Want to Cancel Discharge???</span> </h3>
+              </div>
+              <a style="float:right; margin-top:-32px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+              <hr />
+              <div>
+                <label><b>Discharged Date :</b> </label>
+                <span> {{selectedDischarge.DischargedDate}}</span><br>
+
+                <form [formGroup]="selectedDischargeCancel.DischargeCancelValidator">
+                  <div class="form-group">
+                    <label class="control-label col-md-4"><b>Cancel Discharge Note</b><b class="color-red">*</b><b style="float:right;">:</b></label>
+                    <div class="col-md-7">
+                      <input class="form-control" maxlength="300" type="text"
+                             [(ngModel)]="selectedDischargeCancel.DischargeCancelNote"
+                             id="DischargeCancelNote"
+                             formControlName="DischargeCancelNote"
+                             placeholder="Discharge Cancel Description" />
+
+                      <span class="color-red font-sm" *ngIf="selectedDischargeCancel.IsDirty('DischargeCancelNote')" [hidden]="selectedDischargeCancel.IsValidCheck('DischargeCancelNote','maxlength')"> Length is not proper</span>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+            <br />
+            <br />
+            <div class="col-md-12">
+              <div class="col-md-2" style="margin-right: 24px;padding-top: 10px;"> </div>
+              <div class="col-md-6 form-horizontal" style="margin-right: 24px;">
+                <div class="form-actions">
+                  <input type="button" class="btn btn-primary" (click)="CancelDischarge();" style="margin-left:80px;" id="Approve" value="Cancel Discharge" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>-->
+  <div class="popup-static portlet box portlet-fullscreen" *ngIf="IsCancelDischargePage">
+    <div class="portlet-body form">
+      <div class="modelbox-div" style="margin-left:30%;margin-right:25%;margin-top:2%">
+        <div style="margin:20px;">
+          <table class="table table-striped text-center">
+            <tr>
+              <td><b>{{selectedDischarge.Name}}</b></td>
+              <td> Inpatient: <b>{{selectedDischarge.VisitCode}}</b></td>
+            </tr>
+            <tr>
+              <td>Hospital No: {{selectedDischarge.PatientCode}}</td>
+              <td> Age/Sex :{{selectedDischarge.DateOfBirth | DanpheDateTime:'age'}} / {{selectedDischarge.Gender}} </td>
+            </tr>
+          </table>
+          <div class="text-center"> <strong style="text-align:center;color:red">Are you Sure Want to Cancel Discharge???</strong><br />
+          </div>
+          <a style="float:right;margin-top: -150px;margin-right: -40px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+          <hr />
+          <div> </div>
+          <table class="table">
+            <tr>
+              <td>Admission Date:</td>
+              <td> {{selectedDischarge.AdmittedDate | DanpheDateTime:'format':'YYYY-MM-DD'}} A.D ({{selectedDischarge.AdmittedDate | nepaliDate:'format':'YYYY-MM-DD'}} B.S)</td>
+            </tr>
+            <tr>
+              <td> Discharge Date  :</td>
+              <td><span> {{selectedDischarge.DischargedDate  | DanpheDateTime:'format':'YYYY-MM-DD'}} A.D ({{selectedDischarge.DischargedDate | nepaliDate:'format':'YYYY-MM-DD'}} B.S) </span></td>
+            </tr>
+            <!--<tr>
+              <td> Discharge Date <b>(BS)</b> :</td>
+              <td><np-calendar ngDefaultControl [showTime]="true" [display]="single-line" [(ngModel)]="selectedDischarge.DischargedDate"> </np-calendar></td>
+            </tr>-->
+          </table>
+          <form [formGroup]="selectedDischargeCancel.DischargeCancelValidator">
+            <div class="form-group">
+              <label class="control-label col-md-4"><b>Cancel Discharge Note</b><b class="color-red">*</b><b style="float:right;">:</b></label>
+              <div class="col-md-7">
+                <input class="form-control" maxlength="300" type="text"
+                       [(ngModel)]="selectedDischargeCancel.DischargeCancelNote"
+                       id="DischargeCancelNote"
+                       formControlName="DischargeCancelNote"
+                       placeholder="Discharge Cancel Description" />
+                <!-- <span class="color-red font-sm" [hidden]="selectedDischargeCancel.IsValidCheck('DischargeCancelNote','required') || !(selectedDischargeCancel.IsDirty('DischargeCancelNote'))">Cancel Reason is required</span> --> 
+                <span class="color-red font-sm" *ngIf="selectedDischargeCancel.IsDirty('DischargeCancelNote')" [hidden]="selectedDischargeCancel.IsValidCheck('DischargeCancelNote','maxlength')"> Length is not proper</span> </div>
+            </div>
+          </form>
+          <hr />
+          <div class="text-center">
+            <input type="button" class="btn btn-primary" (click)="CancelDischarge();" style="margin-top: 35px;" id="Approve" value="Cancel Discharge" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

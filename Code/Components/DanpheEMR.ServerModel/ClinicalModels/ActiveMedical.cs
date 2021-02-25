@@ -20,8 +20,9 @@ namespace DanpheEMR.ServerModel
         public DateTime? OnSetDate { get; set; }
         public DateTime? ResolvedDate { get; set; }
         public bool IsResolved { get; set; }
+        public bool? PrincipleProblem { get; set; }
 
-       
+
         public virtual PatientModel Patient { get; set; }
     }
 

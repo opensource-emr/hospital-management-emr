@@ -8,6 +8,8 @@ import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { DoctorsBLService } from '../shared/doctors.bl.service';
 import { RouteFromService } from "../../shared/routefrom.service";
 import { RouterOutlet, RouterModule, Router } from '@angular/router';
+import html2canvas  from 'html2canvas';
+import * as jspdf from 'jspdf';
 
 @Component({
     selector: "opd-visit-summary",
@@ -15,7 +17,6 @@ import { RouterOutlet, RouterModule, Router } from '@angular/router';
 })
 
 export class OPDVisitSummaryComponent {
-
     public currentPatient: Patient = null;
     public patientVisitId: number = null;
 
@@ -63,6 +64,8 @@ export class OPDVisitSummaryComponent {
                 this.CallBackPatientPreview(res)
             });
     }
+
+  
 
     CallBackPatientPreview(res) {
 
@@ -164,17 +167,46 @@ export class OPDVisitSummaryComponent {
     }
 
 
-
-   
-       
-  
-
     Add() {
 
     }
 
     Close() {
-        this.showSummaryPage = false;
+      this.showSummaryPage = false;
+    
+
     }
+    Print() {
+        let popupWinindow;
+        var printContents = '<style> table { border-collapse: collapse; border-color: black; } th { color:black; background-color: #599be0; } </style>';
+        printContents += document.getElementById("printpage").innerHTML;
+        popupWinindow = window.open('', '_blank', 'width=600,height=700,scrollbars=no,menubar=no,toolbar=no,location=no,status=no,titlebar=no');
+        popupWinindow.document.open();
+        let documentContent = "<html><head>";
+        documentContent += '<link rel="stylesheet" type="text/css" media="print" href="../../themes/theme-default/DanphePrintStyle.css"/>';
+        documentContent += '<link rel="stylesheet" type="text/css" href="../../themes/theme-default/DanpheStyle.css"/>';
+        documentContent += '<link rel="stylesheet" type="text/css" href="../../../assets/global/plugins/bootstrap/css/bootstrap.min.css"/>';
+        documentContent += '</head>';
+        documentContent += '<body onload="window.print()">' + printContents + '</body></html>'
+        popupWinindow.document.write(documentContent);
+        popupWinindow.document.close();
+      }
+
+      PdfDownload(){
+        var data = document.getElementById('printpage');  
+        html2canvas(data).then(canvas => {  
+          // Few necessary setting options  
+          var imgWidth = 208;   
+          var pageHeight = 295;     
+          var imgHeight = canvas.height * imgWidth / canvas.width;  
+          var heightLeft = imgHeight;  
+      
+          const contentDataURL = canvas.toDataURL('image/png')  
+          let pdf = new jspdf('p', 'mm', 'a4'); // A4 size page of PDF  
+          var position = 0;  
+          pdf.addImage(contentDataURL, 'PNG', 0, position, imgWidth, imgHeight)  
+          pdf.save('VisitSummary.pdf'); // Generated PDF   
+        });
+      }
 }
 

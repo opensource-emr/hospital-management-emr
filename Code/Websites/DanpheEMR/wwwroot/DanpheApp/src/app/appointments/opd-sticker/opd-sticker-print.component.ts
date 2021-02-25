@@ -20,6 +20,7 @@ import { Subscription } from "rxjs";
 })
 
 export class PrintStickerComponent {
+  public ageSex : string = '';
   public OpdStickerDetails: OPDStickerViewModel = new OPDStickerViewModel();
 
   @Input("isInsuranceBilling")
@@ -49,6 +50,9 @@ export class PrintStickerComponent {
   public maxFollowUpDays: number = null;
   public doctorOrDepartment: string = null;
   public EnableShowTicketPrice: boolean = false;
+  public hospitalCode: string = '';
+  public QueueNoSetting = { "ShowInInvoice": false, "ShowInSticker": false };
+
   constructor(
     public http: HttpClient,
     public msgBoxServ: MessageboxService,
@@ -59,8 +63,11 @@ export class PrintStickerComponent {
   ) {
     this.showHidePrintButton();
     this.loadMaximumFollowUpDays();
-
+    
     let paramValue = this.coreService.EnableDepartmentLevelAppointment();
+    this.hospitalCode = this.coreService.GetHospitalCode();
+    this.hospitalCode = (this.hospitalCode && this.hospitalCode.trim().length > 0) ? this.hospitalCode : "allhosp";
+    console.log(this.hospitalCode);
     if (paramValue) {
       this.doctorOrDepartment = "Department";
     }
@@ -70,11 +77,20 @@ export class PrintStickerComponent {
     this.EnableShowTicketPrice = this.GetEnableShowTicketPrice();
   }
 
+  ngOnInit() {
+    this.QueueNoSetting = this.coreService.GetQueueNoSetting();
+
+    //if (this.showOpdSticker && this.SelectedVisitDetails) {
+    //  this.GetVisitforStickerPrint(this.SelectedVisitDetails.PatientVisitId);
+    //}
+  }
+
+
   @Input("showOpdSticker")
-  public set value(val: boolean) {
+  public set value(val: boolean) { 
     this.showOpdSticker = val;
     if (this.showOpdSticker && this.SelectedVisitDetails) {
-      this.GetVisitforStickerPrint(this.SelectedVisitDetails.PatientVisitId);
+      this.GetVisitforStickerPrint(this.SelectedVisitDetails.PatientVisitId); 
     }
   }
   GetVisitforStickerPrint(PatientVisitId) {
@@ -94,15 +110,18 @@ export class PrintStickerComponent {
       this.OpdStickerDetails.DoctorName = res.Results[0].DoctorName;
       this.OpdStickerDetails.PhoneNumber = res.Results[0].PhoneNumber;
       this.OpdStickerDetails.User = res.Results[0].User;
+      this.OpdStickerDetails.Age = res.Results[0].Age;
+      this.OpdStickerDetails.CountryName = res.Results[0].CountryName;
       this.OpdStickerDetails.Gender = res.Results[0].Gender;
       this.OpdStickerDetails.VisitDate = moment(res.Results[0].VisitDate).format('YYYY-MM-DD')
       this.OpdStickerDetails.VisitTime = moment(res.Results[0].VisitTime, "hhmm").format('hh:mm A');
       this.OpdStickerDetails.AppointmentType = res.Results[0].AppointmentType;
       this.OpdStickerDetails.RoomNo = res.Results[0].RoomNo;
       this.OpdStickerDetails.OpdTicketCharge = res.Results[0].OpdTicketCharge;
+      this.OpdStickerDetails.QueueNo = res.Results[0].QueueNo;
       this.localDateTime = this.GetLocalDate() + " BS";
       //get Formatted age/sex to give as input to qr-code value.
-      let ageSex = CommonFunctions.GetFormattedAgeSex(this.OpdStickerDetails.DateOfBrith, this.OpdStickerDetails.Gender);
+      this.ageSex = CommonFunctions.GetFormattedAgeSexforSticker(this.OpdStickerDetails.DateOfBrith, this.OpdStickerDetails.Gender, this.OpdStickerDetails.Age);
       //Create an specific format for QR-Value. 
       //current format:   
       //PatientName: XYZ
@@ -113,7 +132,7 @@ export class PrintStickerComponent {
 
       this.patientQRCodeInfo = `Name: ` + this.OpdStickerDetails.PatientName + `
 Hospital No: `+ this.OpdStickerDetails.PatientCode + `
-Age/Sex: `+ ageSex + `
+Age/Sex: `+ this.ageSex + `
 Contact No: `+ this.OpdStickerDetails.PhoneNumber + `
 Address: `+ this.OpdStickerDetails.Address;
       //set this to true only after all values are set.
@@ -133,7 +152,34 @@ Address: `+ this.OpdStickerDetails.Address;
     popupWinindow = window.open('', '_blank', 'width=600,height=700,scrollbars=no,menubar=no,toolbar=no,location=no,status=no,titlebar=no');
     popupWinindow.document.open();
     let documentContent = '<html><head>';
-    documentContent += '<link rel="stylesheet" type="text/css" href="../../themes/theme-default/DanpheStyle.css"/>';
+    documentContent += `<style>
+      .opdstickercontainer {
+      width: 370px;
+      height: 180px;
+      margin: 0px;
+      display: block;
+      font-size: 13px;
+    }
+
+    .stkrtopsection {
+      width: 100%;
+    }
+
+   .dptdesc-left {
+      width: 80%;
+      display: inline-block;
+      margin - top: 5px
+    }
+
+    .opd-qrcode {
+      width: 15%;
+      display: inline-block;
+      vertical-align: top;
+      float: right;
+      margin: 8px 15px 0 0;
+    }
+    </style>`;
+    documentContent += '<link rel="stylesheet" type="text/css" href="../../themes/theme-default/DanphePrintStyle.css"/>';
     /// documentContent += '<link rel="stylesheet" type="text/css" href="../../../assets/global/plugins/bootstrap/css/bootstrap.min.css"/>';
     documentContent += '</head>';
     documentContent += '<body onload="window.print()">' + printContents + '</body></html>'
@@ -156,7 +202,34 @@ Address: `+ this.OpdStickerDetails.Address;
   //06April2018 print from server
   printStickerServer() {
     let printContents = document.getElementById("OPDsticker").innerHTML;
-    var printableHTML = '<html><head><link rel="stylesheet" type="text/css" href="DanpheStyle.css" />';
+    var printableHTML = '<html><head><link rel="stylesheet" type="text/css" href="Style/DanphePrintStyle.css" />';
+    printableHTML += `<style>
+      .opdstickercontainer {
+      width: 370px;
+      height: 180px;
+      margin: 0px;
+      display: block;
+      font-size: 13px;
+    }
+
+    .stkrtopsection {
+      width: 100%;
+    }
+
+   .dptdesc-left {
+      width: 80%;
+      display: inline-block;
+      margin - top: 5px
+    }
+
+    .opd-qrcode {
+      width: 15%;
+      display: inline-block;
+      vertical-align: top;
+      float: right;
+      margin: 8px 15px 0 0;
+    }
+    </style>`;
     printableHTML += '<meta http-equiv="X-UA-Compatible" content="IE= edge"/></head>';
     printableHTML += '<body>' + printContents + '</body></html>';
     var PrinterName = this.LoadPrinterSetting();

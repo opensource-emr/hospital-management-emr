@@ -1,4 +1,4 @@
-﻿import { FormGroup, Validators, FormBuilder } from '@angular/forms';
+import { FormGroup, Validators, FormBuilder } from '@angular/forms';
 
 export class CompanyModel {
 
@@ -7,7 +7,7 @@ export class CompanyModel {
     public Code: string = null
     public Email: string = null;
     public ContactAddress: string = null;
-    public ContactNo: string = null;
+    public ContactNo: string = "";
     public Description: string = null;
     public CreatedBy: number = 0;
     public CreatedDate: string = null;
@@ -19,7 +19,8 @@ export class CompanyModel {
     constructor() {
         var _formBuilder = new FormBuilder();
         this.CompanyValidator = _formBuilder.group({
-            'CompanyName': ['', Validators.compose([Validators.required, Validators.maxLength(50)])],
+          'CompanyName': ['', Validators.compose([Validators.required, Validators.maxLength(50)])],
+          'ContactNo': ['', Validators.compose([Validators.pattern('^[0-9]{1,10}$')])],
             //'Email': ['', Validators.compose([Validators.email])]
         });
     }

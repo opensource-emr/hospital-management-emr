@@ -36,6 +36,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Audit.EntityFramework">
+      <HintPath>..\..\Solutions\packages\Audit.EntityFramework.14.0.2\lib\net45\Audit.EntityFramework.dll</HintPath>
+    </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\..\Solutions\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
@@ -56,12 +59,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AccountingModels\AccountingCodeDetailsModel.cs" />
     <Compile Include="AccountingModels\AccountingInvoiceDataModel.cs" />
     <Compile Include="AccountingModels\AccountingLedgerVoucherMapViewModel.cs" />
-    <Compile Include="AccountingModels\AccountingReportModel.cs" />
+    <Compile Include="AccountingModels\AccountingTransactionHistoryModel.cs" />
+    <Compile Include="AccountingModels\AccountingReferenceTypeViewModel.cs" />
     <Compile Include="AccountingModels\AccountingViewModels.cs" />
+    <Compile Include="AccountingModels\AccountingBillLedgerMappingModel.cs" />
     <Compile Include="AccountingModels\ChartOfAccountModel.cs" />
     <Compile Include="AccountingModels\CostCenterItemModel.cs" />
+    <Compile Include="AccountingModels\EdiitVoucherLogModel.cs" />
     <Compile Include="AccountingModels\GroupMappingModel.cs" />
     <Compile Include="AccountingModels\HospitalModel.cs" />
     <Compile Include="AccountingModels\HospitalTransferRuleMappingModel.cs" />
@@ -71,12 +78,16 @@
     <Compile Include="AccountingModels\LedgerGroupModel.cs" />
     <Compile Include="AccountingModels\FiscalYearModel.cs" />
     <Compile Include="AccountingModels\LedgerMappingModel.cs" />
+    <Compile Include="AccountingModels\FiscalYearLogModel.cs" />
     <Compile Include="AccountingModels\MappingDetailModel.cs" />
     <Compile Include="AccountingModels\MapTransactionItemCostCenterItemModel.cs" />
+    <Compile Include="AccountingModels\PrimaryGroupModel.cs" />
+    <Compile Include="AccountingModels\SectionModel.cs" />
     <Compile Include="AccountingModels\TransactionCostCenterItemModel.cs" />
     <Compile Include="AccountingModels\TransactionInventoryItemModel.cs" />
     <Compile Include="AccountingModels\TransactionItemDetailModel.cs" />
     <Compile Include="AccountingModels\TransactionLinkModel.cs" />
+    <Compile Include="AccountingModels\ReverseTransactionModel.cs" />
     <Compile Include="AccountingModels\VoucherHeadModel.cs" />
     <Compile Include="AccountingModels\VoucherLedgerGroupMapModel.cs" />
     <Compile Include="AccountingModels\VoucherModel.cs" />
@@ -84,13 +95,16 @@
     <Compile Include="AccountingModels\TransactionItemModel.cs" />
     <Compile Include="AccountingModels\TransactionModel.cs" />
     <Compile Include="AccountingModels\CompanyMasterModel.cs" />
+    <Compile Include="AdmissionModels\ADTBedReservation.cs" />
     <Compile Include="AdmissionModels\BabyBirthConditionModel.cs" />
     <Compile Include="AdmissionModels\BabyBirthDetailsModel.cs" />
+    <Compile Include="AdmissionModels\DeathDetailsModel.cs" />
     <Compile Include="AdmissionModels\DeathTypeModel.cs" />
     <Compile Include="AdmissionModels\DeliveryTypeModel.cs" />
     <Compile Include="AdmissionModels\DischargeCancelModel.cs" />
     <Compile Include="AdmissionModels\DischargeConditionTypeModel.cs" />
     <Compile Include="AdmissionModels\DischargeSummaryMedication.cs" />
+    <Compile Include="AdmissionModels\GravitaModel.cs" />
     <Compile Include="AdmissionModels\HemodialysisModel.cs" />
     <Compile Include="AdmissionModels\AdmissionViewModel.cs" />
     <Compile Include="AdmissionModels\BedFeature.cs" />
@@ -127,17 +141,54 @@
     <Compile Include="BillingModels\Counter\CounterLog.cs" />
     <Compile Include="BillingModels\IRDLogModel.cs" />
     <Compile Include="BillingModels\PatientInsurancePackageTransactionModel.cs" />
+    <Compile Include="BillingModels\PriceCategoryModel.cs" />
     <Compile Include="BillingModels\ServiceDepartmentModel.cs" />
     <Compile Include="BillingModels\SyncBillingAccountingModel.cs" />
     <Compile Include="ClinicalModels\ClinicalDiagnosisModel.cs" />
+    <Compile Include="ClinicalModels\ClinicalEye\AblationProfileModel.cs" />
+    <Compile Include="ClinicalModels\ClinicalEye\EyeModel.cs" />
+    <Compile Include="ClinicalModels\ClinicalEye\EyeVisuMax.cs" />
+    <Compile Include="ClinicalModels\ClinicalEye\LaserDataEntryModel.cs" />
+    <Compile Include="ClinicalModels\ClinicalEye\LasikRSTModel.cs" />
+    <Compile Include="ClinicalModels\ClinicalEye\OperationNotesModel.cs" />
+    <Compile Include="ClinicalModels\ClinicalEye\OraModel.cs" />
+    <Compile Include="ClinicalModels\ClinicalEye\PachymetryModel.cs" />
+    <Compile Include="ClinicalModels\ClinicalEye\PreOPPachymetryModel.cs" />
+    <Compile Include="ClinicalModels\ClinicalEye\RefractionModel.cs" />
+    <Compile Include="ClinicalModels\ClinicalEye\SmileSettingsModel.cs" />
+    <Compile Include="ClinicalModels\ClinicalEye\SmileIncisionsModel.cs" />
+    <Compile Include="ClinicalModels\ClinicalEye\WavefrontModel.cs" />
     <Compile Include="ClinicalModels\ClinicalViewModels.cs" />
+    <Compile Include="ClinicalModels\EmergencyNoteModel.cs" />
+    <Compile Include="ClinicalModels\FreeTextNoteModel.cs" />
     <Compile Include="ClinicalModels\MedicationFrequency.cs" />
     <Compile Include="ClinicalModels\MedicationPrescriptionModel.cs" />
+    <Compile Include="ClinicalModels\NoteTypeModel.cs" />
     <Compile Include="ClinicalModels\ObjectiveNoteModel.cs" />
+    <Compile Include="ClinicalModels\PatientClinicalInfoModel.cs" />
     <Compile Include="ClinicalModels\PatientImages.cs" />
+    <Compile Include="ClinicalModels\PrescriptionNotesModel.cs" />
+    <Compile Include="ClinicalModels\PrescriptionSlip\AcceptanceModel.cs" />
+    <Compile Include="ClinicalModels\PrescriptionSlip\AdviceDiagnosisModel.cs" />
+    <Compile Include="ClinicalModels\PrescriptionSlip\FinalClassModel.cs" />
+    <Compile Include="ClinicalModels\PrescriptionSlip\HistoryModel.cs" />
+    <Compile Include="ClinicalModels\PrescriptionSlip\IOPModel.cs" />
+    <Compile Include="ClinicalModels\PrescriptionSlip\PlupModel.cs" />
+    <Compile Include="ClinicalModels\PrescriptionSlip\PrescriptionSlipModel.cs" />
+    <Compile Include="ClinicalModels\PrescriptionSlip\RetinoscopyModel.cs" />
+    <Compile Include="ClinicalModels\PrescriptionSlip\SchrimeModel.cs" />
+    <Compile Include="ClinicalModels\PrescriptionSlip\TBUTModel.cs" />
+    <Compile Include="ClinicalModels\PrescriptionSlip\VaUnaidedModel.cs" />
+    <Compile Include="ClinicalModels\ProcedureNoteModel.cs" />
+    <Compile Include="ClinicalModels\ProgressModel.cs" />
+    <Compile Include="ClinicalModels\ReferralSourceModel.cs" />
+    <Compile Include="ClinicalModels\Scan-upload\EyeScanImagesModel.cs" />
     <Compile Include="ClinicalModels\SubjectiveNoteModel.cs" />
     <Compile Include="ClinicalModels\NotesModel.cs" />
     <Compile Include="ClinicalModels\ProblemList.cs" />
+    <Compile Include="ClinicalModels\TemplateNoteModel.cs" />
+    <Compile Include="CommonModels\ImageUploadModel.cs" />
+    <Compile Include="CommonModels\InvoiceHeaderModel.cs" />
     <Compile Include="CommonModels\RequisitionItem.cs" />
     <Compile Include="DICOMModels\DCMPatientStudyModel.cs" />
     <Compile Include="DICOMModels\DicomFileInfoModel.cs" />
@@ -149,11 +200,14 @@
     <Compile Include="EmergencyModels\EmergencyPatientModel.cs" />
     <Compile Include="EmergencyModels\EmergencyTriagedPatientVM.cs" />
     <Compile Include="EmergencyModels\EmergencyDischargeSummaryModel.cs" />
+    <Compile Include="EmergencyModels\ERParamClass.cs" />
     <Compile Include="EmergencyModels\FinalizedPatientModel.cs" />
+    <Compile Include="EmergencyModels\ModeOfArrival.cs" />
     <Compile Include="EmployeeModels\EmployeePreferences.cs" />
     <Compile Include="EmployeeModels\EmployeeType.cs" />
     <Compile Include="EmployeeModels\EmployeeRole.cs" />
     <Compile Include="EmployeeModels\EmployeeProfileVM.cs" />
+    <Compile Include="ExtReferralModels\ExtReferralVMs.cs" />
     <Compile Include="FractionModels\Designation.cs" />
     <Compile Include="FractionModels\FractionCalculation.cs" />
     <Compile Include="FractionModels\FractionPercent.cs" />
@@ -161,18 +215,33 @@
     <Compile Include="HelpdeskModels\BedInformationModel.cs" />
     <Compile Include="HelpdeskModels\EmployeeInfoModel.cs" />
     <Compile Include="HelpdeskModels\WardInformationModel.cs" />
+    <Compile Include="IncentiveModels\ConsultantIncentiveModel.cs" />
+    <Compile Include="IncentiveModels\EmployeeBillItemsMap.cs" />
+    <Compile Include="IncentiveModels\EmployeeIncentiveInfo.cs" />
+    <Compile Include="IncentiveModels\IncentiveFractionItem.cs" />
+    <Compile Include="IncentiveModels\IncentiveTransactionItemsVM.cs" />
+    <Compile Include="IncentiveModels\ItemGroupDistribution.cs" />
+    <Compile Include="IncentiveModels\PaymentInfoModel.cs" />
+    <Compile Include="IncentiveModels\ProfileItemMap.cs" />
+    <Compile Include="IncentiveModels\ProfileModel.cs" />
     <Compile Include="InventoryModels\CurrencyMasterModel.cs" />
     <Compile Include="InventoryModels\DispatchItemsModel.cs" />
     <Compile Include="InventoryModels\GoodsReceiptItemsModel.cs" />
     <Compile Include="InventoryModels\GoodsReceiptModel.cs" />
     <Compile Include="InventoryModels\InventoryCompanyModel.cs" />
+    <Compile Include="InventoryModels\InventoryFiscalYear.cs" />
+    <Compile Include="InventoryModels\InventoryFiscalYearStock.cs" />
     <Compile Include="InventoryModels\InventoryReportModel\CurrentStockLevel.cs" />
     <Compile Include="InventoryModels\InventoryReportModel\CurrentWriteOff.cs" />
+    <Compile Include="InventoryModels\InventoryReportModel\DispatchDetailModel.cs" />
     <Compile Include="InventoryModels\InventoryReportModel\FixedAssetsModel.cs" />
+    <Compile Include="InventoryModels\InventoryReportModel\GoodsReceiptEvaluationModel.cs" />
+    <Compile Include="InventoryModels\InventoryReportModel\GoodsReceiptModel.cs" />
     <Compile Include="InventoryModels\InventoryReportModel\InventorySummaryModel.cs" />
     <Compile Include="InventoryModels\InventoryReportModel\PurchaseOrderModel.cs" />
     <Compile Include="InventoryModels\InventoryReportModel\DailyItemDispatchModel.cs" />
     <Compile Include="InventoryModels\InventoryReportModel\ReturnToVendor.cs" />
+    <Compile Include="InventoryModels\InventoryReportModel\SubstoreReportModel.cs" />
     <Compile Include="InventoryModels\InventoryTermsModel.cs" />
     <Compile Include="InventoryModels\InventoryViewModel.cs" />
     <Compile Include="InventoryModels\ItemCategoryMasterModel.cs" />
@@ -187,11 +256,14 @@
     <Compile Include="InventoryModels\QuotationItems.cs" />
     <Compile Include="InventoryModels\RequestForQuotation.cs" />
     <Compile Include="InventoryModels\RequestForQuotationItems.cs" />
+    <Compile Include="InventoryModels\PurchaseRequestModel.cs" />
+    <Compile Include="InventoryModels\PurchaseRequestItemModel.cs" />
     <Compile Include="InventoryModels\RequisitionItemsModel.cs" />
     <Compile Include="InventoryModels\RequisitionModel.cs" />
     <Compile Include="InventoryModels\RequisitionStockVM.cs" />
     <Compile Include="InventoryModels\ReturnToVendorItemsModel.cs" />
     <Compile Include="InventoryModels\ReturnToVendorItemsVM.cs" />
+    <Compile Include="InventoryModels\ReturnToVendorModel.cs" />
     <Compile Include="InventoryModels\StockModel.cs" />
     <Compile Include="InventoryModels\StockTransactionModel.cs" />
     <Compile Include="InventoryModels\UnitOfMeasurementMasterModel.cs" />
@@ -199,11 +271,15 @@
     <Compile Include="InventoryModels\WriteOffItemsModel.cs" />
     <Compile Include="LabModels\InpatientLabTestModel.cs" />
     <Compile Include="LabModels\LabBarCodeModel.cs" />
+    <Compile Include="LabModels\LabGovReportItemModel.cs" />
+    <Compile Include="LabModels\LabGovReportMappingModel.cs" />
     <Compile Include="LabModels\LabMasterModel.cs" />
     <Compile Include="LabModels\LabReportModel.cs" />
     <Compile Include="LabModels\LabPrintReportView.cs" />
     <Compile Include="LabModels\LabReportTemplateModel.cs" />
+    <Compile Include="LabModels\LabRunNumberSettingsModel.cs" />
     <Compile Include="LabModels\LabSignatoriesViewModel.cs" />
+    <Compile Include="LabModels\LabTestCategoryModel.cs" />
     <Compile Include="LabModels\LabTestComponentResultModel.cs" />
     <Compile Include="LabModels\LabRequisitionModel.cs" />
     <Compile Include="LabModels\LabTestComponentMapModel.cs" />
@@ -213,18 +289,25 @@
     <Compile Include="LabModels\LabTestModel.cs" />
     <Compile Include="LabModels\LabTestSpecimenModel.cs" />
     <Compile Include="LabModels\LabViewModels.cs" />
+    <Compile Include="LabModels\VerificationCoreCFGModel.cs" />
+    <Compile Include="LabModels\VerifiedByModel.cs" />
     <Compile Include="MasterModels\CfgParameterModel.cs" />
     <Compile Include="MasterModels\CookieAuthInfoModel.cs" />
     <Compile Include="MasterModels\CoreCFGLookupModel.cs" />
     <Compile Include="MasterModels\CountrySubDivision.cs" />
     <Compile Include="MasterModels\DepartmentModel.cs" />
+    <Compile Include="MasterModels\EmailSendDetailModel.cs" />
     <Compile Include="MasterModels\LoginInformationModel.cs" />
     <Compile Include="MasterModels\ServiceDepartmentIntegrationModel.cs" />
+    <Compile Include="MasterModels\StoreVerificationMapModel.cs" />
     <Compile Include="MasterModels\TaxModel.cs" />
     <Compile Include="MasterModels\RadiologyImagingItemModel.cs" />
     <Compile Include="MasterModels\RadiologyImagingTypeModel.cs" />
     <Compile Include="MasterModels\ReactionModel.cs" />
     <Compile Include="MasterModels\UniquePastDataModel.cs" />
+    <Compile Include="MedicalRecords\MedicalRecordModel.cs" />
+    <Compile Include="MedicalRecords\OperationTypeModel.cs" />
+    <Compile Include="MedicalRecords\PatLabtestSummaryModel.cs" />
     <Compile Include="NotificationModels\NotificationViewModel.cs" />
     <Compile Include="PatientModels\HealthCardInfoModel.cs" />
     <Compile Include="PatientModels\InsuranceProviderModel.cs" />
@@ -245,6 +328,13 @@
     <Compile Include="ClinicalModels\InputOutputModel.cs" />
     <Compile Include="PatientModels\InsuranceModel.cs" />
     <Compile Include="PatientModels\KinModel.cs" />
+    <Compile Include="Payroll\AttendanceDailyTimeRecordModel.cs" />
+    <Compile Include="Payroll\EmployeeLeaveModel.cs" />
+    <Compile Include="Payroll\HolidayModel.cs" />
+    <Compile Include="Payroll\LeaveCategory.cs" />
+    <Compile Include="Payroll\LeaveRuleModel.cs" />
+    <Compile Include="Payroll\PROLL_DailyMuster.cs" />
+    <Compile Include="Payroll\WeekendHolidays.cs" />
     <Compile Include="PharmacyModels\CounterCollectionViewModel.cs" />
     <Compile Include="PharmacyModels\PharmacyCounter.cs" />
     <Compile Include="PharmacyModels\GoodReceiptItemsViewModel.cs" />
@@ -258,7 +348,9 @@
     <Compile Include="PharmacyModels\PHRMBillTransactionModel.cs" />
     <Compile Include="PharmacyModels\PHRMCategoryModel.cs" />
     <Compile Include="PharmacyModels\PHRMCompanyModel.cs" />
+    <Compile Include="PharmacyModels\PHRMCreditOrganizationsModel.cs" />
     <Compile Include="PharmacyModels\PHRMDepositModel.cs" />
+    <Compile Include="PharmacyModels\PHRMDispatchItemsModel.cs" />
     <Compile Include="PharmacyModels\PHRMDispensary.cs" />
     <Compile Include="PharmacyModels\PHRMDispensaryStockModel.cs" />
     <Compile Include="PharmacyModels\PHRMDrugsRequistionModel.cs" />
@@ -271,17 +363,26 @@
     <Compile Include="PharmacyModels\PHRMInvoiceItemsModel.cs" />
     <Compile Include="PharmacyModels\PHRMInvoiceModel.cs" />
     <Compile Include="PharmacyModels\PHRMInvoiceReturnItemsModel.cs" />
+    <Compile Include="PharmacyModels\PHRMExpiryDateBatchNoHistoryModel.cs" />
+    <Compile Include="PharmacyModels\PHRMInvoiceReturnModel.cs" />
+    <Compile Include="PharmacyModels\PHRMPackingTypeModel.cs" />
+    <Compile Include="PharmacyModels\PHRMMRPHistoryModel.cs" />
     <Compile Include="PharmacyModels\PHRMNarcoticRecord.cs" />
     <Compile Include="PharmacyModels\PHRMPatient.cs" />
     <Compile Include="PharmacyModels\PHRMPrescriptionItemsModel.cs" />
     <Compile Include="PharmacyModels\PHRMPrescriptionModel.cs" />
     <Compile Include="PharmacyModels\PHRMRackModel.cs" />
+    <Compile Include="PharmacyModels\PHRMRequisitionStockVM.cs" />
     <Compile Include="PharmacyModels\PHRMReturnToSupplierItemsModel.cs" />
     <Compile Include="PharmacyModels\PHRMReturnToSupplierModel.cs" />
+    <Compile Include="PharmacyModels\PHRMSettlementModel.cs" />
+    <Compile Include="PharmacyModels\PHRMStockItemsReportVM.cs" />
     <Compile Include="PharmacyModels\PHRMStockManageModel.cs" />
     <Compile Include="PharmacyModels\PHRMStockModel.cs" />
     <Compile Include="PharmacyModels\PHRMStockTransactionItemsModel.cs" />
     <Compile Include="PharmacyModels\PHRMStoreModel.cs" />
+    <Compile Include="PharmacyModels\PHRMStoreRequisitionItemsModel.cs" />
+    <Compile Include="PharmacyModels\PHRMStoreRequisitionModel.cs" />
     <Compile Include="PharmacyModels\PHRMStoreSalesCategoryModel.cs" />
     <Compile Include="PharmacyModels\PHRMStoreStockModel.cs" />
     <Compile Include="PharmacyModels\PHRMSupplierModel.cs" />
@@ -298,12 +399,14 @@
     <Compile Include="ClinicalModels\SurgicalHistoryModel.cs" />
     <Compile Include="AppointmentModels\VisitModel.cs" />
     <Compile Include="ClinicalModels\VitalsModel.cs" />
+    <Compile Include="RadiologyModels\ImageAttachmentModel.cs" />
     <Compile Include="RadiologyModels\RadEmailModel.cs" />
     <Compile Include="RadiologyModels\ReportingDoctorModel.cs" />
     <Compile Include="RadiologyModels\ImagingViewModels.cs" />
     <Compile Include="RadiologyModels\ImagingReportModel.cs" />
     <Compile Include="RadiologyModels\ImagingRequisitionModel.cs" />
     <Compile Include="RadiologyModels\RadiologyReportTemplateModel.cs" />
+    <Compile Include="ReportingModels\ADTInpatientCensusSummary.cs" />
     <Compile Include="ReportingModels\InpatientOutcome.cs" />
     <Compile Include="ReportingModels\LaboratoryServices.cs" />
     <Compile Include="ReportingModels\PatientBillHistory.cs" />
@@ -314,13 +417,24 @@
     <Compile Include="SchedulingModels\EmpSchedules.cs" />
     <Compile Include="SchedulingModels\SchedulingViewModels.cs" />
     <Compile Include="SchedulingModels\ShiftsMasterModel.cs" />
+    <Compile Include="SystemAdminModels\AuditTableDisplayName.cs" />
     <Compile Include="SystemAdminModels\AuditTrailModel.cs" />
     <Compile Include="SystemAdminModels\DatabaseLogModel.cs" />
     <Compile Include="SystemAdminModels\InvoiceDetailsModel.cs" />
     <Compile Include="SystemAdminModels\PhrmInvoiceDetails.cs" />
     <Compile Include="SystemAdminModels\SqlAuditModel.cs" />
     <Compile Include="SystemAdminModels\SysAdmin_Parameters.cs" />
+    <Compile Include="VerificationModels\InventoryRequisitionViewModel.cs" />
+    <Compile Include="VerificationModels\TrackRequisitionViewModel.cs" />
+    <Compile Include="VerificationModels\VerificationModel.cs" />
+    <Compile Include="VerificationModels\VerificationViewModel.cs" />
+    <Compile Include="VerificationModels\VerifiersPermissionViewModel.cs" />
+    <Compile Include="VerificationModels\VER_INV_PurchaseRequestParameterModel.cs" />
+    <Compile Include="WardSupplyModels\WARDInternalConaumptionItemsModel.cs" />
+    <Compile Include="WardSupplyModels\WARDInternalConsumptionModel.cs" />
     <Compile Include="WardSupplyModels\WARDInventoryConsumptionModel.cs" />
+    <Compile Include="WardSupplyModels\WARDInventoryStockModel.cs" />
+    <Compile Include="WardSupplyModels\WARDInventoryTransactionModel.cs" />
     <Compile Include="WardSupplyModels\WARDTransactionModel.cs" />
     <Compile Include="WardSupplyModels\WARDConsumptionModel.cs" />
     <Compile Include="WardSupplyModels\WARDDispatchItemsModel.cs" />
@@ -337,6 +451,9 @@
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ClinicalModels\PrescriptionSlip\DilateModel.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

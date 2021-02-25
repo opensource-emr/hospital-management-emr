@@ -13,9 +13,9 @@ import { AccountHeadAddComponent } from '../settings/accounthead/account-head-ad
 import { PackagingTypeAddComponent } from '../settings/packagingtype/packaging-type-add.component';
 import { UnitOfMeasurementAddComponent } from '../settings/unitofmeasurement/unit-of-measurement-add.component';
 import { CompanyAddComponent } from '../settings/company/company-add.component';
-import { TermsAddComponent } from '../settings/termsconditions/terms-add.component';
 import { ItemSubCategoryAddComponent } from '../settings/itemsubcategory/item-subcategory-add.component';
-
+import { DanpheAutoCompleteModule } from '../../shared/danphe-autocomplete';
+import { AccountingSharedModule } from '../../accounting/shared/accounting-shared.module';
 @NgModule({
   providers: [
     InventorySettingBLService, InventorySettingDLService],
@@ -23,7 +23,9 @@ import { ItemSubCategoryAddComponent } from '../settings/itemsubcategory/item-su
     CommonModule,
     ReactiveFormsModule,
     FormsModule,
-    SharedModule],
+    SharedModule,
+    DanpheAutoCompleteModule,  
+    AccountingSharedModule ],
   declarations: [
     ItemAddComponent,
     VendorsAddComponent,
@@ -33,7 +35,6 @@ import { ItemSubCategoryAddComponent } from '../settings/itemsubcategory/item-su
     PackagingTypeAddComponent,
     CompanyAddComponent,
     UnitOfMeasurementAddComponent,
-    TermsAddComponent,
     ItemSubCategoryAddComponent],
   exports: [
     ItemAddComponent,
@@ -44,7 +45,6 @@ import { ItemSubCategoryAddComponent } from '../settings/itemsubcategory/item-su
     PackagingTypeAddComponent,
     UnitOfMeasurementAddComponent,
     CompanyAddComponent,
-    TermsAddComponent,
     ItemSubCategoryAddComponent
   ],
   bootstrap: []

@@ -1,0 +1,64 @@
+
+<style>
+.printStyle {
+	border: dotted 1px;
+	margin: 10px 50px;
+}
+.print-border-top {
+	border-top: dotted 1px;
+}
+.print-border-bottom {
+	border-bottom: dotted 1px;
+}
+.print-border {
+	border: dotted 1px;
+}
+.center-style {
+	text-align: center;
+}
+.border-up-down {
+	border-top: dotted 1px;
+	border-bottom: dotted 1px;
+}
+</style>
+
+<div class="row">
+  <div class="row" style="width: 100%; margin-bottom: 25px;">
+    <div class="col-md-5 col-xs-12">
+      <!-- <div class="form-group">
+        <label class="control-label col-md-5">From Date<b class="color-red"> *</b><b style="float:right;">:</b></label>
+        <div class="col-md-7">
+          <danphe-date-picker [(ngModel)]="fromDate" [ngModelOptions]="{standalone: true}" ngDefaultControl [CalendarTypes]="'en,np'"> </danphe-date-picker>
+        </div>
+      </div> -->
+    </div>
+    <!-- <div class="col-md-5 col-xs-12">
+      <div class="form-group">
+        <label class="control-label col-md-4">To Date<b class="color-red"> *</b><b style="float:right;">:</b></label>
+        <div class="col-md-7">
+          <danphe-date-picker [(ngModel)]="toDate" [ngModelOptions]="{standalone: true}" ngDefaultControl [CalendarTypes]="'en,np'"> </danphe-date-picker>
+        </div>
+      </div>
+    </div> -->
+    <!-- <div class="col-md-2 col-xs-12">
+      <div class="form-group">
+        <button class="btn blue" type="button" (click)="LoadSaleInvoiceList()"> <i class="fa fa-search"></i> Show Patient </button>
+      </div>
+    </div> -->
+  </div>
+  <div class="col-lg-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="saleGridColumns" [grid-data]="pharmListfiltered"
+                     [rangeType]="dateRange" 
+                    [date-range-options]="'1W,1M,3M'"
+                     (grid-actions)="SaleInvoiceGridActions($event)"
+                     (onDateChange)="onGridDateChange($event)"
+                     [grid-exportOptions]="gridExportOptions"
+                     [NepaliDateInGridParams]="NepaliDateInGridSettings"
+                     [grid-showExport]="true"
+                     [show-CustomDate]="true"
+                     > </danphe-grid>
+  </div>
+</div>
+
+<!--START:  Popup for show selected Invoice items details show -->
+<app-phrm-invoice-view *ngIf="showSaleItemsPopup" [showPopUp]="showSaleItemsPopup" [invoiceId]="saleInvoiceDetails.InvoiceId" (call-back-close)="OnInvoicePopUpClose()"></app-phrm-invoice-view>

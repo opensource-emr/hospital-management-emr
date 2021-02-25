@@ -4,7 +4,7 @@ import { ClinicalDLService } from './clinical.dl.service';
 import { Vitals } from './vitals.model';
 import { Allergy } from './allergy.model';
 import { InputOutput } from './input-output.model';
-import { Notes } from './notes.model';
+//import { NotesModel } from '../notes/shared/notes.model';
 import * as _ from 'lodash';
 import * as moment from 'moment/moment';
 @Injectable()
@@ -69,11 +69,11 @@ export class IOAllergyVitalsBLService {
     }
     //notes
     //post notes
-    public AddNotes(currentNotes: Notes, addType: string) {
-        let notes = _.omit(currentNotes, ['PatientVisit']);
-        return this.clinicalDLService.PostNotes(notes)
-            .map(res => res);
-    }
+    // public AddNotes(currentNotes: NotesModel, addType: string) {
+    //     let notes = _.omit(currentNotes, ['PatientVisit']);
+    //     return this.clinicalDLService.PostNotes(notes)
+    //         .map(res => res);
+    // }
 
     //input-output
     //calculate Balance in IO.
@@ -176,13 +176,13 @@ export class IOAllergyVitalsBLService {
     }
     //notes
     //update notes
-    public PutNotes(currentNotes: Notes, addType: string) {
-        currentNotes.CreatedOn = moment(currentNotes.CreatedOn).format('YYYY-MM-DD HH:mm');
-        let notes = _.omit(currentNotes, ['PatientVisit']);
-        let data = JSON.stringify(notes);
-        let reqType = 'notes';
-        return this.clinicalDLService.PutClinical(data, reqType)
-            .map(res => res);
+    // public PutNotes(currentNotes: NotesModel, addType: string) {
+    //     currentNotes.CreatedOn = moment(currentNotes.CreatedOn).format('YYYY-MM-DD HH:mm');
+    //     let notes = _.omit(currentNotes, ['PatientVisit']);
+    //     let data = JSON.stringify(notes);
+    //     let reqType = 'notes';
+    //     return this.clinicalDLService.PutClinical(data, reqType)
+    //         .map(res => res);
 
-    }
+    // }
 }

@@ -24,12 +24,22 @@ namespace DanpheEMR.ServerModel
         public decimal? Adjustment { get; set; }
         public int? CreatedBy { get; set; }
         public DateTime? CreatedOn { get; set; }
+        public int? ModifiedBy { get; set; }
+        public DateTime? ModifiedOn { get; set; }
         public virtual List<PHRMGoodsReceiptItemsModel> GoodReceiptItem { get; set; }
         public decimal? VATAmount { get; set; }
         public bool? IsCancel { get; set; }
         public bool? IsTransferredToACC { get; set; }
         public int StoreId { get; set; }
         public string TransactionType { get; set; }
+        public string CancelRemarks { get; set; }
+        public int? CancelledBy { get; set; }
+        public DateTime? CancelledOn { get; set; }
+        public bool? IsPacking { get; set; }
+        public bool? IsItemDiscountApplicable { get; set; }
+        public int FiscalYearId { get; set; }
+        [NotMapped]
+        public string FiscalYear { get; set; }
         public int? CreditPeriod { get; set; }
         [NotMapped]
         public string StoreName { get; set; }
@@ -61,5 +71,14 @@ namespace DanpheEMR.ServerModel
         public decimal? GrDiscountAmount { get; set; }
         [NotMapped]
         public decimal? GrCOGSAmount { get; set; }
+        [NotMapped]
+        public bool? IsGRModified { get; set; }
+
+
+        // Bikash: 2July'20: Dispensary info added to provide direct stock discptch to Dispensary feature.
+        [NotMapped]
+        public bool SendDirectToDispensary { get; set; }
+        [NotMapped]
+        public int SelectedDispensaryId { get; set; }
     }
 }

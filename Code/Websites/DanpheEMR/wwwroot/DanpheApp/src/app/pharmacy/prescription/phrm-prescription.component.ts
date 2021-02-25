@@ -12,7 +12,7 @@ import { PHRMItemTypeModel } from "../shared/phrm-item-type.model";
 import { PHRMItemMasterModel } from "../shared/phrm-item-master.model"
 
 @Component({
-    templateUrl: "../../view/pharmacy-view/Prescription/PHRMPrescription.html" // "/PharmacyView/PHRMPrescription"
+    templateUrl: "./phrm-prescription.html"
 })
 export class PHRMPrescriptionComponent {
     //constructor of clas

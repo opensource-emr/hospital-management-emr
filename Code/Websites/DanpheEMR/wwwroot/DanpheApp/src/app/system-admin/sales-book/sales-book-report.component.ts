@@ -32,6 +32,7 @@ export class SalesBookReportComponent {
     public curtSalesBookDetail: Array<InvoiceDetailsModel> = new Array<InvoiceDetailsModel>();
     public curtPhrmSalesBookDetail: Array<PhrmInvoiceDetailsModel> = new Array<PhrmInvoiceDetailsModel>();
     public finalData: Array<InvoiceDetailsModel> = new Array<InvoiceDetailsModel>();
+    public headerDetail: { CustomerName, Address, Email, CustomerRegLabel,CustomerRegNo,Tel};
     constructor(_systemAdminBLService: SystemAdminBLService, public msgBoxServ: MessageboxService
         , public changeDetectorRef: ChangeDetectorRef
         , public coreservice: CoreService, public npCalService: NepaliCalendarService) {
@@ -39,6 +40,7 @@ export class SalesBookReportComponent {
         this.fromDate = moment().format('YYYY-MM-DD');
         this.toDate = moment().format('YYYY-MM-DD');
         this.LoadCalendarTypes();
+        this.GetBillingHeaderParameter();
     }
     //loads CalendarTypes from Paramter Table (database) and assign the require CalendarTypes to local variable.
     LoadCalendarTypes() {
@@ -181,5 +183,18 @@ export class SalesBookReportComponent {
         popupWinindow.document.open();
         popupWinindow.document.write('<html><head><link rel="stylesheet" type="text/css" href="../../themes/theme-default/DanpheStyle.css" /></head><body onload="window.print()">' + printContents + '</body></html>');
         popupWinindow.document.close();
+    }
+    GetBillingHeaderParameter() {
+        var paramValue = this.coreservice.Parameters.find(a => a.ParameterName == 'BillingHeader').ParameterValue;
+        if (paramValue)
+            this.headerDetail = JSON.parse(paramValue);
+        else
+            this.msgBoxServ.showMessage("error", ["Please enter parameter values for BillingHeader"]);
+    }
+
+    //Anjana:2020/10/02: reusable from to date selector
+    OnFromToDateChange($event) {
+        this.fromDate = $event ? $event.fromDate : this.fromDate;
+        this.toDate = $event ? $event.toDate : this.toDate;
     }
 }

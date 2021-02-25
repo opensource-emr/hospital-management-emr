@@ -1,0 +1,71 @@
+<button rbac-permission='{"name":"btn-settings-bill-item-addnew","actionOnInvalid":"remove"}'
+        class="btn blue bordered" (click)="AddBillingItem()">
+  <i class="fa fa-plus"></i>
+  &nbsp;Add New Item
+</button>
+<!--<a class="btn blue bordered" (click)="Export()" style="float: right"> <i class="fa fa-file-excel-o"></i> &nbsp;Export </a>-->
+<billingItem-add *ngIf="showAddPage"
+                 [selectedItem]="selectedItem"
+                 [billingItemList]="billingItemList"
+                 (callback-add)="CallBackAdd($event)"></billingItem-add>
+<div *ngIf="showGrid" class="row">
+  <div class="col-md-12 col-xs-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="billingItemGridColumns"
+                 [grid-data]="billingItemList"
+                 (grid-actions)="BillingItemGridActions($event)"
+                 [grid-showExport]="true"
+                 [grid-exportOptions]="GetGridExportOptions()"
+                 [show-print-button]="false">
+
+    </danphe-grid>
+  </div>
+</div>
+
+<!--Model Box Starting Here-->
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showBillItemPriceHistoryPage">
+  <div class="portlet-body form">
+    <!--Model Box Body Start-->
+
+    <div class="row">
+      <div class="col-md-6 col-md-offset-3">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption no-margin">
+            <h3> <span>Billing Item Price Change History</span> </h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+          </div>
+          <form class="form-horizontal">
+            <div class="form-body">
+              <h5 style="text-transform:capitalize;">
+                Service Department Name: <b> {{selectedItem.ServiceDepartmentName}} </b> &nbsp;&nbsp;&nbsp;
+
+                Item Name:&nbsp; <b> {{selectedItem.ItemName}} </b>
+              </h5>
+              <div class="table-responsive">
+                <table class="table  table-bordered table-hover" style="background-color:initial;margin-top:10px">
+                  <thead style="background-color:rgb(50, 197, 210); color:white;">
+                    <tr>
+                      <th><b>Sr. No</b></th>
+                      <th><b>Price</b></th>
+                      <th><b>Date</b></th>
+                      <th><b>User Name</b></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let row of billItemPriceChangeHistoryList;let i=index;">
+                      <td><span style="font-weight:bold;text-align:center;">{{i+1}}</span></td>
+                      <td>{{row.price}}</td>
+                      <td>{{row.createdOn}}</td>
+                      <td style="text-transform:capitalize;">{{row.userName}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!--Model Box Body End-->
+  </div>
+</div>

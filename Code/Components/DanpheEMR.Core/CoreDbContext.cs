@@ -29,6 +29,7 @@ namespace DanpheEMR.Core
         public DbSet<RadiologyImagingItemModel> ImagingItems { get; set; }
         public DbSet<DepartmentModel> Departments { get; set; }
         public DbSet<ServiceDepartmentModel> ServiceDepartments { get; set; }
+        public DbSet<PriceCategoryModel> PriceCategory { get; set; }
         public DbSet<BedModel> Beds { get; set; }
         public DbSet<BedFeature> BedFeatures { get; set; }
         public DbSet<BedFeaturesMap> BedFeaturesMaps { get; set; }
@@ -45,6 +46,9 @@ namespace DanpheEMR.Core
         public DbSet<Questionnaire> Questionnaires { get; set; }
         public DbSet<Question> Questions { get; set; }
         public DbSet<Option> Options { get; set; }
+        public DbSet<LabRunNumberSettingsModel> LabRunNumberSettings { get; set; }
+        public DbSet<AccountingCodeDetailsModel> ACCCodeDetails { get; set; }
+        public DbSet<HospitalModel> Hospitals { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
@@ -60,6 +64,7 @@ namespace DanpheEMR.Core
             modelBuilder.Entity<RadiologyImagingTypeModel>().ToTable("RAD_MST_ImagingType");
             modelBuilder.Entity<RadiologyImagingItemModel>().ToTable("RAD_MST_ImagingItem");
             modelBuilder.Entity<ServiceDepartmentModel>().ToTable("BIL_MST_ServiceDepartment");
+            modelBuilder.Entity<PriceCategoryModel>().ToTable("BIL_CFG_PriceCategory");
             modelBuilder.Entity<DepartmentModel>().ToTable("MST_Department");
             modelBuilder.Entity<BedFeature>().ToTable("ADT_MST_BedFeature");
             modelBuilder.Entity<BedFeaturesMap>().ToTable("ADT_MAP_BedFeaturesMap");
@@ -78,6 +83,9 @@ namespace DanpheEMR.Core
             modelBuilder.Entity<Questionnaire>().ToTable("CORE_DYNTMP_Questionnaire");
             modelBuilder.Entity<Question>().ToTable("CORE_DYNTMP_Question");
             modelBuilder.Entity<Option>().ToTable("CORE_DYNTMP_Option");
+            modelBuilder.Entity<LabRunNumberSettingsModel>().ToTable("Lab_MST_RunNumberSettings");
+            modelBuilder.Entity<AccountingCodeDetailsModel>().ToTable("ACC_MST_CodeDetails");
+            modelBuilder.Entity<HospitalModel>().ToTable("ACC_MST_Hospital");
         }
     }
 }

@@ -12,7 +12,10 @@ export class AccountingSettingsDLService {
     //GET
     public GetLedgersList() {
         return this.http.get<any>("/api/AccountingSettings?reqType=LedgersList");
-    }
+    }   
+    public getPrimaryGroupList() {
+        return this.http.get<any>("/api/AccountingSettings?reqType=get-primary-list");
+    } 
     public GetLedgers() {
         return this.http.get<any>("/api/AccountingSettings?reqType=GetLedgers",this.options);
     }
@@ -27,11 +30,47 @@ export class AccountingSettingsDLService {
     //get pharmacy supplier
     GetPharmacySupplier() {
         try {
-            return this.http.get<any>("/api/AccountingSettings?reqType=phrm-supplier", this.options);
+            return this.http.get<any>("/api/Accounting?reqType=phrm-supplier", this.options);
         } catch (ex) {
             throw ex
         }
     }
+    // GetEmployeeList
+    GetEmployeeList() {
+        try {
+            return this.http.get<any>("/api/Accounting?reqType=get-employee", this.options);
+        } catch (ex) {
+            throw ex
+        }
+    }
+    GetCreditOrgList() {
+        try {
+            return this.http.get<any>("/api/Accounting?reqType=get-creditOrg-list", this.options);
+        } catch (ex) {
+            throw ex
+        }
+    }
+   
+    GetInvVendorList() {
+        try {
+          return this.http.get<any>("/api/Accounting?reqType=get-invVendor-list", this.options);
+        } catch (ex) {
+            throw ex
+        }
+    }
+    GetInvSubcategoryList(){
+        try {
+            return this.http.get<any>("/api/Accounting?reqType=get-invSubcategory-list", this.options);
+        } catch (ex) {
+            throw ex
+        }
+    }
+
+    //fiscal year activity detaols
+    public getfsyearactivitydetail() {
+        return this.http.get<any>("/api/Accounting?reqType=get-fsyearactivity");
+    } 
+
     //public GetLedgerGroupwithMultipleVoucher() {
     //    return this.http.get<any>("/api/AccountingSettings?reqType=GetLedgerGroupwithMultipleVoucher");
     //}
@@ -39,6 +78,11 @@ export class AccountingSettingsDLService {
     public PostLedgers(CurrentLedger) {
         let data = JSON.stringify(CurrentLedger);
         return this.http.post<any>("/api/AccountingSettings?reqType=AddLedgers", data);
+    }
+    
+    public PostSection(CurrentSection) {
+        let data = JSON.stringify(CurrentSection);
+        return this.http.post<any>("/api/AccountingSettings?reqType=AddSection", data);
     }
   public PostLedgersList(CurrentLedger) {
     let data = JSON.stringify(CurrentLedger);
@@ -62,6 +106,10 @@ export class AccountingSettingsDLService {
         let data = JSON.stringify(selectedLedger);
         return this.http.put<any>("/api/AccountingSettings?reqType=ledgerISActive", data);
     }
+    public PutReopenFiscalYear(selectedFiscalYr) {
+        let data = JSON.stringify(selectedFiscalYr);
+        return this.http.put<any>("/api/AccountingSettings?reqType=reopen-fiscal-year", data);
+    }
     public PutFiscalYearStatus(selectedFiscalYr) {
         let data = JSON.stringify(selectedFiscalYr);
         return this.http.put<any>("/api/AccountingSettings?reqType=updateFiscalYearStatus", data);
@@ -82,6 +130,17 @@ export class AccountingSettingsDLService {
     public PutVoucherHead(CurrentVoucherhead) {
         let data = JSON.stringify(CurrentVoucherhead);
         return this.http.put<any>("/api/AccountingSettings?reqType=UpdateVoucherHead", data);
+    }
+    //update section 
+    public PutSection(CurrentSection)
+    {
+        let data = JSON.stringify(CurrentSection);
+        return this.http.put<any>("/api/AccountingSettings?reqType=UpdateSection", data);
+    }
+    public PutCOA(coa)
+    {
+        let data = JSON.stringify(coa);
+        return this.http.put<any>("/api/AccountingSettings?reqType=UpdateCOA", data);
     }
     //#endregion Ledger Settings Calls
 
@@ -118,7 +177,10 @@ export class AccountingSettingsDLService {
         let data = JSON.stringify(CurrentVoucher);
         return this.http.post<any>("/api/AccountingSettings?reqType=AddVouchers", data);
     }
-
+    public PostCOA(coa) {
+        let data = JSON.stringify(coa);
+        return this.http.post<any>("/api/AccountingSettings?reqType=AddCOA", data);
+    }
     public PostVoucherHead(CurrentVoucherhead) {
         let data = JSON.stringify(CurrentVoucherhead);
         return this.http.post<any>("/api/AccountingSettings?reqType=AddVoucherHead", data);
@@ -136,8 +198,15 @@ export class AccountingSettingsDLService {
     public GetItems() {
         return this.http.get<any>("/api/AccountingSettings?reqType=GetItems");
     }
-
-
+    //get provisional ledger code
+    public GetProvisionalLedgerCode() {
+        try {
+            return this.http.get<any>("/api/Accounting?reqType=provisional-ledger-code");
+        } catch (ex) {
+            throw ex;
+        }
+    }
+    
     //POST
     public PostItems(CurrentItem) {
         let data = JSON.stringify(CurrentItem);

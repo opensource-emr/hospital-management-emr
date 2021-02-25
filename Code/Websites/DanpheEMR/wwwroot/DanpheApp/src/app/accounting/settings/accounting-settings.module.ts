@@ -38,6 +38,10 @@ import { SharedModule } from '../../shared/shared.module';
 
 import { VoucherHeadListComponent } from './voucherhead/voucher-head-list';
 import { VoucherHeadAddComponent } from './voucherhead/voucher-head-add';
+
+import { ReverseTransaction } from './reverse-transaction/reverse-transaction.component';
+import { SectionListComponent } from './section/section-list';
+import { COAListComponent } from '../settings/coa/coa-list.component';
 ///import { CommonFunctions } from '../../shared/common.functions';
 @NgModule({
     providers: [AccountingSettingsBLService, AccountingSettingsDLService, 
@@ -68,7 +72,10 @@ import { VoucherHeadAddComponent } from './voucherhead/voucher-head-add';
         LedgerGroupCategoryAddComponent,
         VoucherHeadListComponent,
         VoucherHeadAddComponent,
-        LedgersEditComponent
+        LedgersEditComponent,
+        ReverseTransaction,
+        SectionListComponent,
+        COAListComponent,
     ],
 
     bootstrap: [AccountingSettingsComponent]

@@ -1,4 +1,4 @@
-﻿import { Component, ChangeDetectorRef } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import LabGridColumnSettings from '../../shared/lab-gridcol-settings';
 import { LabSettingsBLService } from '../shared/lab-settings.bl.service';
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';

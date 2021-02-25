@@ -29,15 +29,67 @@ import { WardRequisitionModel } from '../../wardsupply/shared/ward-requisition.m
 import { DrugsRequistionItemModel } from "../../nursing/shared/drugs-requistion-items.model";
 import { WardispatchModel } from '../../wardsupply/shared/ward-dispatch.model';
 import { PHRMDispensaryModel } from './phrm-dispensary.model';
+import { PHRMStoreRequisition } from './phrm-store-requisition.model';
+import { PHRMRequisitionStockVMModel } from './phrm-requisition-stock-vm.model';
+import { CFGParameterModel } from '../../settings-new/shared/cfg-parameter.model';
+import { CreditOrganization } from '../shared/pharmacy-credit-organizations.model';
+import { IMRPUpdatedStock } from '../setting/mrp/phrm-update-mrp.component';
+import { PHRMPackingTypeModel } from './phrm-packing-type.model';
+import { PHRMUpdatedStockVM } from '../setting/expiry-batch/phrm-update-exp-batch.component ';
+import { PHRMInvoiceReturnModel } from './phrm-invoice-return.model '
+import { PharmacyOpPatientVM } from '../sale/op-patient-add/phrm-op-patient.model';
 @Injectable()
 export class PharmacyBLService {
 
   constructor(public pharmacyDLService: PharmacyDLService) {
 
   }
+
+  public GetPHRMPendingBillsForSettlement() {
+    return this.pharmacyDLService.GetPHRMPendingBillsForSettlement()
+      .map(res => { return res });
+  }
+  // get pharmacy settlement duplicate records. 
+  public GetPHRMSettlementDuplicatePrints() {
+    return this.pharmacyDLService.GetPHRMSettlementDuplicatePrints()
+      .map(res => { return res });
+  }
+  // get pharmacy settlement duplicate details using settlement id. 
+  public GetPHRMSettlementDuplicateDetails(settlementId) {
+    return this.pharmacyDLService.GetPHRMSettlementDuplicateDetails(settlementId)
+      .map(res => { return res });
+  }
+  public GetCreditInvoicesByPatient(patientId: number) {
+    return this.pharmacyDLService.GetCreditInvoicesByPatient(patientId)
+      .map((responseData) => {
+        return responseData;
+      })
+  }
+  public GetCreditOrganizationList() {
+    return this.pharmacyDLService.GetCreditOrganizationList()
+      .map(res => { return res });
+  }
+  public GetPatientPastBillSummary(patientId: number) {
+    return this.pharmacyDLService.GetPatientPastBillSummary(patientId)
+      .map((responseData) => {
+        return responseData;
+      })
+  }
+
+  public GetProvisionalItemsByPatientIdForSettle(patientId: number) {
+    return this.pharmacyDLService.GetProvisionalItemsByPatientIdForSettle(patientId)
+      .map((responseData) => {
+        return responseData;
+      })
+  }
+
   //GET: setting-supplier manage : list of suppliers
   public GetSupplierList() {
     return this.pharmacyDLService.GetSupplierList()
+      .map(res => { return res });
+  }
+  public GetAllSupplierList() {
+    return this.pharmacyDLService.GetAllSupplierList()
       .map(res => { return res });
   }
 
@@ -51,6 +103,19 @@ export class PharmacyBLService {
   ///GET: setting-Itemtype and  getting ItemTypelist in Create order
   public GetItemTypeList() {
     return this.pharmacyDLService.GetItemTypeList()
+      .map((responseData) => {
+        return responseData;
+      });
+  }
+  ///GET: setting-Packettype and  getting PacketTypelist in Create order
+  public GetPackingTypeList() {
+    return this.pharmacyDLService.GetPackingTypeList()
+      .map((responseData) => {
+        return responseData;
+      });
+  }
+  public GetItemTypeListManage() {
+    return this.pharmacyDLService.GetItemTypeListManage()
       .map((responseData) => {
         return responseData;
       });
@@ -141,6 +206,11 @@ export class PharmacyBLService {
     return this.pharmacyDLService.GetItemList()
       .map(res => { return res });
   }
+  //GET: Stock->Store Requisition: list of items
+  public GetItemListForStoreRequisition() {
+    return this.pharmacyDLService.GetItemListForStoreRequisition()
+      .map(res => { return res });
+  }
   //GET: setting-tax manage : list of tax
   public GetTAXList() {
     return this.pharmacyDLService.GetTAXList()
@@ -151,8 +221,8 @@ export class PharmacyBLService {
       .map(res => { return res });
   }
   //GET: Patient List
-  public GetPatients() {
-    return this.pharmacyDLService.GetPatients()
+  public GetPatients(searchTxt) {
+    return this.pharmacyDLService.GetPatients(searchTxt)
       .map(res => { return res })
   }
   public GetPatientsListForSaleItems() {
@@ -251,13 +321,18 @@ export class PharmacyBLService {
     return this.pharmacyDLService.GetEachAccountDetailsList(SupplierID)
       .map(res => { return res });
   }
-  public GetStoreList() {
-    return this.pharmacyDLService.GetStoreList()
+  public GetMainStore() {
+    return this.pharmacyDLService.GetMainStore()
+      .map(res => { return res });
+  }
+  //GET: Return To Supplier 
+  public GetReturnToSupplier(suppId?, grNo?, batchNo?, invcId?, fromDate?, toDate?) {
+    return this.pharmacyDLService.GetReturnToSupplier(suppId, grNo, batchNo, invcId, fromDate, toDate)
       .map(res => { return res });
   }
   //GET: Return Items To Supplier list
-  public GetReturnItemsToSupplierList() {
-    return this.pharmacyDLService.GetReturnItemsToSupplierList()
+  public GetReturnItemsToSupplierList(fromDate, toDate) {
+    return this.pharmacyDLService.GetReturnItemsToSupplierList(fromDate, toDate)
       .map(res => { return res });
   }
 
@@ -279,6 +354,11 @@ export class PharmacyBLService {
     return this.pharmacyDLService.GetStockDetailsList()
       .map(res => { return res });
   }
+  /// Get Narcotics Stock Details List(sales)
+  public GetNarcoticsStockDetailsList() {
+    return this.pharmacyDLService.GetNarcoticsStockDetailsList()
+      .map(res => { return res });
+  }
 
   ///GET:GET Sales Detail List
   public GetSalesDetailsList() {
@@ -297,6 +377,11 @@ export class PharmacyBLService {
   //GET: order-goods receipt items-view  by GR-Id
   public GetGRItemsByGRId(GoodsReceiptId) {
     return this.pharmacyDLService.GetGRItemsByGRId(GoodsReceiptId)
+      .map(res => { return res });
+  }
+  //GET: order-goods receipt items-view  by GR-Id
+  public GetGRItemsForEdit(GoodsReceiptId) {
+    return this.pharmacyDLService.GetGRItemsForEdit(GoodsReceiptId)
       .map(res => { return res });
   }
   //////GET: Get All Batch No By Item Id 
@@ -335,6 +420,12 @@ export class PharmacyBLService {
         return responseData;
       });
   }
+  public GetPHRMCashCollectionSummaryReport(phrmReports: PHRMReportsModel) {
+    return this.pharmacyDLService.GetPHRMCashCollectionSummaryReport(phrmReports)
+      .map((responseData) => {
+        return responseData;
+      });
+  }
 
   //GET : Get Sale Return Report
   public GetPHRMSaleReturnReport(phrmReports: PHRMReportsModel) {
@@ -367,7 +458,20 @@ export class PharmacyBLService {
         return responseData;
       });
   }
-
+  //GET: Get Return TO Store Report
+  public GetPHRMTransferToStoreReport(phrmReports: PHRMReportsModel) {
+    return this.pharmacyDLService.GetPHRMTransferToStoreReport(phrmReports)
+      .map((responseData) => {
+        return responseData;
+      });
+  }
+  //GET: Get Return TO Dispensary Report
+  public GetPHRMTransferToDispensaryReport(phrmReports: PHRMReportsModel) {
+    return this.pharmacyDLService.GetPHRMTransferToDispensaryReport(phrmReports)
+      .map((responseData) => {
+        return responseData;
+      });
+  }
   //GET : Get stock manage details report
   public GetPHRMStockManageDetailReport(phrmReports: PHRMReportsModel) {
     return this.pharmacyDLService.GetPHRMStockManageDetailReport(phrmReports)
@@ -399,9 +503,17 @@ export class PharmacyBLService {
       });
   }
 
-  ///GET: Get Item wise Stock Report 
+  ///GET: Get Item wise Stock Report  
   public GetPHRMDispensaryStoreReport(phrmReports: PHRMReportsModel) {
     return this.pharmacyDLService.GetPHRMDispensaryStoreReport(phrmReports)
+      .map((responseData) => {
+        return responseData;
+      });
+  }
+
+  //Get Narcotics Stock Report
+  public GetNarcoticsStoreReport() {
+    return this.pharmacyDLService.GetPHRMNarcoticsStoreReport()
       .map((responseData) => {
         return responseData;
       });
@@ -484,9 +596,9 @@ export class PharmacyBLService {
     }
   }
 
-  public GetSaleReturnList() {
+  public GetSaleReturnList(fromDate, toDate) {
     try {
-      return this.pharmacyDLService.GetSaleReturnList()
+      return this.pharmacyDLService.GetSaleReturnList(fromDate, toDate)
         .map(res => res);
     }
     catch (ex) {
@@ -498,6 +610,26 @@ export class PharmacyBLService {
   public GetSaleInvoiceItemsByInvoiceId(invoiceId: number) {
     try {
       return this.pharmacyDLService.GetSaleInvoiceItemsByInvoiceId(invoiceId)
+        .map(res => res);
+    }
+    catch (ex) {
+      throw ex;
+    }
+  }
+  //GET: Sale Return Invoice Items data by InvoiceId
+  public GetSaleInvoiceRetItemsByInvoiceId(invoiceId: number) {
+    try {
+      return this.pharmacyDLService.GetSaleInvoiceRetItemsByInvoiceId(invoiceId)
+        .map(res => res);
+    }
+    catch (ex) {
+      throw ex;
+    }
+  }
+  //GET: Sale Return Invoice Items data by InvoiceReturnId
+  public GetSaleReturnInvoiceItemsByInvoiceRetId(invoiceId: number) {
+    try {
+      return this.pharmacyDLService.GetSaleReturnInvoiceItemsByInvoiceRetId(invoiceId)
         .map(res => res);
     }
     catch (ex) {
@@ -518,9 +650,9 @@ export class PharmacyBLService {
   //GET: Get ReturnFromCustomer Invoice Model data for Return from customer functionality fulfill
   //passing Invoice Id and getting InvoiceReturnItemsModel
   //this for return from customer to pharmacy                
-  public GetReturnFromCustomerModelDataByInvoiceId(invoiceId: number,fiscYrId) {
+  public GetReturnFromCustomerModelDataByInvoiceId(invoiceId: number, fiscYrId) {
     try {
-      return this.pharmacyDLService.GetReturnFromCustomerModelDataByInvoiceId(invoiceId,fiscYrId)
+      return this.pharmacyDLService.GetReturnFromCustomerModelDataByInvoiceId(invoiceId, fiscYrId)
         .map(res => res);
     }
     catch (ex) {
@@ -529,6 +661,10 @@ export class PharmacyBLService {
   }
   public GetAllFiscalYears() {
     return this.pharmacyDLService.GetAllFiscalYears()
+      .map(res => res);
+  }
+  public GetCreditOrganization() {
+    return this.pharmacyDLService.GetCreditOrganization()
       .map(res => res);
   }
   //GET: Patient - Patient Details by Patient Id
@@ -566,9 +702,9 @@ export class PharmacyBLService {
 
   }
   ////Get: Get All Credit Report For In/OUT Patient 
-  public GetCreditInOutPatReportList(phrmReports: PHRMReportsModel,IsInOutPat, patientName) {
+  public GetCreditInOutPatReportList(phrmReports: PHRMReportsModel, IsInOutPat, patientName) {
     try {
-      return this.pharmacyDLService.GetCreditInOutPatReportList(phrmReports,IsInOutPat, patientName)
+      return this.pharmacyDLService.GetCreditInOutPatReportList(phrmReports, IsInOutPat, patientName)
         .map(res => { return res });
     }
     catch (ex) {
@@ -578,9 +714,9 @@ export class PharmacyBLService {
   }
 
   ////Get: Get Stock Item Report Data 
-  public GetStockItemsReport(itemId) {
+  public GetStockItemsReport(itemId, location) {
     try {
-      return this.pharmacyDLService.GetStockItemsReport(itemId)
+      return this.pharmacyDLService.GetStockItemsReport(itemId, location)
         .map(res => { return res });
     }
     catch (ex) {
@@ -644,10 +780,44 @@ export class PharmacyBLService {
     }
 
   }
+  ////Get: Get  Stock Summary Report Data
+  public GetStockSummaryReport(phrmReports: PHRMReportsModel) {
+    try {
+      return this.pharmacyDLService.GetStockSummaryReport(phrmReports)
+        .map(res => { return res });
+    }
+    catch (ex) {
+      throw ex;
+    }
+
+  }
+  ////Get:  Item Wise Transaction Stock Summary Report Data
+  public GetItemTxnSummaryReport(fromDate: string, toDate: string, itemId: number) {
+    try {
+      return this.pharmacyDLService.GetItemTxnSummaryReport(fromDate, toDate, itemId)
+        .map(res => { return res });
+    }
+    catch (ex) {
+      throw ex;
+    }
+
+  }
   ////Get: Get Daily Sales Summary Report Data
   public GetDailySalesSummaryReport(FromDate, ToDate, itemId) {
     try {
       return this.pharmacyDLService.GetDailySalesSummaryReport(FromDate, ToDate, itemId)
+        .map(res => { return res });
+    }
+    catch (ex) {
+      throw ex;
+    }
+
+  }
+
+  // Get Daily Salse Report for Narcotics
+  public GetNarcoticsDailySalesReport(FromDate, ToDate, itemId) {
+    try {
+      return this.pharmacyDLService.GetNarcoticsDailySalesReport(FromDate, ToDate, itemId)
         .map(res => { return res });
     }
     catch (ex) {
@@ -667,9 +837,20 @@ export class PharmacyBLService {
 
   }
   ////Get: Get Batch Stock Report Data
-  public GetPharmacyBillingReport(phrmReports,invoiceNumber) {
+  public GetPharmacyBillingReport(phrmReports, invoiceNumber) {
     try {
-      return this.pharmacyDLService.GetPharmacyBillingReport(phrmReports,invoiceNumber)
+      return this.pharmacyDLService.GetPharmacyBillingReport(phrmReports, invoiceNumber)
+        .map(res => { return res });
+    }
+    catch (ex) {
+      throw ex;
+    }
+
+  }
+  ////Get: Get Rack Stock Report Data
+  public GetRackStockDistributionReport(rackIds: string, locationId: number) {
+    try {
+      return this.pharmacyDLService.GetRackStockDistributionReport(rackIds, locationId)
         .map(res => { return res });
     }
     catch (ex) {
@@ -690,15 +871,14 @@ export class PharmacyBLService {
   }
 
   ////Get: Get Supplier Stock Report Data
-  public GetSupplierStockReport(supplierName) {
+  public GetSupplierStockReport(fromDate, toDate, supplierName) {
     try {
-      return this.pharmacyDLService.GetSupplierStockReport(supplierName)
+      return this.pharmacyDLService.GetSupplierStockReport(fromDate, toDate, supplierName)
         .map(res => { return res });
     }
     catch (ex) {
       throw ex;
     }
-
   }
   //Get: Get store items list
   public GetStoreRequestedItemList(Status) {
@@ -714,9 +894,9 @@ export class PharmacyBLService {
       return this.pharmacyDLService.GetDispensaryList()
         .map(res => { return res });
     }
-    catch (ex) { throw ex;}
+    catch (ex) { throw ex; }
   }
-  
+
   public PostSalesCategoryDetails(salescategory) {
     try {
       var temp = _.omit(salescategory, ['SalesCategoryValidator']);
@@ -811,7 +991,60 @@ export class PharmacyBLService {
         return responseData;
       })
   }
+  //Get pharmacy requisition list
+  public GetItemwiseRequistionList() {
+    return this.pharmacyDLService.GetItemwiseRequistionList()
+      .map(res => { return res })
+  }
 
+  //GET: REQUISITION
+  public GetDeptwiseRequisitionList(status: string) {
+    return this.pharmacyDLService.GetDeptwiseRequisitionList(status)
+      .map((responseData) => {
+        return responseData;
+      });
+  }
+
+  //GET: Get All Requisition Items details for View requisition Items by Requisition ID
+  GetRequisitionItemsByRID(RequisitionId: number) {
+    return this.pharmacyDLService.GetRequisitionItemsByRID(RequisitionId)
+      .map((responseData) => {
+        return responseData;
+      });
+  }
+  //GET:Get All Requision with Requisition Items for Dispatch purpose
+  GetRequisitionWithRItemsById(RequisitionId: number) {
+
+    return this.pharmacyDLService.GetRequisitionWithRItemsById(RequisitionId)
+      .map((responseData) => {
+        return responseData;
+      });
+  }
+
+  GetDispatchDetails(RequisitionId: number) {
+    return this.pharmacyDLService.GetDispatchDetails(RequisitionId)
+      .map((responseData) => {
+        return responseData;
+      });
+  }
+  GetDispatchItemByDispatchId(DispatchId: number) {
+    return this.pharmacyDLService.GetDispatchItemByDispatchId(DispatchId)
+      .map((responseData) => {
+        return responseData;
+      });
+  }
+  GetTermsList(TermApplicationId: number) {
+    return this.pharmacyDLService.GetTermsList(TermApplicationId)
+      .map((responseData) => {
+        return responseData;
+      });
+  }
+  GetStoreRackNameByItemId(itemId: number) {
+    return this.pharmacyDLService.GetStoreRackNameByItemId(itemId)
+      .map((responseData) => {
+        return responseData;
+      });
+  }
   //POST : setting-supplier manage
   public AddSupplier(supplier: PHRMSupplierModel) {
     var temp = _.omit(supplier, ['SupplierValidator']);
@@ -853,6 +1086,12 @@ export class PharmacyBLService {
     return this.pharmacyDLService.PostItemType(temp)
       .map(res => { return res });
   }
+  //POST : setting-packing type manage
+  public AddPackingType(packingtype: PHRMPackingTypeModel) {
+    var temp = _.omit(packingtype, ['PackingTypeValidator']);
+    return this.pharmacyDLService.PostPackingType(temp)
+      .map(res => { return res });
+  }
   //POST : setting-item manage
   public AddItem(item: PHRMItemMasterModel) {
     var temp = _.omit(item, ['ItemValidator']);
@@ -872,12 +1111,34 @@ export class PharmacyBLService {
     return this.pharmacyDLService.PostGenericName(temp)
       .map(res => { return res });
   }
-  //POST: Patient
-  //POST: Patient- Registration of Outdoor patient
+  //POST: Credit Organizations
+  public AddCreditOrganization(creditOrganization: CreditOrganization) {
+    var temp = _.omit(creditOrganization, ['CreditOrganizationValidator']);
+    return this.pharmacyDLService.PostCreditOrganization(temp)
+      .map(res => { return res });
+  }
+  //POST: Patient 
   public PostPatientRegister(patient: PHRMPatient) {
     try {
       var patTempData = _.omit(patient, ['PHRMPatientValidator']);
+      //patTempData = _.omit(patient,[])
+
       return this.pharmacyDLService.PostPatientRegister(patTempData)
+        .map(res => { return res });
+    }
+    catch (ex) {
+      throw ex;
+    }
+  }
+  //POST: Patient- Registration of Outdoor patient
+  public PostOPatientRegister(patient: PharmacyOpPatientVM) {
+    try {
+      var patient = _.omit(patient, ['OutPatientValidator']);
+      var pat = new PHRMPatient();
+      pat = Object.assign(pat, patient);
+      var pat = _.omit(pat, ['PHRMPatientValidator']);
+      //patTempData = _.omit(patient,[])
+      return this.pharmacyDLService.PostPatientRegister(pat)
         .map(res => { return res });
     }
     catch (ex) {
@@ -950,8 +1211,8 @@ export class PharmacyBLService {
     let newretSuppl: any = _.omit(retSuppl, ['ReturnToSupplierValidator']);
 
     let newretSupplItems = retSuppl.returnToSupplierItems.map(item => {
-      item.SelectedGRItems[0].GoodReceiptItemValidator = null;
-      return _.omit(item, ['ReturnToSupplierItemValidator']);
+      //item.SelectedGRItems[0].GoodReceiptItemValidator = null;
+      return _.omit(item, ['ReturnToSupplierItemValidator', 'GoodReceiptItemValidator']);
     });
     //assign items to above 'newretSuppl' with exact same propertyname : 'returnToSupplierItems'
     newretSuppl.returnToSupplierItems = newretSupplItems;
@@ -1061,7 +1322,7 @@ export class PharmacyBLService {
     try {
       let newInvoice: any = _.omit(invoiceData, ['selectedPatient.PHRMPatientValidator', 'InvoiceValidator']);
       let newInvoiceItems = invoiceData.InvoiceItems.map(item => {
-        return _.omit(item, ['positiveNumberValdiator', 'InvoiceItemsValidator', 'positiveNumberValdiatortest', 'InvoiceItemsValidatortest', 'GRItems', 'Items']);
+        return _.omit(item, ['selectedPatient.PHRMPatientValidator', 'positiveNumberValdiator', 'InvoiceItemsValidator', 'positiveNumberValdiatortest', 'InvoiceItemsValidatortest', 'GRItems', 'Items']);
       });
       newInvoice.InvoiceItems = newInvoiceItems;
       let data = JSON.stringify(newInvoice);
@@ -1079,11 +1340,15 @@ export class PharmacyBLService {
   }
 
   //POSt: post data to server of Retuned invoice items from customer 
-  PostReturnFromCustomerData(invoiceReturnData: Array<PHRMInvoiceReturnItemsModel>) {
-    let newItems = invoiceReturnData.map(item => {
+  PostReturnFromCustomerData(invoiceReturnData: PHRMInvoiceReturnModel) {
+
+    let newretCust: any = _.omit(invoiceReturnData, ['selectedPatient.PHRMPatientValidator', 'InvoiceReturnValidator']);
+
+    let newretCustItems = invoiceReturnData.InvoiceReturnItems.map(item => {
       return _.omit(item, ['InvoiceItemsReturnValidator']);
     });
-    let data = JSON.stringify(newItems);
+    newretCust.InvoiceReturnItems = newretCustItems;
+    let data = JSON.stringify(newretCust);
     return this.pharmacyDLService.PostReturnFromCustomerData(data)
       .map(res => { return res });
   }
@@ -1138,9 +1403,9 @@ export class PharmacyBLService {
 
   //POST:update goods receipt cancelation
   //post to stock transaction items
-  PostGoodsReceiptCancelDetail(selectedGrId) {
+  CancelGoodsReceipt(goodsReceiptId: number, cancelRemarks : string) {
     try {
-      return this.pharmacyDLService.PostGoodsReceiptCancelDetail(selectedGrId)
+      return this.pharmacyDLService.CancelGoodsReceipt(goodsReceiptId, cancelRemarks)
         .map(res => { return res });
     } catch (ex) {
       throw ex;
@@ -1179,7 +1444,7 @@ export class PharmacyBLService {
     try {
       //   return _.omit(item, ['positiveNumberValdiator', 'WardRequestValidator', 'positiveNumberValdiatortest', 'WardRequestValidatortest', 'selectedItem']);
 
-      let newWardReq: any = _.omit(wardItem);
+      let newWardReq: any = _.omit(wardItem, ['DispatchValidator']);
       let newWardReqItems = wardItem.WardDispatchedItemsList.map(item => {
         return _.omit(item);
       });
@@ -1194,6 +1459,61 @@ export class PharmacyBLService {
     }
 
   }
+
+
+  public PostSettlementInvoice(settlement) {
+
+    let stlmntToPost: any = _.omit(settlement, ["Patient"]);
+
+
+    //omit BillingTransactionItem and Patient from each of BillingTransactions objects
+    let txns: Array<PHRMInvoiceModel> = settlement.PHRMInvoiceTransactions.map(bil => {
+      return _.omit(bil, ["selectedPatient", "InvoiceItems"]);
+    });
+
+    stlmntToPost.PHRMInvoiceTransactions = txns;
+
+
+    return this.pharmacyDLService.PostBillSettlement(stlmntToPost)
+      .map((responseData) => {
+        return responseData;
+      });
+  }
+  public AddNewOutpatienPatient(outPatient: PharmacyOpPatientVM) {
+    let newPatObject = _.omit(outPatient, ['OutPatientValidator'])
+    let patString = JSON.stringify(newPatObject);
+    return this.pharmacyDLService.PostPharmacyOutPatient(patString);
+  }
+
+  //Posting the Requisiton and requisitionItems table
+  PostToRequisition(requisition: PHRMStoreRequisition) {
+    let newRequ: any = _.omit(requisition, ['RequisitionValidator']);
+
+    let newRequItems = requisition.RequisitionItems.map(item => {
+      return _.omit(item, ['RequisitionItemValidator']);
+    });
+
+
+    newRequ.RequisitionItems = newRequItems;
+    let data = JSON.stringify(newRequ);
+    return this.pharmacyDLService.PostToRequisition(data)
+      .map(res => { return res })
+  }
+  //POST: Posting Dispatched Items
+  PostToDispatchItems(requisitionStockVM: PHRMRequisitionStockVMModel) {
+
+    let newRequisitionSVM: any = requisitionStockVM;
+
+    let dispatchItemsTemp = requisitionStockVM.dispatchItems.map(function (item) {
+      var temp = _.omit(item, ['DispatchItemValidator']);
+      return temp;
+    });
+    newRequisitionSVM.dispatchItems = dispatchItemsTemp;
+    let data = JSON.stringify(newRequisitionSVM);
+    return this.pharmacyDLService.PostToDispatchItems(data)
+      .map(res => { return res })
+
+  }
   //PUT : setting-supplier manage
   public UpdateSupplier(supplier: PHRMSupplierModel) {
     //to fix serializaiton problem in server side
@@ -1204,6 +1524,17 @@ export class PharmacyBLService {
     var temp = _.omit(supplier, ['SupplierValidator']);
     return this.pharmacyDLService.PutSupplier(temp)
       .map(res => { return res });
+  }
+
+  //PUT:Setting-Stock Items Expiry Date and BatchNo change
+  public UpdateStockExpiryDateandBatchNo(stockitem: PHRMUpdatedStockVM) {
+    try {
+      return this.pharmacyDLService.UpdateStockExpiryDateandBatchNo(stockitem)
+        .map(res => { return res });
+    }
+    catch (ex) {
+      throw ex;
+    }
   }
   //PUT : setting-company manage
   public UpdateCompany(company: PHRMCompanyModel) {
@@ -1243,6 +1574,14 @@ export class PharmacyBLService {
     return this.pharmacyDLService.PutItemType(temp)
       .map(res => { return res });
   }
+  //PUT : setting-packing type manage
+  public UpdatePackingType(packingtype: PHRMPackingTypeModel) {
+    if (packingtype.CreatedOn)
+      packingtype.CreatedOn = moment(packingtype.CreatedOn).format('YYYY-MM-DD HH:mm');
+    var temp = _.omit(packingtype, ['PackingTypeValidator']);
+    return this.pharmacyDLService.PutPackingType(temp)
+      .map(res => { return res });
+  }
   //PUT : setting-item manage
   public UpdateItem(item: PHRMItemMasterModel) {
     if (item.CreatedOn)
@@ -1261,6 +1600,13 @@ export class PharmacyBLService {
     return this.pharmacyDLService.PutTAX(temp)
       .map(res => { return res });
   }
+
+  //PUT : CCCharge in core parameter
+  public AddCCcharge(CurrentItem: CFGParameterModel) {
+    var temp = _.omit(CurrentItem, ['ItemValidator']);
+    return this.pharmacyDLService.PutCCcharge(temp)
+      .map(res => { return res });
+  }
   //PUT Generic Name
   public UpdateGenericName(genericName: PHRMGenericModel) {
     if (genericName.CreatedOn) {
@@ -1270,7 +1616,17 @@ export class PharmacyBLService {
     return this.pharmacyDLService.PutGenericName(temp)
       .map(res => { return res });
   }
-
+  //PUT Credit Organizations
+  public UpdateCreditOrganization(creditOrganization: CreditOrganization) {
+    //to fix serializaiton problem in server side
+    if (creditOrganization.CreatedOn)
+      creditOrganization.CreatedOn = moment(creditOrganization.CreatedOn).format('YYYY-MM-DD HH:mm');
+    if (creditOrganization.ModifiedOn)
+      creditOrganization.ModifiedOn = moment(creditOrganization.ModifiedOn).format('YYYY-MM-DD HH:mm');
+    var temp = _.omit(creditOrganization, ['CreditOrganizationValidator']);
+    return this.pharmacyDLService.PutCreditOrganization(temp)
+      .map(res => { return res });
+  }
   //PUT : Stock Manage
   public UpdateStock(stkManageData: Array<PHRMGoodsReceiptItemsModel>) {
     try {
@@ -1278,6 +1634,22 @@ export class PharmacyBLService {
         return _.omit(item, ['GoodReceiptItemValidator']);
       });
       return this.pharmacyDLService.PutStock(temp)
+        .map(res => { return res });
+    }
+    catch (ex) {
+      throw ex;
+    }
+  }
+  //PUT : Stock Manage
+  public UpdateGoodsReceipt(GoodReceipt: PHRMGoodsReceiptModel) {
+    try {
+
+      let temp = _.omit(GoodReceipt, ['GoodReceiptValidator', 'dateValidator']);
+      let goodReceiptItems = GoodReceipt.GoodReceiptItem.map(item => {
+        return _.omit(item, ['GoodReceiptItemValidator', 'SelectedItem']);
+      });
+      temp.GoodReceiptItem = goodReceiptItems;
+      return this.pharmacyDLService.UpdateGoodsReceipt(temp)
         .map(res => { return res });
     }
     catch (ex) {
@@ -1309,15 +1681,16 @@ export class PharmacyBLService {
     }
   }
   //PUT: Setting- Stock Txn Items MRP change
-  public PutStockTxnItemMRP(stockTxnItem) {
+  public UpdateStockMRP(stockTxnItem: IMRPUpdatedStock) {
     try {
-      return this.pharmacyDLService.PutStockTxnItemMRP(stockTxnItem)
+      return this.pharmacyDLService.UpdateStockMRP(stockTxnItem)
         .map(res => { return res });
     }
     catch (ex) {
       throw ex;
     }
   }
+
   // for cancel the credit bill.
   public CancelCreditBill(creditItems: any) {
     try {
@@ -1339,6 +1712,18 @@ export class PharmacyBLService {
       });
   }
 
+  public GetAllProvisionalReturn(fromDate, toDate) {
+    return this.pharmacyDLService.GetAllProvisionalReturn(fromDate, toDate)
+      .map((responseData) => {
+        return responseData;
+      });
+  }
+  public GetAllProvisionalReturnDuplicatePrint(PatientId) {
+    return this.pharmacyDLService.GetAllProvisionalReturnDuplicatePrint(PatientId)
+      .map((responseData) => {
+        return responseData;
+      });
+  }
   public GetPatientCreditItems(patientId: number) {
     return this.pharmacyDLService.GetPatientCreditItems(patientId)
       .map((responseData) => {
@@ -1355,11 +1740,27 @@ export class PharmacyBLService {
   }
 
   //PUT : setting-item add to rack
-  public addtoRack(itemId: number, rackId: number) {
-    return this.pharmacyDLService.PutAddItemToRack(itemId, rackId)
+  public addtoRack(itemId: number, dispensarRackId: number, storeRackId: number) {
+    return this.pharmacyDLService.PutAddItemToRack(itemId, dispensarRackId, storeRackId)
       .map((responseData) => {
         return responseData;
       })
+  }
+
+  public UpdateSettlementPrintCount(settlementId: number) {
+    return this.pharmacyDLService.PutSettlementPrintCount(settlementId)
+      .map(res => res);
+  }
+
+  //GET GR history
+  GetGoodReceiptHistory() {
+    return this.pharmacyDLService.GetGoodReceiptHistory().map(res => res);
+  }
+  GetGRDetailsByGRId(goodsReceiptId: number) {
+    return this.pharmacyDLService.GetGRDetailsByGRId(goodsReceiptId).map(res => res);
+  }
+  GetInvoiceReceiptByInvoiceId(invoiceId: number) {
+    return this.pharmacyDLService.GetInvoiceReceiptByInvoiceId(invoiceId).map(res => res);
   }
 
 }

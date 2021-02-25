@@ -5,12 +5,17 @@ export class RadiologyService {
   //public enableImgUpload: boolean;
   //headertype=('image' or 'text-formatted'). This is to determine whether to show customer header in radiology report'
   public ReportHeader = { show: false, headerType: "image" };
+  public selectedImagingType: number = 0;
+
   constructor(public coreService: CoreService) {
     //this.enableImgUpload = this.coreService.GetRadImgUploadConfig();
     //this.showCustomerHeader = this.coreService.GetCustomerHeaderViewConfig();
     this.ReportHeader = this.GetReportHeaderParam();
   }
 
+  public setSelectedImagingType(typeId: number) {
+    this.selectedImagingType = typeId;
+  }
 
   //sud: 4thJan'18--moved from core-service to radiology service.. 
   public GetReportHeaderParam() {
@@ -51,6 +56,18 @@ export class RadiologyService {
       retVal = true;
     }
     return retVal;
+  }
+
+
+
+  public GetExtReferrerSettings() {
+    var currParam = this.coreService.Parameters.find(a => a.ParameterGroupName == "Radiology" && a.ParameterName == "ExternalReferralSettings");
+    if (currParam && currParam.ParameterValue) {
+      return JSON.parse(currParam.ParameterValue);
+    }
+    else {
+      return { EnableExternal: true, DefaultExternal: false, AllowFreeText: true };
+    }
   }
 
 

@@ -1,0 +1,32 @@
+
+<div class="wrapper">
+  <div>
+    <table class="table test-list-table">
+      <thead>
+        <tr>
+          <th>Sample No</th>
+          <th>Test Name</th>
+          <th>Collected By</th>
+          <th>Result By</th>
+          <th *ngIf="showVerifiedByColumn">Verified By</th>
+          <th>Printed By</th>
+          <th><input class="slct-checkbox" type="checkbox" name="selectAllTests" value="selectAll" [(ngModel)]="selectAll" (change)="SelectDeselectAll()" /></th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngFor="let test of reportSelected.Tests; let i=index;">
+          <tr (click)="CheckForSelectAll(test)" [ngClass]="test.PrintCount > 0 ? 'bg-green':''">
+            <td>{{reportSelected.SampleCodeFormatted}}</td>
+            <td [ngClass]="test.ValidTestToPrint ? '':'txt-red'">{{test.TestName}}</td>
+            <td>{{test.SampleCollectedByName}}</td>
+            <td>{{test.ResultAddedByName}}</td>
+            <td *ngIf="showVerifiedByColumn">{{test.ResultVerifiedByName}}</td>
+            <td>{{test.PrintedByName}}</td>
+            <td *ngIf="test.ValidTestToPrint"><input class="slct-checkbox" type="checkbox" name="allTests" [(ngModel)]="test.CheckedForPrint" /></td>
+            <td class="txt-red" *ngIf="!test.ValidTestToPrint"> Not Paid </td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
+</div>

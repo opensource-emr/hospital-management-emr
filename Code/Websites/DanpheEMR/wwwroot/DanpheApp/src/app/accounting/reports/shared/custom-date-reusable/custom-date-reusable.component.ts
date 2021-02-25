@@ -2,7 +2,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import * as moment from 'moment/moment';
 import { AccountingReportsBLService } from "../../shared/accounting-reports.bl.service";
 import { FiscalYearModel } from "../../../settings/shared/fiscalyear.model";
-
+import { CoreService } from '../../../../core/shared/core.service';
 @Component({
     selector: "danphe-cust-date-reusable",
     templateUrl: "./custom-date-reusable.html"
@@ -16,12 +16,14 @@ export class CustomDateReusableComponent {
   public currentFiscalYear: FiscalYearModel = new FiscalYearModel();
   public fiscalYearList: Array<FiscalYearModel> = new Array<FiscalYearModel>();
   public isOutOfFiscalYearDate: boolean = false;
-
+  public calType: string = ""; 
     @Output("onDateChange")
     event: EventEmitter<Object> = new EventEmitter<Object>();
 
-  constructor(public accReportBLServ: AccountingReportsBLService) {
-    this.GetFiscalYear();
+  constructor(public accReportBLServ: AccountingReportsBLService, public coreService:CoreService ) {
+    this.GetFiscalYear();   
+    //this.LoadCalendarTypes(); 
+    this.calType= coreService.DatePreference;
     }
     @Input("rangeType")
     public set value(val: string) {
@@ -125,13 +127,25 @@ export class CustomDateReusableComponent {
             this.event.emit({fromDate:this.fromDate, toDate:this.toDate, type:"custom"});
         }
     }
-
+    //loads CalendarTypes from Paramter Table (database) and assign the require CalendarTypes to local variable.
+    LoadCalendarTypes() {
+     let Parameter = this.coreService.Parameters;
+     Parameter = Parameter.filter(parms => parms.ParameterName == "CalendarTypes");
+     let calendarTypeObject = JSON.parse(Parameter[0].ParameterValue);
+     this.calType = calendarTypeObject.AccountingModule;
+     }
     ChangeCustomDate() {
         var fDate = moment(this.fromDate).format('YYYY-MM-DD 00:00');
         var tDate = moment(this.toDate).format('YYYY-MM-DD 23:59');
         this.event.emit({ fromDate: fDate, toDate: tDate });
-  }
-
+   }
+  public fiscalYearId:number=null; 
+	selectDate(event){
+	  this.fromDate = event.fromDate;
+	  this.toDate = event.toDate;
+    this.fiscalYearId = event.fiscalYearId;
+    this.event.emit({ fromDate: this.fromDate, toDate: this.toDate,fiscalYearId:this.fiscalYearId  });
+	}
   GetFiscalYear() {
       this.accReportBLServ.GetFiscalYearsList().subscribe(res => {
         if (res.Status == "OK") {

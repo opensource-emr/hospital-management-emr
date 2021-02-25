@@ -1,7 +1,12 @@
-﻿import { Injectable, Directive } from '@angular/core';
+import { Injectable, Directive } from '@angular/core';
 import { LabTest } from "./lab-test.model";
 //import { LabReportTemplateInfo } from "./lab-report-template-info.model";
 import { LabTestViewResult, LabPendingResultVM } from "./lab-view.models";
+
+@Injectable()
+export class LabService {
+  defaultPrinterName: string = null;
+}
 
 @Injectable()
 export class LabTestResultService {

@@ -12,13 +12,16 @@ import { CommonFunctions } from "../../shared/common.functions";
 import { PharmacyService } from "../shared/pharmacy.service"
 import { SecurityService } from '../../security/shared/security.service';
 import { PharmacyReceiptModel } from "../shared/pharmacy-receipt.model";
+import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from '../../shared/danphe-grid/NepaliColGridSettingsModel';
+import { PHRMInvoiceReturnModel } from '../shared/phrm-invoice-return.model ';
 @Component({
-    templateUrl: "../../view/pharmacy-view/Sale/PHRMSaleList.html" //  "/PharmacyView/PHRMSaleList"
+    templateUrl: "./phrm-sale-list.html"
 })
 
 export class PHRMSaleListComponent {
     //It save list of sale for grid
     public saleListData: Array<PHRMInvoiceModel> = new Array<PHRMInvoiceModel>();
+    public saleRetListData: Array<PHRMInvoiceReturnModel> = new Array<PHRMInvoiceReturnModel>();
     //variable for show invoice details with all items
     public saleInvoiceDetails: PHRMInvoiceModel = new PHRMInvoiceModel();
     // //It save InvoiceId with Invoice itmes details for local data access
@@ -29,8 +32,10 @@ export class PHRMSaleListComponent {
     public fromDate: string = null;
     public toDate: string = null;
     public pharmListfiltered: Array<PHRMInvoiceModel> = new Array<PHRMInvoiceModel>();
-
+    public pharmRetListfiltered: Array<PHRMInvoiceReturnModel> = new Array<PHRMInvoiceReturnModel>();
+    public dateRange: string = "last1Week";
     public pharmacyReceipt: PharmacyReceiptModel = new PharmacyReceiptModel();
+    public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
     constructor(
         public router: Router, public pharmacyService: PharmacyService,
         public pharmacyBLService: PharmacyBLService,
@@ -38,33 +43,31 @@ export class PHRMSaleListComponent {
         public changeDetector: ChangeDetectorRef,
         public securityService: SecurityService
 
-       
+
     ) {
         this.fromDate = moment().format('YYYY-MM-DD');
         this.toDate = moment().format('YYYY-MM-DD');
-      this.saleGridColumns = PHRMGridColumns.PHRMSaleList;
-              this.LoadSaleInvoiceList();
+        this.saleGridColumns = PHRMGridColumns.PHRMSaleList;
+        this.LoadSaleInvoiceList();
+        this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('CreateOn', false));
     }
-   
+
     //Load sale invoice list
     LoadSaleInvoiceList(): void {
         try {
-          this.pharmacyBLService.GetSaleInvoiceList(this.fromDate,this.toDate)
+            this.pharmacyBLService.GetSaleInvoiceList(this.fromDate, this.toDate)
                 .subscribe(res => {
                     if (res.Status == 'OK') {
                         this.saleListData = res.Results;
                         this.pharmListfiltered = this.saleListData;
-                        
                     }
-                    
                     else {
                         this.logError(res.ErrorMessage);
                     }
                 },
-                err => {
-                    this.logError("failed to get patients")
-                });
-           
+                    err => {
+                        this.logError("failed to get patients")
+                    });
         }
         catch (exception) {
             this.ShowCatchErrMessage(exception);
@@ -90,7 +93,19 @@ export class PHRMSaleListComponent {
         else {
             this.pharmListfiltered = this.saleListData;
         }
-        
+    }
+
+    onGridDateChange($event) {
+
+        this.fromDate = $event.fromDate;
+        this.toDate = $event.toDate;
+        if (this.fromDate != null && this.toDate != null) {
+            if (moment(this.fromDate).isBefore(this.toDate) || moment(this.fromDate).isSame(this.toDate)) {
+                this.LoadSaleInvoiceList();
+            } else {
+                this.msgBoxServ.showMessage('failed', ['Please enter valid From date and To date']);
+            }
+        }
     }
 
 
@@ -101,7 +116,9 @@ export class PHRMSaleListComponent {
                 case "view": {
                     if ($event.Data != null) {
                         var selectedSaleInvoiceData = $event.Data;
-                        this.ShowSaleInvoiceDetail(selectedSaleInvoiceData);
+                        this.saleInvoiceDetails = selectedSaleInvoiceData;
+                        this.showSaleItemsPopup = true;
+                        //this.ShowSaleInvoiceDetail(selectedSaleInvoiceData);
                     }
                     break;
                 }
@@ -131,7 +148,7 @@ export class PHRMSaleListComponent {
     public ShowSaleInvoiceDetail(selectedSaleInvoiceData) {
         try {
             if (selectedSaleInvoiceData) {
-                this.saleInvoiceDetails = selectedSaleInvoiceData;               
+                this.saleInvoiceDetails = selectedSaleInvoiceData;
                 //find invoice details in locl variable if find then no need to go server
                 let saleInvoiceDetailsSearchData = this.saleInvoiceLocalData.find(a => a.InvoiceId == this.saleInvoiceDetails.InvoiceId);
                 if (saleInvoiceDetailsSearchData) {
@@ -155,10 +172,10 @@ export class PHRMSaleListComponent {
                                     this.logError(res.ErrorMessage);
                                 }
                             },
-                            err => {
-                                this.showSaleItemsPopup = false;
-                                this.logError("failed to get invoice items")
-                            });
+                                err => {
+                                    this.showSaleItemsPopup = false;
+                                    this.logError("failed to get invoice items")
+                                });
                     }
                 }
             }
@@ -166,6 +183,9 @@ export class PHRMSaleListComponent {
         catch (exception) {
             this.ShowCatchErrMessage(exception);
         }
+    }
+    OnInvoicePopUpClose() {
+        this.showSaleItemsPopup = false;
     }
     //This function only for show catch messages in console 
     ShowCatchErrMessage(exception) {
@@ -185,14 +205,15 @@ export class PHRMSaleListComponent {
                 let txnReceipt = PharmacyReceiptModel.GetReceiptForTransaction(invoiceItemData);
                 txnReceipt.IsValid = true;
                 txnReceipt.ReceiptType = "Sale Receipt";
-                txnReceipt.BillingUser = this.securityService.GetLoggedInUser().UserName;
+                txnReceipt.BillingUser = invoiceItemData.UserName;
                 txnReceipt.Patient = invoiceItemData.Patient;// this.currSale.selectedPatient;
+                txnReceipt.Remarks = invoiceItemData.Remarks;
                 this.pharmacyService.globalPharmacyReceipt = txnReceipt;
                 this.pharmacyReceipt = this.pharmacyService.globalPharmacyReceipt;
                 this.showSaleItemsPopup = true;
             }
             else {
-                this.msgBoxServ.showMessage("failed", ['no data,please try again']);                
+                this.msgBoxServ.showMessage("failed", ['no data,please try again']);
             }
         }
         catch (exception) {

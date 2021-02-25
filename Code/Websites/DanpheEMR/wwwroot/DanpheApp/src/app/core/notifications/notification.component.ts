@@ -130,6 +130,9 @@ export class NotificationComponent {
         else if (currtNotification.Notification_ModuleName == "Emergency" && currtNotification.Sub_ModuleName == "Emergency") {
             //return true;
         }
+        else if(currtNotification.Notification_ModuleName == "Inventory_Module" && currtNotification.Sub_ModuleName == "PR_Verification"){
+            this.router.navigate(['/Verification/PurchaseRequest']);
+        }
 
     }
 

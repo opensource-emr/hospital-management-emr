@@ -19,6 +19,9 @@ namespace DanpheEMR.ServerModel
         public DateTime? ModifiedOn { get; set; }
         public int? ModifiedBy { get; set; }
         public bool IsActive { get; set; }
+        public bool IsDefault { get; set; }
+        //sud-nagesh: 20June'20-- for Acc-Hospital Separation.
+        public int? HospitalId { get; set; }
     }
 }
 

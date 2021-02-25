@@ -1,63 +1,47 @@
-﻿<style>
-    /*START- danphe-multiselect-dropdown style*/
+<style>
+/*START- danphe-multiselect-dropdown style*/
     /*padding change is important*/
-    .danaphe-multiselect-style {
-        color: #ccc !important;
-    }
-
-        .danaphe-multiselect-style .c-token {
-            background: #38d574 !important;
-        }
-
-        .danaphe-multiselect-style .pure-checkbox label::before {
-            border-color: #38d574 !important;
-        }
-
-        .danaphe-multiselect-style .pure-checkbox input[type="checkbox"]:checked + label[_ngcontent-c1]:before {
-            background: #38d574 !important;
-        }
-
-        .danaphe-multiselect-style .selected-list[_ngcontent-c5] .c-btn[_ngcontent-c5] {
-            width: 100%;
-            box-shadow: 0px 1px 5px #959595;
-            padding: 7px !important; /*change padding of multiselects*/
-            cursor: pointer;
-            display: flex;
-        }
+.danaphe-multiselect-style {
+	color: #ccc !important;
+}
+.danaphe-multiselect-style .c-token {
+	background: #38d574 !important;
+}
+.danaphe-multiselect-style .pure-checkbox label::before {
+	border-color: #38d574 !important;
+}
+.danaphe-multiselect-style .pure-checkbox input[type="checkbox"]:checked + label[_ngcontent-c1]:before {
+	background: #38d574 !important;
+}
+.danaphe-multiselect-style .selected-list[_ngcontent-c5] .c-btn[_ngcontent-c5] {
+	width: 100%;
+	box-shadow: 0px 1px 5px #959595;
+	padding: 7px !important; /*change padding of multiselects*/
+	cursor: pointer;
+	display: flex;
+}
+.sg-name{
+    white-space: pre-line;
+}
     /*END- danphe-multiselect-dropdown style*/
 </style>
-
-
-
-<div class="col-md-12" style="border: 1px solid #e0d6d6;padding-bottom: 20px;padding-top: 20px; margin-bottom: 20px;min-height: 120px;">
-    <div class="col-md-12">
-
-        <div class="col-md-3" *ngFor="let emp of selEmployeesFormatted;let i=index;" style="min-height: 80px;margin-bottom: 15px; padding: 10px 5px;">
-            <div *ngIf="displayMode !='edit'">--------------------</div>
-
-            <div *ngIf="departmentName=='lab'" style="text-align: left; background: #dad8d8; padding: 3px;position: relative;">
-                <div style="white-space: pre-line; display:inline-block;" *ngIf="emp.LabSignature" [innerHTML]="emp.LabSignature"></div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <i *ngIf="emp.LabSignature" class="fa fa-close" style="color:red; cursor:pointer; position: absolute; right: 0; top: 0;font-size: 16px;display: inline-block; padding: 5px;background: #e8e8e8;" (click)="cancel(emp.EmployeeId)"></i>
-                <span *ngIf="!emp.LabSignature" style="color:red;">not found</span>          
-            </div>
-
-            
-
-            <div *ngIf="departmentName=='radiology'" style="text-align: left; background: #dad8d8; padding: 3px;position: relative;">
-                <div style="white-space: pre-line; display:inline-block;" *ngIf="emp.LongSignature" [innerHTML]="emp.LongSignature"></div>
-                <i *ngIf="emp.LongSignature" class="fa fa-close" style="color:red; cursor:pointer; position: absolute; right: 0; top: 0;font-size: 16px;display: inline-block; padding: 5px;background: #e8e8e8;" (click)="cancel(emp.EmployeeId)"></i>
-                <span *ngIf="!emp.LongSignature" style="color:red;">not found</span>
-            </div>
-            
-        </div>
-
-    </div>
-
-    <div class="col-md-4" *ngIf="displayMode=='edit'">
-        <p>
-            Select Signatories:
-        </p>
-        <angular2-multiselect [data]="allEmpsFormatted"
+<div class="">
+<div class="row">
+  <div class="col-md-3" *ngFor="let emp of selEmployeesFormatted;let i=index;">
+    <div *ngIf="displayMode !='edit'">--------------------</div>
+    <div *ngIf="departmentName=='lab'" class="sg-name">
+      <div *ngIf="emp.LabSignature" [innerHTML]="emp.LabSignature"></div>
+      <i *ngIf="emp.LabSignature" class="fa fa-close" (click)="cancel(emp.EmployeeId)"></i> <span *ngIf="!emp.LabSignature" style="color:red;">not found</span> </div>
+    <div *ngIf="departmentName=='radiology'" class="sg-name">
+      <div *ngIf="emp.RadiologySignature" [innerHTML]="emp.RadiologySignature"></div>
+      <i *ngIf="emp.RadiologySignature" class="fa fa-close" (click)="cancel(emp.EmployeeId)"></i> <span *ngIf="!emp.RadiologySignature" style="color:red;">not found</span> </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-4" *ngIf="displayMode=='edit'">
+    <div class="sig-select">
+      <p> <b>Select Signatories:</b> </p>
+      <angular2-multiselect [data]="allEmpsFormatted"
                               [(ngModel)]="selEmployees"
                               [settings]="dropdownSettings"
                               (onSelect)="onItemSelect($event)"
@@ -65,6 +49,5 @@
                               (onSelectAll)="onSelectAll($event)"
                               (onDeSelectAll)="onDeSelectAll($event)"></angular2-multiselect>
     </div>
-
-</div>
-
+  </div>
+</div></div>

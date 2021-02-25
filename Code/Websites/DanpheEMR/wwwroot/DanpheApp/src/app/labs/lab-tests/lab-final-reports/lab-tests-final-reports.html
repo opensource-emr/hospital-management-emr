@@ -1,32 +1,28 @@
-
-<div class="row" *ngIf="showGrid">
-  <div class="col-lg-12 col-sm-12">
-    <div class="caption">
-      <i class="glyphicon glyphicon-asterisk font-green-turquoise"></i>
-      <span class="caption-subject font-blue-sharp bold uppercase">Final Reports</span>
+<div class="wrapper">
+  <div class="row" *ngIf="showGrid">
+    <div class="col-lg-12 col-sm-12">
+      <div class="caption lb-caption"> 
+        <!-- <i class="glyphicon glyphicon-asterisk font-green-turquoise"></i> --> 
+        <span class="caption-subject">Final Reports</span> </div>
     </div>
-  </div>
-
-  <div class="col-lg-12 col-sm-12">
-    <danphe-grid [grid-colDefaults]="gridColumns"
+    <div class="col-lg-12 col-sm-12">
+      <danphe-grid [grid-colDefaults]="gridColumns"
                  [grid-data]="reportList"
                  (grid-actions)="GridActions($event)"
                  [rangeType]="dateRange"
                  (onDateChange)="onDateChange($event)"
-                 [show-CustomDate]="true">
-    </danphe-grid>
+                 [show-CustomDate]="true"
+                 (serverSearchText)="serverSearchTxt($event)"
+                 [customServerSearch]="enableServerSideSearch"> </danphe-grid>
+    </div>
   </div>
-</div>
-
-<div *ngIf="!showGrid" style="margin-top:5px;">
-  <button class="btn btn-navlink pull-left margin-7-rt" (click)="BackToGrid();">
-    <i class="fa fa-arrow-left"></i>
-    Back To Grid
-  </button>
-  <danphe-lab-results [showReport]="showReport"
+  <div *ngIf="!showGrid" style="margin-top:5px;">
+    <button class="btn primary-btn pull-left margin-7-rt" (click)="BackToGrid();"> <i class="fa fa-arrow-left"></i> Back To Grid </button>
+    <danphe-lab-results [showReport]="showReport"
                       [showAddEditResult]="showAddEditResult"
                       [printReportFromGrid]="printReportFromGrid"
                       [requisitionIdList]="requisitionIdList"
                       [verificationRequired]="verificationRequired"
                       (callbackAddUpdate)="CallBackBackToGrid($event)"></danphe-lab-results>
+  </div>
 </div>

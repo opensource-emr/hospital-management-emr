@@ -5,16 +5,18 @@ import { RPT_ADT_TransferredPatientModel } from "./transferred-patient.model"
 import { DLService } from "../../../shared/dl.service"
 import { HttpClient } from '@angular/common/http';
 import * as moment from 'moment/moment';
+import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from '../../../shared/danphe-grid/NepaliColGridSettingsModel';
 
 @Component({
   templateUrl: "transferred-patient.html"
 })
 export class RPT_ADT_TransferredPatientsComponent {
-  public fromDate: Date = null;
-  public toDate: Date = null;
+  public fromDate: string = null;
+  public toDate: string = null;
   TransferredPatientColumns: Array<any> = null;
   TransferredPatientData: Array<any> = new Array<RPT_ADT_TransferredPatientModel>();
   public currenttransferPatient: RPT_ADT_TransferredPatientModel = new RPT_ADT_TransferredPatientModel();
+  public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
   dlService: DLService = null;
   http: HttpClient = null;
   constructor(
@@ -35,11 +37,19 @@ export class RPT_ADT_TransferredPatientsComponent {
   };
 
   Load() {
-    this.dlService.Read("/Reporting/TransferredPatient?FromDate="
-      + this.currenttransferPatient.fromDate + "&ToDate=" + this.currenttransferPatient.toDate)
-      .map(res => res)
-      .subscribe(res => this.Success(res),
-        res => this.Error(res));
+    if (this.currenttransferPatient.fromDate != null && this.currenttransferPatient.toDate != null) {
+
+      this.NepaliDateInGridSettings = new NepaliDateInGridParams();
+
+      this.dlService.Read("/Reporting/TransferredPatient?FromDate="
+        + this.currenttransferPatient.fromDate + "&ToDate=" + this.currenttransferPatient.toDate)
+        .map(res => res)
+        .subscribe(res => this.Success(res),
+          res => this.Error(res));
+    } else {
+      this.msgBoxServ.showMessage("error", ['Dates Provided is not Proper']);
+    }
+    
   }
   Error(err) {
     this.msgBoxServ.showMessage("error", [err]);
@@ -47,6 +57,7 @@ export class RPT_ADT_TransferredPatientsComponent {
   Success(res) {
     if (res.Status == "OK" && res.Results.length > 0) {
       this.TransferredPatientColumns = this.reportServ.reportGridCols.TransferredPatient;
+      this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail("Date", false));
       this.TransferredPatientData = res.Results;
     }
     else if (res.Status == "OK" && res.Results.length == 0) {
@@ -55,5 +66,14 @@ export class RPT_ADT_TransferredPatientsComponent {
     else {
       this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);;;
     }
+  }
+
+  //Anjana:11June'20--reusable From-ToDate-In Reports..
+  OnFromToDateChange($event) {
+    this.fromDate = $event ? $event.fromDate : this.fromDate;
+    this.toDate = $event ? $event.toDate : this.toDate;
+
+    this.currenttransferPatient.fromDate = this.fromDate;
+    this.currenttransferPatient.toDate = this.toDate;
   }
 }

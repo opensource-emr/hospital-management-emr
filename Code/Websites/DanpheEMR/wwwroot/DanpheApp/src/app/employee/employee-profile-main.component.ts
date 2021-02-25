@@ -1,20 +1,24 @@
-﻿import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { SecurityService } from '../security/shared/security.service';
 import { EmployeeProfile } from './shared/employee-profile.model';
-import { Routes, RouterModule, RouterOutlet } from '@angular/router';
-import { EmployeeProfileComponent } from './employee-profile.component';
-import { EmployeeService } from "./shared/employee.service";
+import { Routes, RouterModule, RouterOutlet, Router } from '@angular/router';
+import { EmployeeService } from './shared/employee.service';
+
 @Component({
     templateUrl: "../../app/view/employee-view/ProfileMain.html" // "/EmployeeView/ProfileMain"
 })
+
 export class EmployeeProfileMainComponent {
 
     public http: HttpClient;
     public userProfileInfo: EmployeeProfile = new EmployeeProfile();
     /// public pathToImage: string = null;
+    public pathToImage: string = null;
+    public pathclear: boolean = false;
+    public showPicChange: boolean = false;
 
-    constructor(public securityService: SecurityService, _http: HttpClient,
+  constructor(public securityService: SecurityService, _http: HttpClient, public router: Router,
         public employeeService: EmployeeService) {
         this.http = _http;
         this.LoadUserProfile();
@@ -54,6 +58,52 @@ export class EmployeeProfileMainComponent {
 
     logError(err: any) {
         console.log(err);
+  }
+
+  //use to change the profile
+  @ViewChild("fileInput") fileInput;
+  ChangeProfileImage(userProfileInfo: EmployeeProfile): void {
+    let empId = userProfileInfo.EmployeeId;
+    let userId = this.securityService.GetLoggedInUser().UserId;
+    let input = new FormData();
+    let file = this.fileInput.nativeElement;
+    //if isselected then only go else dont
+    if (file.files.length != 0) {
+      let profileImage = file.files[0];
+      let splitImagetype = profileImage.type.split("/");
+      let imageExtension = splitImagetype[1];
+      let localFolder: string = "UserProfile\\";
+      let fileName: string = userId + "_" + userProfileInfo.UserName + new Date().getTime() + "." + imageExtension;
+
+      input.append("uploads", profileImage, fileName)
+
+      this.http.put<any>("/api/Employee?empId=" + empId, input)
+        .map(res => res)
+        .subscribe(res => {
+          if (res.Status == 'OK') {
+            this.userProfileInfo.ImageName = res.Results;
+            this.pathToImage = "/fileuploads/UserProfile/" + this.userProfileInfo.ImageName + '?' + new Date().getTime();
+            this.employeeService.ProfilePicSrcPath = "/fileuploads/UserProfile/" + this.userProfileInfo.ImageName;
+            this.router.navigate(['/Employee/ProfileMain']);
+            this.showPicChange = false;
+          }
+        },
+          err => {
+            alert('failed to get the data.. please check log for details.');
+            this.logError(err.ErrorMessage);
+          });
+
+
     }
+    else {
+      alert("First select the image for profile");
+    }
+
+  }
+
+  toggleBtn() {
+    this.showPicChange = !this.showPicChange;
+    console.log("pratik");
+  }
 
 }

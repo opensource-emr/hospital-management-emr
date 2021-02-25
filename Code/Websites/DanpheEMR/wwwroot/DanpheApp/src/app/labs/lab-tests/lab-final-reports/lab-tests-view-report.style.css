@@ -2,7 +2,7 @@
   font-size: 13px;
   border: 1px solid #3e3e3e;
   box-shadow: 2px 4px 4px #c2b9b9;
-  font-family: 'Open Sans',sans-serif;
+  font-family: "Open Sans", sans-serif;
 }
 
 .lab-rpt-sign {
@@ -57,7 +57,8 @@ table.patient-info-tabl tr td {
         width: 50%;
     }*/
 
-table.patient-info-tabl tr td, table.patient-info-tabl tr th {
+table.patient-info-tabl tr td,
+table.patient-info-tabl tr th {
   text-align: left;
 }
 
@@ -143,9 +144,6 @@ thead.show-gap:after {
   margin-left: -125px;
 }
 
-
-
-
 .single-head {
   padding: 1px 0px;
 }
@@ -171,10 +169,10 @@ thead.show-gap:after {
   white-space: pre-line;
   font-size: 11px;
 }
-.lab-footer-text{
+.lab-footer-text {
   font-size: 10px;
 }
-.all-signatures{
+.all-signatures {
   font-size: 13px;
 }
 .signature-item {
@@ -182,16 +180,16 @@ thead.show-gap:after {
   padding: 1%;
 }
 
-.signature-item:nth-child(3n+1){
+.signature-item:nth-child(3n + 1) {
   text-align: left;
 }
-  .signature-item:nth-child(3n+2) {
-    text-align: center;
-  }
+.signature-item:nth-child(3n + 2) {
+  text-align: center;
+}
 .signature-item:nth-child(3n) {
   text-align: right;
 }
-.signature-item-inside{
+.signature-item-inside {
   font-weight: 700;
 }
 .main-signature {
@@ -204,7 +202,6 @@ thead.show-gap:after {
   width: 90%;
 }
 
-
 table.single-tempate-table {
   width: 100%;
   border-collapse: collapse;
@@ -212,15 +209,20 @@ table.single-tempate-table {
   margin-bottom: 20px;
 }
 
-table.single-tempate-table thead tr{border: 1px solid;}
-table.single-tempate-table tbody tr, table.culture-holder-table tbody tr {border: 1px solid;}
+table.single-tempate-table thead tr {
+  border: 1px solid;
+}
+table.single-tempate-table tbody tr,
+table.culture-holder-table tbody tr {
+  border: 1px solid;
+}
 
-  table.single-tempate-table thead tr:first-child th:first-child {
-    padding: 0px 7px;
-    text-align: left;
-    text-transform: uppercase;
-    width: 320px;
-  }
+table.single-tempate-table thead tr:first-child th:first-child {
+  padding: 0px 7px;
+  text-align: left;
+  text-transform: uppercase;
+  width: 320px;
+}
 table.single-tempate-table thead tr:first-child th:not(:first-child) {
   padding: 0px 5px;
   text-align: center;
@@ -230,15 +232,15 @@ table.single-tempate-table thead tr:nth-child(2) th {
   text-align: left;
 }
 
-  table.single-tempate-table tr.test-reportname-row th:first-child {
-    padding: 0px 7px;
-    text-align: left;
-  }
+table.single-tempate-table tr.test-reportname-row th:first-child {
+  padding: 0px 7px;
+  text-align: left;
+}
 
-  table.single-tempate-table tbody tr.test-reportname-row th:not(:first-child) {
-    padding: 0px 7px;
-    font-size: 14px;
-  }
+table.single-tempate-table tbody tr.test-reportname-row th:not(:first-child) {
+  padding: 0px 7px;
+  font-size: 14px;
+}
 
 table.single-tempate-table tr.res-positive-rw td {
   text-align: left;
@@ -263,44 +265,44 @@ table.culture-holder-table {
   font-size: 13px;
   margin-bottom: 20px;
 }
-  table.culture-holder-table thead tr.culture-header th {
-    text-align: left;
-    text-transform: uppercase;
-    padding: 0px 7px;
-  }
-  table.culture-holder-table thead tr.culture-heading-col th:first-child {
-    padding: 0px 7px;
-    text-align: left;
-  }
-  table.culture-holder-table thead tr.culture-heading-col th:nth-child(2) {
-    padding: 0px 5px;
-    text-align: center;
-  }
+table.culture-holder-table thead tr.culture-header th {
+  text-align: left;
+  text-transform: uppercase;
+  padding: 0px 7px;
+}
+table.culture-holder-table thead tr.culture-heading-col th:first-child {
+  padding: 0px 7px;
+  text-align: left;
+}
+table.culture-holder-table thead tr.culture-heading-col th:nth-child(2) {
+  padding: 0px 5px;
+  text-align: center;
+}
 
-  table.culture-holder-table > thead > tr{
-    border: 1px solid;
-  }
+table.culture-holder-table > thead > tr {
+  border: 1px solid;
+}
 
-  table.culture-neg-testres {
-    width: 100%;
-    font-size: 13px;
-    border-collapse: collapse;
-  }
+table.culture-neg-testres {
+  width: 100%;
+  font-size: 13px;
+  border-collapse: collapse;
+}
 
-  table.culture-neg-testres tbody tr td {
-    padding: 0px 7px;
-  }
-  table.culture-neg-testres tbody tr:last-child {
-    text-align: left;
-  }
+table.culture-neg-testres tbody tr td {
+  padding: 0px 7px;
+}
+table.culture-neg-testres tbody tr:last-child {
+  text-align: left;
+}
 
+table.culture-positive-testres tbody tr:first-child {
+  border-top: 0;
+  text-align: left;
+}
 
-  table.culture-positive-testres tbody tr:first-child {
-    border-top: 0;
-    text-align: left;
-  }
-
-tbody.culture-positive-testres tr.sensitiv-rst-data td, tbody.culture-positive-testres tr.sensitiv-rst-hd td {
+tbody.culture-positive-testres tr.sensitiv-rst-data td,
+tbody.culture-positive-testres tr.sensitiv-rst-hd td {
   padding-left: 5px;
 }
 
@@ -308,13 +310,24 @@ tbody.culture-positive-testres tr.sensitiv-rst-data td, tbody.culture-positive-t
   border: 1px solid #000;
 }
 
-tbody.culture-negative-testres tr td{padding-left: 7px;}
+tbody.culture-negative-testres tr td {
+  padding-left: 7px;
+}
 
-.htmlholder{padding: 0px 8px;}
-.margin-50-tp{margin-top: 50px;}
-.ref-label{margin-bottom: 0; line-height:36px;}
+.htmlholder {
+  padding: 0px 8px;
+}
+.margin-50-tp {
+  margin-top: 50px;
+}
+.ref-label {
+  margin-bottom: 0;
+  line-height: 36px;
+}
 
-.report-print-info{display: none;}
+.report-print-info {
+  display: none;
+}
 .txt-left {
   text-align: left;
 }
@@ -326,5 +339,22 @@ tbody.culture-negative-testres tr td{padding-left: 7px;}
 .margin-5-bt {
   margin-bottom: 5px;
 }
-
-
+.prelim-sig-holder {
+  position: relative;
+}
+.txt-prelim {
+  position: absolute;
+  display: inline-block;
+  font-size: 40px;
+  line-height: 1;
+  left: 50%;
+  top: 100px;
+  transform: translate(-50%, 110px) rotate(-45deg);
+  opacity: 0.2;
+}
+.cmh .cs-result {
+  font-style: italic;
+}
+.ht-culture-grp-separation {
+  height: 25px;
+}

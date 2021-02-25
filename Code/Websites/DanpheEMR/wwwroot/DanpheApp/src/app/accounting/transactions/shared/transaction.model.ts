@@ -36,6 +36,10 @@ export class TransactionModel {
     public TransactionType: string = "";
     public TUId: number = null;
     public DayVoucherNumber:number=null;
+
+    public ModifiedBy: number = 0;
+    public ModifiedOn: string = null;
+    public Reason: string = null;
     constructor() {
         var _formBuilder = new FormBuilder();
         this.TransactionValidator = _formBuilder.group({
@@ -95,6 +99,8 @@ export class TransactionViewModel {
     public Remarks: string = null;
     public IsBackDateEntry: boolean = false;
     public VoucherType: string = null;
+    public IsGroupTxn: boolean = true;  
+    public IsEditable:boolean=null;  
     public TransactionItems: Array<{
         LedgerGroupName: string,
         LedgerName: string,
@@ -107,6 +113,7 @@ export class TransactionViewModel {
         Remarks: string,
         VoucherNumber: any[],
     }> = []
+    public HospitalId : number = 0;
 }
 //export class BillingItemsUpdateModel {
 //    public BillingTransactionItemId: number = 0;

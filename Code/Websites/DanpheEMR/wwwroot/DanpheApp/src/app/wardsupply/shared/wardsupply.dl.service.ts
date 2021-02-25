@@ -7,14 +7,21 @@ export class WardSupplyDLService {
   public options = {
     headers: new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' })
   };
+  public optionsJson = {
+    headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+  };
 
   constructor(public http: HttpClient) {
 
   }
 
   // GET: Stock Details 
-  public GetAllWardItemsStockDetailsList() {
-    return this.http.get<any>("/api/WardSupply?reqType=get-all-Ward-Items-StockDetails", this.options);
+  public GetAllWardItemsStockDetailsList(storeId: number) {
+    return this.http.get<any>("/api/WardSupply?reqType=get-all-Ward-Items-StockDetails&StoreId=" + storeId, this.options);
+  }
+  // GET: Stock Details 
+  public GetAvailableWardItemsStockDetailsList(storeId: number) {
+    return this.http.get<any>("/api/WardSupply?reqType=get-available-Ward-Items-StockDetails&StoreId=" + storeId, this.options);
   }
 
   public GetDepartments() {
@@ -23,23 +30,30 @@ export class WardSupplyDLService {
   public GetWardInventoryStockDetailsList() {
     return this.http.get<any>("/api/WardSupply?reqType=get-all-inventory-Items-StockDetails", this.options);
   }
+  public GetInventoryStockByStoreId(StoreId) {
+    return this.http.get<any>("/api/WardSupply/GetInventoryItemsByStoreId/" + StoreId, this.options);
+  }
   //GET: get ward list.
-  public WardList() {
-    return this.http.get<any>("/api/WardSupply?reqType=ward-list", this.options);
+  public GetActiveSubStoreList() {
+    return this.http.get<any>("/api/WardSupply?reqType=active-substore-list", this.options);
+  }
+  //GET: get ward list.
+  public WardList(StoreId) {
+    return this.http.get<any>("/api/WardSupply?reqType=ward-list&StoreId=" + StoreId, this.options);
   }
 
   // GET: Consumption Details 
-  public GetAllComsumptionListDetails(wardId) {
-    return this.http.get<any>("/api/WardSupply?reqType=get-All-Comsumption-List-Details&wardId=" + wardId, this.options);
+  public GetAllComsumptionListDetails(wardId, storeId) {
+    return this.http.get<any>("/api/WardSupply?reqType=get-All-Comsumption-List-Details&wardId=" + wardId + "&StoreId=" + storeId, this.options);
   }
   //GET: Inventory Consumption List
-  public GetInventoryComsumptionListDetails(departmentId) {
-    return this.http.get<any>("/api/WardSupply?reqType=get-inventory-conumption-list&departmentId=" + departmentId, this.options);
+  public GetInventoryComsumptionListDetails(storeId, fromDate, toDate) {
+    return this.http.get<any>("/api/WardSupply/GetInventoryConsumptionList/" + storeId + "/" + fromDate + "/" + toDate, this.options);
   }
 
   //GET: All Ward Request List
-  public GetWardRequisitionList(status: string, wardId: number) {
-    return this.http.get<any>("/api/WardSupply?reqType=get-all-ward-requisition-list&status=" + status + "&wardId=" + wardId, this.options)
+  public GetWardRequisitionList(status: string, storeId: number) {
+    return this.http.get<any>("/api/WardSupply?reqType=get-all-requisition-list&status=" + status + "&StoreId=" + storeId, this.options)
   }
 
   //GET: ward req Items List
@@ -48,17 +62,29 @@ export class WardSupplyDLService {
   }
 
   //GET: Consumption Items List
-  public GetConsumptionItemList(patientId, wardId) {
-    return this.http.get<any>("/api/WardSupply?reqType=get-consumption-items-list&patientId=" + patientId + "&wardId=" + wardId, this.options)
+  public GetConsumptionItemList(patientId, wardId, storeId) {
+    return this.http.get<any>("/api/WardSupply?reqType=get-consumption-items-list&patientId=" + patientId + "&wardId=" + wardId + "&StoreId=" + storeId, this.options)
   }
   //GET: Inventory Consumption Item List
-  public GetInventoryConsumptionItemList(userName, departmentId) {
-    return this.http.get<any>("/api/WardSupply?reqType=get-inventory-consumption-itemlist&departmentId=" + departmentId + "&userName=" + userName, this.options)
+  public GetInventoryConsumptionItemList(userName, storeId) {
+    return this.http.get<any>("/api/WardSupply?reqType=get-inventory-consumption-itemlist&userName=" + userName + "&StoreId=" + storeId, this.options)
   }
 
+  //GET:Internal Consumption Item List
+  public GetInternalConsumptionList(storeId: number) {
+    return this.http.get<any>("/api/WardSupply?reqType=get-internal-consumption-list&StoreId=" + storeId, this.options)
+  }
+  //GET:Internal Consumption Item List
+  public GetInternalConsumptionItemList(consumptionId) {
+    return this.http.get<any>("/api/WardSupply?reqType=get-internal-consumption-item-list&consumptionId=" + consumptionId, this.options)
+  }
+  //GET:Internal Consumption Item Details
+  public GetInternalConsumptionDetails(consumptionId) {
+    return this.http.get<any>("/api/WardSupply?reqType=get-internal-consumption-details&consumptionId=" + consumptionId, this.options)
+  }
   //get phrm stock list
   GetItemTypeListWithItems() {
-    return this.http.get<any>('/api/Pharmacy?reqType=itemtypeListWithItems', this.options);
+    return this.http.get<any>('/PharmacyReport/PHRMStoreStock?Status=', this.options);
   }
   //get ward stock list
   GetWardStockList() {
@@ -68,10 +94,14 @@ export class WardSupplyDLService {
   public GetPatients() {
     return this.http.get<any>("/api/WardSupply?reqType=inpatient-list", this.options);
   }
+  //GET:patient List from Patient controller
+  public GetDispatchListForItemReceive(RequisitionId) {
+    return this.http.get<any>("/api/WardSupply/GetDispatchListForItemReceive/" + RequisitionId, this.options);
+  }
   //GET: WardStockReport from Ward Report Controller
-  public GetStockItemsReport(itemId) {
+  public GetStockItemsReport(itemId, storeId) {
     try {
-      return this.http.get<any>("/api/WardSupply/WARDStockItemsReport/" + itemId, this.options);
+      return this.http.get<any>("/api/WardSupply/WARDStockItemsReport/" + itemId + "/" + storeId, this.options);
     }
     catch (ex) { throw ex; }
   }
@@ -79,44 +109,50 @@ export class WardSupplyDLService {
   ////GET: Get Requisition Report
   public GetWardRequsitionReport(wardReports) {
     return this.http.get<any>("/api/WardSupply/WARDRequisitionReport/"
-      + wardReports.FromDate + "/" + wardReports.ToDate, this.options)
+      + wardReports.FromDate + "/" + wardReports.ToDate + "/" + wardReports.StoreId, this.options)
   }
 
   ////GET: Get Breakage Report
   public GetWardBreakageReport(wardReports) {
     return this.http.get<any>("/api/WardSupply/WARDBreakageReport/"
-      + wardReports.FromDate + "/" + wardReports.ToDate, this.options)
+      + wardReports.FromDate + "/" + wardReports.ToDate + "/" + wardReports.StoreId, this.options)
   }
 
   ////GET: Get Consumption Report
   public GetWardConsumptionReport(wardReports) {
     return this.http.get<any>("/api/WardSupply/WARDConsumptionReport/"
-      + wardReports.FromDate + "/" + wardReports.ToDate, this.options)
+      + wardReports.FromDate + "/" + wardReports.ToDate + "/" + wardReports.StoreId, this.options)
   }
 
+  ////GET: Get Internal Consumption Report
+  public GetWardInernalConsumptionReport(wardReports) {
+    return this.http.get<any>("/api/WardSupply/WARDInternalConsumptionReport/"
+      + wardReports.FromDate + "/" + wardReports.ToDate + "/" + wardReports.StoreId, this.options)
+
+  }
   ////GET: Get Transfer Report
   public GetWardTransferReport(wardReports) {
     return this.http.get<any>("/api/WardSupply/WARDTransferReport/"
-      + wardReports.FromDate + "/" + wardReports.ToDate + "/" + wardReports.Status, this.options)
+      + wardReports.FromDate + "/" + wardReports.ToDate + "/" + wardReports.StoreId, this.options)
   }
 
   ////Ward Inventory Report
   ////GET: Get RequisitionDispatch Report
   public GetRequisitionDispatchReport(wardReports) {
     return this.http.get<any>("/api/WardSupply/Inventory/Reports/RequisitionDispatchReport/"
-      + wardReports.FromDate + "/" + wardReports.ToDate, this.options)
+      + wardReports.FromDate + "/" + wardReports.ToDate + "/" + wardReports.StoreId, this.options)
   }
 
   ////GET: Get Transfer Report
   public GetTransferReport(wardReports) {
     return this.http.get<any>("/api/WardSupply/Inventory/Reports/TransferReport/"
-      + wardReports.FromDate + "/" + wardReports.ToDate, this.options)
+      + wardReports.FromDate + "/" + wardReports.ToDate + "/" + wardReports.StoreId, this.options)
   }
 
   ////GET: Get Transfer Report
   public GetConsumptionReport(wardReports) {
     return this.http.get<any>("/api/WardSupply/Inventory/Reports/ConsumptionReport/"
-      + wardReports.FromDate + "/" + wardReports.ToDate, this.options)
+      + wardReports.FromDate + "/" + wardReports.ToDate + "/" + wardReports.StoreId, this.options)
   }
 
 
@@ -126,15 +162,20 @@ export class WardSupplyDLService {
     let data = JSON.stringify(consumptiondata);
     return this.http.post<any>("/api/WardSupply?reqType=post-consumption", data, this.options);
   }
+  //post internal consumption data
+  PostInternalConsumptionData(internalconsumptiondata) {
+    let data = JSON.stringify(internalconsumptiondata);
+    return this.http.post<any>("/api/WardSupply?reqType=post-internal-consumption", data, this.options);
+  }
   //post consumption data
   PostInventoryConsumptionData(consumptiondata) {
     let data = JSON.stringify(consumptiondata);
     return this.http.post<any>("/api/WardSupply?reqType=post-inventory-consumption", data, this.options);
   }
   //Post to Stock table and post to Transaction table 
-  PostManagedStockDetails(data) {
+  PostManagedStockDetails(data, ReceivedBy) {
     try {
-      return this.http.post<any>("/api/WardSupply?reqType=transfer-stock", data, this.options);
+      return this.http.post<any>("/api/TransferStock/" + ReceivedBy, data, this.optionsJson);
     }
     catch (ex) {
       throw ex;
@@ -175,7 +216,27 @@ export class WardSupplyDLService {
 
   }
   //post ward stock to Pharmacy
-  public PostReturnStock(data) {
-    return this.http.post<any>("/api/WardSupply?reqType=returnStockToPharmacy", data, this.options);
+  public PostReturnStock(data, ReceivedBy) {
+    return this.http.post<any>("/api/RetrunStockToPharmacy/" + ReceivedBy, data, this.optionsJson);
+  }
+  //Put Consumption Item List
+  PutConsumptionData(consumptiondata) {
+    let data = JSON.stringify(consumptiondata);
+    return this.http.put<any>("/api/WardSupply/put-consumption", data, this.options);
+  }
+  //Put Internal Consumption Item List
+  PutInternalConsumptionData(internalconsumptiondata) {
+    let data = JSON.stringify(internalconsumptiondata);
+    return this.http.put<any>("/api/WardSupply/put-intrenal-consumption", data, this.options);
+  }
+
+  //PUT UpdateDispatchReceiveStatus
+  PutUpdateDispatchedItemsReceiveStatus(dispatchId,receivedRemarks){
+    return this.http.put<any>("/api/WardSupply/UpdateDispatchedItemsReceiveStatus/" + dispatchId,receivedRemarks,this.optionsJson);
+  }
+  //PUT UpdateRequisition
+  PutUpdateRequisition(requisition: string) {
+    let data = requisition;
+    return this.http.put<any>("/api/WardSupply/UpdateRequisition", data, this.options);
   }
 }

@@ -20,9 +20,9 @@
                                     <div class="col-md-12 patient-hdr-label">
                                         <table style="width:100%;" align="center">
                                             <tr>
-                                              <td>
-                                                <b>Voucher No:</b>&nbsp;{{dayvoucherNumber}}
-                                              </td>
+                                                <td>
+                                                    <b>Voucher No:</b>&nbsp;{{dayvoucherNumber}}
+                                                </td>
                                                 <td style="text-align:center;">
                                                     <!--<b>Voucher Head:</b>&nbsp;{{transaction.VoucherHead}}-->
                                                 </td>
@@ -63,18 +63,18 @@
                                                     {{txnItm.LedgerGroupName}}<br />
                                                 </td>
                                                 <td>
-                                                    {{txnItm.LedgerName}}
+                                                    {{txnItm.LedgerName}} <b>{{txnItm.Code}} </b>
                                                     <span *ngFor="let det of txnItm.Details" style="font-size:12px;color:green;padding-left:50px;font-style:italic;">
                                                         <br />
                                                         <span>{{det.Name}}</span>
-                                                        <span>
+                                                    <span>
                                                             <span *ngIf="det.Dr > 0">
                                                                 Dr: {{det.Dr | Currency}}
                                                             </span>
-                                                            <span *ngIf="det.Cr > 0">
+                                                    <span *ngIf="det.Cr > 0">
                                                                 Cr: {{det.Cr | Currency}}
                                                             </span>
-                                                        </span>
+                                                    </span>
                                                     </span>
                                                 </td>
                                                 <td>
@@ -136,7 +136,7 @@
                                 <div class="col-md-12" style="padding-bottom: 15px;">
                                     <div class="form-actions">
                                         <button class="btn btn-primary hidden-print" (click)="Print()" value="Print" title="print page">Print<i class="glyphicon glyphicon-print" style="margin-left:10px;"></i></button>
-                                        <button class="btn btn-primary hidden-print" (click)="ExportToExcel('excelTransactionView')" value="" title="export to excel">Export<i class="fa fa-file-excel-o" style="margin-left:10px;"></i></button>
+                                        <button *ngIf="showExportbtn" class="btn btn-primary hidden-print" (click)="ExportToExcel('excelTransactionView')" value="" title="export to excel">Export<i class="fa fa-file-excel-o" style="margin-left:10px;"></i></button>
                                     </div>
                                 </div>
                             </div>
@@ -166,9 +166,9 @@
                                     <div class="col-md-12 patient-hdr-label">
                                         <table style="width:100%;" align="center">
                                             <tr>
-                                              <td>
-                                                <b>Voucher No:</b>&nbsp;{{dayvoucherNumber}}
-                                              </td>
+                                                <td>
+                                                    <b>Voucher No:</b>&nbsp;{{dayvoucherNumber}}
+                                                </td>
                                                 <td style="text-align:center;">
                                                     <!--<b>Voucher Head:</b>&nbsp;{{transaction.VoucherHead}}-->
                                                 </td>
@@ -209,24 +209,24 @@
                                                     {{txnItm.LedgerGroupName}}<br />
                                                 </td>
                                                 <td *ngIf="txnItm.Name == 'ACA_CASH_IN_HAND_CASH'">
-                                                    {{txnItm.LedgerName}}
+                                                    {{txnItm.LedgerName}} <b>{{txnItm.Code}} </b>
                                                     <span *ngFor="let row of userCashCollection" style="font-size:12px;color:green;padding-left:50px;font-style:italic;">
                                                         <span style="width:30%;"><br />{{row.UserName}} : {{row.Total | Currency}}</span>
                                                     </span>
                                                 </td>
                                                 <td *ngIf="txnItm.Name != 'ACA_CASH_IN_HAND_CASH'">
-                                                    {{txnItm.LedgerName}}
+                                                    {{txnItm.LedgerName}} <b>{{txnItm.Code}} </b>
                                                     <span *ngFor="let det of txnItm.Details" style="font-size:12px;color:green;padding-left:50px;font-style:italic;">
                                                         <br />
                                                         <span>{{det.Name}}</span>
-                                                        <span>
+                                                    <span>
                                                             <span *ngIf="det.Dr > 0">
                                                                 Dr: {{det.Dr | Currency}}
                                                             </span>
-                                                            <span *ngIf="det.Cr > 0">
+                                                    <span *ngIf="det.Cr > 0">
                                                                 Cr: {{det.Cr | Currency}}
                                                             </span>
-                                                        </span>
+                                                    </span>
                                                     </span>
                                                 </td>
                                                 <td>
@@ -246,18 +246,18 @@
                                                     <br />
                                                 </td>
                                                 <td>
-                                                    {{txnItm.LedgerName}}
+                                                    {{txnItm.LedgerName}} <b>{{txnItm.Code}} </b>
                                                     <span *ngFor="let det of txnItm.Details" style="font-size:12px;color:green;padding-left:50px;font-style:italic;">
                                                         <br />
                                                         <span>{{det.Name}}</span>
-                                                        <span>
+                                                    <span>
                                                             <span *ngIf="det.Dr > 0">
                                                                 Dr: {{det.Dr | Currency}}
                                                             </span>
-                                                            <span *ngIf="det.Cr > 0">
+                                                    <span *ngIf="det.Cr > 0">
                                                                 Cr: {{det.Cr | Currency}}
                                                             </span>
-                                                        </span>
+                                                    </span>
                                                     </span>
                                                 </td>
                                                 <td>
@@ -276,18 +276,18 @@
                                                     <br />
                                                 </td>
                                                 <td>
-                                                    {{txnItm.LedgerName}}
+                                                    {{txnItm.LedgerName}} <b>{{txnItm.Code}} </b>
                                                     <span *ngFor="let det of txnItm.Details" style="font-size:12px;color:green;padding-left:50px;font-style:italic;">
                                                         <br />
                                                         <span>{{det.Name}}</span>
-                                                        <span>
+                                                    <span>
                                                             <span *ngIf="det.Dr > 0">
                                                                 Dr: {{det.Dr | Currency}}
                                                             </span>
-                                                            <span *ngIf="det.Cr > 0">
+                                                    <span *ngIf="det.Cr > 0">
                                                                 Cr: {{det.Cr | Currency}}
                                                             </span>
-                                                        </span>
+                                                    </span>
                                                     </span>
                                                 </td>
                                                 <td>
@@ -460,7 +460,7 @@
                                 <div class="col-md-12" style="padding-bottom: 15px;">
                                     <div class="form-actions">
                                         <button class="btn btn-primary hidden-print" (click)="Print()" value="Print" title="print page">Print<i class="glyphicon glyphicon-print" style="margin-left:10px;"></i></button>
-                                        <button class="btn btn-primary hidden-print" (click)="ExportToExcel('excelTransactionView')" value="" title="export to excel">Export<i class="fa fa-file-excel-o" style="margin-left:10px;"></i></button>
+                                        <button *ngIf="showExportbtn" class="btn btn-primary hidden-print" (click)="ExportToExcel('excelTransactionView')" value="" title="export to excel">Export<i class="fa fa-file-excel-o" style="margin-left:10px;"></i></button>
                                     </div>
                                 </div>
                             </div>

@@ -1,0 +1,168 @@
+<style>
+.printStyle {
+	border: dotted 1px;
+	margin: 10px 100px;
+}
+.print-border-top {
+	border-top: dotted 1px;
+}
+.print-border-bottom {
+	border-bottom: dotted 1px;
+}
+.print-border {
+	border: dotted 1px;
+}
+.center-style {
+	text-align: center;
+}
+.border-up-down {
+	border-top: dotted 1px;
+	border-bottom: dotted 1px;
+}
+</style>
+<div class="row">
+  <div class="col-lg-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="returnToSupplierListGridColumns"
+                 [rangeType]="dateRange"
+                 (onDateChange)="onGridDateChange($event)"
+                 [date-range-options]="'1W,1M,3M'"
+                 [grid-data]="returnItemToSupplierList"
+                 [NepaliDateInGridParams]="NepaliDateInGridSettings"
+                 [show-CustomDate]="true"
+                 (grid-actions)="ReturnToSupplierGridAction($event)"> </danphe-grid>
+  </div>
+</div>
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showRetSuppItemsbyRetSuppID">
+  <div class="portlet-body form"> 
+    <!--Model Box Body Start-->
+    
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div clearfix">
+          <a class="btn btn-danger del-btn" (click)="Close()" title="Cancel">X</a> 
+          <div id="print-credit-note" class="row printStyle print-border" style="margin-top: 30px;">
+            <div class="row" style="margin-bottom: 10px;">
+              <div class="logo" style="width: 18%;padding:0px 15px 0px 15px; float: left;"> <img class="img-responsive" style="max-height:70px;" src="../../../themes/theme-default/images/hams-logo.PNG" /> </div>
+              <div style="width: 64%;float: left;padding-bottom:  0px;">
+                <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;"> <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
+                  <span style="font-size:15px;">{{headerDetail.address}}</span><br />
+                  <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
+                  <span style="font-size:15px;">DDA:{{headerDetail.DDA}}</span><br />
+                  <span style="font-size:14px; margin-right: 30px;"><strong>PHARMACY UNIT</strong></span> </div>
+              </div>
+              <div style="float: left;">
+                <div class="qr-code" style="margin-left:20px; top:35px;">
+                  <qr-code [value]="patientQRCodeInfo" [size]="75" [backgroundAlpha]="0"></qr-code>
+                </div>
+              </div>
+              <div style="clear:left"></div>
+            </div>
+            <div style="text-align:center;">
+              <div class="col-md-12">
+                <div class="clear"></div>
+                <div class="left" style="text-align:left;">
+                  <p>CRN No:<b>{{currentSupplier.CreditNotePrintId}}</b> </p>
+                  <p>Ref. No:<b>{{goodReceiptPrintId}}</b> </p>
+                  <p>Supplier's CRN:<b>{{currentSupplier.CreditNoteNo}}</b>
+                  <p>Supplier Name :<b> {{currentSupplier.SupplierName}}</b> </p>
+                </div>
+                <div class="right" style="text-align:right;">
+                  <p>PAN No. : <b> {{currentSupplier.Pin}} </b></p>
+                  <p>ContactNo :<b> {{currentSupplier.ContactNo}}</b></p>
+                  <p>ReturnDate :<b> {{returnDate}}</b></p>
+                </div>
+                <div class="clear"></div>
+                <p class="text-center btm-pad border-up-down"><b> Credit Note Details</b></p>
+                <div class="clear"></div>
+                <div class="clear footer"></div>
+                <div class="table-responsive">
+                  <table class="table table-striped table-hover  table-bordered" style="background-color:initial;margin-top:10px;text-align:center;">
+                    <thead>
+                      <tr>
+                        <th width="30px"><strong>Sn.</strong></th>
+                        <th><b>Item Name</b>
+                        <th><b>BatchNo</b></th>
+                        <th><b>ExpiryDate</b></th>
+                        <th><b>ItemPrice</b></th>
+                        <th><b>Return Qty</b></th>
+                        <th><b>Return Free Qty</b></th>
+                        <th><b>Return Free Amt</b></th>
+                        <th><b>SubTotal</b></th>
+                        <th><b>DiscountAmount</b></th>
+                        <th><b>TotalAmount</b></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let row of PHRMRetSuppItemsList; let i=index">
+                        <td style="width:30px">{{i+1}}</td>
+                        <td style="width:600px"><b>{{row.ItemName}}</b></td>
+                        <td style="width:200px">{{row.BatchNo}}</td>
+                        <td style="width:200px">{{row.ExpiryDate}}</td>
+                        <td style="width:200px">{{row.ItemPrice | number : "1.2-2"}}</td>
+                        <td style="width:200px">{{row.Quantity}}</td>
+                        <td style="width:200px">{{row.FreeQuantity}}</td>
+                        <td style="width:200px">{{row.FreeAmount}}</td>
+                        <td style="width:200px">{{row.SubTotal | number : "1.2-2"}}</td>
+                        <td style="width:200px">{{row.DiscountedAmount | number : "1.2-2"}}</td>
+                        <td style="width:200px">{{row.TotalAmount | number : "1.2-2"}}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <hr />
+            <div class="col-md-12">
+              <div class="col-md-6" style="float:right">
+                <div>
+                  <table class="table table-striped table-hover table-bordered" style="background-color:initial;margin-top:10px">
+                    <tr>
+                      <td>Sub Total</td>
+                      <td><b>{{currentSupplier.SubTotal | number : "1.2-2"}}</b></td>
+                    </tr>
+                    <tr>
+                      <td>Discount Amount</td>
+                      <td><b>{{currentSupplier.DiscountAmount | number : "1.2-2"}}</b></td>
+                    </tr>
+                    <tr>
+                      <td>VAT Amount</td>
+                      <td><b>{{currentSupplier.VATAmount | number : "1.2-2"}}</b></td>
+                    </tr>
+                    <tr>
+                      <td>Total Amount</td>
+                      <td><b>{{currentSupplier.TotalAmount | number : "1.2-2"}}</b></td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <table class="table table-striped table-hover table-bordered" style="background-color:initial;margin-top:10px">
+                  <tr>
+                    <td>Remarks:</td>
+                    <td>{{currentSupplier.Remarks}}</td>
+                  </tr>
+                  <tr>
+                    <td>Return Type:</td>
+                    <td>{{RetType}}</td>
+                  </tr>
+                </table>
+              </div>
+              <div class="col-md-12" style="padding-top: 5px;">
+                <div class="left" style="">
+                  User: {{userName}}
+                </div>
+                <div class="right" style="">
+                    Time: {{time | DanpheDateTime:'format':'HH:mm'}}
+                </div>
+            </div>
+            </div>
+          </div>
+          <button (click)="printCreditNote()" class="btn  btn-small btn-info mb10" style="float: right;">Print This Page</button>
+        </div>
+      </div>
+    </div>
+  
+  </div>
+  
+  <!--Model Box Body End--> 
+</div>

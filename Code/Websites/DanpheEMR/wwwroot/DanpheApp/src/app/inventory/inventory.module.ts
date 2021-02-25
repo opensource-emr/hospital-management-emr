@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { HttpClientModule} from '@angular/common/http';
+import { HttpClientModule } from '@angular/common/http';
 import { HashLocationStrategy, LocationStrategy } from "@angular/common";
 
 import { InventoryComponent } from "./inventory.component";
@@ -14,7 +14,7 @@ import { InternalMainComponent } from "./internal/internal-main.component";
 // import { GoodsReceiptItemComponent } from "./external/goods-receipt-item.component";
 // import { GoodsReceiptListComponent } from "./external/goods-receipt-list.component";
 // import { GoodsReceiptDetailsComponent } from "./external/goods-receipt-details.component";
-import { RequisitionItemsComponent } from "./internal/requisition-items.component";
+import { DirectDispatchComponent } from "./internal/direct-dispatch.component";
 import { DispatchItemsComponent } from "./internal/dispatch-items.component";
 import { RequisitionListComponent } from "./internal/requisition-list.component";
 import { ReturnToVendorItemsComponent } from "./procurement/return-to-vendor/return-to-vendor-items.component";
@@ -25,7 +25,6 @@ import { StockListComponent } from "./stock/stock-list.component";
 import { StockMainComponent } from "./stock/stock-main.component";
 import { StockDetailsComponent } from "./stock/stock-details.component";
 import { StockManageComponent } from "./stock/stock-manage.component";
-import { DispatchAllComponent } from "./internal/dispatch-all.component";
 
 import { InventoryBLService } from "./shared/inventory.bl.service";
 import { InventoryDLService } from "./shared/inventory.dl.service";
@@ -64,64 +63,94 @@ import { QuotationComponent } from './procurement/quotation.component';
 //import { VendorsManageComponent } from './settings/vendors/vendors-manage';
 import { QuotationAnalysisComponent } from './procurement/quotation-analysis.component';
 import { VendorsListComponent } from './procurement/vendorslist.component';
+import { DispatchReceiptDetailsComponent } from './internal/dispatch-receipt-details.components';
+import { PurchaseRequestListComponent } from './procurement/purchase-request/purchase-request-list.component';
+import { InternalMainPurchaseRequestAddComponent } from './internal/purchase-request/internalmain-purchase-request-add.component';
+import {MappingAddComponent} from './settings/Mapping/mapping-add.component'
+import { WardSupplyBLService } from '../wardsupply/shared/wardsupply.bl.service';
+import { WardSupplyDLService } from '../wardsupply/shared/wardsupply.dl.service';
+import { PurchaseRequestDetailComponent } from './procurement/purchase-request/purchase-request-detail.component';
+import { PharmacyBLService } from '../pharmacy/shared/pharmacy.bl.service';
+import { PharmacyDLService } from '../pharmacy/shared/pharmacy.dl.service';
+import { VisitDLService } from '../appointments/shared/visit.dl.service';
+import { ADT_BLService } from '../adt/shared/adt.bl.service';
+import { AppointmentDLService } from '../appointments/shared/appointment.dl.service';
+import { BillingBLService } from '../billing/shared/billing.bl.service';
+import { ADT_DLService } from '../adt/shared/adt.dl.service';
+import { InternalmainPurhcaseRequestListComponent } from './internal/purchase-request/internalmain-purhcase-request-list.component';
+import { InternalmainPurchaseRequestDetailComponent } from './internal/purchase-request/internalmain-purchase-request-detail.component';
 
 @NgModule({
-    providers: [InventoryBLService, InventoryDLService, InventoryService,
-        { provide: LocationStrategy, useClass: HashLocationStrategy },
-        GoodReceiptService,
-        GoodReceiptEndPoint,
-        CompanyService,
-        CompanyEndPoint,
-        EmailService,
-        EmailEndPoint
-    ],
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        FormsModule,
-        HttpClientModule,
-        InventoryRoutingModule,
-        SharedModule,
-        //Ng2AutoCompleteModule,
-        DanpheAutoCompleteModule,
-        InventorySharedModule],
-    //InventoryReportsModule],
-    declarations: [InventoryComponent,
-        ProcurementMainComponent,
-        InternalMainComponent,
-        PurchaseOrderItemsComponent,
-        PurchaseOrderListComponent,
-        PurchaseOrderDetailsComponent,
-        GoodsReceiptItemComponent,
-        GoodsReceiptListComponent,
-        GoodsReceiptDetailsComponent,
-        RequisitionItemsComponent,
-        DispatchItemsComponent,
-        RequisitionListComponent,
-        RequisitionItemsComponent,
-        RequisitionDetailsComponent,
-        InventoryDashboardComponent,
-        ReturnToVendorItemsComponent,
-        WriteOffItemsComponent,
-        RequisitionDetailsComponent,
-        StockListComponent,
-        StockMainComponent,
-        StockDetailsComponent,
-        StockManageComponent,
-        DispatchAllComponent,
-        GoodsReceiptAddComponent,
-        ReturnToVendorListComponent,
-        ReturnToVendorDetailsComponent,
-        WriteOffItemsListComponent,
-        RequestForQuotationComponent,
-        RequestForQuotationItemsComponent,
-        QuotationComponent,
-        QuotationItemsComponent,
-        VendorsListComponent,
-        QuotationAnalysisComponent
-        //VendorsManageComponent
-        
-    ],
-    bootstrap: [InventoryComponent]
+  providers: [InventoryBLService, InventoryDLService, InventoryService, WardSupplyBLService, 
+    WardSupplyDLService,
+    { provide: LocationStrategy, useClass: HashLocationStrategy },
+    GoodReceiptService,
+    GoodReceiptEndPoint,
+    CompanyService,
+    CompanyEndPoint,
+    EmailService,
+    EmailEndPoint,
+    PharmacyBLService,
+    PharmacyDLService,
+    VisitDLService,
+    ADT_BLService ,
+    AppointmentDLService,
+    BillingBLService,
+    ADT_DLService
+  ],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule,
+    HttpClientModule,
+    InventoryRoutingModule,
+    SharedModule,
+    //Ng2AutoCompleteModule,
+    DanpheAutoCompleteModule,
+    InventorySharedModule],
+  //InventoryReportsModule],
+  declarations: [InventoryComponent,
+    ProcurementMainComponent,
+    InternalMainComponent,
+    PurchaseOrderItemsComponent,
+    PurchaseOrderListComponent,
+    PurchaseOrderDetailsComponent,
+    GoodsReceiptItemComponent,
+    GoodsReceiptListComponent,
+    GoodsReceiptDetailsComponent,
+    DirectDispatchComponent,
+    DispatchItemsComponent,
+    RequisitionListComponent,
+    DirectDispatchComponent,
+    RequisitionDetailsComponent,
+    InventoryDashboardComponent,
+    ReturnToVendorItemsComponent,
+    WriteOffItemsComponent,
+    RequisitionDetailsComponent,
+    StockListComponent,
+    StockMainComponent,
+    StockDetailsComponent,
+    StockManageComponent,
+    GoodsReceiptAddComponent,
+    ReturnToVendorListComponent,
+    ReturnToVendorDetailsComponent,
+    WriteOffItemsListComponent,
+    RequestForQuotationComponent,
+    RequestForQuotationItemsComponent,
+    QuotationComponent,
+    QuotationItemsComponent,
+    VendorsListComponent,
+    DispatchReceiptDetailsComponent,
+    QuotationAnalysisComponent,
+    PurchaseRequestListComponent,
+    PurchaseRequestDetailComponent,
+    MappingAddComponent,
+    InternalmainPurhcaseRequestListComponent,
+    InternalmainPurchaseRequestDetailComponent,
+    InternalMainPurchaseRequestAddComponent,
+    //VendorsManageComponent
+
+  ],
+  bootstrap: [InventoryComponent]
 })
 export class InventoryModule { }

@@ -1,0 +1,269 @@
+<div class="row">
+  <form [formGroup]="curDocReportMain.BilRefMainReportValidator" class="form-horizontal">
+    <div class="form-body">
+      <div class="col-md-12">
+        <div class="caption custom-caption">
+          <i class="glyphicon glyphicon-asterisk"></i>
+          <span class="caption-subject">Incentive Payment Summary Report</span>
+        </div>
+        <div class="col-md-7">
+          <from-to-date-select (on-change)="OnDateRangeChange($event)">
+
+          </from-to-date-select>
+        </div>
+        <!-- <div class="col-md-5 col-xs-12">
+          <div class="form-group">
+            <label class="control-label col-md-4">From Date<b class="color-red"> *</b><b
+                style="float:right;">:</b></label>
+            <div class="col-md-8">
+              <danphe-date-picker [(ngModel)]="curDocReportMain.fromDate" ngDefaultControl [CalendarTypes]="calType"
+                formControlName="fromDate">
+              </danphe-date-picker>
+              <span class="color-red font-sm" *ngIf="curDocReportMain.IsDirty('fromDate')"
+                [hidden]="curDocReportMain.IsValidCheck('fromDate','required')"> From Date is required</span><br />
+              <span class="color-red font-sm" *ngIf="curDocReportMain.IsDirty('fromDate')"
+                [hidden]="curDocReportMain.IsValidCheck('fromDate','wrongDate')"> Enter Valid Date</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-5 col-xs-12">
+          <div class="form-group">
+            <label class="control-label col-md-4">To Date<b class="color-red"> *</b><b
+                style="float:right;">:</b></label>
+            <div class="col-md-8">
+              <danphe-date-picker [(ngModel)]="curDocReportMain.toDate" ngDefaultControl [CalendarTypes]="calType"
+                formControlName="toDate">
+              </danphe-date-picker>
+              <span class="color-red font-sm" *ngIf="curDocReportMain.IsDirty('toDate')"
+                [hidden]="curDocReportMain.IsValidCheck('toDate','required')"> To Date is required</span><br />
+              <span class="color-red font-sm" *ngIf="curDocReportMain.IsDirty('toDate')"
+                [hidden]="curDocReportMain.IsValidCheck('toDate','wrongDate')"> Can't select future date</span>
+            </div>
+          </div>
+        </div> -->
+        <div class="col-md-2 col-xs-12">
+          <div class="form-group">
+            <button class="btn blue" type="button" (click)="loadDocPaymentSummary()">
+              <i class="fa fa-search"></i>
+              Show Report
+            </button>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+<!--<div class="col-md-12" style="border: 0.5px solid;padding-top: 10px;">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="row">
+        <div class="col-md-6 col-sm-6">From Date: {{curDocReportMain.fromDate}}<br />ToDate: {{curDocReportMain.toDate}}<br /></div>
+        <div class="col-md-6 col-sm-6" style="text-align:right;">
+          <span>Print Date: {{currentDate}}</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12 text-center" style="text-align:center;font-size:18px">
+          <span><b>Incentive Payment Summary Report</b></span>
+        </div>
+      </div>
+    </div>
+    <div class="clearfix"></div>-->
+<!--<div class="col-md-12" id="excelExportPage">
+    <div class="table-responsive">
+<table class="table-striped table-hover table-bordered" style="background-color:initial;margin-top:10px;width:100%">
+  <thead>
+    <tr>
+      <td style="text-align:center"><b>Sr No.</b></td>
+      <td style="text-align:center"><b>Payment Date</b></td>
+      <td style="text-align:center"><b>Receiver name</b></td>
+      <td style="text-align:center"><b>Total Income</b></td>
+      <td style="text-align:center"><b>TDS Amt.</b></td>
+      <td style="text-align:center"><b>Net Income</b></td>
+      <td style="text-align:center"><b>Adjusted Amount</b></td>
+      <td style="text-align:center"><b>Action</b></td>
+
+    </tr>
+  </thead>
+  <tbody>-->
+<!--<tr *ngFor="let row of allReportData;let i=index">
+  <td style="text-align:center">{{i+1}}</td>
+  <td style="text-align:center">{{row.PaymentDate}}</td>
+  <td style="font-weight:bold"><a>{{row.FullName}}</a></td>
+  <td style="text-align:right">{{row.TotalAmount | ParseAmount}}</td>
+  <td style="text-align:right">{{row.TDSAmount | ParseAmount}}</td>
+  <td style="text-align:right">{{row.NetPayAmount | ParseAmount}}</td>
+  <td style="text-align:right">{{row.AdjustedAmount | ParseAmount}}</td>
+  <td style="text-align:center">
+    <button (click)="openVoucher(row)">View Payment Voucher</button>
+  </td>
+</tr>-->
+<!--<tr style="font-weight: bold">
+        <td style="text-align:right"></td>
+        <td style="text-align:right"><b>Total :</b></td>
+        <td style="text-align:right">{{summary.tot_TotIncome}}</td>
+        <td style="text-align:right">{{summary.tot_TDSAmount}}</td>
+        <td style="text-align:right">{{summary.tot_NetIncome}}</td>
+      </tr>
+        </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>-->
+<div class="col-md-12" style="border: 0.5px solid;padding-top: 10px;" *ngIf="showReport">
+  <div class="row" id="printPage">
+    <div class="col-md-12">
+      <div class="row">
+        <div class="col-md-6 col-sm-6">From Date: {{curDocReportMain.fromDate}}<br />ToDate:
+          {{curDocReportMain.toDate}}<br /></div>
+        <div class="col-md-6 col-sm-6" style="text-align:right;">
+          <span>Print Date: {{currentDate}}</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12 text-center" style="text-align:center;font-size:18px">
+          <span><b>Incentive Payment Summary Report</b></span>
+        </div>
+      </div>
+    </div>
+    <div class="clearfix"></div>
+    <div class="col-md-12">
+      <danphe-grid [grid-colDefaults]="PaymentReportGridColumns" [grid-data]="allReportData"
+        (grid-actions)="PaymentReportGridActions($event)" [NepaliDateInGridParams]="NepaliDateInGridSettings">
+      </danphe-grid>
+    </div>
+  </div>
+</div>
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showpaymentDetails">
+  <div class="portlet-body form">
+    <!--Model Box Body Start-->
+    <div class="form-body clearfix">
+      <div class="col-md-12" id="sf" style="margin-left: 90px;">
+        <div class="col-md-10 col-sm-12 col-xs-12 modelbox-div">
+          <div class="row">
+            <div id="printpageTransactionView">
+              <a class="btn btn-danger hidden-print rt_close_btn" (click)="Close()" title="Cancel">X</a>
+              <customer-header [header-title]="'Incentive Payment Voucher'">
+              </customer-header>
+              <div class="row">
+                <div class="col-md-12 col-xs-12">
+                  <hr style="border:1px solid black;margin-top: 0px;margin-bottom: 5px;" />
+
+                  <div class="col-md-12" id="excelTransactionView">
+                    <div class="row">
+                      <div class="col-md-12 patient-hdr-label">
+                        <table style="width:100%;" align="center">
+                          <tr>
+                            <td> <b>Voucher No:</b>&nbsp;{{paymentDetails.VoucherNumber}} </td>
+                            <td style="text-align:center;"> </td>
+                            <td style="text-align:center;float:right;padding-right:10px;">
+                              <b>Payment Date:</b>
+                              <span style="float:right">
+                                &nbsp;
+                                {{paymentDetails.PaymentDate | nepaliDate:'format':'YYYY-MM-DD'}} BS
+                              </span><br />
+                              <span style="float:right">
+                                &nbsp;
+                                {{paymentDetails.PaymentDate | DanpheDateTime:'format':'YYYY-MM-DD'}} AD
+                              </span>
+                            </td>
+                          </tr>
+                        </table>
+                      </div>
+                      <br />
+                      <div class="col-md-12" style="overflow-y:auto">
+                        <table class="table_data" style="width:100%;" border="1">
+                          <tr>
+                            <td> Name </td>
+                            <td> Total Amount </td>
+                            <td> TDS Amount</td>
+                            <td> Net Amount</td>
+                          </tr>
+                          <tr>
+                            <td> {{paymentDetails.ReceiverName}} </td>
+                            <td> {{paymentDetails.TotalAmount}} </td>
+                            <td> {{paymentDetails.TDSAmount | Currency}}</td>
+                            <td> {{paymentDetails.NetPayAmount | Currency}}</td>
+                          </tr>
+                        </table>
+                      </div>                    
+                      <div class="col-md-12">
+                        <br> <br>
+                        <table style="width:100%;border:0;">
+                          <tr>
+                            <td> In Words :</td>
+                            <td> <b>  {{paymentDetails.NetPayAmount | Currency | NumberInWords | CapitalFirstLetter}}</b>  <span>Only</span></td>
+                            <td > Adjust Amount : </td>
+                            <td> {{paymentDetails.AdjustedAmount | Currency}}</td>
+                          </tr>
+                          <tr>
+                            <td> Narration:</td>
+                            <td> <b> {{paymentDetails.Remarks}}</b></td>
+                            <td >  Net (Voucher Amount) :</td>
+                            <td> {{paymentDetails.NetPayAmount | Currency}}</td>
+                          </tr>
+                        </table>
+                      </div>
+                      <div class="col-md-12" style="padding-top:50px;">
+                        <table style="width:100%;border:0;text-align:center;">
+                          <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>
+                              <br />
+                              <b style="border-top:1px solid black; padding:0px 10px;">
+                                Prepared
+                                By
+                              </b>
+                              <br />
+                              {{paymentDetails.CreatedBy}}
+
+                            </td>
+                            <td>
+                              <b style="border-top:1px solid black; padding:0px 10px;"> Checked By </b>
+                              <br />
+                            </td>
+                            <td>
+                              <br />
+                            </td>
+                            <td>
+                              <b style="border-top:1px solid black; padding:0px 10px;"> Received By </b>
+                              <br />
+                            </td>
+                          </tr>
+                        </table>
+                      </div>
+                    </div>
+                    <br />
+                    <br />
+                    <div class="col-md-12" style="padding-bottom: 15px;">
+                      <div class="form-actions">
+                        <button style="float: right;" id="printbtn" class="btn btn-primary hidden-print" (click)="Print()" value="Print"
+                          title="print page">
+                          Print<i class="glyphicon glyphicon-print" style="margin-left:10px; "></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--</form>-->
+    <!--Model Box Body End-->
+  </div>
+</div>
+<app-print-page *ngIf="showPrint" [print-data]="printDetaiils"></app-print-page>

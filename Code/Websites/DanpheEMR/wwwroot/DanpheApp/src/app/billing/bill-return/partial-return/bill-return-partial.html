@@ -1,0 +1,207 @@
+<style>
+.main-info {
+	margin-top: 31px;
+}
+.bill-itms {
+	text-align: left;
+}
+/* .bill-summ-main {
+        padding: 0px;
+        border-bottom: 1px solid;
+    } */
+
+    /* .bill-summ-div {
+        padding: 0px;
+        border-top: 0px;
+        border-bottom: 1px solid;
+        border-right: 1px solid;
+        border-left: 1px solid;
+    } */
+
+.print-checkbox {
+	width: 30px;
+}
+.table-hover>tbody>tr:hover, .table-hover>tbody>tr:hover>td {
+	background: #dbdde2 !important;
+}
+.table-bordered, .table-bordered>tbody>tr>td, .table-bordered>tbody>tr>th, .table-bordered>tfoot>tr>td, .table-bordered>tfoot>tr>th, .table-bordered>thead>tr>td, .table-bordered>thead>tr>th {
+	border: 1px solid #000000;
+	padding: 5px !important;
+}
+.table>tbody>tr>th {
+	padding: 5px !important;
+}
+.billing-reciept {
+	padding: 10px;
+	border-top: 1px solid;
+	border-bottom: 1px solid;
+	border-right: 1px solid;
+	border-left: 1px solid;
+	margin-top: 10px;
+}
+.bill-action {
+	position: fixed;
+	right: 0%;
+	top: 120px;
+	width: 37%;
+	padding: 10px;
+	background-color: #d6edef;
+	border-radius: 10px 0px 0px 10px !important;
+}
+</style>
+
+  <div class="row"><div class="col-md-7">
+    <div class="col-md-12 billing-reciept" *ngIf="showPartialReturnedInvoice">
+      <div id="printpage" style="text-align:center;">
+        <div class="bill-patinfo" style="font-size: 14px;padding-top: 7px;">
+          <p class="no-margin" style="text-align:center"> <span> <b>INVOICE</b> </span> </p>
+        </div>
+        <div class="clearfix"></div>
+        <div class="bill-patinfo" style="font-size: 14px;padding-top: 7px;">
+          <div class="col-md-12 main-info" style="padding:0px;">
+            <div class="left">
+              <p class="no-margin" style="text-align:left;  font-weight: bold;">Invoice No:
+                {{invoiceDetails.CurrentFinYear}} -
+                {{invoiceDetails.InvoiceCode}}{{ invoiceDetails.InvoiceNo}} </p>
+              <p class="no-margin" style="text-align:left"> Hospital No: {{invoiceDetails.Patient.PatientCode}} </p>
+            </div>
+            <div class="right">
+              <p class="no-margin" style="text-align:right;">Transaction Date:
+                {{invoiceDetails.BillingDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</p>
+              <p class="no-margin" style="text-align:right;"> Invoice Date: {{invoiceDetails.BillingDate | DanpheDateTime:'format':'YYYY-MM-DD'}} </p>
+            </div>
+          </div>
+          <div class="clear"></div>
+          <div class="col-md-12" style="padding:0px;padding-top: 4px;">
+            <div class="left" style="width:50%" *ngIf="invoiceDetails.OPDReferredByDrName">
+              <p class="no-margin" style="text-align:left"> Referred by: {{invoiceDetails.OPDReferredByDrName}} </p>
+            </div>
+            <div class="left">
+              <div class="no-margin" style="text-align: left;display: inline-block; font-weight: bold;"> Patient's
+                Name:&nbsp;</div>
+              <div style="display: inline-block;text-align: left; font-weight: bold;"> {{invoiceDetails.Patient.ShortName}} </div>
+            </div>
+          </div>
+          <div class="col-md-12" style="padding:0px;">
+            <div class="left" style="width: 69%;">
+              <p class="no-margin" style="text-align:left">Address: {{invoiceDetails.Patient.Address}},
+                {{invoiceDetails.Patient.CountrySubDivisionName}} </p>
+            </div>
+            <div class="right" style="width:31%">
+              <p class="no-margin" style="text-align:right"> Age/Sex :
+                {{invoiceDetails.Patient.DateOfBirth | DanpheDateTime:'age' }}/{{invoiceDetails.Patient.Gender}} </p>
+            </div>
+          </div>
+          <div class="col-md-12" style="padding:0px;">
+            <div class="left" style="width:50%">
+              <p class="no-margin" style="text-align:left"> Contact No: {{invoiceDetails.Patient.PhoneNumber}} </p>
+            </div>
+            <div class="right" style="width:50%">
+              <p class="no-margin" style="text-align:right"> Purchaser's PAN: {{invoiceDetails.Patient.PANNumber}} </p>
+            </div>
+          </div>
+          <div class="col-md-12" style="padding:0px;">
+            <p style="text-align: center;">Method of payment: <span style="text-transform:capitalize;"> {{invoiceDetails.PaymentMode }}</span></p>
+          </div>
+          <div class="clear footer"></div>
+          <div class="table-responsive">
+            <table class="bill-itms table table-striped table-hover custom_table padLess_table table-bordered" style="width: 100%;"
+                        *ngIf="!invoiceDetails.PackageId ">
+              <tr>
+                <th> Sn.</th>
+                <th style="width:100px; text-align:center;" *ngIf="!showIPReceipt"> Select All
+                  <div>
+                    <label class="mt-checkbox mt-checkbox-outline">
+						<input type="checkbox" style="zoom:1.4;" name="IsSelected" [(ngModel)]="IsAllSelectedItems" (ngModelChange)="OnChangeSelectAll(row)">
+						<span></span>
+				   </label>
+                  </div>
+                </th>
+                <th>Particular(s)</th>
+                <th>Unit</th>
+                <th>Price</th>
+                <th>Amount</th>
+              </tr>
+              <tr *ngFor="let row of invoiceDetails.BillingItems; let i=index"
+                            [style.background-color]="row.IsSelected ? '#34c2cf' : '#ffff'">
+                <td>{{i+1}}</td>
+                <td style="text-align: center;" *ngIf="!showIPReceipt">
+					<label class="mt-checkbox mt-checkbox-outline">
+						<input type="checkbox" style="zoom:1.4;" name="IsSelected" [(ngModel)]="row.IsSelected"
+                                    (ngModelChange)="OnChangeItemSelect(row)">
+						<span></span>
+					</label>
+				  </td>
+                <td>{{row.ItemName}}</td>
+                <td>{{row.Quantity}}</td>
+                <td>{{row.Price}}</td>
+                <td>{{row.Quantity * row.Price | number : "1.2-2"}}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-5"><div class="bill-action" *ngIf="showPartialReturnedInvoice" style="position: static; border-radius: 10px 10px 10px 10px !important; width: 100%; margin-top: 10px;">
+    <div>
+      <table>
+        <tr> 
+          <td>Subtotal :</td>
+          <td><strong>{{invoiceDetails.SubTotal | number : "1.2-2"}} </strong></td>
+        </tr>
+        <tr>
+          <td>Disc. Amount :</td>
+          <td><strong>{{invoiceDetails.DiscountAmount | number : "1.2-2"}}</strong></td>
+        </tr>
+        <tr>
+          <td>Total Amount :</td>
+          <td><strong>{{invoiceDetails.TotalAmount | number : "1.2-2"}}</strong></td>
+        </tr>
+        <tr>
+          <td>In Words :</td>
+          <td><strong>{{invoiceDetails.TotalAmount | NumberInWords | uppercase}}<span
+                            *ngIf="invoiceDetails.TotalAmount !=0">ONLY</span></strong></td>
+        </tr>
+      </table>
+      <hr />
+      <div class="col-md-12" style="text-align:left;padding-left:10px;"> <span>Tender: <strong>{{invoiceDetails.Tender | number : "1.2-2"}}</strong> <br />
+        </span>
+        <div class="col-md-12" style="padding-top: 5px;padding: 0px;">
+          <div class="left"> User: <strong>{{invoiceDetails.BillingUser}}</strong> </div>
+          <div class="right"> Time: <strong>{{invoiceDetails.BillingDate | DanpheDateTime:'format':'HH:mm'}}</strong> </div>
+        </div>
+      </div>
+      <div class="clear"></div>
+      <div class="col-md-12" style="padding-top: 10px;">
+        <div class="left"> <span style="font-size:18px; font-weight:bold;">Amount to be Returned:
+          {{invoiceDetails.ReturnedAmount}}<br />
+          </span> </div>
+        <div class="left" style="padding: 5px;" *ngIf="showRemark" > <span style="font-size:18px; font-weight:bold;">Remarks :</span> <b style="color:red;">*</b>
+          <textarea id="Remarks" placeholder="Return Remarks" style="width:200px;display: inline-block;vertical-align: middle;margin-left: 10px;"
+                    [(ngModel)]="returnRemarks"></textarea>
+        </div>
+      </div>
+      <!-- *ngIf="!showIPReceipt" -->
+      <div style="margin-bottom: 15px;margin: 15px;">
+        <button class="btn green-meadow" (click)="ReturnInvoice()" [disabled]="loading"> Return Invoice </button>
+      </div>
+    </div>
+  </div></div></div>
+  <div class="row" *ngIf="showReturnedInvoice">
+    <div class="col-md-12" style="margin-top: 16px">
+      <div class="col-md-6" *ngIf="showNotReturnedItems">
+        <h4 style="font-weight:bold;color:#006687;text-decoration:underline;text-align:center;">Invoice Details </h4>
+        <billing-receipt *ngIf="billNotReturnedData !=null" [receipt]="billNotReturnedData"
+                [showPrintBtn]="showPrintBtn"> </billing-receipt>
+      </div>
+      <div class="col-md-6">
+        <h4 style="font-weight:bold;color:#006687;text-decoration:underline;text-align:center;">Invoice Return
+          Details</h4>
+        <billing-receipt *ngIf="billReturnedData !=null" [receipt]="billReturnedData" [showPrintBtn]="showPrintBtn"
+                [PrintReturnReceipt]="billReturnedData.PrintReturnReceipt"
+                [IsAllSelectedItems]="IsAllSelectedItems"> </billing-receipt>
+      </div>
+    </div>
+  </div>
+

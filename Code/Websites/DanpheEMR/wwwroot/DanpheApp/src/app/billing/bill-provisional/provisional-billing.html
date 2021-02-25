@@ -1,273 +1,246 @@
 
 <style>
-  .bill-action {
-    position: fixed;
-    right: 0%;
-    top: 120px;
-    width: 20%;
-    padding: 10px;
-    background-color: #b1c2d6;
-    border-radius: 10px 0px 0px 10px !important;
-  }
-
-  .table > tbody > tr > td {
-    padding: 0px !important;
-  }
-
-  .table > tbody > tr > th {
-    padding: 5px 0px !important;
-  }
-
-  .edit-icon {
-    font-weight: bold;
-    font-size: 18px;
-    color: green;
-    cursor: pointer;
-  }
-
-    .edit-icon:hover {
-      color: blue;
-      font-size: 15px;
-    }
-
-  .table-hover > tbody > tr:hover, .table-hover > tbody > tr:hover > td {
-    background: #c8cdd8 !important;
-    cursor: pointer;
-  }
+.edit-icon {
+	font-weight: bold;
+	font-size: 18px;
+	color: green;
+	cursor: pointer;
+}
+.edit-icon:hover {
+	color: blue;
+	font-size: 15px;
+}
+.table-hover > tbody > tr:hover, .table-hover > tbody > tr:hover > td {
+	background: #c8cdd8 !important;
+	cursor: pointer;
+}
+.table-prov-bill tr td {
+	font-size: 11px;	
+}
+.table-wrapper table th {
+	position: sticky;	
+	top: -1px;
+	background-color: #f1f1f1;
+/*	z-index: 9;*/
+}	
 </style>
-
-
-<div class="row">
-  <div class="col-lg-12 col-sm-12">
-    <danphe-grid [grid-colDefaults]="creditBillGridColumns" [grid-data]="provisionalBillsSummary" (grid-actions)="CreditBillGridActions($event)" [hidden]="!showAllPatient">
-    </danphe-grid>
-  </div>
-</div>
-
-<div class="row" [hidden]="showAllPatient">
-  <div class="col-md-12">
-    <button class="btn btn-primary" style="margin-right:10px;" (click)="BackToGrid()"><i class="fa fa-backward"></i>&nbsp;&nbsp;&nbsp;Back</button>
-    <button class="btn btn-primary" (click)="UpdateItems()">Edit Items</button>
-  </div>
-  <div class="col-md-12" style="padding-bottom:10px;">
-    <div class="col-md-4" style="padding-left:0px;padding-right:0px;text-align:right;">
-      Search from already added items:
-    </div>
-    <div class="col-md-4">
-      <input danphe-auto-complete class="form-control cstm-form-control"
-             [(ngModel)]="selItem"
-             [source]="uniqueItemNames"
-             placeholder="Enter ItemName"
-             display-property-name="ItemName"
-             value-property-name="ItemName"
-             style="width:190px"
-             match-formatted="true"
-             (valueChanged)="ItemValueChanged()"
-             (focusout)="ItemValueChanged()"
-             [list-formatter]="SearchItemsListFormatter"
-             max-num-list="10"
-             onClick="this.select();" />
+<div class="wrapper">
+  <div class="row">
+    <div class="col-lg-12 col-sm-12">
+      <danphe-grid [grid-colDefaults]="creditBillGridColumns" [grid-data]="provisionalBillsSummary" (grid-actions)="CreditBillGridActions($event)" [hidden]="!showAllPatient"  [NepaliDateInGridParams]="NepaliDateInGridSettings"> </danphe-grid>
     </div>
   </div>
-  <div class="col-md-12">
-    <div class="col-md-9" style="padding-left: 0px;">
-      <table class="table-striped table-hover" border="1" style="width: 100%;">
-        <tr>
-          <th style="width: 50px;">SNo.</th>
-          <th style="width: 100px;">Date</th>
-          <th style="width: 180px;">Department</th>
-          <th style="width: 200px;">Item Name</th>
-          <th style="padding-right: 5px !important;">Qty.</th>
-          <th style="padding-right: 5px !important;">Price.</th>
-          <th style="padding-right: 5px !important;">Subtot.</th>
-          <th style="padding-right: 5px !important;">Disc.</th>
-          <th style="padding-right: 5px !important;">Amt.</th>
-          <th style="padding-right: 5px !important;">User</th>
-          <th></th>
-
-        </tr>
-        <!--   @*Changed from receiptDetails to filteredPendingItems undo it if doesn't work*@-->
-        <tr *ngFor="let row of filteredPendingItems;let i = index" (dblclick)="EditItemBtnOnClick(i,row)">
-          <td>{{i+1}}</td>
-          <td style="font-size: 12px;font-weight: bold;">{{row.RequisitionDate | DanpheDateTime:'format':'YY/MM/DD HH:mm'}}</td>
-          <td>{{row.ServiceDepartment.ServiceDepartmentName}}</td>
-          <td>
-            <div>{{row.ItemName}}</div>
-            <div *ngIf="row.ProviderId">
-              <span style="font-size: 12px;font-weight: bold;">
-                ({{row.ProviderName}})
-              </span>
-            </div>
-          </td>
-          <td>{{row.Quantity}}</td>
-          <td>{{row.Price}}</td>
-          <td>{{row.SubTotal}}</td>
-          <td>{{row.DiscountAmount}}</td>
-          <td style="padding: 0px 7px;font-weight:bold;">{{row.TotalAmount}}</td>
-          <td title="Department:{{row.RequestingUserDept}}">{{row.RequestingUserName}}</td>
-          <td style="width: 5%;text-align: center;">
-            <div class="tooltip" style="padding: 0px 5px;color: #006687;z-index: inherit;">
-              <span>
-                <i class="fa fa-pencil edit-icon" (click)="EditItemBtnOnClick(i,row)"></i>
-              </span>
-
-              <p class="tooltiptext ttptextdown" style="width: 250px;margin-left: -125px;">Click to edit this item</p>
-            </div>
-          </td>
-        </tr>
-      </table>
+  <div class="row" [hidden]="showAllPatient">
+    <div class="col-md-12">
+      <div class="page-bar">
+        <button *ngIf="showBackButton" class="btn btn-default btn-sm" (click)="BackToGrid()"><i class="fa fa-backward"></i>&nbsp;&nbsp;&nbsp;Back</button>
+        <button *ngIf="showBackButton" class="btn btn-default btn-sm" (click)="UpdateItems()"><i class="fa fa-pencil"></i>Edit Items</button>
+        <button *ngIf="enablNewItmAddInProvisional && showBackButton" class="btn btn-primary margin-7-lft" (click)="NewItemBtn_Click()"> <i class="fa fa-plus margin-7-rt"></i>Add New Items </button>
+      </div>
     </div>
-
-  </div>
-  <div class="col-md-12" *ngIf="admissionDetail" style="padding-top:20px;">
-    <div class="col-md-5">
-      <div style="border: 1px solid blue;border-radius: 15px !important;">
-        <div style="border-bottom: 1px solid green;">
-          <p style="text-align:center">Admission Detail</p>
+    <div class="col-md-12" style="padding-bottom:15px;padding-top: 10px;">
+      <div class="row">
+        <div style="text-align:left;width: auto;float: left;padding-left: 15px;line-height: 1.8;"> <b>Search from already added items:</b> </div>
+        <div class="col-md-4">
+          <input danphe-auto-complete class="form-control cstm-form-control"
+               [(ngModel)]="selItem"
+               [source]="uniqueItemNames"
+               placeholder="Enter ItemName"
+               display-property-name="ItemName"
+               value-property-name="ItemName"
+               style="width:100%"
+               match-formatted="true"
+               (valueChanged)="ItemValueChanged()"
+               (focusout)="ItemValueChanged()"
+               [list-formatter]="SearchItemsListFormatter"
+               max-num-list="10"
+               onClick="this.select();" />
         </div>
-        <p style="text-align:center"><b>Admitted On </b><b class="colon">:</b>{{admissionDetail.AdmittedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</p>
-        <table class="table table-striped table-hover">
+      </div>
+    </div>
+    <div class="col-md-12">
+     <div class="row lessgutters">
+		 <div class="col-md-9" style="padding-left: 0px;">
+        <div class="table-wrapper no-margin">
+			<table class="table table-striped table-hover custom_table padLess_table table-bordered">
           <tr>
-            <th style="text-align:center">Bed</th>
-            <th>Price</th>
-            <th>No of Days</th>
+            <th *ngIf="enablePartialProvBill" style="width: 30px;text-align: center;transform: scale(1.5);"><input type="checkbox" name="selectAll" [(ngModel)]="selectAllItems" (change)="SelectAllChkOnChange()" /></th>
+            <th style="width: 50px;">S.No.</th>
+            <th style="width: 100px;">Date</th>
+            <th style="width: 180px;">Department</th>
+            <th style="width: 200px;">Item Name</th>
+            <th style="padding-right: 5px !important;">Qty.</th>
+            <th style="padding-right: 5px !important;">Price.</th>
+            <th style="padding-right: 5px !important;">Subtot.</th>
+            <th style="padding-right: 5px !important;">Disc.</th>
+            <th style="padding-right: 5px !important;">Amt.</th>
+            <th style="padding-right: 5px !important;">User</th>
+            <th></th>
           </tr>
-          <tr *ngFor="let bed of admissionDetail.BedInformations">
-            <td style="text-align:center">{{bed.BedCode}} ({{bed.BedFeature}})</td>
-            <td>{{bed.BedPrice}}</td>
-            <td>{{bed.Days}}</td>
+          <!--   @*Changed from receiptDetails to filteredPendingItems undo it if doesn't work*@-->
+          <ng-container *ngFor="let row of filteredPendingItems;let i = index">
+            <tr [style.background-color]="enablePartialProvBill && row.IsSelected ? '#d9daea' : '#fff'" (dblclick)="EditItemBtnOnClick(i,row)">
+              <td style="text-align: center;" *ngIf="enablePartialProvBill"><input style="transform: scale(1.5);" type="checkbox" name="selectEachItem" [(ngModel)]="row.IsSelected" (change)="SelectUnselectItem()" /></td>
+              <td>{{i+1}}</td>
+              <td>{{row.RequisitionDate | DanpheDateTime:'format':'YY/MM/DD HH:mm'}}</td>
+              <td>{{row.ServiceDepartment.ServiceDepartmentName}}</td>
+              <td><div>{{row.ItemName}}</div>
+                <div *ngIf="row.ProviderId"> <span style="font-size: 12px;font-weight: bold;"> ({{row.ProviderName}}) </span> </div></td>
+              <td>{{row.Quantity}}</td>
+              <td>{{row.Price | number : "1.2-2"}}</td>
+              <td>{{row.SubTotal | number : "1.2-2"}}</td>
+              <td>{{row.DiscountAmount | number: "1.2-2"}}</td>
+              <td style="padding: 0px 7px;font-weight:bold;">{{row.TotalAmount | number : "1.2-2"}}</td>
+              <td title="Department:{{row.RequestingUserDept}}">{{row.RequestingUserName}}</td>
+              <td style="width: 30px;text-align: center;"><div class="tooltip" style="padding: 0px 5px;color: #006687;z-index: inherit;"> <span> <i class="fa fa-pencil edit-icon" (click)="EditItemBtnOnClick(i,row)"></i> </span>
+                  <p class="tooltiptext ttptextdown" style="width: 250px;margin-left: -125px;">Click to edit this item</p>
+                </div></td>
+            </tr>
+          </ng-container>
+        </table>
+		</div>
+      </div>
+		 <div class="col-md-3">
+			<div class="page-bar">
+			  <div class="bill-action" *ngIf="showActionPanel">
+				<div>
+				  <table>
+					<tr>
+					  <td>Subtotal :</td>
+					  <td><strong>{{billingService.currencyUnit}} {{selItemsSubTotal}}</strong></td>
+					</tr>
+					<tr>
+					  <td>Disc. Amount :</td>
+					  <td><strong>{{billingService.currencyUnit}} {{selItemsTotalDiscAmount}}</strong></td>
+					</tr>
+					<tr>
+					  <td>Total Amount :</td>
+					  <td><strong>{{billingService.currencyUnit}} {{selItemsTotAmount}}</strong></td>
+					</tr>
+				  </table>
+				  <br/>
+				  <input type="button" class="btn green-meadow btn-sm" (click)="PayAll()" [disabled]="loading" value="Pay Now" />
+				</div>
+			  </div>
+			</div>
+			<div class="page-bar">
+			  <div *ngIf="showPatBillHistory && patBillHistory.IsLoaded" class="bill-action">
+				<div *ngIf="patBillHistory.IsLoaded">
+				  <div class="header-sm inner-header-sm"> Billing History </div>
+				  <table>
+					<tr>
+					  <td>Credit <b class="colon">:</b></td>
+					  <td>{{patBillHistory.CreditAmount}}</td>
+					</tr>
+					<tr>
+					  <td>Provisional Amount <b class="colon">:</b></td>
+					  <td style="text-decoration:underline;">{{patBillHistory.ProvisionalAmt}}</td>
+					</tr>
+					<tr>
+					  <td>Total Due<b class="colon">:</b></td>
+					  <td>{{patBillHistory.TotalDue}}</td>
+					</tr>
+					<tr>
+					  <td>Deposit Balance <b class="colon">:</b></td>
+					  <td>{{patBillHistory.DepositBalance}}</td>
+					</tr>
+					<tr>
+					  <td>Balance Amount <b class="colon">:</b></td>
+					  <td style="font-weight: bold;color: blue;font-size: 17px;"><span [ngClass]="{'neg-amt': patBillHistory.BalanceAmount < 0}"> {{patBillHistory.BalanceAmount}} </span></td>
+					</tr>
+				  </table>
+				</div>
+			  </div>
+			</div>
+		  </div>
+		</div>
+    </div>
+    <div class="col-md-12" *ngIf="admissionDetail" style="padding-top:20px;">
+      <div class="col-md-5">
+        <div style="border: 1px solid blue;border-radius: 15px !important;">
+          <div style="border-bottom: 1px solid green;">
+            <p style="text-align:center">Admission Detail</p>
+          </div>
+          <p style="text-align:center"><b>Admitted On </b><b class="colon">:</b>{{admissionDetail.AdmittedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</p>
+          <table class="table doc-tbl">
+            <tr>
+              <th style="text-align:center">Bed</th>
+              <th>Price</th>
+              <th>No of Days</th>
+            </tr>
+            <tr *ngFor="let bed of admissionDetail.BedInformations">
+              <td style="text-align:center">{{bed.BedCode}} ({{bed.BedFeature}})</td>
+              <td>{{bed.BedPrice}}</td>
+              <td>{{bed.Days}}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row" *ngIf="showCancelSummaryPanel" style="margin-top: 20px;">
+    <div class="col-md-12">
+      <p style="font-weight: bold;color: #1a1a98;"> Cancelled items summary </p>
+      <div class="table-responsive" style="width: 70%;">
+        <table class="table doc-tbl">
+          <tr>
+            <th> Item Name </th>
+            <th> Quantity </th>
+            <th> Amount </th>
+            <th> Cancelled On </th>
+          </tr>
+          <tr *ngFor="let row of cancelledItems">
+            <td> {{row.ItemName}} </td>
+            <td> {{row.Quantity}} </td>
+            <td> {{row.TotalAmount}} </td>
+            <td> {{row.CancelledOn | DanpheDateTime:'format':'DD.MM.YY HH:mm'}} </td>
           </tr>
         </table>
       </div>
     </div>
   </div>
-</div>
-
-
-
-<div class="bill-action" *ngIf="showActionPanel">
-  <div>
-    <table>
-      <tr>
-        <td>Subtotal :</td>
-        <td><strong>{{billingService.currencyUnit}} {{selItemsSubTotal}}</strong></td>
-      </tr>
-      <tr>
-        <td>Disc. Amount :</td>
-        <td><strong>{{billingService.currencyUnit}} {{selItemsTotalDiscAmount}}</strong></td>
-      </tr>
-      <tr>
-        <td>Total Amount :</td>
-        <td><strong>{{billingService.currencyUnit}} {{selItemsTotAmount}}</strong></td>
-      </tr>
-    </table>
-    <hr />
-    <input type="button" class="btn green-meadow" (click)="PayAll()" [disabled]="loading" value="Pay Now" />
-  </div>
-</div>
-
-<div *ngIf="showPatBillHistory && patBillHistory.IsLoaded" class="bill-action" style="top:340px;background-color:#FFF;">
-  <div style="border: 1px solid blue;padding:5px;border-radius: 15px !important;" *ngIf="patBillHistory.IsLoaded">
-    <div style="padding-left: 51px;margin-bottom: 5px;border-bottom: 1px solid green;">
-      Billing History
-    </div>
-    <table>
-      <tr><td>Credit <b class="colon">:</b></td><td>{{patBillHistory.CreditAmount}}</td></tr>
-      <tr>
-        <td>Provisional Amount <b class="colon">:</b></td>
-        <td style="text-decoration:underline;">{{patBillHistory.ProvisionalAmt}}</td>
-      </tr>
-      <tr><td>Total Due<b class="colon">:</b></td><td>{{patBillHistory.TotalDue}}</td></tr>
-      <tr><td>Deposit Balance <b class="colon">:</b> </td><td>{{patBillHistory.DepositBalance}}</td></tr>
-      <tr>
-        <td>Balance Amount <b class="colon">:</b></td>
-        <td style="font-weight: bold;color: blue;font-size: 17px;">
-          <span [ngClass]="{'neg-amt': patBillHistory.BalanceAmount < 0}">
-            {{patBillHistory.BalanceAmount}}
-          </span>
-        </td>
-      </tr>
-    </table>
-  </div>
-</div>
-
-
-
-<div class="row" *ngIf="showCancelSummaryPanel" style="margin-top: 20px;">
-  <div class="col-md-12">
-    <p style="font-weight: bold;color: #1a1a98;">
-      Cancelled items summary
-    </p>
-    <div class="table-responsive" style="width: 70%;">
-      <table class="table table-striped table-hover">
-        <tr>
-          <th>
-            Item Name
-          </th>
-          <th>
-            Quantity
-          </th>
-          <th>
-            Amount
-          </th>
-          <th>
-            Cancelled On
-          </th>
-        </tr>
-        <tr *ngFor="let row of cancelledItems">
-          <td>
-            {{row.ItemName}}
-          </td>
-          <td>
-            {{row.Quantity}}
-          </td>
-          <td>
-            {{row.TotalAmount}}
-          </td>
-          <td>
-            {{row.CancelledOn | DanpheDateTime:'format':'DD.MM.YY HH:mm'}}
-          </td>
-        </tr>
-      </table>
-    </div>
-  </div>
-
-
-</div>
-
-
-
-
-<edit-bill-item *ngIf="showEditItemsPopup" [itemToEdit]="selItemForEdit" [discountApplicable]="discountApplicable" (on-closed)="CloseItemEditWindow($event)"
-                [EmpList]="UsersList" [DoctorsList]="doctorsList">
-
-</edit-bill-item>
-
-
-<div class="popup-static portlet box portlet-fullscreen" *ngIf="showInpatientMessage">
-  <div class="portlet-body form">
-    <div class="modelbox-div" style="margin-left:30%;margin-right:25%;margin-top:2%">
-      <div class="row">
-        <div class="col-md-12" style="margin-top:15px;text-align:center">
-          <h4><b style="color:#bd8111">Alert!</b></h4>
-          <p><b style="color:#bd8111;font-size:22px">Please use Inpatient billing for admitted patient.</b></p>
-          <hr />
+  <edit-bill-item *ngIf="showEditItemsPopup" [itemToEdit]="selItemForEdit" [discountApplicable]="discountApplicable" (on-closed)="CloseItemEditWindow($event)"
+                [EmpList]="UsersList" [DoctorsList]="doctorsList" [current-pat-info]="patientDetails"> </edit-bill-item>
+  <div class="popup-static portlet box portlet-fullscreen" *ngIf="showInpatientMessage">
+    <div class="portlet-body form">
+      <div class="modelbox-div" style="margin-left:30%;margin-right:25%;margin-top:2%">
+        <div class="row">
+          <div class="col-md-12" style="margin-top:15px;text-align:center">
+            <h4><b style="color:#bd8111">Alert!</b></h4>
+            <p><b style="color:#bd8111;font-size:22px">Please use Inpatient billing for admitted patient.</b></p>
+            <hr />
+          </div>
+          <br />
+          <div class="col-md-12" style="padding-bottom: 18px;text-align:center">
+            <button type="button" class="btn btn-danger" (click)="showInpatientMessage=false"> Close </button>
+          </div>
         </div>
-        <br />
-        <div class="col-md-12" style="padding-bottom: 18px;text-align:center">
-          <button type="button" class="btn btn-danger" (click)="showInpatientMessage=false">
-            Close
-          </button>
+      </div>
+    </div>
+  </div>
+  <update-items *ngIf="showUpdateItemsPopup"
+              [patientDetails]="patientDetails"
+              [filtered-items]="updatedItems"
+              (close-popup)="CloseUpdatePricePopup($event)"> </update-items>
+  
+  <!--sud:11Nov'19--For Add New Items-->
+  
+  <div class="popup-static portlet box portlet-fullscreen" *ngIf="showNewItemsPopup">
+    <div class="portlet-body form">
+      <div class="modelbox-div" style="margin-left:3%;margin-right:3%;margin-top:2%">
+        <div class="modelbox-header"> <span>Provisional Billing Request for <b> {{patientService.globalPatient.ShortName}}/{{patientService.globalPatient.PatientCode}}</b></span> </div>
+        <div class="modelbox-body">
+          <div class="row">
+            <ward-billitem-request *ngIf="showNewItemsPopup" [counterId]="counterId" [billItems]="itemList"
+                                 [patientId]="patientService.globalPatient.PatientId" [visitId]="currBillingContext.PatientVisitId"
+                                 [visitType]="'outpatient'" [billingType]="'outpatient'"
+                                 (emit-billItemReq)="CloseNewItemAdd($event)"></ward-billitem-request>
+          </div>
+        </div>
+        <div class="close-modelbox">
+          <button class="btn btn-danger" (click)="showNewItemsPopup=false">X</button>
         </div>
       </div>
     </div>
   </div>
 </div>
-<update-items *ngIf="showUpdateItemsPopup"
-              [patientDetails]="patientDetails"
-              [filtered-items]="updatedItems"
-              (close-popup)="CloseUpdatePricePopup($event)">
-</update-items>
-
-
-

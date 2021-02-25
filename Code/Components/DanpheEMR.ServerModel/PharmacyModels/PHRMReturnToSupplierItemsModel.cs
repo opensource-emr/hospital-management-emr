@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DanpheEMR.ServerModel
 {
@@ -16,12 +17,18 @@ namespace DanpheEMR.ServerModel
         public int GoodReceiptItemId { get; set; }
         public string BatchNo { get; set; }
         public int? FreeQuantity { get; set; }
-        public decimal? FreeAmount { get; set; } 
+        public decimal? FreeAmount { get; set; }
+        [NotMapped]
+        public int? FreeQuantityReturn { get; set; }
+        [NotMapped]
+        public decimal? FreeAmountReturn { get; set; }
         public decimal? FreeRate { get; set; }
         public int Quantity { get; set; }
+        public decimal OldItemPrice { get; set; }
         public decimal ItemPrice { get; set; }
         public decimal SubTotal { get; set; }
         public double DiscountPercentage { get; set; }
+        public decimal DiscountedAmount { get; set; }
         public double VATPercentage { get; set; }
         public decimal TotalAmount { get; set; }
         public DateTime ExpiryDate { get; set; }

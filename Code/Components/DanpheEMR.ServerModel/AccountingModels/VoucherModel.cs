@@ -18,6 +18,7 @@ namespace DanpheEMR.ServerModel
         public int CreatedBy { get; set; }
         public bool IsActive { get; set; }
         public string VoucherCode { get; set; }
+        public bool ISCopyDescription { get; set; }
 
     }
 }

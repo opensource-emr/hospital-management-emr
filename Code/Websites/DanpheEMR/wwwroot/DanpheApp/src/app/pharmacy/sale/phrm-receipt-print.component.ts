@@ -1,4 +1,4 @@
-﻿import { Component } from "@angular/core";
+import { Component } from "@angular/core";
 import { RouterOutlet, RouterModule, Router } from '@angular/router';
 import { PharmacyService } from '../shared/pharmacy.service';
 import { PharmacyBLService } from '../shared/pharmacy.bl.service';
@@ -8,9 +8,10 @@ import { PHRMInvoiceModel } from "../shared/phrm-invoice.model";
 import { RouteFromService } from '../../shared/routefrom.service';
 import { SecurityService } from '../../security/shared/security.service';
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
+import { CoreService } from "../../core/shared/core.service";
 
 @Component({
-    templateUrl: "../../view/pharmacy-view/Sale/PHRMReceiptPrint.html" // "/PharmacyView/PHRMReceiptPrint"
+    templateUrl: "./phrm-receipt-print.html"
 })
 export class PHRMReceiptPrintComponent {
 
@@ -19,21 +20,25 @@ export class PHRMReceiptPrintComponent {
     //disableNextBtn: boolean = false;
     //showOpdSticker: boolean = false;
     
+  public numberofbill: { pharmacy, billing, inventory };
+  public noOfBillGenerate: number = 0;
+  currentReceiptNo: number = 1;
+  pharmacyReceipt: PharmacyReceiptModel = new PharmacyReceiptModel();
 
-    currentReceiptNo: number = 1;
-    pharmacyReceipt: PharmacyReceiptModel = new PharmacyReceiptModel();
-    constructor(
+  constructor( public coreService: CoreService,
         public pharmacyBLService: PharmacyBLService, public securityService: SecurityService,
         public pharmacyService: PharmacyService, public msgbox: MessageboxService, 
                  public router: Router, public routeFromSrv: RouteFromService
    ) {
        ////this.showReceiptNavigation = (routeFromSrv.RouteFrom == "sales");
         routeFromSrv.RouteFrom = "";//reset value to empty once checked.
-
-        this.pharmacyReceipt = this.pharmacyService.globalPharmacyReceipt;
-        this.currentReceiptNo = this.pharmacyReceipt.ReceiptNo;
-        
-    }
+    this.pharmacyReceipt = this.pharmacyService.globalPharmacyReceipt;
+    if (this.pharmacyService.globalPharmacyReceipt.PrintCount == 0 && this.pharmacyService.globalPharmacyReceipt.ReceiptNo != 0)
+     {
+      this.GetBillPrintParameter();
+       }
+     this.currentReceiptNo = this.pharmacyReceipt.ReceiptNo;
+       }
 
 
     //PreviousReceipt() {
@@ -78,5 +83,14 @@ export class PHRMReceiptPrintComponent {
     //        });
 
     //}
- 
+  GetBillPrintParameter() {
+    var paramValue = this.coreService.Parameters.find(a => a.ParameterName == 'Bill Print Parameter').ParameterValue;
+    if (paramValue) {
+      this.numberofbill = JSON.parse(paramValue);
+      this.noOfBillGenerate = parseInt(this.numberofbill.pharmacy);
+    }
+    else {
+      this.msgbox.showMessage("error", ["Please enter parameter values for BillingHeader"]);
+    }
+  }
 }

@@ -1,4 +1,4 @@
-﻿import { NgModule } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { HttpClientModule} from '@angular/common/http';
@@ -18,9 +18,9 @@ import { FractionPercentService } from './shared/Fraction-Percent.service';
 import { FractionPercentEndPoint } from './shared/fraction-percent.endpoint';
 import { FractionCalculationComponent } from './calculation/fraction-calculation.component';
 import { FractionApplicableListComponent } from './calculation/applicable/fraction-applicable-list.component';
-import { SettingsBLService } from '../settings/shared/settings.bl.service';
-import { SettingsDLService } from '../settings/shared/settings.dl.service';
-import { SettingsService } from '../settings/shared/settings-service';
+import { SettingsBLService } from '../settings-new/shared/settings.bl.service';
+import { SettingsDLService } from '../settings-new/shared/settings.dl.service';
+import { SettingsService } from '../settings-new/shared/settings-service';
 import { CalculateComponent } from './calculation/calculate/calculate.component';
 import { FractionCalculationService } from './shared/fraction-calculation.service';
 import { FractionCalculationEndPoint } from './shared/fraction-calculation.endpoint';

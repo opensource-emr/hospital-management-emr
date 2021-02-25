@@ -32,6 +32,8 @@ namespace DanpheEMR.ServerModel
         public string TransactionType { get; set; }
         public int CreatedBy { get; set; }
         public DateTime CreatedOn { get; set; }
+        public int? ModifiedBy { get; set; }
+        public DateTime? ModifiedOn { get; set; }
         public decimal? MRP { get; set; }
         public int? GoodsReceiptItemId { get; set; }
         public string Remark { get; set; }

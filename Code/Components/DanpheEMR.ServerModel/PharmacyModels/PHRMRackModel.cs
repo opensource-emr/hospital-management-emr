@@ -11,7 +11,8 @@ namespace DanpheEMR.ServerModel.PharmacyModels
     {
         [Key]
         public int RackId { get; set; }
-        public int ParentId { get; set; }
+        public int? ParentId { get; set; }
+        public int LocationId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public int? CreatedBy { get; set; }

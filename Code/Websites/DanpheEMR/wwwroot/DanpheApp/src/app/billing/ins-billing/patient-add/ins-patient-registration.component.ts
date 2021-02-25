@@ -14,7 +14,7 @@ import { PatientsBLService } from '../../../patients/shared/patients.bl.service'
 import { InsuranceInfo } from '../../../patients/shared/insurance-info.model';
 import { GovInsurancePatientVM } from '../shared/gov-ins-patient.view-model';
 import { DanpheCache, MasterType } from '../../../shared/danphe-cache-service-utility/cache-services';
-import { CountrySubdivision } from '../../../settings/shared/country-subdivision.model';
+import { CountrySubdivision } from '../../../settings-new/shared/country-subdivision.model';
 import { GovInsuranceBLService } from '../shared/gov-ins.bl.service';
 import { UnicodeService } from '../../../common/unicode.service';
 
@@ -123,7 +123,7 @@ export class INSPatientRegistrationComponent {
 
   RegisterInsurancePatient() {
     if (this.loading) {
-      console.log("click");
+     
       //at beginning, current balance would be initial balance.
       this.insPatient.InitialBalance = this.insPatient.CurrentBalance;
       this.insPatient.InsuranceName = this.insProviderList.find(a => a.InsuranceProviderId == this.insPatient.InsuranceProviderId).InsuranceProviderName;
@@ -139,6 +139,13 @@ export class INSPatientRegistrationComponent {
         return;
       }
       if (this.insPatient.IsValid(undefined, undefined)) {
+
+        //removing extra spaces typed by the users
+        this.insPatient.FirstName = this.insPatient.FirstName.trim();
+        this.insPatient.MiddleName = this.insPatient.MiddleName ? this.insPatient.MiddleName.trim() : null;
+        this.insPatient.LastName = this.insPatient.LastName.trim();
+        this.insPatient.ShortName = this.insPatient.FirstName + " " + this.insPatient.MiddleName + this.insPatient.LastName;
+
         //Get existing patient list by FirstName, LastName, Mobile Number
         this.GetExistedMatchingPatientList();
         //this.RegisterNewPatient();

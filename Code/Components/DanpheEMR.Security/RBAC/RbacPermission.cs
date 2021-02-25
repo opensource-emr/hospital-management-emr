@@ -11,6 +11,7 @@ namespace DanpheEMR.Security
         [Key]
         public int PermissionId { get; set; }
         public string PermissionName { get; set; }
+        public string Description { get; set; }
         public int? ApplicationId { get; set; }
         public int CreatedBy { get; set; }
         public DateTime CreatedOn { get; set; }

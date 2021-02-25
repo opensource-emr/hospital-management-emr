@@ -13,21 +13,26 @@ export class VisitDLService {
   }
 
   //gets the list of visit using visitstatus
-  public GetVisitsByStatus(status: string, maxdayslimit) {
-    return this.http.get<any>("/api/Visit?status=" + status + "&dayslimit=" + maxdayslimit, this.options);
-  } 
-    
+  public GetVisitsByStatus(status: string, maxdayslimit,searchTxt) {
+    return this.http.get<any>("/api/Visit?status=" + status + "&dayslimit=" + maxdayslimit + "&search="+ searchTxt, this.options);
+  }
+
   public GetPatientVisitList(patientId) {
     return this.http.get<any>("/api/Visit?&reqType=patient-visitHistory&patientId=" + patientId, this.options);
   }
 
-  public GetPatientVisitList_Today(patientId) {
-    return this.http.get<any>("/api/Visit?&reqType=patient-visitHistory-today&patientId=" + patientId, this.options);
+  public GetPatientVisitEarlierList(patientId, followup) {
+    return this.http.get<any>("/api/Visit?&reqType=patient-visitHistorylist&patientId=" + patientId + "&followup=" + followup , this.options);
   }
+
+  public GetPatientVisitList_Today(patientId) {
+    return this.http.get<any>("/api/Visit?&reqType=patient-visitHistory-today&patientId=" + patientId ,  this.options);
+  }
+
 
   public GetVisitList(claimCode: string) {
     return this.http.get<any>("/api/Visit?&reqType=existingClaimCode-VisitList&claimCode=" + claimCode, this.options);
-  } 
+  }
 
   public GetPatientVisitsProviderWise(patientId) {
     return this.http.get<any>("/api/Visit?&reqType=patient-visit-providerWise&patientId=" + patientId, this.options);
@@ -42,9 +47,9 @@ export class VisitDLService {
   public GetDepartmentByEmployeeId(employeeId: number) {
     return this.http.get<any>("/api/Master?type=departmentByEmployeeId&employeeId=" + employeeId, this.options);
   }
-  public GetPastVisits() { //fromDate: string, toDate: string
+  public GetPastVisits(fromDate, toDate,searchTxt) { //fromDate: string, toDate: string
     // return this.http.get<any>("/api/Visit?reqType=pastVisitList&fromDate=" + fromDate + "&toDate=" + toDate, this.options);
-    return this.http.get<any>("/api/Visit?reqType=pastVisitList", this.options);
+    return this.http.get<any>("/api/Visit?reqType=pastVisitList&FromDate=" + fromDate + "&ToDate=" + toDate+"&search="+searchTxt, this.options);
   }
 
   //posts new visit
@@ -118,7 +123,7 @@ export class VisitDLService {
   }
 
   //ashim: 23Sep2018 : Visit from billing transaction
-  public PostVisitsFromBillingTransaction(visits) {
+  public PostVisitsFromBillingTransaction(visits: string) {
     return this.http.post<any>("/api/Visit?reqType=billing-visits", visits, this.options);
   }
 
@@ -147,8 +152,12 @@ export class VisitDLService {
   public GetDoctorOldPatientPrices() {
     return this.http.get<any>("/api/Visit?&reqType=get-doc-oldpatient-opd-items", this.options);
   }
+  // getting the departmnet
+  public GetDepartment() {
+    return this.http.get<any>("/api/Appointment?reqType=department");
+  }
 
- //sud: 31Jul'19-For Old Patient Opd
+  //sud: 31Jul'19-For Old Patient Opd
   public GetDepartmentOldPatientPrices() {
     return this.http.get<any>("/api/Visit?&reqType=get-dept-oldpatient-opd-items", this.options);
   }
@@ -159,6 +168,9 @@ export class VisitDLService {
     return this.http.get<any>("/api/Visit?&reqType=get-visit-doctors", this.options);
   }
 
+  public GetBillItemList() {
+    return this.http.get<any>("/api/billing?reqType=billItemList", this.options);
+  }
 
   //sud:26June'19-- For Free-Followup Visits.
   public PostFreeFollowupVisit(visitData) {
@@ -168,8 +180,8 @@ export class VisitDLService {
 
 
   //Post Visit Data to database with Patient, Visit, BillTransaction,BillTransactionItems details
-  public PostPaidFollowupVisit(fwupVisitDataJSON:string) {
-  
+  public PostPaidFollowupVisit(fwupVisitDataJSON: string) {
+
     return this.http.post<any>("/api/Visit?reqType=paid-followup-visit", fwupVisitDataJSON, this.options);
   }
 

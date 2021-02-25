@@ -1,0 +1,357 @@
+<style>
+  .each-card {
+    padding: 20px 10px 10px 10px;
+  }
+
+    .each-card h3 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+  .all-components {
+    padding: 7px;
+    border: 1px solid grey;
+    margin-top: 5px;
+  }
+
+    .all-components p {
+      margin: 0;
+      line-height: 1.6;
+      padding-bottom: 5px;
+    }
+
+  table.all-sub-com tr td, table.all-obj-com tr td {
+    padding: 5px;
+    vertical-align: text-top;
+  }
+
+  .subjective .all-sub-com tr td:first-child {
+    min-width: 180px;
+  }
+
+  .objective .all-obj-com tr td:first-child {
+    min-width: 90px;
+  }
+
+  .pat-info-table tr td {
+    padding: 5px;
+  }
+
+  .header-print {
+    margin-top: 10px;
+  }
+</style>
+  <div *ngIf="showOPDGeneralNote && opdGeneralNote && renderType=='edit' ">
+    <div style="display: table;content: '';width: 100%;text-align: center;">
+
+      <!--<h3 class="caption-subject font-blue-soft bold uppercase" style="font-size: 20px;margin:0px;display: inline-block;">OPD General Note</h3>-->
+      <!--<button class="btn blue" style="float:right;margin-right:2px;" (click)="SaveOPDGeneralNote()">
+        {{opdGeneralNote.NotesId ? 'Update' : 'Save' }}
+        <i class="fa fa-save"></i>
+      </button>-->
+    </div>
+    <br />
+
+    <div class="tabbable tabbable-tabdrop">
+      <!--<ul class="nav nav-tabs">
+          <li class="active">
+              <a href="#subjective" data-toggle="tab" aria-expanded="true">Subjective</a>
+          </li>
+          <li class="">
+              <a href="#objective" data-toggle="tab" aria-expanded="false">Objective</a>
+          </li>
+          <li class="">
+              <a href="#assessment" data-toggle="tab" aria-expanded="false">Assessment/Plan</a>
+          </li>
+          <li class="">
+              <a href="#instructions" data-toggle="tab" aria-expanded="false">Instructions</a>
+          </li>
+
+      </ul>-->
+      <div>
+        <div class="tab-pane active" id="subjective">
+          <subjective-note [subjective-note]="opdGeneralNote.SubjectiveNote"
+                           [clinical-detail]="clinicalDetail" (callback-subjectivenote)="CallBackSubjective($event)"></subjective-note>
+        </div>
+        <div class="tab-pane" id="objective">
+          <objective-note [objective-note]="opdGeneralNote.ObjectiveNote"
+                          [clinical-detail]="clinicalDetail"  (callback-objectivenote)="CallBackObjective($event)"></objective-note>
+        </div>
+        <div class="tab-pane" id="assessment">
+          <assessment-plan [assessments]="opdGeneralNote.ClinicalDiagnosis"  (callback-subjectivenote)="CallBackAssesmentAndPlan($event)" >
+
+          </assessment-plan>
+        </div>
+        <div class="tab-pane" id="instructions">
+          <div class="col-md-6">           
+            <div class="hm-form">
+               <div class="text-head-wrapper clearfix">
+              <h3 class="text-head cstm-add-heading">Instructions</h3>              
+            </div> 
+              <div class="form-group">
+                <div class="row">
+                  <label class="control-label col-md-4">Follow Up<b>:</b></label>
+                  <div class="col-md-8">
+                    <div class="row">
+                      <div class="col-md-3">
+                      <input class="form-control" type="number" min="0" max="150" onFocus="this.value=0"
+                             [(ngModel)]="FollowUp.Number"/>
+                    </div>
+                    <div class="col-md-9">
+                      <div class="input-group">
+                        <div class="icheck-inline">
+                          <label class="mt-radio mt-radio-outline">
+                            <input name="FollowUpUnit" type="radio" value="Days" [(ngModel)]="FollowUp.Unit">
+                            <span></span>Days
+                          </label>
+                          <label class="mt-radio mt-radio-outline">
+                            <input name="FollowUpUnit" type="radio" value="Week" [(ngModel)]="FollowUp.Unit">
+                            <span></span>Weeks
+                          </label>
+                          <label class="mt-radio mt-radio-outline">
+                            <input name="FollowUpUnit" type="radio" value="Month" [(ngModel)]="FollowUp.Unit">
+                            <span></span>Months
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                    </div>
+                    
+                    
+              </div>
+                </div>
+              
+              
+            </div>
+            <div class="form-group">
+              <div class="row">                
+              <label class="control-label col-md-4">Remarks<b>:</b></label>
+              <div class="col-md-8">
+                <textarea class="form-control" [(ngModel)]="opdGeneralNote.Remarks" maxlength="500" rows="5"></textarea>
+              </div>
+              </div>              
+            </div>
+            </div>            
+            
+            <br />
+            
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="showOPDGeneralNote && opdGeneralNote && renderType=='view' ">
+
+    <button class="btn blue pull-right" (click)="print()">
+      <i class="fa fa-print"></i>
+      Print
+    </button>
+
+    <div class="print-block">
+
+      <div style="display: table;content: '';width: 100%;text-align: center;">
+        <h3 class="caption-subject font-blue-soft bold uppercase" style="font-size: 20px;margin:0px;display: inline-block;">OPD General Note</h3>
+      </div>
+
+      <div id="notePrintBlock">
+        <div class="header-print hidden">
+          <div style="width: 100%;display: table;content: '';margin-top: 10px;text-align:center;">
+            <h3 class="caption-subject font-blue-soft bold uppercase" style="font-size: 20px;margin:0px;display: inline-block;">SOAP Notes</h3>
+          </div>
+          <div>
+            <table class="pat-info-table" style="width: 100%; margin-top: 8px;">
+              <tr>
+                <td>Hospital Number: {{patService.globalPatient.PatientCode}}</td>
+                <td>Patient Name: {{patService.globalPatient.ShortName}}</td>
+                <td>Age/Sex: {{patService.globalPatient.Age}}/{{patService.globalPatient.Gender}}</td>
+                <td>Contact Number:{{patService.globalPatient.PhoneNumber}}</td>
+              </tr>
+              <tr>
+                <td>Address: {{patService.globalPatient.Address}}</td>
+                <td>ConsultingDoctor: {{opdGeneralNote.ReferredBy}}</td>
+                <td>VisitDate/Code:{{opdGeneralNote.VisitDate}} / {{opdGeneralNote.VisitCode}}</td>
+                <td>Created On: {{opdGeneralNote.CreatedOn}}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        <div style="width: 100%;display: table;content: '';background: #e1e1e4;margin-top: 10px;"
+             *ngIf="opdGeneralNote.SubjectiveNote
+         || clinicalDetail.Allergies.length || clinicalDetail.SocialHistory.length
+         || clinicalDetail.FamilyHistory.length || clinicalDetail.SurgicalHistory.length">
+          <div class="subjective each-card">
+            <h3>Subjective</h3>
+            <div class="all-components">
+              <table class="all-sub-com" style="width: auto;">
+                <tr *ngIf="opdGeneralNote.SubjectiveNote && opdGeneralNote.SubjectiveNote.ChiefComplaint">
+                  <td>Chief Complaint:</td>
+                  <td>{{opdGeneralNote.SubjectiveNote.ChiefComplaint}}</td>
+                </tr>
+                <tr *ngIf="opdGeneralNote.SubjectiveNote && opdGeneralNote.SubjectiveNote.HistoryOfPresentingIllness">
+                  <td>History of presenting Illness:</td>
+                  <td>{{opdGeneralNote.SubjectiveNote.HistoryOfPresentingIllness}}</td>
+                </tr>
+                <tr *ngIf="opdGeneralNote.SubjectiveNote && opdGeneralNote.SubjectiveNote.ReviewOfSystems">
+                  <td>Review of System:</td>
+                  <td>{{opdGeneralNote.SubjectiveNote.ReviewOfSystems}}</td>
+                </tr>
+                <tr *ngIf="clinicalDetail.Allergies.length">
+                  <td>Allergy:</td>
+                  <td>
+                    <span *ngFor="let allergy of clinicalDetail.Allergies; let i=index;" style="padding: 0px 2px;">
+                      <span *ngIf="i>0">,</span>{{allergy.AllergenAdvRecName}} ({{allergy.AllergyType}}) / Reaction-{{allergy.Reaction}}
+                    </span>
+                  </td>
+                </tr>
+                <tr *ngIf="clinicalDetail.SocialHistory.length">
+                  <td> Social History:</td>
+                  <td>
+                    <span *ngFor="let social of clinicalDetail.SocialHistory">
+                      <span *ngIf="social.AlcoholHistory">
+                        (Alcohol History-{{social.AlcoholHistory}}) ,
+                      </span>
+                      <span *ngIf="social.DruglHistory">
+                        (Drug History-{{social.DrugHistory}}) ,
+                      </span>
+                      <span *ngIf="social.FamilySupport">
+                        (Family Support-{{social.FamilySupport}}) ,
+                      </span>
+                      <span *ngIf="social.SmokingHistory">
+                        (Smoking History-{{social.SmokingHistory}}) ,
+                      </span>
+                      <span *ngIf="social.Note">
+                        (Social Note-{{social.Note}}) ,
+                      </span>
+                      <span *ngIf="social.Occupation">
+                        (Social Occupation-{{social.Occupation}}) ,
+                      </span>
+                    </span>
+                  </td>
+                </tr>
+                <tr *ngIf="clinicalDetail.FamilyHistory.length">
+                  <td>Family History:</td>
+                  <td>
+                    <span *ngFor="let family of clinicalDetail.FamilyHistory">
+                      <span>
+                        {{family.ICD10Code}}{{family.ICD10Description}}
+                      </span>
+                    </span>
+                  </td>
+                </tr>
+                <tr *ngIf="clinicalDetail.SurgicalHistory.length">
+                  <td>Surgical History:</td>
+                  <td>
+                    <span *ngFor="let surgery of clinicalDetail.SurgicalHistory">
+                      <span>
+                        {{surgery.ICD10Code}}{{surgery.ICD10Description}}
+                      </span>
+                    </span>
+                  </td>
+                </tr>
+
+              </table>
+            </div>
+          </div>
+        </div>
+
+
+        <div style="width: 100%;display: table;content: '';background: #e1e1e4;margin-top: 10px;">
+          <div class="objective each-card">
+            <h3>Diagnosis List</h3>
+            <div class="all-components all-icd" style="display: table; content: '';">
+              <p style="float: left;" *ngFor="let assessment of opdGeneralNote.ClinicalDiagnosis.DiagnosisOrdersList; let i =index">
+                <span *ngIf="!assessment.IsEditable">
+                  <span *ngIf="i>0">, &nbsp;</span> ({{assessment.ICD.ICD10Code}}) {{assessment.ICD.ICD10Description}} &nbsp;
+                </span>
+              </p>
+
+            </div>
+          </div>
+        </div>
+
+        <div style="width: 100%;display: table;content: '';background: #e1e1e4;margin-top: 10px;">
+          <div class="objective each-card">
+            <h3>Orders</h3>
+            <div class="all-components" style="display: table; content: '';">
+
+              <p style="float: left;" *ngFor="let diag of opdGeneralNote.ClinicalDiagnosis.DiagnosisOrdersList">
+                <span *ngIf="!diag.IsEditable">
+                  <span *ngFor="let orders of diag.OrdersList; let j= index">
+                    <span *ngIf="j>0">, &nbsp;</span> {{orders.Order.ItemName}} &nbsp;&nbsp;
+                  </span>
+                </span>
+              </p>
+
+            </div>
+          </div>
+        </div>
+
+            <div style="width: 100%;display: table;content: '';background: #e1e1e4;margin-top: 10px;"
+                 *ngIf="opdGeneralNote.ObjectiveNote">
+                <div class="objective each-card">
+                    <h3>Objective</h3>
+                    <div class="all-components">
+                        <div style="width: 100%; display: table;">
+                            <div style="width: 50%; float: left;">
+                                <table class="all-obj-com" style="width: auto;">
+                                    <tr *ngIf="opdGeneralNote.ObjectiveNote.HEENT">
+                                        <td>HEENT:</td>
+                                        <td>{{opdGeneralNote.ObjectiveNote.HEENT}}</td>
+                                    </tr>
+                                    <tr *ngIf="opdGeneralNote.ObjectiveNote.Chest">
+                                        <td>CHEST:</td>
+                                        <td>{{opdGeneralNote.ObjectiveNote.Chest}}</td>
+                                    </tr>
+                                    <tr *ngIf="opdGeneralNote.ObjectiveNote.CVS">
+                                        <td>CVS:</td>
+                                        <td>{{opdGeneralNote.ObjectiveNote.CVS}}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div style="width: 50%; float: left;">
+                                <table class="all-obj-com" style="width: auto;">
+                                    <tr *ngIf="opdGeneralNote.ObjectiveNote.Abdomen">
+                                        <td>Abdomen:</td>
+                                        <td> {{opdGeneralNote.ObjectiveNote.Abdomen}}</td>
+                                    </tr>
+                                    <tr *ngIf="opdGeneralNote.ObjectiveNote.Extremity">
+                                        <td>Extremity:</td>
+                                        <td>{{opdGeneralNote.ObjectiveNote.Extremity}}</td>
+                                    </tr>
+                                    <tr *ngIf="opdGeneralNote.ObjectiveNote.Skin">
+                                        <td>Skin:</td>
+                                        <td>{{opdGeneralNote.ObjectiveNote.Skin}}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+        <div *ngIf="FollowUp.Number || opdGeneralNote.Remarks" style="width: 100%;display: table;content: '';margin-top: 10px;">
+          <div class="objective each-card">
+            <h3>Instructions</h3>
+            <div class="all-components">
+              <p *ngIf="FollowUp.Number">
+                FollowUp: {{FollowUp.Number}} {{FollowUp.Unit}}<br>
+              </p>
+              <p *ngIf="opdGeneralNote.Remarks">
+                Remarks: {{opdGeneralNote.Remarks}}
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+

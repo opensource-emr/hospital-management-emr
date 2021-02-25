@@ -1,4 +1,4 @@
-﻿
+
 import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from "@angular/core";
 import { Router } from '@angular/router';
 import PHRMGridColumns from '../shared/phrm-grid-columns';
@@ -14,6 +14,7 @@ import { PharmacyBLService } from "../shared/pharmacy.bl.service";
 import { SecurityService } from '../../security/shared/security.service';
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import * as moment from 'moment/moment';
+import { PHRMSalesCategoryModel } from "../shared/phrm-sales-category.model";
 
 @Component({
     selector: "phrmitem-add",
@@ -32,6 +33,7 @@ export class phrmitemaddComponent {
     public selectedItem: PHRMItemMasterModel = new PHRMItemMasterModel();
     public itemList: Array<PHRMItemMasterModel> = new Array<PHRMItemMasterModel>();
     public companyList: Array<PHRMCompanyModel> = new Array<PHRMCompanyModel>();
+    public categoryList: Array<PHRMCompanyModel> = new Array<PHRMCompanyModel>();
     public supplierList: Array<PHRMSupplierModel> = new Array<PHRMSupplierModel>();
     public itemtypeList: Array<PHRMItemTypeModel> = new Array<PHRMItemTypeModel>();
     public uomList: Array<PHRMUnitOfMeasurementModel> = new Array<PHRMUnitOfMeasurementModel>();
@@ -45,7 +47,8 @@ export class phrmitemaddComponent {
     public selItemType: PHRMItemTypeModel = new PHRMItemTypeModel;
     public selGenName: PHRMGenericModel = new PHRMGenericModel;
     public checkSelectedGenId: Boolean = false;
-
+    public selCategory: PHRMSalesCategoryModel = new PHRMSalesCategoryModel;
+    public CategoryId: number = 0;
     //for Item Popup purpose
     public showAddCompanyPopUp: boolean = false;
     //public company: PHRMCompanyModel = new PHRMCompanyModel;
@@ -61,6 +64,7 @@ export class phrmitemaddComponent {
         this.getItemTypes();
         this.getUOMs();
         this.getGenericList();
+        this.getSalesCategoryList();
     }
 
     @Input("showAddPage")
@@ -344,7 +348,21 @@ export class phrmitemaddComponent {
             //this.showMessageBox("error", "Check log for details");
             console.log(res.ErrorMessage);
         }
-    }
+  }
+  public getSalesCategoryList() {
+    this.pharmacyBLService.GetSalesCategoryList()
+      .subscribe(res => {
+        if (res.Status == "OK") {
+          this.categoryList = res.Results;
+        }
+        else {
+          this.msgBoxServ.showMessage("error", ["Something Wrong " + res.ErrorMessage]);
+        }
+      },
+        err => {
+          this.msgBoxServ.showMessage("error", ["Something Wrong " + err.ErrorMessage]);
+        });
+  }
     Close() {
         this.selectedItem = null;
         this.update = false;
@@ -388,10 +406,23 @@ export class phrmitemaddComponent {
         } catch (ex) {
             this.ShowCatchErrMessage(ex);
         }
+  }
+  public AssignSelectedCategory() {
+    try {
+      if (this.selCategory.SalesCategoryId) {
+        if ((this.selCategory.SalesCategoryId != 0) && (this.selCategory.SalesCategoryId != null)) {
+          this.CurrentItem.SalesCategoryId = this.selCategory.SalesCategoryId;
+        }
+      }
+    } catch (ex) {
+      this.ShowCatchErrMessage(ex);
     }
+  }
+
     ItemTypesListFormatter(data: any): string {
         return data["ItemTypeName"];
-    }
+  }
+
     public AssignSelectedGenName() {
         try {
             if (this.selGenName.GenericId) {
@@ -406,7 +437,13 @@ export class phrmitemaddComponent {
     }
     GenNamesListFormatter(data: any): string {
         return data["GenericName"];
-    }
+  }
+
+
+  SalesCategoryListFormatter(data: any): string {
+    return data["Name"];
+  }
+
     CheckProperSelectedGenName(selGenName) {
         try {
             for (var i = 0; i < this.genericList.length; i++) {

@@ -21,6 +21,7 @@ export class VisitBillItemVM {
   public NormalPrice: number = null;
   public SAARCCitizenPrice: number = null;
   public ForeignerPrice: number = null;
+  public InsForeignerPrice: number = null;
   public EHSPrice: number = null;//sud:19June'19
   public PriceCategory: string = null;
 }

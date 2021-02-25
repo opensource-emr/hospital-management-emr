@@ -49,6 +49,9 @@ namespace DanpheEMR.ServerModel
         public DateTime? StartedOn { get; set; }
         public DateTime? EndedOn { get; set; }
         public string Action { get; set; }
+        public string PrimaryDoctor { get; set; }
+        public int? SecondaryDoctorId { get; set; }
+        public string SecondaryDoctor { get; set; }
     }
     public class UpdateAdmittingDoctorVM
     {
@@ -58,6 +61,7 @@ namespace DanpheEMR.ServerModel
         public int? DepartmentId { get; set; }
         public string Department { get; set; }
         public int? EmployeeId { get; set; }
+        
     }
 
     public class ADTAutoAddItemParameterVM

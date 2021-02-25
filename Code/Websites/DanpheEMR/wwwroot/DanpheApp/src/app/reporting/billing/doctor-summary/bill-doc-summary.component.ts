@@ -20,7 +20,7 @@ export class RPT_BIL_DocSummaryComponent {
     public showBillDocsDeptSummary: boolean = false;
     public summary = {
         tot_SubTotal: 0, tot_Discount: 0, tot_Refund: 0, tot_Provisional: 0,
-        tot_Cancel: 0, tot_Credit: 0, tot_NetTotal: 0, tot_SalesTotal: 0, tot_CashCollection: 0, tot_CreditReceived: 0, tot_DepositReceived: 0, tot_DepositRefund: 0
+        tot_Cancel: 0, tot_Credit: 0, tot_NetTotal: 0, tot_SalesTotal: 0, tot_CashCollection: 0, tot_CreditReceived: 0, tot_DepositReceived: 0, tot_DepositRefund: 0,tot_SettleDisctAmt:0
     };
     public currentDate: string = "";
 
@@ -60,10 +60,11 @@ export class RPT_BIL_DocSummaryComponent {
                         this.summary.tot_Cancel = CommonFunctions.parseAmount(data.Summary[0].CancelledAmount);
                         this.summary.tot_Provisional = CommonFunctions.parseAmount(data.Summary[0].ProvisionalAmount);
                         this.summary.tot_DepositReceived = CommonFunctions.parseAmount(data.Summary[0].AdvanceReceived);
-                        this.summary.tot_DepositRefund = CommonFunctions.parseAmount(data.Summary[0].AdvanceSettled);
+                      this.summary.tot_DepositRefund = CommonFunctions.parseAmount(data.Summary[0].AdvanceSettled);
+                      this.summary.tot_SettleDisctAmt = CommonFunctions.parseAmount(data.Summary[0].SettledDiscountAmount);
                        // this.summary.tot_SalesTotal = CommonFunctions.parseAmount(this.summary.tot_NetTotal);
-                    
-                        this.summary.tot_CashCollection = CommonFunctions.parseAmount(this.summary.tot_NetTotal + data.Summary[0].AdvanceReceived - data.Summary[0].AdvanceSettled - this.summary.tot_Credit + this.summary.tot_CreditReceived);
+
+                      this.summary.tot_CashCollection = CommonFunctions.parseAmount(this.summary.tot_NetTotal + data.Summary[0].AdvanceReceived - data.Summary[0].AdvanceSettled - this.summary.tot_Credit + this.summary.tot_CreditReceived - this.summary.tot_SettleDisctAmt);
                         this.showBillDocSummary = true;
                     }
                     else {

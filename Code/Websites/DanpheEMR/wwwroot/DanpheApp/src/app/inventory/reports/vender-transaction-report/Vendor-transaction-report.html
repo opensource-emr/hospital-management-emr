@@ -1,0 +1,141 @@
+<div *ngIf="!showTransactionDetails">
+    <form class="hm-form">
+        <div class="caption lb-caption">
+            <i class="fa fa-money"></i>
+            <span class="caption-subject">Vendor Transactions Report</span>
+        </div>
+        <div class="row">
+            <div class="col-md-5 col-xs-12">
+                <div class="form-group row clearfix">
+                    <label class="control-label col-md-3">Fiscal Year<sup class="color-red"> *</sup><b>:</b></label>
+                    <div class="col-md-9">
+                        <select [(ngModel)]="selFiscYrId">
+                            <option *ngFor="let fisc of allFiscalYrs;" value="{{fisc.FiscalYearId}}">
+                                {{fisc.FiscalYearFormatted}}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-5 col-xs-12">
+                <div class="form-group row clearfix">
+                    <label class="control-label col-md-4">Vendor Name <b>:</b></label>
+                <div class="col-md-8">
+                    <input danphe-auto-complete class="form-control " [(ngModel)]="CurrentVendor.SelectedVendor"
+                    [source]="VendorList" [list-formatter]="myListFormatter" placeholder="Vendor Name"
+                    display-property-name="VendorName" value-property-name=null max-num-list="10"
+                    (focusout)="checkVndorchanged(CurrentVendor.SelectedVendor)" onclick="this.select();" />
+                </div>
+                </div>                                
+            </div>
+            <div class="col-md-2 col-xs-12 noPadding">
+                <div class="form-group">
+                    <button class="btn blue primary-btn" type="button" (click)="showDetails()">
+                        <i class="fa fa-search"></i>
+                        Show Details
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row" *ngIf="VendorTransactionList.length>0">
+            <danphe-grid [grid-colDefaults]="VedorTransactionReportColumns" [grid-data]="VendorTransactionList"
+                (grid-actions)="TransactionGridActions($event)">
+            </danphe-grid>
+        </div> 
+    </form>       
+</div>
+
+<div *ngIf="showTransactionDetails">
+    <div class="caption lb-caption">
+        <i class="fa fa-money"></i>
+        <span class="caption-subject">Vendor Transactions Report</span>
+    </div>
+	<div class="form-actions">
+		<button (click)="backbutton()" class="btn btn-primary"> Back </button>	
+                <button class="btn btn-primary hidden-print" (click)="Print()" value="Print" title="print page">Print<i
+                        class="glyphicon glyphicon-print" style="margin-left:10px;"></i></button>
+                <button class="btn btn-primary hidden-print" (click)="ExportToExcel('printpage')" value=""
+                    title="export to excel">Export<i class="fa fa-file-excel-o" style="margin-left:10px;"></i></button>
+            </div>
+    
+
+    <div>
+
+<!--
+        <div style="width: 50%; margin: auto;text-align: right; padding-bottom: 20px;">
+            <div class="form-actions">
+                <button class="btn btn-primary hidden-print" (click)="Print()" value="Print" title="print page">Print<i
+                        class="glyphicon glyphicon-print" style="margin-left:10px;"></i></button>
+                <button class="btn btn-primary hidden-print" (click)="ExportToExcel('printpage')" value=""
+                    title="export to excel">Export<i class="fa fa-file-excel-o" style="margin-left:10px;"></i></button>
+            </div>
+        </div>
+-->
+        <customer-header style="display:none;padding:0px" id="headerForPrint"
+            [header-title]="'Vendor Trasaction Details'"></customer-header>
+        <div id="printpage" class="mt20">
+            <table class="mb10" style="width:100%;">
+                <tr>
+                    <td>
+                        <label> <b> Vendor Name: </b></label> {{ VendorDetails.VendorName}} <br>
+                    </td>
+                    <td class="text-right">
+                        <label> <b> FiscalYear: </b></label> {{ VendorDetails.FiscalYear}} <br>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label> <b>StartDate: </b></label> {{ VendorDetails.StartDate | date }} <br>
+                    </td>
+                    <td class="text-right">
+                        <label> <b> EndDate: </b></label> {{ VendorDetails.EndDate | date }} <br>
+                    </td>
+                </tr>
+            </table>
+            <table border="1" cellpadding="10" style="width:100%;">
+                <colgroup span="2"></colgroup>
+                <colgroup span="2"></colgroup>
+                    <tr style="background-color: #599be0;color: white;">
+                    <td rowspan="2" style="text-align:center;font-size:16px; padding: 5px;"> <b>  Items </b> </td>
+                    <th colspan="3" scope="colgroup" style="text-align:center;font-size:16px; padding: 5px;"> <b> Sales </b></th>
+                    <th colspan="3" scope="colgroup" style="text-align:center;font-size:16px; padding: 5px;"> <b> Return Sale </b></th>
+                    <th rowspan="2" scope="colgroup" style="text-align:center;font-size:16px; padding: 5px;"> <b> Total</b></th>
+                    </tr>
+                    <tr style="background-color: #599be0;color: white;">
+                        <th scope="col" style="padding: 5px;">Sub_Total</th>
+                        <th scope="col" style="padding: 5px;">Vat_Amount</th>
+                        <th scope="col" style="padding: 5px;">Discount_Amount</th>
+
+                        <th scope="col" style="padding: 5px;">Sub_Total</th>
+                        <th scope="col" style="padding: 5px;">Vat_Amount</th>
+                        <th scope="col" style="padding: 5px;">Discount_Amount</th>
+
+                    </tr>
+                    <tr *ngFor="let item of VendorTransactionData">
+                        <td style="padding: 5px;"> <b> {{ item.ItemName}} </b></td>
+                        <td>{{ item.Sales_SubTotal | Currency}}</td>
+                        <td>{{ item.Sales_VatAmount | Currency}}</td>
+                        <td>{{ item.Sales_DiscountAmount | Currency}}</td>
+                        <td>{{ item.Ret_SubTotal | Currency}}</td>
+                        <td>{{ item.Ret_VatAmount | Currency}}</td>
+                        <td>{{ item.Ret_DiscountAmount | Currency}}</td>
+                        <td><b> {{ item.Total | Currency}} </b></td>
+                    </tr>
+
+                    <tr style="background: #d8eafd;">
+                        <td style="padding: 5px;"> <b> Total </b></td>
+                        <td> <b> {{ TotalDetails.Sum_Sales_SubTotal | Currency}} </b> </td>
+                        <td> <b> {{ TotalDetails.Sum_Sales_VatAmount | Currency}} </b> </td>
+                        <td> <b> {{ TotalDetails.Sum_Sales_DiscountAmount | Currency}} </b> </td>
+                        <td> <b> {{ TotalDetails.Sum_Ret_SubTotal | Currency}} </b> </td>
+                        <td> <b> {{ TotalDetails.Sum_Ret_VatAmount | Currency}} </b> </td>
+                        <td> <b> {{ TotalDetails.Sum_Ret_DiscountAmount | Currency}} </b> </td>
+                        <td> <b> {{ TotalDetails.Sum_Total | Currency}} </b></td>
+                    </tr>
+            </table>
+
+        </div>
+    </div>
+
+</div>

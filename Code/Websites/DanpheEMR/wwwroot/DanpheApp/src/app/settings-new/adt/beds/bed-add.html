@@ -1,0 +1,105 @@
+﻿<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showAddPage">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-6 col-md-offset-3">
+        <div class="modelbox-div clearfix">
+			<div class="caption custom-caption">
+                    <h3> <span *ngIf="!update">Add Bed</span> <span *ngIf="update">Update Bed</span> </h3>
+				<a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                  </div>
+                  
+			<form [formGroup]="CurrentBed.BedMainValidator" class="form-horizontal hm-form">
+          <div class="form-body">
+			  <div class="form-group">
+                      <label class="control-label col-md-4">Ward<sup>*</sup><b>:</b></label>
+                      <div class="col-md-4">
+                        <select class="form-control" [(ngModel)]="CurrentBed.WardId"
+                                                formControlName="WardId" (ngModelChange)="SetWardCode()">
+                          <option *ngFor="let ward of wardList"
+                                                    value="{{ward.WardId}}"> {{ward.WardName}} </option>
+                        </select>
+                        <span class="color-red font-sm" [hidden]="CurrentBed.IsValidCheck('WardId','required') || !(CurrentBed.IsDirty('WardId'))">Ward Name is Required</span> </div>
+                      <div class="col-md-4"> Last Bed Number of {{wardName}} is {{lastBedNumber}} </div>
+                    </div>
+                    <div class="form-group">
+                      <div class="col-md-4"> </div>
+                      <div class="radio col-md-4">
+                        <label class="mt-radio mt-radio-outline">
+                          <input name="options" type="radio" [value]="true" [checked]="!showRange" (click)="changeRange('single')" /><span></span>
+                          Add Single Bed</label>
+                      </div>
+                      <div class="radio col-md-4">
+                        <label class="mt-radio mt-radio-outline">
+                          <input name="options" type="radio" [value]="false" [checked]="showRange" (click)="changeRange('range')" /><span></span>
+                          Add Multiple Bed
+						  
+						  </label>
+                      </div>
+                    </div>
+                    <div class="form-group" *ngIf="!showRange">
+                      <label class="control-label col-md-4">Bed Number<b>:</b></label>
+                      <div class="col-md-8">
+                        <input type="number" name="" class="form-control" maxlength="30"
+                                               [(ngModel)]="CurrentBed.BedNumber" id="BedNumber"
+                                               placeholder="Enter Bed Number" [ngModelOptions]="{standalone: true}" />
+                        <br />
+                      </div>
+                    </div>
+                    <div class="form-group" *ngIf="showRange && !update">
+                      <label class="control-label col-md-4">Bed Number (Incase<b>:</b><br />
+                        of multiple beds at a Time)</label>
+                      <div class="col-md-4">
+                        <input type="number" name="" class="form-control" [(ngModel)]="CurrentBed.BedNumFrm" placeholder="From" id="BedNumFrm" [ngModelOptions]="{standalone: true}" />
+                      </div>
+                      <div class="col-md-4">
+                        <input type="number" name="" class="form-control" [(ngModel)]="CurrentBed.BedNumTo" placeholder="To" id="BedNumTo" [ngModelOptions]="{standalone: true}" />
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="control-label col-md-4">Bed Features<sup>*</sup><b>:</b></label>
+                      <div class="col-md-8"> 
+						  <div class="icheck-inline" *ngFor="let feature of bedFeatureList;let i=index;" style="display: inline-block; width: 50%; margin: 0;"> 
+							  <label class="mt-checkbox mt-checkbox-outline">
+                        		<input type="checkbox" name="feature.BedFeatureId" [ngModelOptions]="{standalone: true}" [(ngModel)]="feature.IsSelected" (ngModelChange)="BedFeatureEventHandler(feature)" />
+                        			<span [ngClass]="feature.IsSelected ? 'bg-on' : 'bg-off'"></span> {{feature.BedFeatureName}}
+							  </label> <br *ngIf="i%3==0 && i!=0" />
+                        </div> 
+						</div>
+                    </div>
+                    <!--<div style="width:100%;">
+                                    <table style="width:100%;">
+                                        <tr>
+                                            Bed Features
+                                        </tr>
+                                        <tr>
+                                            <td style="width:60%;"></td>
+                                        </tr>
+                                    </table>
+                                </div>-->
+                    <div class="form-group">
+                      <label class="control-label col-md-4">Is Active <b>:</b> </label>
+                      <div class="col-md-8">
+                        <div class="input-group">
+                          <div class="icheck-inline no-margin">
+                            <label class="mt-checkbox mt-checkbox-outline">
+                              <input id="isActive" name="isActive" type="checkbox" value=""
+                                                           [(ngModel)]="CurrentBed.IsActive"
+                                                           [ngModelOptions]="{standalone: true}">
+                              <span></span> </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+            
+          </div>
+				<div class="panel-footer">
+                      <input type="button" class="btn btn-primary" *ngIf="!update" (click)="Add()" value="Add" />
+                      <input type="button" class="btn btn-primary" *ngIf="update" (click)="Update()" value="Update" />
+                    </div>
+        </form>
+		  </div>
+      </div>
+    </div>
+  </div>
+</div>

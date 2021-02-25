@@ -1,39 +1,36 @@
-<div class="row">
+<form class="form-horizontal hm-form">
   <div class="form-body">
-    <div class="col-md-12">
-      <div class="caption">
-        <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
-        <span class="caption-subject font-red-sunglo bold uppercase">Fixed&nbsp; Assets&nbsp; Report</span>
+    <div class="caption lb-caption">
+        <i class="fa fa-money"></i>
+        <span class="caption-subject">Fixed Assets Report</span>
       </div>
-
-      <div class="col-md-5 col-xs-12">
-        <div class="form-group">
-          <label class="control-label col-md-4">From Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
-          <div class="col-md-8">
-            <danphe-date-picker [(ngModel)]="invReport.FromDate" ngDefaultControl [CalendarTypes]="'en,np'" [ngModelOptions]="{standalone: true}">
-            </danphe-date-picker>
+      <div class="row">
+        <div class="col-md-5 col-xs-12">
+          <div class="form-group">
+            <label class="control-label col-md-3">From Date<sup class="color-red">  *</sup ><b>:</b></label>
+            <div class="col-md-9">
+              <danphe-date-picker [(ngModel)]="invReport.FromDate" ngDefaultControl [CalendarTypes]="'en,np'" [ngModelOptions]="{standalone: true}">
+              </danphe-date-picker>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="col-md-5 col-xs-12">
-        <div class="form-group">
-          <label class="control-label col-md-4">To Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
-          <div class="col-md-8">
-            <danphe-date-picker [(ngModel)]="invReport.ToDate" ngDefaultControl [CalendarTypes]="'en,np'" [ngModelOptions]="{standalone: true}">
-            </danphe-date-picker>
+        <div class="col-md-5 col-xs-12">
+          <div class="form-group">
+            <label class="control-label col-md-4">To Date<sup class="color-red">  *</sup ><b>:</b></label>
+            <div class="col-md-8">
+              <danphe-date-picker [(ngModel)]="invReport.ToDate" ngDefaultControl [CalendarTypes]="'en,np'" [ngModelOptions]="{standalone: true}">
+              </danphe-date-picker>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="col-md-2 col-xs-12">
-        <div class="form-group">
-          <button class="btn blue" type="button" (click)="Load()"> Show Report</button>
-        </div>
-      </div>
+        <div class="col-md-2 col-xs-12">
+          <div class="form-group">
+            <button class="btn blue primary-btn" type="button" (click)="Load()"> Show Report</button>
+          </div>
+        </div> 
+      </div>        
     </div>
-
-  </div>
-
-</div>
+</form>
 <div class="row">
   <div class="col-lg-12 col-sm-12">
     <danphe-grid [grid-colDefaults]="FixedAssetsColumn"

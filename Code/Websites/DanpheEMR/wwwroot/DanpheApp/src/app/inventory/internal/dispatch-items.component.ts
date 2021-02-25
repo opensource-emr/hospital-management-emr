@@ -10,6 +10,10 @@ import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { DispatchItems } from "../shared/dispatch-items.model"
 import { StockTransaction } from "../shared/stock-transaction.model"
 import { RequisitionStockVMModel } from "../shared/requisition-stock-vm.model"
+import * as moment from 'moment/moment';
+import { Requisition } from '../shared/requisition.model';
+import { CoreService } from '../../core/shared/core.service';
+import { DanpheHTTPResponse } from '../../shared/common-models';
 
 
 
@@ -19,31 +23,52 @@ import { RequisitionStockVMModel } from "../shared/requisition-stock-vm.model"
 
 })
 export class DispatchItemsComponent {
+  public selectedAll: boolean = true;
   //its requisition dispatch component
   constructor(
-    public routeFrom: RouteFromService,
+    public routeFrom: RouteFromService, public coreService: CoreService,
     public InventoryBLService: InventoryBLService,
     public securityService: SecurityService,
     public inventoryService: InventoryService,
     public changeDetectorRef: ChangeDetectorRef,
     public messageBoxService: MessageboxService,
     public router: Router) {
-    this.Load(this.inventoryService.Id);
+    this.Load(this.inventoryService.RequisitionId);
   }
-  loading: boolean = false;
+  public loading: boolean = false;
   onStockShow: boolean = false;
-  DepartmentName: string = "";
+  isDispatchAllowed: boolean = true;
+  StoreName: string = "";
   msgBoxString: string = "";
   public ReceivedBy: string = "";
+  public Remarks: string = "";
+  public RequestedOn: string = "";
   public model: Array<DispatchItems> = new Array<DispatchItems>();
   public requisitionStockVM: RequisitionStockVMModel = new RequisitionStockVMModel();
-
+  public ReqStatus: Requisition = new Requisition();
   //Get Requisition and Requisition Items for Dispatch
   Load(RequisitionId: number) {
     if (RequisitionId != null && RequisitionId != 0) {
-      this.DepartmentName = this.inventoryService.Name;
+      this.CheckIfDispatchAllowed();
+      this.StoreName = this.inventoryService.StoreName;//sud:3Mar'20-changed propertyname.
+      this.RequestedOn = moment(this.inventoryService.RequestedOn).format('YYYY-MM-DD');
       this.InventoryBLService.GetRequisitionWithRItemsById(RequisitionId)
         .subscribe(res => this.LoadRequisitionDataForDispatch(res));
+    }
+  }
+
+  private CheckIfDispatchAllowed() {
+    this.isDispatchAllowed = this.inventoryService.isDispatchAllowed;
+    if (this.isDispatchAllowed == false) {
+      var dispatchVerificationSetting = this.coreService.Parameters.find(a => a.ParameterGroupName == "Inventory" && a.ParameterName == "AllowSubstoreDispatchWithoutVerification").ParameterValue;
+      if (dispatchVerificationSetting == true || (typeof (dispatchVerificationSetting) == "string" && dispatchVerificationSetting == "true")) {
+        this.messageBoxService.showMessage("Warning", ["Remarks is mandatory for dispatch without verification"]);
+      }
+      else {
+        this.messageBoxService.showMessage("Failed", ["Dispatch before verification is forbidden."]);
+        this.router.navigate([this.routeFrom.RouteFrom]);
+        this.routeFrom.RouteFrom = null;
+      }
     }
   }
 
@@ -51,16 +76,18 @@ export class DispatchItemsComponent {
   LoadRequisitionDataForDispatch(res) {
     if (res.Status == "OK") {
       this.requisitionStockVM = res.Results;
+      this.requisitionStockVM.requisition.RequisitionItems = this.requisitionStockVM.requisition.RequisitionItems.filter(RI => RI.IsActive == true);
       for (var r = 0; r < this.requisitionStockVM.requisition.RequisitionItems.length; r++) {
         var currDispatchItem = new DispatchItems();
         currDispatchItem.ItemId = this.requisitionStockVM.requisition.RequisitionItems[r].ItemId;
-        currDispatchItem.DepartmentId = this.requisitionStockVM.requisition.DepartmentId;
         currDispatchItem.RequisitionItemId = this.requisitionStockVM.requisition.RequisitionItems[r].RequisitionItemId;
         currDispatchItem.RequiredQuantity = this.requisitionStockVM.requisition.RequisitionItems[r].Quantity - this.requisitionStockVM.requisition.RequisitionItems[r].ReceivedQuantity;
         currDispatchItem.AvailableQuantity = this.AvalablbleQty(this.requisitionStockVM.requisition.RequisitionItems[r].ItemId);
         currDispatchItem.ItemName = this.requisitionStockVM.requisition.RequisitionItems[r].Item.ItemName;
         currDispatchItem.DispatchedQuantity = currDispatchItem.RequiredQuantity;
         currDispatchItem.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
+        currDispatchItem.StoreId = this.requisitionStockVM.requisition.StoreId;
+        currDispatchItem.RequisitionId = this.inventoryService.RequisitionId;
         this.model.push(currDispatchItem);
       }
     }
@@ -70,162 +97,71 @@ export class DispatchItemsComponent {
     }
   }
 
-  //Making requisitionStockVM object for Post with Requisition, RequisitonItems, Stock, StockTransaction,DispatchItems
-  //Because we only do One post of requisitionStockVM and POSt, PUT operation done by Server side in One transaction
-  DispatchItemsTransaction() {
-    let disQty = 0;
-    let dItemId = 0;
-    //This loop only for Stock Transaction and Stock 
-    for (var dI = 0; dI < this.model.length; dI++) {//RequisitionItems.length
-      dItemId = this.model[dI].ItemId;
-      disQty = this.model[dI].DispatchedQuantity;
-      this.model[dI].ReceivedBy = this.ReceivedBy;
-      let currDisQty = 0;
-      let globalCurrQty = 0;
-      let globaldisQty = disQty;
-      if (disQty > 0) {
-        for (var stk = 0; stk < this.requisitionStockVM.stock.length; stk++) {
-          if (dItemId == this.requisitionStockVM.stock[stk].ItemId) {
-            if (globaldisQty != globalCurrQty) {
-              var currStkTransaction: StockTransaction = new StockTransaction();
-              if (this.requisitionStockVM.stock[stk].ItemId == dItemId) {
-                if (this.requisitionStockVM.stock[stk].AvailableQuantity >= disQty) {
-                  currDisQty = disQty;
-                  globalCurrQty = globalCurrQty + disQty;
-                  this.requisitionStockVM.stock[stk].AvailableQuantity = this.requisitionStockVM.stock[stk].AvailableQuantity - disQty;
-                  currStkTransaction.Quantity = disQty;
-                  currStkTransaction.StockId = this.requisitionStockVM.stock[stk].StockId;
-                  currStkTransaction.InOut = "out";
-                  currStkTransaction.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
-                  currStkTransaction.TransactionType = "dispatch";
-                  //break;
-                }
-                else if (this.requisitionStockVM.stock[stk].AvailableQuantity < disQty) {
-                  currDisQty = this.requisitionStockVM.stock[stk].AvailableQuantity;
-                  let temp = disQty;
-                  disQty = temp - currDisQty;
-                  globalCurrQty = globalCurrQty + currDisQty;
-                  this.requisitionStockVM.stock[stk].AvailableQuantity = this.requisitionStockVM.stock[stk].AvailableQuantity - currDisQty;
-                  currStkTransaction.Quantity = currDisQty;
-                  currStkTransaction.StockId = this.requisitionStockVM.stock[stk].StockId;
-                  currStkTransaction.InOut = "out";
-                  currStkTransaction.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
-                  currStkTransaction.TransactionType = "dispatch";
-                }
-                this.requisitionStockVM.stockTransactions.push(currStkTransaction);
-              }
-            }
-          }
-        }
-      }
-
-    }
-
-    //Update Received and Pending Quantity for Each Requisition Item
-    for (var i = 0; i < this.requisitionStockVM.requisition.RequisitionItems.length; i++) {
-      this.requisitionStockVM.requisition.RequisitionItems[i].ReceivedQuantity = this.model[i].DispatchedQuantity + this.requisitionStockVM.requisition.RequisitionItems[i].ReceivedQuantity;
-      let pendingQty = this.requisitionStockVM.requisition.RequisitionItems[i].Quantity - this.requisitionStockVM.requisition.RequisitionItems[i].ReceivedQuantity;
-      if (pendingQty > 0) {
-        this.requisitionStockVM.requisition.RequisitionItems[i].PendingQuantity = pendingQty;
-      }
-      else {
-        this.requisitionStockVM.requisition.RequisitionItems[i].PendingQuantity = 0;
-      }
-
-    }
-
-    let checkRStatus = true;
-    //Update Status of Every Requisition Item
-    for (var i = 0; i < this.requisitionStockVM.requisition.RequisitionItems.length; i++) {
-      if (this.requisitionStockVM.requisition.RequisitionItems[i].ReceivedQuantity > 0 && this.requisitionStockVM.requisition.RequisitionItems[i].PendingQuantity == 0) {
-        this.requisitionStockVM.requisition.RequisitionItems[i].RequisitionItemStatus = 'complete';
-      }
-      else {
-        this.requisitionStockVM.requisition.RequisitionItems[i].RequisitionItemStatus = 'partial';
-        checkRStatus = false;
-      }
-
-
-    }
-    //Update Requisition Status
-    if (checkRStatus) {
-      this.requisitionStockVM.requisition.RequisitionStatus = 'complete';
-    }
-    //Push model data into RequisitionStockVM for single POST
-    for (var ItemIndex = 0; ItemIndex < this.model.length; ItemIndex++) {
-      this.requisitionStockVM.dispatchItems.push(this.model[ItemIndex]);
-    }
-    //Ramavtar : start 04Jan2018 : filtering dispatch items with 0 dispatched quantities
-    for (var i = 0; i < this.requisitionStockVM.dispatchItems.length; i++) {
-      if (this.requisitionStockVM.dispatchItems[i].DispatchedQuantity == 0) {
-        this.requisitionStockVM.dispatchItems.splice(i, 1);
-        i--;
-      }
-    }
-
+  FilterDispatchItems() {
+    this.requisitionStockVM.dispatchItems = new Array<DispatchItems>();
+    this.requisitionStockVM.dispatchItems = this.model.filter(a => a.DispatchedQuantity > 0 && a.isActive == true);
   }
-
   //POST: Dispatch Items and Save to database
   SaveDispatchItems() {
-    this.DispatchItemsTransaction();
-    if (this.requisitionStockVM.dispatchItems != null) {
-      let DisQtyCounter: number = 0;//Checking Dispatched quantity is greater than 0 or not
-      //Validation
-      let CheckIsValid = true;
-      for (var i = 0; i < this.requisitionStockVM.dispatchItems.length; i++) {
-        for (var x in this.requisitionStockVM.dispatchItems[i].DispatchItemValidator.controls) {
-          this.requisitionStockVM.dispatchItems[i].DispatchItemValidator.controls[x].markAsDirty();
-          this.requisitionStockVM.dispatchItems[i].DispatchItemValidator.controls[x].updateValueAndValidity();
+    if (this.isDispatchAllowed == false && (!this.Remarks || this.Remarks.trim() == '')) {
+      this.messageBoxService.showMessage("failed", ["Remarks is compulsory for dispatch without verification."]);
+    }
+    else if (this.model.some(item => item.isActive == true && item.DispatchedQuantity == 0)) {
+      this.messageBoxService.showMessage("failed", ["Some items have zero quantity. Please uncheck them."]);
+    }
+    else {
+      this.loading = true;
+      this.FilterDispatchItems();
+      if (this.requisitionStockVM.dispatchItems != null) {
+        let DisQtyCounter: number = 0;//Checking Dispatched quantity is greater than 0 or not
+        //Validation
+        let CheckIsValid = true;
+        for (var i = 0; i < this.requisitionStockVM.dispatchItems.length; i++) {
+          for (var x in this.requisitionStockVM.dispatchItems[i].DispatchItemValidator.controls) {
+            this.requisitionStockVM.dispatchItems[i].DispatchItemValidator.controls[x].markAsDirty();
+            this.requisitionStockVM.dispatchItems[i].DispatchItemValidator.controls[x].updateValueAndValidity();
+          }
+          //This is for check every item from dispatch is valid or not (dispatch is Array)
+          if (this.requisitionStockVM.dispatchItems[i].IsValidCheck(undefined, undefined) == false) { CheckIsValid = false; }
+
+          //for checking Dispatched quantity is less than required quantity and Available quantity
+          if ((this.requisitionStockVM.dispatchItems[i].AvailableQuantity < this.requisitionStockVM.dispatchItems[i].DispatchedQuantity)
+            || (this.requisitionStockVM.dispatchItems[i].RequiredQuantity < this.requisitionStockVM.dispatchItems[i].DispatchedQuantity)) {
+
+            this.messageBoxService.showMessage("notice-message", ["Dispatch Items must be less than Required and Available Quantity !"]);
+            this.requisitionStockVM.dispatchItems[i].IsDisQtyValid = false;
+            CheckIsValid = false;
+          }
+
         }
-        //This is for check every item from dispatch is valid or not (dispatch is Array)
-        if (this.requisitionStockVM.dispatchItems[i].IsValidCheck(undefined, undefined) == false) { CheckIsValid = false; }
 
-        //for checking Dispatched quantity is less than required quantity and Available quantity
-        if ((this.requisitionStockVM.dispatchItems[i].AvailableQuantity < this.requisitionStockVM.dispatchItems[i].DispatchedQuantity)
-          || (this.requisitionStockVM.dispatchItems[i].RequiredQuantity < this.requisitionStockVM.dispatchItems[i].DispatchedQuantity)) {
+        //Validation Pass then Dispatch and Save
+        if (CheckIsValid) {
 
-          this.messageBoxService.showMessage("notice-message", ["Dispatch Items must less than Required and Available Quantity !"]);
-          this.requisitionStockVM.dispatchItems[i].IsDisQtyValid = false;
-          CheckIsValid = false;
-        }
-
-        //Check for all record is 0 or not , if all values are zero then record not will be dispatch
-        if (this.requisitionStockVM.dispatchItems[i].DispatchedQuantity == 0) { DisQtyCounter++; }
-
-      }
-
-      //Validation Pass then Dispatch and Save
-      if (CheckIsValid && (this.requisitionStockVM.dispatchItems.length != DisQtyCounter)) {
-        this.loading = true;
-        this.InventoryBLService.PostToDispatchItems(this.requisitionStockVM)
-          .subscribe(
-            res => {
-              this.CallBackSaveDispatchItems(res),
+          this.InventoryBLService.PostToDispatchItems(this.requisitionStockVM)
+            .subscribe(
+              (res: DanpheHTTPResponse) => {
                 this.loading = false;
-            },
-            err => {
-              this.loading = false,
-                this.logError(err);
 
-            });
-      } else { this.messageBoxService.showMessage("notice-message", ['Enter Valid Dispatch Quantity']); }
-    }
-    else {
+                if (res.Status == "OK") {
+                  this.inventoryService.DispatchId = res.Results;
+                  this.messageBoxService.showMessage("success", ["Dispatch Items detail Saved."]);
+                  this.RouteToDispatchReceipt();
+                }
+                else {
+                  this.messageBoxService.showMessage("failed", [res.ErrorMessage.split('Exception')[0]]);
+                }
+              },
+              err => {
+                this.loading = false,
+                  this.logError(err);
 
-      this.messageBoxService.showMessage("notice-message", ["Add Item ...Before Requesting"]);
-    }
-  }
-
-  //call after Dispatch Items transaction completed with Status OK
-  CallBackSaveDispatchItems(res) {
-    if (res.Status == "OK") {
-      this.messageBoxService.showMessage("success", ["Dispatch Items detail Saved."]);
-      this.CallRoute();
-    }
-    else {
-      err => {
-        this.messageBoxService.showMessage("failed", ["failed to add result.. please check log for details."]);
-        this.logError(err.ErrorMessage);
+              });
+        } else { this.loading = false; this.messageBoxService.showMessage("notice-message", ['Enter Valid Dispatch Quantity']); }
+      }
+      else {
+        this.loading = false;
+        this.messageBoxService.showMessage("notice-message", ["Add Item ...Before Requesting"]);
       }
     }
   }
@@ -233,11 +169,9 @@ export class DispatchItemsComponent {
   //Checking Dispatch Quantity must be < Available Quantity
   CheckAvailableQuantity(row: DispatchItems, index) {
     if (this.model[index].DispatchedQuantity > this.model[index].AvailableQuantity) {
-      this.messageBoxService.showMessage("notice-message", ["More Items not available in Stock."]);
       row.IsDisQtyValid = false;
     }
     else if (this.model[index].DispatchedQuantity > this.model[index].RequiredQuantity) {
-      this.messageBoxService.showMessage("notice-message", ["Not More Quantity Dispatched Than required"]);
       row.IsDisQtyValid = false;
 
     } else { row.IsDisQtyValid = true; }
@@ -264,14 +198,40 @@ export class DispatchItemsComponent {
   Cancel() {
     this.model = new Array<DispatchItems>();
     this.requisitionStockVM = new RequisitionStockVMModel();
-    this.router.navigate(['/Inventory/InternalMain/RequisitionList']);
+    this.router.navigate(['/Inventory/InternalMain/Requisition/RequisitionList']);
   }
 
-  //Navigate to Requisition List
-  CallRoute() {
+  //Navigate to Dispatch Receipt
+  RouteToDispatchReceipt() {
     this.requisitionStockVM = new RequisitionStockVMModel();
     this.model = new Array<DispatchItems>();
-    this.router.navigate(['/Inventory/InternalMain/RequisitionList']);
+    this.router.navigate(['/Inventory/InternalMain/Requisition/DispatchReceiptDetails']);
+
   }
 
+  GoToNextInput(currRowNum: string) {
+    let nextRow = currRowNum + 1;
+    let idToSelect = 'dispatchQty' + nextRow;
+    if (document.getElementById(idToSelect)) {
+      let nextEl = <HTMLInputElement>document.getElementById(idToSelect);
+      nextEl.focus();
+      nextEl.select();
+    }
+  }
+  ToogleAllDispatchItems() {
+    this.model.forEach(a => {
+      a.isActive = this.selectedAll;
+      a.DispatchedQuantity = a.isActive ? a.RequiredQuantity : 0;
+    });
+  }
+  checkIfAllSelected(index) {
+    this.selectedAll = this.model.every(a => a.isActive == true);
+    if (this.model[index].isActive == false) {
+      this.model[index].DispatchedQuantity = 0;
+    }
+    else {
+      this.model[index].DispatchedQuantity = this.model[index].RequiredQuantity;
+    }
+    this.CheckAvailableQuantity(this.model[index], index);
+  }
 }

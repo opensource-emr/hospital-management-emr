@@ -4,6 +4,8 @@ import { BillingBLService } from '../../shared/billing.bl.service';
 import { DanpheHTTPResponse } from '../../../shared/common-models';
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 import { CommonFunctions } from '../../../shared/common.functions';
+import { CoreService } from '../../../core/shared/core.service';
+import { Patient } from '../../../patients/shared/patient.model';
 
 @Component({
   selector: 'edit-bill-item',
@@ -29,13 +31,21 @@ export class EditBillItemComponent {
   @Output("on-closed")
   public onClose = new EventEmitter<object>();
 
+  public showCancleDeatils: boolean = false;
   //sud: 11sept: This is kept for testing purpose, 
   globalListenFunc: Function;
 
+  public requestedByDr: any = null;
+
   public docDDLSource: Array<any> = null;
+
+  @Input("current-pat-info")
+  selPatInfo: Patient = null;//sud:12Apr'20--To show Patient Information in Header.
+
 
   constructor(public renderer: Renderer2,
     public billingBlService: BillingBLService,
+    public coreService: CoreService,
     public msgBoxService: MessageboxService) {
 
   }
@@ -44,6 +54,7 @@ export class EditBillItemComponent {
 
   ngOnInit() {
     if (this.itemToEdit_Input) {
+      
       this.itemToEdit = Object.assign({}, this.itemToEdit_Input);
       if (this.doctorList) {
         this.docDDLSource = this.doctorList;
@@ -52,6 +63,16 @@ export class EditBillItemComponent {
           this.selectedAssignedToDr = { EmployeeId: null, FullName: null };
           this.selectedAssignedToDr["EmployeeId"] = this.itemToEdit.ProviderId;
           this.selectedAssignedToDr["FullName"] = this.itemToEdit.ProviderName;
+        }
+
+        if (this.itemToEdit.RequestedBy) {
+          let req = this.doctorList.find(e => e.EmployeeId == this.itemToEdit.RequestedBy);
+          this.requestedByDr = { EmployeeId: null, FullName: null };
+          if (req) {
+            console.log(req);
+            this.requestedByDr["EmployeeId"] = req.EmployeeId;
+            this.requestedByDr["FullName"] = req.FullName;
+          }
         }
       }
     }
@@ -65,13 +86,16 @@ export class EditBillItemComponent {
     //console.log(this.docDDLSource);
   }
 
+
   ngOnDestroy() {
     // remove listener
     this.globalListenFunc();
   }
 
   CloseItemEdit($event) {
+
     this.onClose.emit({ CloseWindow: true, EventName: "close" });
+
   }
 
 
@@ -99,6 +123,11 @@ export class EditBillItemComponent {
 
   public cancelRemarks: string = null;
 
+  ClosePopup() {
+    this.showCancleDeatils = false;
+    this.onClose.emit({ CloseWindow: true, EventName: "cancelled" });
+  }
+
   CancelBillItem() {
     if (!this.cancelRemarks || this.cancelRemarks.trim() == '') {
       this.msgBoxService.showMessage("failed", ["Remarks is Compulsory for Cancellation"]);
@@ -110,14 +139,36 @@ export class EditBillItemComponent {
         this.billingBlService.CancelMultipleTxnItems([this.itemToEdit])
           .subscribe((res: DanpheHTTPResponse) => {
             if (res.Status == "OK") {
+
+              this.showCancleDeatils = true;
               //alert("Item Cancelled Successfully.");
-              this.onClose.emit({ CloseWindow: true, EventName: "cancelled" });
+              //this.onClose.emit({ CloseWindow: true, EventName: "cancelled" });
             }
           });
       }
     }
   }
 
+  Print() {
+    try {
+      let popupWinindow;
+      var printContents = document.getElementById("printpage").innerHTML;
+      popupWinindow = window.open('', '_blank', 'width=600,height=700,scrollbars=no,menubar=no,toolbar=no,location=no,status=no,titlebar=no');
+      popupWinindow.document.open();
+
+      let documentContent = "<html><head>";
+      documentContent += '<link rel="stylesheet" type="text/css" media="print" href="../../themes/theme-default/DanphePrintStyle.css"/>';
+      documentContent += '<link rel="stylesheet" type="text/css" href="../../themes/theme-default/DanpheStyle.css"/>';
+      documentContent += '<link rel="stylesheet" type="text/css" href="../../../assets/global/plugins/bootstrap/css/bootstrap.min.css"/>';
+      documentContent += '</head>';
+      documentContent += '<body onload="window.print()">' + printContents + '</body></html>'
+
+      popupWinindow.document.write(documentContent);
+      popupWinindow.document.close();
+    } catch (ex) {
+      console.log(ex);
+    }
+  }
   //for doctor's list binding.
   selectedAssignedToDr: any;
 
@@ -133,6 +184,19 @@ export class EditBillItemComponent {
     else {
       this.itemToEdit.ProviderId = null;
       this.itemToEdit.ProviderName = null;
+    }
+    //console.log(this.selectedAssignedToDr);
+  }
+
+
+  AssignSelectedRequestedDoctor() {
+    if (this.requestedByDr != null && typeof (this.requestedByDr) == 'object') {
+      this.itemToEdit.RequestedBy = this.requestedByDr.EmployeeId;
+      this.itemToEdit.RequestedByName = this.requestedByDr.FullName;
+    }
+    else {
+      this.itemToEdit.RequestedBy = null;
+      this.itemToEdit.RequestedBy = null;
     }
     //console.log(this.selectedAssignedToDr);
   }
@@ -202,6 +266,16 @@ export class EditBillItemComponent {
     //    this.itemToEdit.DiscountPercent = 0;
     //    this.itemToEdit.DiscountAmount = 0;
     //}
+
+    if (this.itemToEdit.IsDoctorMandatory && !this.itemToEdit.ProviderId) {
+      valSummary.IsValid = false;
+      valSummary.Messages.push("Assign To Doctor is Mandatory");
+    }
+
+    if (!this.itemToEdit.RequestedBy) {
+      valSummary.IsValid = false;
+      valSummary.Messages.push("Referred By Doctor is Mandatory");
+    }
 
     return valSummary;
   }

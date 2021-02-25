@@ -34,5 +34,9 @@ namespace DanpheEMR.ServerModel
         [NotMapped]
         public string ProviderName { get; set; }
 
+        [NotMapped]
+        public string ItemName { get; set; }
+        [NotMapped]
+        public Boolean IsAvailable { get; set; }
     }
 }

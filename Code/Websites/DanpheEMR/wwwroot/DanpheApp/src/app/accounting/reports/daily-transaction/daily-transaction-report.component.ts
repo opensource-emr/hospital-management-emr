@@ -6,6 +6,7 @@ import { AccountingReportsBLService } from "../shared/accounting-reports.bl.serv
 import { CommonFunctions } from '../../../shared/common.functions';
 import * as moment from 'moment/moment';
 import { DLService } from "../../../shared/dl.service";
+import { CoreService } from '../../../core/shared/core.service';
 
 @Component({
   selector: 'my-app',
@@ -24,18 +25,35 @@ export class DailyTransactionReportComponent {
   dlService: DLService = null;
   public isDeposit: boolean = false;
   public isBilling: boolean = false;
+  public showExportbtn : boolean=false;
   public fiscalyearList: any;
+  public calType: string = "";   
+  public showPrint: boolean = false;
+  public printDetaiils: any;
+  public selectedDate: string = "";
+  public fiscalYearId:number=null; 
   constructor(
     _dlService: DLService,
     public msgBoxServ: MessageboxService,
     public accReportBLService: AccountingReportsBLService,
+    public coreservice : CoreService,
     public changeDetector: ChangeDetectorRef) {
     this.dailyTxnGridColumns = GridColumnSettings.AccDailyTxnReport;
-    this.fromDate = moment().format('YYYY-MM-DD');
-    this.toDate = moment().format('YYYY-MM-DD');
     this.GetFiscalYearList();
+    this.showExport();
+    //this.LoadCalendarTypes();     
+    this.calType = this.coreservice.DatePreference;
   }
 
+
+  //loads CalendarTypes from Paramter Table (database) and assign the require CalendarTypes to local variable.
+  LoadCalendarTypes() {
+   let Parameter = this.coreservice.Parameters;
+   Parameter = Parameter.filter(parms => parms.ParameterName == "CalendarTypes");
+   let calendarTypeObject = JSON.parse(Parameter[0].ParameterValue);
+   this.calType = calendarTypeObject.AccountingModule;
+   }
+   
   gridExportOptions = {
     fileName: 'DailyTransactionReport_' + moment().format('YYYY-MM-DD') + '.xls',
   };
@@ -52,11 +70,22 @@ export class DailyTransactionReportComponent {
         }
 
       });
+  } 
+  public validDate:boolean=true;
+  selectDate(event){
+    if (event) {
+      this.fromDate = event.fromDate;
+      this.toDate = event.toDate;
+      this.fiscalYearId = event.fiscalYearId;
+      this.validDate = true;
+    } 
+    else {
+      this.validDate =false;
+    } 
   }
-
   loadData() {
-    if (this.checkDateValidation()) {
-      this.accReportBLService.GetDailyTxnReport(this.fromDate, this.toDate)
+    if (this.checkDateValidation()) {        
+      this.accReportBLService.GetDailyTxnReport(this.fromDate, this.toDate,this.fiscalYearId)
         .subscribe(res => {
           if (res.Status == 'OK' && res.Results.length) {
             this.formattingData(res.Results);
@@ -67,10 +96,15 @@ export class DailyTransactionReportComponent {
             this.msgBoxServ.showMessage("notice", ["no record found."]);
           }
         });
+      
     }
   }
 
   checkDateValidation() {
+    if(!this.validDate){
+      this.msgBoxServ.showMessage("error", ['select proper date']);
+      return false;
+    }
     var frmdate = moment(this.fromDate, "YYYY-MM-DD");
     var tdate = moment(this.toDate, "YYYY-MM-DD");
     var flg = false;
@@ -80,7 +114,7 @@ export class DailyTransactionReportComponent {
       }
     });
     if (flg == false) {
-      this.msgBoxServ.showMessage("error", ['Selected dates must be with in a fiscal year']);
+      this.msgBoxServ.showMessage("error", ['Selected dates must be within a fiscal year']);
       return flg;
     }
     let flag = true;
@@ -102,7 +136,7 @@ export class DailyTransactionReportComponent {
       Obj["TransactionDate"] = a.TransactionDate;
       Obj["TransactionId"] = a.TransactionId;
       Obj["TransactionType"] = a.TransactionType;
-      Obj["SectionId"] = a.SectionId;
+      Obj["SectionId"] = a.SectionId;     
       let str = a.VoucherNumber ? a.VoucherNumber.slice(0, 3) : "";
       Obj["showOptions"] = str == "ACC" ? false : true;   //manual entry will have ACC as voucherNo.. so no details are present to show
       a.txnItems.forEach(b => {
@@ -112,6 +146,7 @@ export class DailyTransactionReportComponent {
         Obj["LedgerName"] = b.LedgerName;
         Obj["DrAmount"] = b.DrAmount;
         Obj["CrAmount"] = b.CrAmount;
+        Obj["Code"] = b.Code;
         //if (b.DrCr)
         //    Obj["DrAmount"] = b.Amount;
         //else if (!b.DrCr)
@@ -185,10 +220,19 @@ export class DailyTransactionReportComponent {
               taxTotal += a.itm.VAT;
               discountAmount += a.itm.DiscountAmount;
             }
+            if (a.TransactionType.includes("INVDeptConsumedGoods")) {
+              amountTotal += a.itm.TotalAmount;
+              taxTotal += a.itm.VAT;
+              discountAmount += a.itm.DiscountAmount;
+            }
+            if (a.TransactionType.includes("INVStockManageOut")) {
+              amountTotal += a.itm.TotalAmount;
+              taxTotal += a.itm.VAT;
+              discountAmount += a.itm.DiscountAmount;
+            }
           });
         }
-        else
-          if (this.selectedTxn.SectionId == 2) {
+        else if (this.selectedTxn.SectionId == 2) {
             this.txnOriginData = data.BillData;
             //this.txnOriginData.forEach(a => {
             //    if (a.TransactionType == "DepositAdd" || a.TransactionType == "DepositReturn") {
@@ -225,15 +269,18 @@ export class DailyTransactionReportComponent {
             else {
               this.isDeposit = false;
             }
-          }
-          else {
+        }
+        else if (this.selectedTxn.SectionId == 5){
+          this.txnOriginData = data;       
+        }
+        else {
             this.txnOriginData = data;
             this.txnOriginData.forEach(a => {
               taxTotal += a.VATAmount;
               discountAmount += a.DiscountAmount;
               amountTotal += a.TotalAmount;
             });
-          }
+        }
 
         this.selectedTxn["discountAmount"] = CommonFunctions.parseAmount(discountAmount);
         this.selectedTxn["taxTotal"] = CommonFunctions.parseAmount(taxTotal);
@@ -273,21 +320,27 @@ export class DailyTransactionReportComponent {
     let popupWinindow;
     var headerContent = document.getElementById("headerForPrint").innerHTML;
     var printContents = '<style> table { border-collapse: collapse; border-color: black; } th { color:black; background-color: #599be0; } </style>';
-    printContents += document.getElementById("printpage").innerHTML;
-    popupWinindow = window.open('', '_blank', 'width=600,height=700,scrollbars=no,menubar=no,toolbar=no,location=no,status=no,titlebar=no');
-    popupWinindow.document.open();
-    let documentContent = "<html><head>";
-    documentContent += '<link rel="stylesheet" type="text/css" media="print" href="../../themes/theme-default/DanphePrintStyle.css"/>';
-    documentContent += '<link rel="stylesheet" type="text/css" href="../../themes/theme-default/DanpheStyle.css"/>';
-    documentContent += '<link rel="stylesheet" type="text/css" href="../../../assets/global/plugins/bootstrap/css/bootstrap.min.css"/>';
-    documentContent += '</head>';
-    documentContent += '<body onload="window.print()">' + headerContent + printContents + '</body></html>';
-    popupWinindow.document.write(documentContent);
-    popupWinindow.document.close();
+    printContents += document.getElementById("printpage").innerHTML;    
+    this.showPrint = false;
+    this.printDetaiils = null;
+    this.changeDetector.detectChanges();
+    this.showPrint = true;
+    this.printDetaiils = headerContent + printContents ; 
+
   }
   Close() {
     this.txnOriginData = null;
     this.showDetailsPopUp = false;
     this.selectedTxn = null;
   }
+  showExport(){
+
+    let exportshow = this.coreservice.Parameters.find(a => a.ParameterName =="AllowSingleVoucherExport" && a.ParameterGroupName == "Accounting").ParameterValue;
+        if ( exportshow== "true"){
+          this.showExportbtn =true;     
+        }
+        else{
+            this.showExportbtn = false;
+        }
+      }
 }

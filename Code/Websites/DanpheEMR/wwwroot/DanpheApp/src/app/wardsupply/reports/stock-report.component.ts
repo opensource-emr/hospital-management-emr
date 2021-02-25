@@ -6,12 +6,14 @@ import { GridEmitModel } from "../../shared/danphe-grid/grid-emit.model";
 import { WardSupplyBLService } from "../shared/wardsupply.bl.service";
 import WARDGridColumns from "../shared/ward-grid-cloumns";
 import { DLService } from '../../shared/dl.service';
+import { Router } from '@angular/router';
+import { SecurityService } from '../../security/shared/security.service';
 
 
 @Component({
   selector: 'my-app',
 
-  templateUrl: "./stock-report.html" 
+  templateUrl: "./stock-report.html"
 
 })
 export class WardStockReportComponent {
@@ -24,12 +26,31 @@ export class WardStockReportComponent {
   itemList: Array<any> = new Array<any>();
   public selectedItem: any;
   public itemId: number = null;
+  public CurrentStoreId: number = 0;
 
-  constructor(public wardsupplyBLService: WardSupplyBLService, public dlService: DLService, public msgBoxServ: MessageboxService) {
-    this.WardStockReportColumns = WARDGridColumns.WardStockReport;
-    this.getItemList();
+  constructor(public wardsupplyBLService: WardSupplyBLService,
+    public dlService: DLService,
+    public msgBoxServ: MessageboxService,
+    public securityService: SecurityService,
+    public router: Router) {
+
+    try {
+      this.CurrentStoreId = this.securityService.getActiveStore().StoreId;
+      if (!this.CurrentStoreId) {
+        this.LoadSubStoreSelectionPage();
+      }
+      else {
+        this.WardStockReportColumns = WARDGridColumns.WardStockReport;
+        this.getItemList();
+      }
+    } catch (exception) {
+      this.msgBoxServ.showMessage("Error", [exception]);
+    }
+
   };
-
+  LoadSubStoreSelectionPage() {
+    this.router.navigate(['/WardSupply/Pharmacy']);
+  }
   //Export data grid options for excel file
   gridExportOptions = {
     fileName: 'WardStockReport' + moment().format('YYYY-MM-DD') + '.xls',
@@ -37,7 +58,7 @@ export class WardStockReportComponent {
 
   public getItemList() {
     try {
-      this.wardsupplyBLService.GetAllWardItemsStockDetailsList()
+      this.wardsupplyBLService.GetAllWardItemsStockDetailsList(this.CurrentStoreId)
         .subscribe(res => {
           if (res.Status == "OK") {
             if (res.Results.length) {
@@ -88,14 +109,14 @@ export class WardStockReportComponent {
   }
   //////Function Call on Button Click of Report
   GetReportData() {
-    this.wardsupplyBLService.GetStockItemsReport(this.itemId)
+    this.wardsupplyBLService.GetStockItemsReport(this.itemId, this.CurrentStoreId)
       .subscribe(res => {
         if (res.Status == 'OK' && res.Results.length > 0) {
           ////Assign report Column from GridConstant to PHRMStockItemsReportColumns
           this.WardStockReportColumns = WARDGridColumns.WardStockReport;
           ////Assign  Result to PHRMStockItemsReportData
           this.WardStockReportData = res.Results;
-        
+
         }
         if (res.Status == 'OK' && res.Results.length == 0) {
           this.msgBoxServ.showMessage("error", ["No Data is Available for Selected Record"]);
@@ -106,17 +127,17 @@ export class WardStockReportComponent {
   }
 
   myItemListFormatter(data: any): string {
-    let html = data["ItemName"];
+    let html = data["ItemName"] + " | " + data["GenericName"];
     return html;
   }
 
   ////on click grid export button we are catching in component an event.. 
   ////and in that event we are calling the server excel export....
   OnGridExport($event: GridEmitModel) {
-    
+
     let summaryHeader = "Stock Items Report";
     this.dlService.ReadExcel("/WardSupplyReport/ExportToExcelPHRMStockItemsReport?ItemId=" + this.itemId
-       + "&SummaryHeader=" + summaryHeader)
+      + "&SummaryHeader=" + summaryHeader)
       .map(res => res)
       .subscribe(data => {
         let blob = data;

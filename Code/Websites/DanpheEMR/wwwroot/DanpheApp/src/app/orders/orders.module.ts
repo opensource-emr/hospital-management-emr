@@ -6,8 +6,6 @@ import { HttpClientModule,HttpClientJsonpModule } from '@angular/common/http';
 
 import { LabsBLService } from '../labs/shared/labs.bl.service';
 import { LabsDLService } from '../labs/shared/labs.dl.service';
-import { ImagingRequisitionComponent } from '../radiology/imaging/imaging-requisition-component';
-//import { Ng2AutoCompleteModule } from 'ng2-auto-complete';
 import { DanpheAutoCompleteModule } from '../shared/danphe-autocomplete/danphe-auto-complete.module';
 import { OrderMainComponent } from './orders-main.component';
 import { OrderRequisitionsComponent } from './order/order-requisition.component';
@@ -51,7 +49,6 @@ import { OrdersBLService } from './shared/orders.bl.service';
     ],
     declarations: [OrderMainComponent,
         OrderRequisitionsComponent,
-        ImagingRequisitionComponent,
         MedicationPrescriptionComponent,
         PrintMedicationsComponent
     ],

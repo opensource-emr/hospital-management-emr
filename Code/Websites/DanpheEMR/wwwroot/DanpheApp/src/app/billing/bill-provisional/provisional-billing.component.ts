@@ -18,13 +18,13 @@ import { CallbackService } from '../../shared/callback.service';
 import { CommonFunctions } from '../../shared/common.functions';
 import { RouteFromService } from '../../shared/routefrom.service';
 import * as _ from 'lodash';
-import { DanpheHTTPResponse } from "../../shared/common-models";
+import { CancelStatusHoldingModel, DanpheHTTPResponse } from "../../shared/common-models";
 import { PatientBillingContextVM } from '../shared/patient-billing-context-vm';
 import { CoreService } from "../../core/shared/core.service"
-
+import { ENUM_BillingType } from '../../shared/shared-enums';
+import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from "../../shared/danphe-grid/NepaliColGridSettingsModel";
 
 @Component({
-  selector: 'my-app',
   templateUrl: "./provisional-billing.html"
 })
 
@@ -60,6 +60,8 @@ export class ProvisionalBillingComponent {
   public showInpatientMessage = false;
   public showPatBillHistory: boolean = false;
   public checkouttimeparameter: string;
+  public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
+  
   public patBillHistory = {
     IsLoaded: false,
     PatientId: null,
@@ -91,6 +93,64 @@ export class ProvisionalBillingComponent {
   public filteredPendingItems: Array<BillingTransactionItem> = [];
   public discountApplicable: boolean = false;
 
+  public enablePartialProvBill: boolean = false;
+  public showBackButton: boolean = false;
+
+  public overallCancellationRule: any;
+  public billingCancellationRule: CancelStatusHoldingModel = new CancelStatusHoldingModel();
+  public isCancelRuleEnabled: boolean;
+
+  public cancellationNumber: number = 0;
+
+  constructor(public billingService: BillingService,
+    public routeFromService: RouteFromService,
+    public router: Router,
+    public billingBLService: BillingBLService,
+    public patientService: PatientService,
+    public securityService: SecurityService,
+    public callbackservice: CallbackService,
+    public msgBoxServ: MessageboxService,
+    public changeDetector: ChangeDetectorRef,
+    public CoreService: CoreService
+  ) {
+    this.counterId = this.securityService.getLoggedInCounter().CounterId;
+    if (!this.counterId || this.counterId < 1) {
+      this.callbackservice.CallbackRoute = '/Billing/UnpaidBills';
+      this.router.navigate(['/Billing/CounterActivate']);
+    } else {
+      this.CheckAndLoadBillItemPrice();
+      this.creditBillGridColumns = GridColumnSettings.BillCreditBillSearch;
+      this.GetUnpaidTotalBills();
+      this.SetDoctorsList();
+
+      this.SetBillingParameters();
+
+    }
+    this.setCheckOutParameter();
+    this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('LastCreditBillDate', true));
+
+    this.overallCancellationRule = this.CoreService.GetOpBillCancellationRule();
+    if (this.overallCancellationRule && this.overallCancellationRule.Enable) {
+      this.isCancelRuleEnabled = this.overallCancellationRule.Enable;
+      this.billingCancellationRule.labStatus = this.overallCancellationRule.LabItemsInBilling;
+      this.billingCancellationRule.radiologyStatus = this.overallCancellationRule.ImagingItemsInBilling;
+    }
+
+  }
+
+  public enablNewItmAddInProvisional: boolean = false;
+  SetBillingParameters() {
+    this.enablePartialProvBill = this.CoreService.EnablePartialProvBilling();
+
+    //for enable/disable item add in provisional.
+
+    let param = this.CoreService.Parameters.find(p => p.ParameterGroupName == "Billing" && p.ParameterName == "EnableNewItemAddInOpProvisional");
+    if (param && (param.ParameterValue == "true" || param.ParameterValue == true || param.ParameterValue == "True")) {
+      this.enablNewItmAddInProvisional = true;
+    }
+
+  }
+
   ItemValueChanged() {
     if (this.selItem && this.selItem.ItemName) {
       this.filteredPendingItems = this.receiptDetails.filter(itm => itm.ItemName == this.selItem.ItemName);
@@ -121,31 +181,6 @@ export class ProvisionalBillingComponent {
   //end: sud--21Sept'18-- for Filtering items from unpaid list.
 
 
-  constructor(public billingService: BillingService,
-    public routeFromService: RouteFromService,
-    public router: Router,
-    public billingBLService: BillingBLService,
-    public patientService: PatientService,
-    public securityService: SecurityService,
-    public callbackservice: CallbackService,
-    public msgBoxServ: MessageboxService,
-    public changeDetector: ChangeDetectorRef,
-    public CoreService: CoreService
-  ) {
-    this.counterId = this.securityService.getLoggedInCounter().CounterId;
-    if (!this.counterId || this.counterId < 1) {
-      this.callbackservice.CallbackRoute = '/Billing/UnpaidBills';
-      this.router.navigate(['/Billing/CounterActivate']);
-    } else {
-      this.GetBillingItems();
-      this.creditBillGridColumns = GridColumnSettings.BillCreditBillSearch;
-      this.GetUnpaidTotalBills();
-      this.GetDoctorsList();
-
-    }
-    this.setCheckOutParameter();
-
-  }
   setCheckOutParameter() {
     var param = this.CoreService.Parameters.find(p => p.ParameterGroupName == "ADT" && p.ParameterName == "CheckoutTime");
     if (param) {
@@ -169,47 +204,60 @@ export class ProvisionalBillingComponent {
 
   GetPatientProvisionalItems(patientId: number, printProvisional: boolean = false) {
     this.billingBLService.GetProvisionalItemsByPatientId(patientId)
-      .subscribe(res => {
+      .subscribe((res: DanpheHTTPResponse) => {
 
-        this.receiptDetails = res.Results.CreditItems;
-        this.patientService.globalPatient = res.Results.Patient;
-        if (printProvisional) {
-          this.print();
+        if (res.Status == "OK") {
+         
+          this.receiptDetails = res.Results.CreditItems;
+          this.patientService.globalPatient = res.Results.Patient;
+          if (printProvisional) {
+            this.print();
+          }
+          this.patientDetails = this.patientService.globalPatient;
+          this.receiptDetails.forEach(function (val) {
+            val.Patient = res.Results.Patient;
+            // val.RequisitionDate = moment(val.RequisitionDate).format("YY/MM/DD HH:mm");
+            val.IsSelected = true;
+          });
+          //by default selecting all items.
+          this.selectAllItems = true;
+          this.SelectAllChkOnChange();
+
+          //sud: 21Sept'18-- assign all items to list at first..
+          this.filteredPendingItems = [];
+          this.filteredPendingItems = this.receiptDetails.slice();
+          this.selItemForEdit.AllowCancellation = true;
+
+          if (this.isCancelRuleEnabled && this.selItemForEdit.SrvDeptIntegrationName && this.selItemForEdit.RequisitionId > 0) {
+            if ((this.selItemForEdit.SrvDeptIntegrationName.toLowerCase() == 'lab' && !this.billingCancellationRule.labStatus.includes(this.selItemForEdit.OrderStatus))
+              || (this.selItemForEdit.SrvDeptIntegrationName.toLowerCase() == 'radiology' && !this.billingCancellationRule.radiologyStatus.includes(this.selItemForEdit.OrderStatus))) {
+              this.selItemForEdit.AllowCancellation = false;
+            }
+          }
+          this.GetItemsForSearchDDL(this.receiptDetails);
+
+          this.LoadPatientPastBillSummary(patientId);
+          this.HasZeroPriceItems();
         }
-        this.patientDetails = this.patientService.globalPatient;
-        this.receiptDetails.forEach(function (val) {
-          val.Patient = res.Results.Patient;
-          // val.RequisitionDate = moment(val.RequisitionDate).format("YY/MM/DD HH:mm");
-          val.IsSelected = false;
-        });
-        //by default selecting all items.
-        this.selectAllItems = true;
-        this.SelectAllChkOnChange();
-
-        //sud: 21Sept'18-- assign all items to list at first..
-        this.filteredPendingItems = this.receiptDetails.slice();
-        this.GetItemsForSearchDDL(this.receiptDetails);
-
-        this.LoadPatientPastBillSummary(patientId);
-        this.HasZeroPriceItems();
+        else {
+          this.msgBoxServ.showMessage("Failed", ["Couldn't load Provisional Details of this Patient. Please try again."]);
+          this.BackToGrid();
+        }
       });
   }
 
-  public GetBillingItems() {
-    this.billingBLService.GetBillItemList()
-      .subscribe(res => {
-        if (res.Status == 'OK' && res.Results.length) {
-          this.itemList = res.Results;
-        }
-        else {
-          this.msgBoxServ.showMessage('Failed', ["Unable to get Item List. Check log for error message."]);
-          console.log(res.ErrorMessage);
-        }
-      },
-        err => {
-          console.log(err.ErrorMessage);
-        });
+  public isBillItemPriceLoaded: boolean = false;
+
+
+
+  CheckAndLoadBillItemPrice() {
+    if (!this.isBillItemPriceLoaded) {
+      this.itemList = this.billingService.allBillItemsPriceList;
+      this.isBillItemPriceLoaded = this.itemList.length > 0;
+      console.log("bill items price set inside provisional.");
+    }
   }
+
 
   ShowPatientProvisionalItems(row): void {
     this.showAllPatient = false;
@@ -223,6 +271,7 @@ export class ProvisionalBillingComponent {
     patient.PhoneNumber = row.PhoneNumber;
     this.currBillingContext = null;
     this.admissionDetail = null;
+    
     this.GetPatientProvisionalItems(patient.PatientId);
     this.LoadPatientBillingContext(patient.PatientId);
   }
@@ -230,10 +279,9 @@ export class ProvisionalBillingComponent {
 
   PayAll() {
     //changed: 4May-anish
-    if (this.currBillingContext.BillingType.toLowerCase() == "inpatient") {
+    if (this.currBillingContext.BillingType.toLowerCase() == ENUM_BillingType.inpatient) {
       this.showInpatientMessage = true;
       return;
-
     }
     if (this.HasZeroPriceItems()) {
       return;
@@ -254,7 +302,7 @@ export class ProvisionalBillingComponent {
         billingTransaction.BillingTransactionItems.push(curBilTxnItm);
       }
     });
-    if (this.currBillingContext.BillingType.toLowerCase() == "inpatient")
+    if (this.currBillingContext.BillingType.toLowerCase() == ENUM_BillingType.inpatient)
       this.routeFromService.RouteFrom = "inpatient";
     this.router.navigate(['/Billing/BillingTransactionItem']);
   }
@@ -263,7 +311,10 @@ export class ProvisionalBillingComponent {
     switch ($event.Action) {
       case "showDetails":
         {
+          this.CheckAndLoadBillItemPrice();//need this to ensure billitem price are set to the item list.
+
           var data = $event.Data;
+          this.filteredPendingItems = [];
           this.ShowPatientProvisionalItems(data);
         }
         break;
@@ -278,6 +329,7 @@ export class ProvisionalBillingComponent {
         break;
     }
   }
+
   print() {
     let txnReceipt = BillingReceiptModel.GetReceiptFromTxnItems(this.receiptDetails);
     txnReceipt.Patient = Object.create(this.patientService.globalPatient);
@@ -296,8 +348,10 @@ export class ProvisionalBillingComponent {
     this.patientService.CreateNewGlobal();
     this.showCancelSummaryPanel = false;
     this.showActionPanel = false;
+    this.showBackButton = false;
     this.receiptDetails = [];
     this.cancelledItems = [];
+    this.filteredPendingItems = [];
     this.showPatBillHistory = false;
   }
 
@@ -307,7 +361,9 @@ export class ProvisionalBillingComponent {
         this.receiptDetails.forEach(itm => {
           itm.IsSelected = true;
         });
+        this.showAllPatient = false;
         this.showActionPanel = true;
+        this.showBackButton = true;
       }
       else {
         this.receiptDetails.forEach(itm => {
@@ -320,31 +376,7 @@ export class ProvisionalBillingComponent {
     this.CalculationForAll();
   }
 
-  //Sets the component's check-unchecked properties on click of Component-Level Checkbox.
-  SelectItemChkOnChange(item: BillingTransactionItem) {
 
-    //show action panel if any one of item is checked.
-    if (this.receiptDetails.find(itm => itm.IsSelected)) {
-      this.showActionPanel = true;
-    }
-    else {
-      this.showActionPanel = false;
-    }
-
-    if ((this.receiptDetails.every(a => a.IsSelected == true))) {
-      this.selectAllItems = true;
-    }
-    else {
-      this.selectAllItems = false;
-    }
-
-    this.CalculationForAll();
-  }
-
-  CalculateTotalAmt() {
-
-
-  }
 
   CancelItems() {
     if (this.remarks && this.remarks != "") {
@@ -446,7 +478,7 @@ export class ProvisionalBillingComponent {
   }
 
 
-  //sud: 25Sept For Ip/Billing and Edit items.. couldn't wait until IP Billinig feature comes to live. 
+  //sud: 25Sept2018 For Ip/Billing and Edit items.. couldn't wait until IP Billinig feature comes to live. 
   //start: Edit Items
   public selItemForEdit: BillingTransactionItem = new BillingTransactionItem();
   public showEditItemsPopup: boolean = false;
@@ -455,14 +487,28 @@ export class ProvisionalBillingComponent {
     //console.log(this.doctorsList);
     this.selItemForEdit = txnItem;
 
-    //Yubraj 29th July -- Disable discount TextBox in case of DiscableApplicable is false
+    //Yubraj 29th July 2019 -- Disable discount TextBox in case of DiscableApplicable is false
     let itmId = this.selItemForEdit.ItemId;
     let itmName = this.selItemForEdit.ItemName;
 
     var selItemDetails = this.itemList.find(a => a.ItemId == itmId && a.ItemName == itmName)
     this.discountApplicable = selItemDetails.DiscountApplicable;
+    
+    this.selItemForEdit.SrvDeptIntegrationName = this.selItemForEdit.ServiceDepartment.IntegrationName;
+    this.selItemForEdit.AllowCancellation = true;
+    console.log(this.selItemForEdit);
+    if(this.selItemForEdit.OrderStatus == null){
+      this.selItemForEdit.OrderStatus = 'active';
+    }
+    if (this.isCancelRuleEnabled && this.selItemForEdit.SrvDeptIntegrationName && this.selItemForEdit.RequisitionId > 0) {
+      if ((this.selItemForEdit.SrvDeptIntegrationName.toLowerCase() == 'lab' && !this.billingCancellationRule.labStatus.includes(this.selItemForEdit.OrderStatus))
+        || (this.selItemForEdit.SrvDeptIntegrationName.toLowerCase() == 'radiology' && !this.billingCancellationRule.radiologyStatus.includes(this.selItemForEdit.OrderStatus))) {
+        this.selItemForEdit.AllowCancellation = false;
+      }
+    }
     this.showEditItemsPopup = true;
-    //alert(index);
+    
+
   }
   //this will be called when Item's edit window is closed.
   CloseItemEditWindow($event) {
@@ -472,35 +518,22 @@ export class ProvisionalBillingComponent {
     }
   }
 
-  public showIpBillRequest: boolean = false;
-  NewItemBtn_Click() {
-    this.showIpBillRequest = false;
-    this.changeDetector.detectChanges();
-    this.showIpBillRequest = true;
-  }
 
-  CloseNewItemAdd() {
-    this.GetPatientProvisionalItems(this.patientService.globalPatient.PatientId);
-    this.showIpBillRequest = false;
-  }
 
 
   public doctorsList: Array<any> = [];
   public UsersList: Array<any> = [];//to view who has added that particular item.
 
-  GetDoctorsList() {
-    this.billingBLService.GetDoctorsList()
-      .subscribe((res: DanpheHTTPResponse) => {
-        console.log(res);
-        if (res.Status == "OK") {
-          this.doctorsList = res.Results;
-          let Obj = new Object();
-          Obj["EmployeeId"] = null;
-          Obj["FullName"] = "SELF";
-          this.doctorsList.push(Obj);
-        }
-      });
+  SetDoctorsList() {
+    //doctorslist is available in billingservice.. reuse it.. 
+    this.doctorsList = this.billingService.GetDoctorsListForBilling();
+    let Obj = new Object();
+    Obj["EmployeeId"] = null;
+    Obj["FullName"] = "SELF";
+    this.doctorsList.push(Obj);
+
   }
+
   HasZeroPriceItems(): boolean {
     var items = this.receiptDetails.filter(a => a.Price == 0);
     if (items && items.length) {
@@ -542,6 +575,7 @@ export class ProvisionalBillingComponent {
     this.LoadPatientPastBillSummary(this.patientService.globalPatient.PatientId);
     this.CalculationForAll();
   }
+
   CalculationForAll() {
     //reset global variables to zero before starting the calculation.
     this.selItemsTotAmount = 0;
@@ -554,6 +588,9 @@ export class ProvisionalBillingComponent {
     let discAmt: number = 0;
     this.receiptDetails.forEach(itm => {
       if (itm.IsSelected) {
+        if (!this.showActionPanel) {
+          this.showActionPanel = true;
+        }
         this.selItemsSubTotal += itm.SubTotal ? itm.SubTotal : 0;
         this.selItemsTotalDiscAmount += itm.DiscountAmount ? itm.DiscountAmount : 0;
         this.selItemsTotAmount += itm.TotalAmount ? itm.TotalAmount : 0;
@@ -590,4 +627,53 @@ export class ProvisionalBillingComponent {
       this.model.TotalDiscount = 0;
     }
   }
+
+  SelectUnselectItem() {
+
+    if (this.currBillingContext.BillingType.toLowerCase() != ENUM_BillingType.inpatient) {
+      if (this.filteredPendingItems.every(a => a.IsSelected == true)) {
+        this.selectAllItems = true;
+      } else {
+        this.selectAllItems = false;
+        this.showActionPanel = false;
+      }
+
+      this.CalculationForAll();
+    } else {
+      this.showInpatientMessage = true;
+    }
+  }
+
+
+  //  <ward-billitem - request * ngIf="showNewItemsPopup"[counterId] = "1"[billItems] = "allBillItems"
+  //[patientId] = "selectedPatient.PatientId"[visitId] = "selectedPatient.PatientVisitId"
+  //[visitType] = "'inpatient'"[billingType] = "'inpatient'"
+  //  (emit - billItemReq) = "OrderRequested()" > </ward-billitem-request>
+
+
+  //public showNewItemsPopup: boolean = false;
+
+
+  LoadInitialValues() {
+
+  }
+
+  public showNewItemsPopup: boolean = false;
+  NewItemBtn_Click() {
+    this.showNewItemsPopup = false;
+    this.changeDetector.detectChanges();
+    this.itemList
+    this.showNewItemsPopup = true;
+  }
+
+  CloseNewItemAdd($event) {
+    //action are either: save or close. we don't have to load provisional item when it's only close.
+    if ($event && $event.action == "save") {
+      this.GetPatientProvisionalItems(this.patientService.globalPatient.PatientId);
+    }
+
+    this.showNewItemsPopup = false;
+  }
+
+
 }

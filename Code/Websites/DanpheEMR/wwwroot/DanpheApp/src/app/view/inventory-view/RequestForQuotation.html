@@ -25,8 +25,7 @@
     border-bottom: dotted 1px;
   }
 </style>
-
-<input type="button" class="btn btn-primary" (click)="CreateRequestForQuotation()" value=" Request For Quotation" />
+<input type="button" class="btn primary-btn m1" (click)="CreateRequestForQuotation()" value=" Request For Quotation" />
 <div class="row">
   <div class="col-lg-12 col-sm-12">
     <danphe-grid [grid-colDefaults]="ReqForQuotationGridColumns" [grid-data]="ReqForQuotationList" (grid-actions)="ReqForQuotationGridAction($event)"></danphe-grid>
@@ -66,7 +65,7 @@
                   <thead>
                     <tr>
                       <th><b>Item Name</b>
-                      <th><b>Quantity</b></th>
+                      <th> <b>Code </b> </th>
                       <th><b>Description</b></th>
                       <th><b>Requested Date</b></th>
                     </tr>
@@ -263,7 +262,26 @@
               <div id="printpage" class="row printStyle print-border">
                 <div style="text-align:center;">
                   <div class="col-md-12">
-                    <print-header [unit-name]="'Inventory Unit'"></print-header>
+                    <div class="row" style="margin-bottom: 10px;">
+                      <div class="logo" style="width: 18%;padding:0px 15px 0px 15px; float: left;">
+                        <img class="img-responsive" style="max-height:70px;" src="../../../themes/theme-default/images/hams-logo.PNG" />
+                      </div>
+                      <div style="width: 64%;float: left;padding-bottom:  0px;">
+                        <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
+                          <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
+                          <span style="font-size:15px;">{{headerDetail.address}}</span><br />
+                          <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
+                          <span style="font-size:15px;"><strong> Inventory Unit </strong></span><br />
+                        </div>
+                      </div>
+                      <div style="float: left;">
+                        <div class="qr-code" style="margin-left:20px; top: 11px ;left: 71px;">
+                          <qr-code [value]="patientQRCodeInfo" [size]="75" [backgroundAlpha]="0"></qr-code>
+                        </div>
+                      </div>
+                      <!-- Billing Header  -->
+                      <div style="clear:left"></div>
+                    </div>
                     <div class="left" style="text-align:left; width: 50%">
                       <p>Subject:<b> {{RFQList.Subject}}</b></p>
                       <p>Description:<b> {{RFQList.Description}}</b></p>
@@ -284,7 +302,7 @@
                           <tr>
                             <th><b>Item Name</b>
                             <th><b>Quantity</b></th>
-                            <th><b>Description</b></th>                           
+                            <th><b>Description</b></th>
                             <th><b>Requested Date</b></th>
                           </tr>
                         </thead>
@@ -292,7 +310,7 @@
                           <tr *ngFor="let row of ReqForQuotationItems">
                             <td>{{row.ItemName}}</td>
                             <td>{{row.Quantity}}</td>
-                            <td>{{row.Description}}</td>                            
+                            <td>{{row.Description}}</td>
                             <td>{{row.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
                           </tr>
                         </tbody>
@@ -300,8 +318,8 @@
                     </div>
                     <hr />
                     <!-- <div class="left" style="margin-top:20px">
-                        <b>Remark:</b>
-                    </div> -->
+      <b>Remark:</b>
+  </div> -->
                     <div class="col-md-12 clear">
                       <!-- <hr /> -->
                       <div class="left" style="text-align:left">

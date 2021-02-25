@@ -7,12 +7,10 @@ import { VisitDLService } from '../../appointments/shared/visit.dl.service';
 import { Visit } from "../../appointments/shared/visit.model";
 
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
-
-
 import * as moment from 'moment/moment';
 
 @Component({
-    templateUrl: "../../view/doctors-view/PatientVisitHistory.html" // "/DoctorsView/PatientVisitHistory"
+    templateUrl: "./patient-visit-history.html"
 })
 export class PatientVisitHistoryComponent {
     public visits: Array<Visit> = new Array<Visit>();

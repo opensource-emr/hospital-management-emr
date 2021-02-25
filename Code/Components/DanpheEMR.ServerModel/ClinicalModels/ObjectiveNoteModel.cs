@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DanpheEMR.ServerModel.ClinicalModels;
 
 namespace DanpheEMR.ServerModel
 {
@@ -13,7 +15,13 @@ namespace DanpheEMR.ServerModel
         public int ObjectiveNotesId { get; set; }
         public int NotesId { get; set; }
         public int PatientId { get; set; }
+        [ForeignKey("PatientId")]
+        public virtual PatientModel Patients { get; set; }
         public int PatientVisitId { get; set; }
+        [ForeignKey("PatientVisitId")]
+        public virtual VisitModel Visits { get; set; }
+
+       // public string FreeText { get; set; }
         public string HEENT { get; set; }
         public string Chest { get; set; }
         public string CVS { get; set; }

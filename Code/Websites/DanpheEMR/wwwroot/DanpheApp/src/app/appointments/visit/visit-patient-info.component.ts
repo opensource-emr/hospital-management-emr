@@ -24,10 +24,12 @@ import { PatientService } from "../../patients/shared/patient.service";
 import { MessageboxService } from "../../shared/messagebox/messagebox.service";
 import { CoreService } from "../../core/shared/core.service";
 import { VisitBLService } from "../shared/visit.bl.service";
-import { CountrySubdivision } from "../../settings/shared/country-subdivision.model";
+import { CountrySubdivision } from "../../settings-new/shared/country-subdivision.model";
 import * as moment from 'moment/moment';
 import { DanpheCache, MasterType } from "../../shared/danphe-cache-service-utility/cache-services";
 import { VisitService } from "../shared/visit.service";
+import { Membership } from "../../settings-new/shared/membership.model";
+//import { MembershipType } from '../../patients/shared/membership-type.model';
 @Component({
   selector: "visit-patient-info",
   templateUrl: "./visit-patient-info.html"
@@ -43,7 +45,9 @@ export class VisitPatientInfoComponent implements OnInit {
   public disablePatientInput: boolean = false;
   @Output("emit-membership-discount")
   public emitMembershipDiscount: EventEmitter<Object> = new EventEmitter<Object>();
-  public membershipTypes: Array<{ MembershipTypeId: number, MembershipType: string, MembershipTypeName: string, DiscountPercent: number }>;
+
+  //public membershipTypes: Array<{ MembershipTypeId: number, MembershipType: string, MembershipTypeName: string, DiscountPercent: number }>;
+
   public initialLoad: boolean = false; //flag added by yubraj --6th sept 2018
 
   public olderAddressList: Array<any> = [];//for Autocomplete of Address Field.
@@ -60,13 +64,14 @@ export class VisitPatientInfoComponent implements OnInit {
     this.LoadCalendarTypes();
     this.GetCountries();
     //this.GetCountrySubDivision(); //this was reapting double time --yub 6th Sept
-    this.GetMembershipTypes();
+    //this.GetMembershipTypes();
 
     this.initialLoad = true;
 
     if (this.coreService.Masters.UniqueDataList && this.coreService.Masters.UniqueDataList.UniqueAddressList) {
       this.olderAddressList = this.coreService.Masters.UniqueDataList.UniqueAddressList;
     }
+    this.LoadMembershipSettings()
   }
 
   ngAfterViewInit() {
@@ -78,20 +83,16 @@ export class VisitPatientInfoComponent implements OnInit {
 
   ngOnInit() {
     this.InitializeNewPatient();
+    this.isPatientInfoLoaded = true;
   }
 
   public InitializeNewPatient() {
     this.patient = Object.assign(this.patient, this.patientService.getGlobal());
     if (this.patient.PatientId) {
-      //this.countrySubDivision.CountrySubDivisionId = this.patient.CountrySubDivisionId;
-      //this.countrySubDivision.CountrySubDivisionName = this.patient.CountrySubDivisionName;
-
       this.countrySubDivision["CountrySubDivisionId"] = this.patient.CountrySubDivisionId;
       this.countrySubDivision["CountrySubDivisionName"] = this.patient.CountrySubDivisionName;
       this.SeperateAgeAndUnit();
       this.DisableInputFields();
-      this.AssignSelectedDistrict();
-
     }
     else {
       let country = this.coreService.GetDefaultCountry();
@@ -104,11 +105,11 @@ export class VisitPatientInfoComponent implements OnInit {
 
       //this.countrySubDivision["CountrySubDivisionId"] = subDivision ? subDivision.CountrySubDivisionId : null;
       //this.countrySubDivision["CountrySubDivisionName"] = subDivision ? subDivision.CountrySubDivisionName : null;
-      this.AssignSelectedDistrict();
+      // this.AssignSelectedDistrict();
       this.LoadDOBdefault();
     }
     this.ConditionalValidationOfAgeAndDOB();
-
+    this.CalculateDob();
   }
   DisableInputFields() {
     this.patient.EnableControl("FirstName", false);
@@ -141,10 +142,21 @@ export class VisitPatientInfoComponent implements OnInit {
     this.visitBLService.GetCountrySubDivision(this.patient.CountryId)
       .subscribe(res => {
         if (res.Status == "OK" && res.Results) {
-          //this.countrySubDivisions = [];
+          this.countrySubDivisions = [];
           this.countrySubDivisions = res.Results;
 
           if (this.initialLoad) { //checking whether it is for new registration or not
+            var selCountrySubDiv = this.countrySubDivisions.find(a => a.CountrySubDivisionId == this.patient.CountrySubDivisionId || a.CountrySubDivisionName == this.patient.CountrySubDivisionName);
+            if (selCountrySubDiv) {
+              this.patient.CountrySubDivisionName = selCountrySubDiv.CountrySubDivisionName;
+              this.patient.CountrySubDivisionId = selCountrySubDiv.CountrySubDivisionId;
+
+              this.countrySubDivision["CountrySubDivisionId"] = this.patient.CountrySubDivisionId;
+              this.countrySubDivision["CountrySubDivisionName"] = this.patient.CountrySubDivisionName;
+
+              //this.countrySubDivision = new CountrySubdivision();
+              //this.countrySubDivision = null;
+            }
             if (this.patient.CountrySubDivisionName) { //Yubraj Modification --2nd July '19 
               this.initialLoad = false;
             }
@@ -155,6 +167,14 @@ export class VisitPatientInfoComponent implements OnInit {
           else {
             this.countrySubDivision = new CountrySubdivision();
             this.countrySubDivision = null; //to show sub country box empty when the country selection is changed --yub 30th Aug '18
+            if (this.patient.CountryId != 1) {
+                var selCountrySubDiv = this.countrySubDivisions.find(a => a.CountryId == this.patient.CountryId);
+                this.patient.CountrySubDivisionName = selCountrySubDiv.CountrySubDivisionName;
+                this.patient.CountrySubDivisionId = selCountrySubDiv.CountrySubDivisionId;
+                this.patient.CountryName = this.countries.find(a => a.CountryId == this.patient.CountryId).CountryName;
+                this.countrySubDivision["CountrySubDivisionId"] = this.patient.CountrySubDivisionId;
+               this.countrySubDivision["CountrySubDivisionName"] = this.patient.CountrySubDivisionName;
+            }
           }
           this.AssignSelectedDistrict();
         }
@@ -177,6 +197,7 @@ export class VisitPatientInfoComponent implements OnInit {
 
   GetCountries() {
     this.countries = DanpheCache.GetData(MasterType.Country, null);
+
     // this.visitBLService.GetCountries(this.patient.CountryId)
     //     .subscribe(res => {
     //         if (res.Status == "OK") {
@@ -188,59 +209,61 @@ export class VisitPatientInfoComponent implements OnInit {
     //         }
     //     });
   }
-  GetMembershipTypes() {
-    this.visitBLService.GetMemberShipTypes()
-      .subscribe(res => {
-        if (res.Status == "OK") {
-          this.membershipTypes = res.Results;
-          if (this.patient.PatientId) {
-            let type = this.membershipTypes.find(i => i.MembershipTypeId == this.patient.MembershipTypeId);
-            this.patientService.globalPatient.MembershipTypeName = type.MembershipType;
-            this.patientService.globalPatient.MembershipDiscountPercent = type.DiscountPercent;
-            this.membership = type.MembershipTypeName;
-          } else {
-            let index = this.membershipTypes.findIndex(i => i.MembershipType == "General");
-            if (!this.patient.MembershipTypeId) {
-              this.patient.MembershipTypeId = this.membershipTypes[index].MembershipTypeId;
-              this.membership = this.membershipTypes[index].MembershipTypeName;
-              this.patientService.globalPatient.MembershipDiscountPercent = this.membershipTypes[index].DiscountPercent;
-              this.patientService.globalPatient.MembershipTypeName = this.membershipTypes[index].MembershipType;
-            }
-          }
-          this.MembershipTypeChanged();
-        }
-        else {
-          this.msgBoxServ.showMessage("failed", ['Failed to get membership types.']);
-          console.log(res.ErrorMessage);
-        }
-      });
-  }
 
-  public membership: any = null;
+  //GetMembershipTypes() {
+  //  this.visitBLService.GetMemberShipTypes()
+  //    .subscribe(res => {
+  //      if (res.Status == "OK") {
+  //        this.membershipTypes = res.Results;
+  //        if (this.patient.PatientId) {
+  //          let type = this.membershipTypes.find(i => i.MembershipTypeId == this.patient.MembershipTypeId);
+  //          this.patientService.globalPatient.MembershipTypeName = type.MembershipType;
+  //          this.patientService.globalPatient.MembershipDiscountPercent = type.DiscountPercent;
+  //          this.membership = type.MembershipTypeName;
+  //        } else {
+  //          let index = this.membershipTypes.findIndex(i => i.MembershipType == "General");
+  //          if (!this.patient.MembershipTypeId) {
+  //            this.patient.MembershipTypeId = this.membershipTypes[index].MembershipTypeId;
+  //            this.membership = this.membershipTypes[index].MembershipTypeName;
+  //            this.patientService.globalPatient.MembershipDiscountPercent = this.membershipTypes[index].DiscountPercent;
+  //            this.patientService.globalPatient.MembershipTypeName = this.membershipTypes[index].MembershipType;
+  //          }
+  //        }
+  //        this.MembershipTypeChanged();
+  //      }
+  //      else {
+  //        this.msgBoxServ.showMessage("failed", ['Failed to get membership types.']);
+  //        console.log(res.ErrorMessage);
+  //      }
+  //    });
+  //}
 
-  onMembershipTypeChange() {
-    this.membership;
-    let type = null;
-    if (this.membership) {
-      if (typeof (this.membership) == 'string') {
-        type = this.membershipTypes.find(a => a.MembershipTypeName == this.membership);
-      }
-      else if (typeof (this.membership) == 'object') {
-        type = this.membership;
-      }
-      if (type) {
-        this.patient.MembershipTypeId = this.membership.MembershipTypeId;
-        this.patient.IsValidMembershipTypeName = true;
-      } else {
-        this.patient.IsValidMembershipTypeName = false;
-      }
-    }
-    this.MembershipTypeChanged();
-  }
+  //public membership: any = null;
 
-  MembershipTypeListFormatter(data: any): string {
-    return data["MembershipTypeName"];
-  }
+  //onMembershipTypeChange() {
+  //  this.membership;
+  //  let type = null;
+  //  if (this.membership) {
+  //    if (typeof (this.membership) == 'string') {
+  //      type = this.membershipTypes.find(a => a.MembershipTypeName == this.membership);
+  //    }
+  //    else if (typeof (this.membership) == 'object') {
+  //      type = this.membership;
+  //    }
+  //    if (type) {
+  //      this.patient.MembershipTypeId = this.membership.MembershipTypeId;
+  //      this.patient.IsValidMembershipTypeName = true;
+  //    }
+  //    else {
+  //      this.patient.IsValidMembershipTypeName = false;
+  //    }
+  //  }
+  //  this.MembershipTypeChanged();
+  //}
+
+  //MembershipTypeListFormatter(data: any): string {
+  //  return data["MembershipTypeName"];
+  //}
 
   SeperateAgeAndUnit() {
     let seperatedAgeUnit = this.patientService.SeperateAgeAndUnit(this.patient.Age);
@@ -305,17 +328,46 @@ export class VisitPatientInfoComponent implements OnInit {
     }
   }
 
-  MembershipTypeChanged() {
 
-    if (this.membershipTypes && this.patient.MembershipTypeId) {
-      let membershipType = this.membershipTypes.find(mem => mem.MembershipTypeId == this.patient.MembershipTypeId);
-      if (membershipType) {
-        this.visitService.TriggerBillChangedEvent({ ChangeType: "Membership", "DiscountPercent": membershipType.DiscountPercent });
-        this.visitService.TriggerBillChangedEvent({ ChangeType: "MembershipTypeValid", "MembershipTypeValid": this.patient.IsValidMembershipTypeName });
 
-        //this.emitMembershipDiscount.emit({ "DiscountPercent": membershipType.DiscountPercent, "CountryId": this.patient.CountryId });
-      }
+  //start:sundeep-14nov-for membership
+
+  public isPatientInfoLoaded: boolean = false;//sundeep:14Nov'19-- show membership dropdown only after patient is loaded.
+  public membershipSchemeParam = { ShowCommunity: false, IsMandatory: true };
+
+  OnMembershipChanged($event: Membership) {
+    if ($event) {
+
+      this.patient.MembershipTypeId = $event.MembershipTypeId;
+      this.patient.IsValidMembershipTypeName = true;
     }
-
+    else {
+      this.patient.MembershipTypeId = null;
+      this.patient.IsValidMembershipTypeName = false;
+    }
+    this.MembershipTypeChanged($event);
   }
+
+
+  MembershipTypeChanged(currentMembType: Membership) {
+    //we need to emit even when membership type is invalid. so that visit-main component can do the check accordingly.
+    if (currentMembType && this.patient.MembershipTypeId) {
+      this.visitService.TriggerBillChangedEvent({ ChangeType: "Membership", "DiscountPercent": currentMembType.DiscountPercent, MembershipTypeName: currentMembType.MembershipTypeName });
+      this.visitService.TriggerBillChangedEvent({ ChangeType: "MembershipTypeValid", "MembershipTypeValid": this.patient.IsValidMembershipTypeName });
+    }
+    else {
+      this.visitService.TriggerBillChangedEvent({ ChangeType: "Membership", "DiscountPercent": 0 });
+      this.visitService.TriggerBillChangedEvent({ ChangeType: "MembershipTypeValid", "MembershipTypeValid": this.patient.IsValidMembershipTypeName });
+    }
+  }
+
+  public LoadMembershipSettings() {
+    var currParam = this.coreService.Parameters.find(a => a.ParameterGroupName == "Billing" && a.ParameterName == "MembershipSchemeSettings");
+    if (currParam && currParam.ParameterValue) {
+      this.membershipSchemeParam = JSON.parse(currParam.ParameterValue);
+    }
+  }
+
+  //end:sundeep-14nov-for membership
+
 }

@@ -42,6 +42,11 @@ import { WardInventoryReportComponent } from './inventory-wardsupply/reports/war
 import { RequisitionDispatchReportComponent } from './inventory-wardsupply/reports/requisition-dispatch-report.component';
 import { TransferReportComponent } from './inventory-wardsupply/reports/transfer-report.component';
 import { ConsumptionReportComponent } from './inventory-wardsupply/reports/consumption-report.component';
+import { InternalConsumptionComponent } from './internal-consumption.component';
+import { InternalConsumptionListComponent } from './internal-consumption-list.component';
+import { InternalConsumptionDetailsComponent } from './internal-consumption-details.component';
+import { WardInternalConsumptionReportComponent } from './reports/internal-consumption-report.component';
+import { InventoryWardReceiveStockComponent } from './inventory-wardsupply/requisition/inventory-ward-receive-stock/inventory-ward-receive-stock.component';
 
 @NgModule({
   providers: [
@@ -78,6 +83,7 @@ import { ConsumptionReportComponent } from './inventory-wardsupply/reports/consu
     WardDispatchReportComponent,
     WardDispatchReportComponent,
     WardConsumptionReportComponent,
+    WardInternalConsumptionReportComponent,
     WardBreakageReportComponent,
     WardTransferReportComponent,
     PharmacyWardComponent,
@@ -92,7 +98,11 @@ import { ConsumptionReportComponent } from './inventory-wardsupply/reports/consu
     WardInventoryReportComponent,
     RequisitionDispatchReportComponent,
     TransferReportComponent,
-    ConsumptionReportComponent,
+     ConsumptionReportComponent,
+      InternalConsumptionComponent,
+      InternalConsumptionListComponent,
+      InternalConsumptionDetailsComponent,
+      InventoryWardReceiveStockComponent,
   ],
   bootstrap: []
 })

@@ -7,6 +7,8 @@ import * as _ from 'lodash';
 import { LedgerModel } from "./../settings/shared/ledger.model"
 import { FiscalYearModel } from '../settings/shared/fiscalyear.model';
 import { AccountingInvoiceDataModel } from '../shared/accounting-invoice-data.model';
+import { ReverseTransactionModel } from "../settings/shared/reverse-transaction.model";
+
 
 
 
@@ -123,9 +125,21 @@ export class AccountingBLService {
             throw ex;
         }
     }
-    public GetTransactionbyVoucher(voucherNumber: string) {
+    public GetTransactionbyVoucher(voucherNumber: string, secId, fsYearId) {
         try {
-            return this.accountDlService.GetTransactionbyVoucher(voucherNumber)
+            return this.accountDlService.GetTransactionbyVoucher(voucherNumber, secId, fsYearId)
+                .map((responseData) => {
+                    return responseData;
+                });
+        } catch (ex) {
+            throw ex;
+        }
+    }
+
+    ///get Voucher detail for manual edit 
+    public GetVoucherforedit(voucherNumber: string, secId, FsYId) {
+        try {
+            return this.accountDlService.GetVoucherforedit(voucherNumber, secId, FsYId)
                 .map((responseData) => {
                     return responseData;
                 });
@@ -160,16 +174,6 @@ export class AccountingBLService {
             });
     }
 
-    public GetBalanceSheetReportData(fromDate, toDate) {
-        try {
-            return this.accountDlService.GetBalanceSheetReportData(fromDate, toDate)
-                .map((responseData) => {
-                    return responseData;
-                });
-        } catch (exception) {
-            throw exception;
-        }
-    }
     //this function get all transfer rule with details
     public GetACCTransferRule() {
         try {
@@ -179,6 +183,17 @@ export class AccountingBLService {
                 });
         } catch (exception) {
             throw exception;
+        }
+    }
+
+    public GetAllActiveAccTenants() {
+        try {
+            return this.accountDlService.GetAllActiveAccTenants()
+                .map((responseData) => {
+                    return responseData;
+                });
+        } catch (ex) {
+            throw ex;
         }
     }
     //END: GET Report Data
@@ -191,10 +206,10 @@ export class AccountingBLService {
     //        .map(res => { return res });
     //}
 
-    //get inventory goods receipts for transfer to accounting
-    public GetInventoryItemsForTransferToACC(frmDt: string, toDt: string) {
+     //get inventory goods receipts for transfer to accounting
+     public GetInventoryItemsForTransferToACC(selectedDate,fiscalyearId) {
         try {
-            return this.accountDlService.GetInventoryItemsForTransferToACC(frmDt, toDt)
+            return this.accountDlService.GetInventoryItemsForTransferToACC(selectedDate,fiscalyearId)
                 .map((responseData) => {
                     return responseData;
                 });
@@ -203,9 +218,10 @@ export class AccountingBLService {
         }
     }
     //get all bil txn items from billing for transfer to accounting
-    public GetBilTxnItemsForTransferToACC(frmDt: string, toDt: string) {
+   // public GetBilTxnItemsForTransferToACC(frmDt: string, toDt: string) {
+    public GetBilTxnItemsForTransferToACC(selectedDate,fiscalyearId) {
         try {
-            return this.accountDlService.GetBilTxnItemsForTransferToACC(frmDt, toDt)
+            return this.accountDlService.GetBilTxnItemsForTransferToACC(selectedDate,fiscalyearId)
                 .map((responseData) => {
                     return responseData;
                 });
@@ -214,10 +230,10 @@ export class AccountingBLService {
         }
     }
 
-     //get all pharmacy transactions items from pharm for transfer to accounting
-    public GetPharmItemsForTransferToACC(frmDt: string, toDt: string) {
+    //get all pharmacy transactions items from pharm for transfer to accounting
+    public GetPharmItemsForTransferToACC(selectedDate,fiscalyearId) {
         try {
-            return this.accountDlService.GetPharmItemsForTransferToACC(frmDt, toDt)
+            return this.accountDlService.GetPharmItemsForTransferToACC(selectedDate,fiscalyearId)
                 .map((responseData) => {
                     return responseData;
                 });
@@ -225,7 +241,17 @@ export class AccountingBLService {
             throw exception;
         }
     }
-
+    //get all incentive transactions items from incentive module for transfer to accounting
+    public GetIncentivesForTransferToACC(selectedDate,fiscalyearId) {
+        try {
+            return this.accountDlService.GetIncentivesForTransferToACC(selectedDate,fiscalyearId)
+                .map((responseData) => {
+                    return responseData;
+                });
+        } catch (exception) {
+            throw exception;
+        }
+    }
     //get ledger mapping details for  map with phrm supplier or inventory vendor
     GetLedgerMappingDetails() {
         try {
@@ -234,6 +260,41 @@ export class AccountingBLService {
                     return responseData;
                 });
         } catch (ex) {
+            throw ex;
+        }
+    }
+    LoadTxnDates(fromdate, todate, sectionId) {
+        try {
+            return this.accountDlService.LoadTxnDates(fromdate, todate, sectionId)
+                .map((responseData) => {
+                    return responseData;
+                });
+        } catch (ex) {
+            throw ex;
+        }
+    }
+    //this method for get provisional Voucher number for curernt new created voucher
+    GettempVoucherNumber(voucherId: number, sectionId,transactiondate) {
+        try {
+            return this.accountDlService.GettempVoucherNumber(voucherId, sectionId,transactiondate)
+                .map((responseData) => {
+                    return responseData;
+                });
+        }
+        catch (ex) {
+            throw ex;
+        }
+    }  
+
+    //Get Provisional Ledger using ledger type and reference id
+    GetProvisionalLedger(referenceId, ledgerType) {
+        try {
+            return this.accountDlService.GetProvisionalLedger(referenceId, ledgerType)
+                .map((responseData) => {
+                    return responseData;
+                });
+        }
+        catch (ex) {
             throw ex;
         }
     }
@@ -273,11 +334,11 @@ export class AccountingBLService {
             //let newTxnList = Array<TransactionModel>();
             //txnList.forEach(txnItm => {
             //    var newTxn: any = _.omit(txnItm, ['TransactionValidator', 'UpdateValidator', 'dateValidators']);
-               
+
             //    var newTxnItems: any = newTxn.TransactionItems.map(item => {
             //        return _.omit(item, ['TransactionItemValidator','numberValidator']);
             //    });                
-                                                
+
             //    for (var i = 0; i < newTxnItems.length; i++) {
             //        if (newTxnItems[i].Amount == 0) {
             //            newTxnItems.splice(i, 1);
@@ -295,8 +356,8 @@ export class AccountingBLService {
             //    newTxn.TransactionItems = newTxnItems;
             //    newTxnList.push(newTxn);
             //});
-          //var data = JSON.stringify(newTxnList);
-          var data = JSON.stringify(txnList);
+            //var data = JSON.stringify(newTxnList);
+            var data = JSON.stringify(txnList);
             return this.accountDlService.PostTxnListToACC(data)
                 .map(res => { return res })
         } catch (ex) {
@@ -307,7 +368,7 @@ export class AccountingBLService {
     // Create Ledgers
     public AddLedgers(ledgList: Array<LedgerModel>) {
         try {
-            let NewLedger= Array<LedgerModel>();
+            let NewLedger = Array<LedgerModel>();
             ledgList.forEach(led => {
                 var temp: any = _.omit(led, ['LedgerValidator']);
                 NewLedger.push(temp);
@@ -319,8 +380,15 @@ export class AccountingBLService {
             throw ex;
         }
     }
+    //create single ledger using method
+    public AddLedger(CurrentLedger: LedgerModel) {  //for Single Ledger 
+        //omiting the LedgerValidator during post because it causes cyclic error during serialization in server side.
+        var temp = _.omit(CurrentLedger, ['LedgerValidator']);
+        return this.accountDlService.AddLedger(temp)
+            .map(res => { return res });
+    }
 
-    PostAccountClosure(fiscalYear: FiscalYearModel) {
+    PostAccountClosure(fiscalYear) {
         var temp: any = _.omit(fiscalYear, ['FiscalYearValidator']);
 
         let data = JSON.stringify(temp);
@@ -335,7 +403,52 @@ export class AccountingBLService {
             return res;
         });
     }
+
+    public UndoTransaction(data: ReverseTransactionModel) {
+        let temp = JSON.stringify(data);
+        return this.accountDlService.UndoTransaction(temp).map(res => {
+            return res;
+        });
+    }
+
     //START: PUT
+
+    PutToTransaction(transaction: TransactionModel) {
+        try {
+            var newTxn: any = _.omit(transaction, ['TransactionValidator']);
+            var newTxnItems: any = newTxn.TransactionItems.map(item => {
+                return _.omit(item, ['TransactionItemValidator', 'LedgerList', 'SelectedInvItems', 'SelectedCstCntItems']);
+            });
+            newTxnItems.forEach(txnItem => {
+                if (txnItem.HasInventoryItems) {
+                    var invItems: any = txnItem.InventoryItems.map(invItm => {
+                        return _.omit(invItm, ['TxnInvItemValidator']);
+                    });
+                    txnItem.InventoryItems = invItems;
+                }
+                if (txnItem.HasCostCenterItems) {
+                    var cstItems: any = txnItem.CostCenterItems.map(cstItm => {
+                        return _.omit(cstItm, ['TxnCstItemValidator']);
+                    });
+                    txnItem.CostCenterItems = cstItems;
+                }
+            });
+            newTxn.TransactionItems = newTxnItems;
+
+            var data = JSON.stringify(newTxn);
+            return this.accountDlService.PutTransaction(data)
+                .map(res => { return res })
+        } catch (ex) {
+            throw ex;
+        }
+    }
+
+    public ActivateAccountingTenant(tenantId: number) {
+        return this.accountDlService.ActivateAccountingTenant(tenantId)
+            .map(res => {
+                return res;
+            });
+    }
 
     //END: PUT
 

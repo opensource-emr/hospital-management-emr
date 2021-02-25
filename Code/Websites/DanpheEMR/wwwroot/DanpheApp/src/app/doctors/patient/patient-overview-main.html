@@ -1,0 +1,249 @@
+<base href="/Doctors" />
+<style>
+  /*.page-sidebar-closed .page-content-wrapper .page-content, .page-content-wrapper .page-content {
+        margin-left: 0px !important;
+    }
+
+    .page-sidebar-wrapper, .page-header.navbar.navbar-fixed-top {
+        display: none;
+    }
+
+    .page-container {
+        background: none;
+    }
+
+    .page-header-fixed .page-container {
+        display: none;
+    }*/
+
+  .page-header.navbar .page-logo {
+    height: 60px;
+  }
+
+  .page-header {
+    height: 60px;
+    /*background-color: #4658e5;*/
+  }
+
+  .dv-vistype-lbl {
+    font-weight: bold;
+    float: right;
+    font-size: 14px;
+    background-color: #f4fe0d;
+    color: #000;
+    padding: 3px 12px;
+    border-radius: 20px !important;
+    border: none;
+  }
+</style>
+
+<!-- BEGIN HEADER -->
+<div class="page-header navbar navbar-fixed-top">
+  <!-- BEGIN HEADER INNER -->
+  <div class="page-header-inner clearfix">
+    <!-- BEGIN LOGO -->
+    <div class="page-logo">
+      <a href="#">
+        <img src="../../themes/theme-default/images/hospitals-logo/hospital-logo-landingpage.png" alt="logo"
+          class="logo-default" style="width: 155px; height: 36px; margin-top: 8px;" title="Go to DanpheEMR-Home" />
+      </a>
+    </div>
+    <!-- END LOGO -->
+    <!-- BEGIN RESPONSIVE MENU TOGGLER -->
+    <a href="javascript:;" class="menu-toggler responsive-toggler" data-toggle="collapse"
+      data-target=".navbar-collapse">
+      <span></span>
+    </a>
+    <!-- END RESPONSIVE MENU TOGGLER -->
+    <!-- BEGIN TOP NAVIGATION MENU -->
+    <div class="top-menu pull-left" style="width: 85%; padding: 0 15px;">
+      <div class="cstm-header-top pull-left">
+        <div class="pat-info-top">
+          <!-- sud:12June- commented below this for PatientInfo on Left -->
+          <!-- <div class="pat-profile-pic">
+            <img *ngIf="!PatService.globalPatient.ProfilePic" alt="Avatar" height="50" width="50"
+              src="/themes/theme-default/images/NO_Image.png" />
+            <img class="img-rounded"
+              *ngIf="PatService.globalPatient.ProfilePic && PatService.globalPatient.ProfilePic.FileBase64String"
+              [src]="'data:image/jpeg;base64,'+PatService.globalPatient.ProfilePic.FileBase64String"
+              style="width: 50px; height: 50px;" />
+          </div>
+          <div style="display: inline-block; vertical-align: middle;">
+            <h1 class="pat-name-hd">
+              {{PatService.globalPatient.ShortName}}<span style="
+                  font-size: 12px;
+                  color: #fff;
+                  margin-bottom: 4px;
+                  display: inline-block;
+                ">&nbsp;&nbsp;|&nbsp;&nbsp;<i class="fa fa-male"></i>Age/Sex:
+                {{PatService.globalPatient.DateOfBirth | DanpheDateTime:'age' }}
+                / {{PatService.globalPatient.Gender}}</span><br />
+              <span class="text-small" style="display: inline-block;font-size: 12px;color: #fff;margin-left: 0;">
+                Hospital #: {{PatService.globalPatient.PatientCode}}
+              </span>
+              <span
+                class="bagde-inpatient display-inline">{{visitService.globalVisit.VisitType}}</span>&nbsp;&nbsp;<span
+                style="margin: auto;">|</span>&nbsp;&nbsp;
+              <span *ngIf="visitService.globalVisit.VisitType != 'OUTPATIENT'"><i class="fa fa-h-square"></i>Ward/Bed:
+                {{PatService.globalPatient.WardName}} /
+                {{PatService.globalPatient.BedNo}} </span>&nbsp;&nbsp;<span style="margin: auto;">|</span>&nbsp;&nbsp;
+              <span class="hd-parag-st"><i class="fa fa-user-md"></i>Attending: {{
+                visitService.globalVisit.ProviderName }}</span>
+              &nbsp;&nbsp;<span style="margin: auto;">|</span>&nbsp;&nbsp;
+              <span class="hd-parag-st"><i class="fa fa-magic"></i>Allergy:
+                <ng-container *ngIf="PatService.globalPatient.AllergyFormatted">
+                  {{PatService.globalPatient.AllergyFormatted.Primary}}
+                </ng-container></span>
+            </h1>
+          </div> -->
+
+          <!-- sud:12June- commented above this for PatientInfo on Left -->
+
+          <!--<div class="col-md-5 col-sm-6 col-xs-12">
+                        <div class="row">
+                            
+                            <div class="col-md-6 col-sm-6 col-xs-6">
+                                <div style="padding-top: 8px;color: white;">
+                                    Allergy:
+
+                                    <div class="tooltip" style="background-color: #fde11a;padding: 0px 5px;color: #006687;">
+                                        <span>{{PatService.globalPatient.AllergyFormatted.Primary}}</span>
+
+                                        <p *ngIf="PatService.globalPatient.AllergyFormatted.Secondary"
+                                            class="tooltiptext ttptextdown"
+                                            [innerHTML]="PatService.globalPatient.AllergyFormatted.Secondary"></p>
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </div>-->
+          <!--<div class="col-md-4 col-sm-12 col-xs-12">
+                        <p class="hd-parag-st">Attending:  {{ visitService.globalVisit.ProviderName }}</p>
+                    </div>-->
+        </div>
+        <!--        <div class="clearfix"></div>-->
+      </div>
+      <div class="pull-right">
+        <div class="tooltip">
+          <a class="btn-back" (click)="BackToHome()"><i class="fa fa-home"></i>Home</a>
+          <p class="tooltiptext ttptextdown"> Go to Patients List </p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- END TOP NAVIGATION MENU -->
+  </div>
+  <!-- END HEADER INNER -->
+</div>
+<!-- END HEADER -->
+
+<div class="page-container doc-pagecontainer">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-sm-12 col-md-2">
+        <div class="page-sidebar navbar-collapse collapse doctor-sdbar">
+          <!-- BEGIN SIDEBAR MENU -->
+          <!-- DOC: Apply "page-sidebar-menu-light" class right after "page-sidebar-menu" to enable light sidebar menu style(without borders) -->
+          <!-- DOC: Apply "page-sidebar-menu-hover-submenu" class right after "page-sidebar-menu" to enable hoverable(hover vs accordion) sub menu mode -->
+          <!-- DOC: Apply "page-sidebar-menu-closed" class right after "page-sidebar-menu" to collapse("page-sidebar-closed" class must be applied to the body element) the sidebar sub menu mode -->
+          <!-- DOC: Set data-auto-scroll="false" to disable the sidebar from auto scrolling/focusing -->
+          <!-- DOC: Set data-keep-expand="true" to keep the submenues expanded -->
+          <!-- DOC: Set data-auto-speed="200" to adjust the sub menu slide up/down speed -->
+          <div class="pat-info-top"
+            style="background-color: #0773bc;border: none;margin: 4px;padding: 10px;color: #fff;margin-bottom: 15px;">
+            <div class="dv-vistype-lbl" *ngIf="visitService.globalVisit && visitService.globalVisit.VisitType">
+              <div *ngIf="visitService.globalVisit.VisitType == 'inpatient'" title="Inpatient Department">
+                IPD
+              </div>
+              <div *ngIf="visitService.globalVisit.VisitType == 'outpatient'" title="Outpatient Department">
+                OPD
+              </div>
+              <div *ngIf="visitService.globalVisit.VisitType == 'emergency'" title="Emergency Department">
+                ER
+              </div>
+            </div>
+            <div class="pat-profile-pic">
+              <img *ngIf="!PatService.globalPatient.ProfilePic" alt="Avatar" style="height: 70px; width: 70px;"
+                src="/themes/theme-default/images/NO_Image.png" />
+              <img class="img-rounded"
+                *ngIf="PatService.globalPatient.ProfilePic && PatService.globalPatient.ProfilePic.FileBase64String"
+                [src]="'data:image/jpeg;base64,'+PatService.globalPatient.ProfilePic.FileBase64String"
+                style="height: 70px; width: 70px;" />
+            </div>
+            <div>
+              <h1 class="pat-name-hd"
+                style="color: yellow; text-transform: uppercase; margin-top: 10px;  display: block; font-size: 18px;font-weight: bold;">
+                {{PatService.globalPatient.ShortName}}
+              </h1>
+              <h4 style="font-size: 15px;
+              font-weight: 600;
+              display: block;
+              float: left;
+              margin-top: 5px;
+              border-bottom: 1px solid #98b5f6;
+              width: 100%;
+              padding-bottom: 7px;">
+                {{PatService.globalPatient.DateOfBirth | DanpheDateTime:'age' }}
+                / {{PatService.globalPatient.Gender}}
+              </h4>
+              <span class="text-small" style="display: inline-block;font-size: 12px;width: 100%;">
+                Hospital No: {{PatService.globalPatient.PatientCode}}
+              </span>
+
+              <span
+                *ngIf="visitService.globalVisit && visitService.globalVisit.VisitType && visitService.globalVisit.VisitType.toLowerCase() != 'outpatient'"
+                style="display: inline-block;
+                font-size: 12px;
+                margin: 3px auto;
+                width: 100%;
+                line-height: initial;">
+                <i class="fa fa-h-square"></i>
+                Ward/Bed: {{PatService.globalPatient.WardName}} /
+                {{PatService.globalPatient.BedNo}}
+              </span>
+              <span class="hd-parag-st" style="display: inline-block;
+              font-size: 12px;
+              margin: 0px auto;
+              width: 100%;">
+                <i class="fa fa-user-md"></i>Attending: {{
+                visitService.globalVisit.ProviderName }}</span>
+
+            </div>
+
+          </div>
+
+
+
+
+
+          <ul class="menu-content out page-sidebar-menu doctor-sidebar-list" *ngIf="validRoutes != undefined">
+            <li *ngFor="let route of validRoutes">
+              <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'cstm-sidenav-active'"><i
+                  class="fa fa-bars"></i>{{route.DisplayName}}<i class="fa fa-angle-right"></i></a>
+            </li>
+
+            <li *ngIf="!isVisitConcluded && currentModuleName == 'doctor'">
+              <a (click)="ConcludeVisit()"><i class="fa fa-bars"></i>Conclude Visit<i class="fa fa-angle-right"></i></a>
+            </li>
+            <li *ngIf="isVisitConcluded"><a>This visit is concluded</a></li>
+          </ul>
+
+          <!-- END SIDEBAR MENU -->
+          <!-- END SIDEBAR MENU -->
+        </div>
+      </div>
+
+      <!--Right content Start-->
+      <div class="col-sm-12 col-md-10">
+        <div class="page-content doc-pagecontent">
+          <router-outlet> </router-outlet>
+        </div>
+      </div>
+      <!--Right Content end-->
+    </div>
+  </div>
+</div>

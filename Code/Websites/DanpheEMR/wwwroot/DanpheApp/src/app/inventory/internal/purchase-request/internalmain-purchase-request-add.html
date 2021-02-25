@@ -1,0 +1,107 @@
+<div class="g_r_inv">
+  <div class="panel panel-default">
+    <div class="panel-heading good-panel-heading">
+      <div class="row">
+        <div class="col-md-6">
+          <b>Purchase Request</b>
+        </div>
+      </div>
+    </div>
+    <div class="panel-body">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="row">
+            <form [formGroup]="currentPurchaseRequest.PurchaseRequestValidator" class="form-inline hm-form">
+              <label class="control-label col-md-4">Vendor<b>:</b></label>
+              <div class="col-md-8">
+                <div class="div-relative">
+                  <input danphe-auto-complete class="form-control" [(ngModel)]="selectedVendor" [source]="VendorList" [list-formatter]="VendorListFormatter" placeholder="Vendor Name" display-property-name="VendorName" value-property-name=null max-num-list="10" [ngModelOptions]="{standalone:true}" (focusout)="SelectVendorFromSearchBox()" onclick="this.select();" />
+                  <a *ngIf="!selectedVendor" class="fa fa-question" (click)="AddVendorPopUp()" title="Unable to find Vendor? Click to Add Vendor."></a>
+                  <!-- <div class="error-message" *ngIf="goodsReceipt.IsDirty('VendorId')"
+                          [hidden]="goodsReceipt.IsValidCheck('VendorId','required')"> Vendor is required.
+                        </div> -->
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="row">
+            <form [formGroup]="currentPurchaseRequest.PurchaseRequestValidator" class="form-inline hm-form">
+              <label class="control-label col-md-3 col-sm-4">Request Date<b>:</b></label>
+              <div class="col-md-9 col-sm-8">
+                <danphe-date-picker [(ngModel)]="currentPurchaseRequest.RequestDate" ngDefaultControl [CalendarTypes]="'np,en'" [ngModelOptions]="{standalone:true}">
+                </danphe-date-picker>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="col-md-12 mt20">
+          <table class="table table-responsive table-striped table-hover table-bordered inv_table">
+            <thead>
+              <tr>
+                <th></th>
+                <th><b>ItemName</b></th>
+                <th><b>Code</b></th>
+                <th><b>Unit</b></th>
+                <th><b>Quantity</b></th>
+                <th><b>Item Remark</b></th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of currentPurchaseRequest.PurchaseRequestItems; let i = index">
+                <td><a (click)="DeleteRow(i)"><i class="btn btn-danger fa fa-times"></i></a></td>
+                <td>
+                  <div class="div-relative">
+                    <form [formGroup]="row.PurchaseRequestItemValidator">
+                      <input id="itemName{{i}}" danphe-auto-complete class="form-control " [(ngModel)]="row.SelectedItem" [source]="ItemList" [list-formatter]="ItemListFormatter" placeholder="Item Name" display-property-name="ItemName" value-property-name=null (valueChanged)="SelectItemFromSearchBox(row.SelectedItem,i)" max-num-list="10" formControlName="ItemId" onclick="this.select();" (keyup.enter)="GoToNextInput('qty'+i)" no-match-found-text="click ? to add new item" />
+
+                      <a *ngIf="!row.SelectedItem || !row.SelectedItem.ItemId" class="fa fa-question" (click)="AddItemPopUp(i)" title="Unable to find item ? Click to add to Master"></a>
+                    </form>
+                    <div style="color:red" *ngIf="row.IsDirty('ItemId')" [hidden]="row.IsValidCheck('ItemId','required')">
+                      Item is required</div>
+                  </div>
+                </td>
+                <td>
+                  <b *ngIf="row.SelectedItem != null">{{row.SelectedItem.Code}}</b>
+                </td>
+                <td>
+                  <b *ngIf="row.SelectedItem != null">{{row.SelectedItem.UOMName}}</b>
+                </td>
+                <td style="width: 80px;">
+                  <form [formGroup]="row.PurchaseRequestItemValidator">
+                    <input id="qty{{i}}" [(ngModel)]="row.RequestedQuantity" class="form-control" min="0" [disabled]="disableTextBox" (wheel)="coreService.PreventNumberChangeOnScroll($event)" formControlName="Quantity" (keyup.enter)="AddRowRequest()" name="quantity" type="number">
+                    <div style="color:red" *ngIf="row.IsDirty('Quantity')" [hidden]="row.IsValidCheck('Quantity','required') && row.IsValidCheck('Quantity','min')">
+                      invalid quantity
+                    </div>
+                  </form>
+                </td>
+                <td>
+                  <input class="form-control" type="text" name="ItemRemarks" [(ngModel)]="row.Remarks" [ngModelOptions]="{standalone:true}" />
+                </td>
+                <td><a (click)="AddRowRequest()"><i class="fa fa-plus btn btn-success primary-btn"></i></a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="col-md-12" style="margin:10px 0">
+          <label for="Remarks" class="col-md-2">Remarks <span class="right">:</span></label>
+          <textarea class="col-md-6" [(ngModel)]="currentPurchaseRequest.Remarks" name="Remarks" rows="3" cols="50"></textarea>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="panel-footer text-center">
+      <input *ngIf="isEdit" type="button" class="btn primary-btn" (click)="UpdatePORequisition()" value="Update" />
+      <input *ngIf="!isEdit" type="button" class="btn primary-btn" (click)="AddPORequisition()" value="Request" />
+      <input type="button" class="btn btn-danger" (click)="DiscardChanges()" value="Discard">
+    </div>
+  </div>
+</div>
+
+
+
+<item-add *ngIf="showAddItemPopUp" [showAddPage]="showAddItemPopUp" (callback-add)="OnNewItemAdded($event)"></item-add>
+<vendor-add *ngIf="showAddVendorPopUp" [showAddPage]="showAddVendorPopUp" (callback-add)="OnNewVendorAdded($event)"></vendor-add>

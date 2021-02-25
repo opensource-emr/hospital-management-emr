@@ -1,0 +1,13 @@
+<a feature="button" class="btn blue bordered" (click)="AddMembership()"><i class="fa fa-plus"></i>Add Membership</a>
+<membership-add *ngIf="showAddPage" [selectedItem]="selectedItem"
+                [showAddPage]="showAddPage"
+                [community-list]="distinctCommunityList"
+                (callback-add)="CallBackAdd($event)"></membership-add>
+
+<div *ngIf="showGrid" class="row">
+  <div class="col-md-12 col-xs-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="membershipGridColumns" [grid-data]="membershipList" (grid-actions)="MembershipGridActions($event)"
+                 [show-print-button]="false">
+    </danphe-grid>
+  </div>
+</div>

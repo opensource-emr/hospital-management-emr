@@ -1,0 +1,18 @@
+<div class="row">
+    <div class="col-md-12">
+        <div class="caption custom-caption">
+            <i class="glyphicon glyphicon-asterisk"></i>
+            <span class="caption-subject">Narcotics Stock Report</span>
+        </div>
+    </div>
+</div>
+
+<div class="row" style="margin-top:10px;">
+    <div class="col-lg-12 col-sm-12">
+        <!-- <danphe-grid [grid-colDefaults]="PHRMItemWiseStockReportColumns" [grid-data]="PHRMItemWiseStockReportData" [paginationPageSize]="50" [grid-exportOptions]="gridExportOptions" [grid-showExport]="true">
+        </danphe-grid> -->
+        <danphe-grid [grid-colDefaults]="PHRMNarcoticsStockReportColumns" [grid-data]="PHRMNarcoticsStockReportData" [grid-exportOptions]="gridExportOptions" [grid-showExport]="true">
+        </danphe-grid>
+    </div>
+
+</div>

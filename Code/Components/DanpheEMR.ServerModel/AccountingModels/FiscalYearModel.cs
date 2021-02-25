@@ -27,6 +27,22 @@ namespace DanpheEMR.ServerModel
         [NotMapped]
         public string nEndDate { get; set; }
 
+        public bool? IsClosed { get; set; }
+        public int? ClosedBy { get; set; }
+        public DateTime? ClosedOn { get; set; }
+        public bool? ReadyToClose { get; set; }
+
+        [NotMapped]
+        public string Remark { get; set; }
+        [NotMapped]
+        public bool? showreopen { get; set; }
+
+        //sud-nagesh: 20June'20-- for Acc-Hospital Separation.
+        public int? HospitalId { get; set; }
+
+        [NotMapped]
+        public DateTime? CurrentDate { get; set; } //sud-nagesh:21Jun'20--only for local usage, not available in database.
+
     }
 
 }

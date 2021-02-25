@@ -11,7 +11,7 @@ import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { CallbackService } from '../../shared/callback.service';
 import { DanpheCache, MasterType } from '../../shared/danphe-cache-service-utility/cache-services';
 @Component({
-    templateUrl: "../../view/pharmacy-view/Counter/CounterActivate.html" //  "/PharmacyView/PharmacyCounter" 
+    templateUrl: "./pharmacy-counter-activate.html"
 })
 
 

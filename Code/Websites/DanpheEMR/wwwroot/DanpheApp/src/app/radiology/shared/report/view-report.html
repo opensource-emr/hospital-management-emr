@@ -1,269 +1,208 @@
 <style>
-  img_11 {
-    border: 1px solid #ddd; /* Gray border */
-    border-radius: 4px; /* Rounded border */
-    padding: 10px; /* Some padding */
-    width: 150px; /* Set a small width */
-    cursor: pointer;
-  }
-
-    /* Add a hover effect (blue shadow) */
-    img_11:hover {
-      box-shadow: 0 0 2px 1px rgba(0, 140, 186, 0.5);
-      transform: scale(1.1);
-      -moz-transform: scale(1.1);
-      -webkit-transform: scale(1.1);
-    }
-
-  .slidefromtop {
-    position: relative;
-    -webkit-animation: fromtop 0.8s; /* Safari 4.0 - 8.0 */
-    animation: fromtop 0.8s;
-  }
-
-  .key-shortcut-info {
-    color: #696182;
-    border: 1px solid #d1d1de;
-    width: 54%;
-  }
+img_11 {
+	border: 1px solid #ddd; /* Gray border */
+	border-radius: 4px; /* Rounded border */
+	padding: 10px; /* Some padding */
+	width: 150px; /* Set a small width */
+	cursor: pointer;
+}
+/* Add a hover effect (blue shadow) */
+img_11:hover {
+	box-shadow: 0 0 2px 1px rgba(0, 140, 186, 0.5);
+	transform: scale(1.1);
+	-moz-transform: scale(1.1);
+	-webkit-transform: scale(1.1);
+}
+.slidefromtop {
+	position: relative;
+	-webkit-animation: fromtop 0.8s; /* Safari 4.0 - 8.0 */
+	animation: fromtop 0.8s;
+}
+.key-shortcut-info {
+	color: #696182;
+	border: 1px solid #d1d1de;
+	width: 54%;
+}
+.lbl-email-img-preview {
+	cursor: pointer;
+}
+.lbl-email-img-preview:hover {
+	background-color: #c9c2c2;
+}
 </style>
-
-
-<!--col-md-8 col-md-offset-2-->
-
-<div class="popup-static portlet box portlet-fullscreen" *ngIf="showImagingReport">
-  <div class="portlet-body form">
-    <div class="col-md-12">
-      <div class="modelbox-div">
-        <div class="modelbox-header ">
-          <h4 class="margin-0-vr">Radiology Report</h4>
-        </div>
-
-        <div class="modelbox-body">
-          <div class="row">
-            <div class="col-md-8 col-xs-8">
-              <!--<hr *ngIf="showCustomerHeader" style="border:1px solid black;margin-top: 0px;margin-bottom: 5px;" />-->
-              <div class="rad-btns margin-15-bt text-left">
-                <button class="btn btn-primary margin-7-hr hidden-print" (click)="PrintReportHTML()">
-                  Print Report
-                  <i class="glyphicon glyphicon-print"></i>
-                </button>
-                <!--Sud: 26Jul'19 View image feature is not used anywhere, hence hiding it for now:-->
-                <button class="rad-rpt-view-image btn btn-primary hidden-print btn-sm margin-7-rt" title="View Scanned Images" (click)="ViewScannedImages()">
-                  View Images
-                </button>
-
-                <button class="btn btn-primary btn-sm hidden-print margin-7-hr" title="Edit Report" (click)="EditReport()">
-                  <i class="fa fa-pencil"></i>  Edit
-                </button>
-
-                <a *ngIf="emailSettings.EnableSendEmail" class="btn btn-cancel hidden-print btn-sm pull-right" title="Send Report as Email" (click)="showEmailDataBox=true;ProcessSendingData()">
-                  <i class="fa fa-envelope"></i>  Send Email
-                </a>
+<div class="wrapper"> 
+  
+  <!--col-md-8 col-md-offset-2-->
+  
+  <div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showImagingReport">
+    <div class="portlet-body form">
+      <div class="row"><div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div">
+			<div class="caption custom-caption">
+            <h3> <span>Radiology Report</span></h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+			</div>
+           <div class="modelbox-body">
+            <div class="row">
+              <div class="col-md-6 col-xs-8"> 
+                <!--<hr *ngIf="showCustomerHeader" style="border:1px solid black;margin-top: 0px;margin-bottom: 5px;" />-->
+                <div class="rad-btns margin-15-bt text-left">
+                  <button class="btn btn-primary margin-7-hr hidden-print" (click)="PrintReportHTML()"> Print Report <i class="glyphicon glyphicon-print"></i> </button>
+                  <!--Sud: 26Jul'19 View image feature is not used anywhere, hence hiding it for now:-->
+                  <button class="rad-rpt-view-image btn btn-primary hidden-print btn-sm margin-7-rt" title="View Scanned Images" (click)="ViewScannedImages()"> View Images </button>
+                  <button class="btn btn-primary btn-sm hidden-print margin-7-hr" title="Edit Report" (click)="EditReport()"> <i class="fa fa-pencil"></i> Edit </button>
+                  <a *ngIf="emailSettings.EnableSendEmail" class="btn btn-cancel hidden-print btn-sm pull-right" title="Send Report as Email" (click)="showEmailDataBox=true;ProcessSendingData()"> <i class="fa fa-envelope"></i> Send Email </a> </div>
               </div>
-
-            </div>
-            <div class="col-md-4">
-              <span *ngIf="report.HasInsurance" style="color: green"><b>[ Under Insurance ]</b></span>
-            </div>
-          </div>
-
-          <div class="row">
-            <div id="printpage"   style="height:auto; padding: 10px 20px;">
-              <div [ngClass]="hospitalCode">
-                <div *ngIf="reportHeader && reportHeader.show">
-                  <img *ngIf="reportHeader.headerType=='image'" style="width:100%;" src="../../../../themes/theme-default/images/mnk-customer-header.jpg" />
-                  <customer-header *ngIf="reportHeader.headerType=='text-formatted'"></customer-header>
-                </div>
-                <!--below class is added inside print-window (check printfunction in view-report.component):sud-4thJan'19-->
-                <div class="rad-hdr-gap" *ngIf="!reportHeader || !reportHeader.show">
-
-                </div>
-
-
-
-                <div class="border-wrap" style="width: 100%;">
-                  <div class="flex-container justify-sp-between flex-align-center">
-                    <div class="rad-hdr-flex-col">
-                      Name :<b>{{report.PatientName}}({{report.PatientCode}})</b>
-                    </div>
-                    <div class="rad-hdr-flex-col">
-                      Date : <b> {{report.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}} ({{report.CreatedOn | nepaliDate }})</b>
-                    </div>
+              <div class="col-md-3"> <span *ngIf="report.HasInsurance" style="color: green"><b>[ Under Insurance ]</b></span> </div>
+              <div class="col-md-3">
+                <div>
+                  <div id="toolbox" class="tooltip no-print" style="padding: 0px 5px;color: #006687;z-index: inherit;">
+                    <input id="chkHdrImgShow" type="checkbox" [(ngModel)]="reportHeader.show" />
+                    <label for="chkHdrImgShow" style="margin-left: 10px;"> Show Header Image </label>
+                    <p class="tooltiptext ttptextdown no-print">Hide if you need to print the report in LetterHead Paper. <br />
+                      Else Show Header.</p>
                   </div>
-
-                  <div class="flex-container justify-sp-between flex-align-center">
-                    <div class="rad-hdr-flex-col">
-                      Age/Sex : <b>{{report.DateOfBirth | DanpheDateTime:'age' }}/{{report.Gender}}</b>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div id="printpage" style="height:auto; padding: 10px 20px;">
+                <div class="radrep-text-holder" id="rptContentNoImage" [ngClass]="hospitalCode">
+                  <div *ngIf="reportHeader && reportHeader.show && !showEmailDataBox"> <img *ngIf="reportHeader.headerType=='image'" style="width:100%;" [src]="reportHeader.imagePath" /> 
+                    <!--<img *ngIf="reportHeader.headerType=='image'" style="width:100%;" src="../../../../themes/theme-default/images/mnk-customer-header.jpg" />-->
+                    
+                    <customer-header *ngIf="reportHeader.headerType=='text-formatted'"></customer-header>
+                  </div>
+                  <!--below class is added inside print-window (check printfunction in view-report.component):sud-4thJan'19-->
+                  <div [ngClass]="hospitalCode" class="rad-hdr-gap" *ngIf="!reportHeader || !reportHeader.show"> </div>
+                  <div class="border-wrap" style="width: 100%;">
+                    <div class="flex-container justify-sp-between flex-align-center">
+                      <div class="rad-hdr-flex-col"> Name :<b>{{PatientNameToDisplay}}({{report.PatientCode}})</b>
+                        <div *ngIf="RptHdrSettng.LocalNameEnabled && !showEmailDataBox" id="toolbox" class="tooltip no-print" style="padding: 0px 5px;color: #006687;z-index: inherit;"> <span (click)="switchLocalLang()" style="display: inline-block; background: #d8dff1;padding: 1px 2px 0px;cursor: pointer;"> <i class="fa fa-refresh"></i> </span>
+                          <p class="tooltiptext ttptextdown no-print">Switch language of Patient Name</p>
+                        </div>
+                      </div>
+                      <div class="rad-hdr-flex-col"> Date : <b> {{report.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}} ({{report.CreatedOn | nepaliDate }})</b> </div>
                     </div>
-                    <div class="rad-hdr-flex-col">
-                      Ref. by : <b> {{report.ProviderName}}</b>
-                      <div *ngIf="!showEmailDataBox" id="toolbox" class="tooltip no-print" style="padding: 0px 5px;color: #006687;z-index: inherit;">
-                        <span (click)="openPopUpBox()" style="display: inline-block; background: #d8dff1;padding: 1px 2px 0px;cursor: pointer;">
-                          <i class="fa fa-edit edit-ic"></i>
-                        </span>
-                        <p class="tooltiptext ttptextdown no-print">Click to Change Referred By Dr.</p>
+                    <div class="flex-container justify-sp-between flex-align-center">
+                      <div class="rad-hdr-flex-col"> Age/Sex : <b>{{report.DateOfBirth | DanpheDateTime:'age' }}/{{report.Gender}}</b> </div>
+                      <div class="rad-hdr-flex-col"> Ref. by : <b> {{report.ProviderName}}</b>
+                        <div *ngIf="!showEmailDataBox" id="toolbox" class="tooltip no-print" style="padding: 0px 5px;color: #006687;z-index: inherit;"> <span (click)="OpenChangeDocPopup()" style="display: inline-block; background: #d8dff1;padding: 1px 2px 0px;cursor: pointer;"> <i class="fa fa-edit edit-ic"></i> </span>
+                          <p class="tooltiptext ttptextdown no-print">Click to Change Referred By Dr.</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-
-                  <div class="flex-container justify-sp-between flex-align-center">
-                    <div class="rad-hdr-flex-col">
-                      Address/Contact No : <b>{{report.Address}}/{{report.PhoneNumber}}</b>
-                    </div>
-                    <div *ngIf="report.Indication" class="rad-hdr-flex-col">
-                      Indication : <b> {{report.Indication}}</b>
+                    <div class="flex-container justify-sp-between flex-align-center">
+                      <div class="rad-hdr-flex-col"> Address/Contact No : <b>{{report.Address}}/{{report.PhoneNumber}}</b> </div>
+                      <div class="rad-hdr-flex-col"> MRI/CT/X-ray No.: <b> {{report.RadiologyNo}} </b> </div>
+                      <div *ngIf="report.Indication" class="rad-hdr-flex-col"> Indication : <b> {{report.Indication}}</b> </div>
                     </div>
                   </div>
-                </div>
-
-                <div class="rad-report-holder">
-                  <div [innerHTML]="report.ReportText"></div>
-                </div>
-
-                <div *ngIf="enableImageUpload" class="row">
-                  <div class="col-md-12 col-xs-12">
-                    <div class="row">
-                      <div class="col-md-3 col-xs-12" style="border-left:1px solid;width:100%">
-                        <div scrollable="" style="height: 401px;overflow-y: scroll; scroll-behavior: smooth;">
-                          <img *ngFor="let image of album; let i=index" style="width: 200px;height: 200px;object-fit:contain;" (click)="open(i)" [src]="image.src" />
-
+                  <div class="rad-report-holder">
+                    <div [innerHTML]="report.ReportText"></div>
+                  </div>
+                  <div id="signatures" [ngClass]="hospitalCode" style="width: 100%;" class="signature-container flex-container flow-hr-reverse" *ngIf="report.Signatories">
+                    <div class="rad-single-signature rad-rpt-signature" style="font-weight: bold;" *ngFor="let emp of report.Signatories">
+                      <div class="main-rad-sgn">
+                        <div *ngIf="emp.EmployeeId == loggedInUserId && report.SignatoryImageBase64">
+                          <button id="btnShowHideSignaImage" class="btn  no-print" (click)="RemoveSignatureImage()">Hide Signature</button>
+                          <img *ngIf=" showDigitalSignatureImage" class="img-responsive" [src]="'data:image/jpeg;base64,'+report.SignatoryImageBase64" /> </div>
+                        <div class="rad-signature" *ngIf="emp.Signature" [innerHTML]="emp.Signature"> <br />
+                          <br />
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-
-
-
-
-                <div id="signatures" style="width: 100%;" class="flex-container flow-hr-reverse" *ngIf="report.Signatories">
-                  <div class="rad-single-signature rad-rpt-signature" style="font-weight: bold;" *ngFor="let emp of report.Signatories">
-                    <div class="main-rad-sgn">
-                      <div *ngIf="emp.EmployeeId == loggedInUserId && report.SignatoryImageBase64">
-                        <button id="btnShowHideSignaImage" class="btn  no-print" (click)="RemoveSignatureImage()">Hide Signature</button>
-                        <img *ngIf=" showDigitalSignatureImage" class="img-responsive" [src]="'data:image/jpeg;base64,'+report.SignatoryImageBase64" />
-                      </div>
-
-
-                      <div class="rad-signature" *ngIf="emp.Signature" [innerHTML]="emp.Signature">
-                        <br /><br />
-                      </div>
+                  <div class="row" *ngIf="report.FooterText">
+                    <div class="col-md-12 col-xs-12">
+                      <p class="rad-footer-note" [innerHTML]="report.FooterText"></p>
                     </div>
                   </div>
                 </div>
-
-
-
-                <div class="row" *ngIf="report.FooterText">
-                  <div class="col-md-12 col-xs-12">
-                    <p class="rad-footer-note" [innerHTML]="report.FooterText"></p>
+                <div *ngIf="enableImageUpload && album && album.length" id="dvPatImagesOnly" [ngClass]="hospitalCode" class="row radrep-patimages-holder"> 
+                  <!--below class is added inside print-window (check printfunction in view-report.component):sud-4thJan'19--> 
+                  <!--album is a 2d array now, we've to map it accordingly in code.-->
+                  <div *ngFor="let alb of album; let vIndex = index;" class="rad-flex-vertical">
+                    <div *ngFor="let image of alb; let hIndex=index" class="single-rad-image"> <img class="rad-image" (click)="OpenLightBox(vIndex,hIndex)" [src]="image.src" /> </div>
                   </div>
                 </div>
+                <div id="print_page_end"> </div>
               </div>
             </div>
           </div>
-
-
-        </div>
-
-        <div class="modelbox-footer">
-          <div class="all-buttons text-right">
-            <button class="btn btn-primary margin-7-hr hidden-print" (click)="PrintReportHTML()">
-              Print Report
-              <i class="glyphicon glyphicon-print"></i>
-            </button>
-            <button type="button" class="btn btn-cancel margin-7-hr" (click)="Close()">
-              Close
-            </button>
+          <div class="modelbox-footer">
+            <div class="all-buttons text-right">
+              <button class="btn btn-primary margin-7-hr hidden-print" (click)="PrintReportHTML()"> Print Report <i class="glyphicon glyphicon-print"></i> </button>
+              <button type="button" class="btn btn-cancel margin-7-hr" (click)="Close()"> Close </button>
+            </div>
           </div>
+<!--
+          <div class="close-modelbox">
+            <button class="btn btn-danger" (click)="Close()">X</button>
+          </div>
+-->
         </div>
-
-        <div class="close-modelbox">
-          <button class="btn btn-danger" (click)="Close()">X</button>
-        </div>
-
-      </div>
+      </div></div>
     </div>
   </div>
-</div>
-
-
-<div *ngIf="showEditReportWindow">
-
-  <!--We need only one button ('print') of Post-Report when it's opened from this page.  [showStudyList]="showStudylist"-->
-
-  <danphe-post-report *ngIf="showEditReportWindow"
+  <div *ngIf="showEditReportWindow"> 
+    
+    <!--We need only one button ('print') of Post-Report when it's opened from this page.  [showStudyList]="showStudylist"-->
+    
+    <danphe-post-report *ngIf="showEditReportWindow"
                       [showreport]="showEditReportWindow"
                       [report]="reportToEdit"
                       [patient]="currentPatient"
                       [buttonsList]="['submit']"
                       (add-report)="UpdatePatientReport($event)"></danphe-post-report>
+  </div>
+  
+  <!-- <div *ngIf="showStudy"> -->
+  
+  <dicom-study-list *ngIf="showStudy"></dicom-study-list>
 </div>
-
-<!-- <div *ngIf="showStudy"> -->
-
-<dicom-study-list *ngIf="showStudy"></dicom-study-list>
-
-
-
-<div class="popup-static portlet box portlet-fullscreen" *ngIf="showPopUp">
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showChangeReferrerPopUp">
   <div class="portlet-body form">
-    <div class="col-md-4 col-md-offset-4">
+    <div class="row"><div class="col-md-6 col-md-offset-3">
       <div class="modelbox-div">
-        <div class="modelbox-header">
-          <h4 class="margin-0-vr"><strong>Change Referred By doctor</strong></h4>
-        </div>
-
+		  <div class="caption custom-caption">
+            <h3> <span>Change Referred By doctor</span></h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a> </div>
+       
         <div class="modelbox-body">
           <div class="row margin-15-vr">
-            <div class="col-md-4"><label class="ref-label" for="refDoctor"><strong>Select Doctor</strong></label></div>
-            <div class="col-md-8">
-              <input class="form-control" danphe-auto-complete
-                     [(ngModel)]="doctorSelected"
-                     [source]="doctorsList"
-                     [list-formatter]="AssignedToDocListFormatter"
-                     placeholder="Enter Doctor Name"
-                     display-property-name="FullName"
-                     value-property-name=null
-                     match-formatted="true"
-                     onClick="this.select();"
-                     max-num-list="10" />
+            <div class="col-md-3">
+              <label class="ref-label" for="refDoctor"><strong>Select  Referral:</strong></label>
+            </div>
+            <div class="col-md-9">
+              <select-referrer [selected-ref-id]="selectedRefId" [selected-ref-name]="selectedRefName" [allow-external]="ExtRefSettings.EnableExternal"
+                               [allow-free-text]="ExtRefSettings.AllowFreeText" [default-external]="ExtRefSettings.DefaultExternal"
+                               (on-referrer-change)="OnReferrerChanged($event)"> </select-referrer>
             </div>
           </div>
-          <!--<order-select (sendBackOrders)="GetOrders($event)" [showSelectOrder]="openOrderBox" [selectedOrders]="ordersSelected"></order-select>-->
         </div>
-
         <div class="modelbox-footer">
           <div class="all-buttons text-right">
-            <button type="button" class="btn btn-primary btn-sm margin-7-hr" (click)="AssignSelectedDoctor()">
-              Change
-            </button>
-            <button type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="closePopUpBox()">
-              Cancel
-            </button>
+            <button type="button" class="btn btn-primary btn-sm margin-7-hr" (click)="UpdateReferredByDrToDB()"> Change </button>
+            <button type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="closeReferrerPopup()"> Cancel </button>
           </div>
         </div>
-
+<!--
         <div class="close-modelbox">
-          <button class="btn btn-danger" (click)="closePopUpBox()">X</button>
+          <button class="btn btn-danger" (click)="closeReferrerPopup()">X</button>
         </div>
-
+-->
       </div>
-    </div>
+    </div></div>
   </div>
 </div>
-
-
-
-<div class="popup-static portlet box portlet-fullscreen" *ngIf="showEmailDataBox">
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showEmailDataBox">
   <div class="portlet-body form">
-    <div class="col-md-6 col-md-offset-3">
-      <div class="modelbox-div">
-        <div class="modelbox-header">
-          <h4 class="margin-0-vr"><strong>Enter the email informations</strong></h4>
-        </div>
-
+    <div class="row"><div class="col-md-8 col-md-offset-2">
+      <div class="modelbox-div">       
+		  <div class="caption custom-caption">
+            <h3> <span>Enter the email informations</span></h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a> </div>
         <div class="modelbox-body">
           <div class="row margin-15-vr">
             <div class="col-md-12">
@@ -273,9 +212,8 @@
                   <div class="col-sm-10">
                     <input formControlName="EmailAddress" [(ngModel)]="radEmail.EmailAddress" type="email" class="form-control" id="inputEmail" placeholder="Email">
                     <div class="color-red font-sm" *ngIf="radEmail.IsDirty('EmailAddress')"
-                         [hidden]="radEmail.IsValidCheck('EmailAddress','required')">
-                      Email Address is required
-                    </div>
+                         [hidden]="radEmail.IsValidCheck('EmailAddress','required')"> Email Address is required </div>
+                    <p style="font-size: small;"><i>Note: separate multiple email by semicolon (;)</i></p>
                   </div>
                 </div>
                 <div class="form-group">
@@ -283,39 +221,42 @@
                   <div class="col-sm-10">
                     <input formControlName="Subject" [(ngModel)]="radEmail.Subject" type="text" class="form-control" id="subject" placeholder="Subject">
                     <div class="color-red font-sm" *ngIf="radEmail.IsDirty('Subject')"
-                         [hidden]="radEmail.IsValidCheck('Subject','required')">
-                      Subject is required
-                    </div>
+                         [hidden]="radEmail.IsValidCheck('Subject','required')"> Subject is required </div>
                   </div>
                 </div>
-
+                <div class="form-group" *ngIf="radEmail.ImageAttachments_Preview">
+                  <div style="padding:10px 15px;font-weight:bold;"> <b>({{email_previewImage_Count}})  of ({{radEmail.ImageAttachments_Preview.length}}) Images selected </b> <i>(Maximum 5 Images) </i> </div>
+                  <div class="col-md-8">
+                    <div *ngIf="radEmail.ImageAttachments_Preview.length>0">
+                      <div *ngFor="let img of radEmail.ImageAttachments_Preview; let i = index;">
+                        <input type="checkbox" [(ngModel)]="img.IsSelected" id="{{img.ImageName}}" [ngModelOptions]="{standalone: true}"
+                               (change)="ImgPreviewChkOnChange()" />
+                        <label class="lbl-email-img-preview" for="{{img.ImageName}}" (mouseover)="email_imagePreview_onMouseOver(img)" (mouseout)="email_imagePreview_onMouseOut()"
+                               style="cursor:pointer;"> {{i+1}}. {{img.ImageName}}.png </label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div id="dv_img_email_preview" style="min-height:200px;width:100%;"> <img class="img-responsive" *ngIf="email_showImagePreview" [src]="email_previewImage_Src" /> </div>
+                  </div>
+                </div>
               </form>
             </div>
           </div>
-          <!--<order-select (sendBackOrders)="GetOrders($event)" [showSelectOrder]="openOrderBox" [selectedOrders]="ordersSelected"></order-select>-->
+          <!--<order-select (sendBackOrders)="GetOrders($event)" [showSelectOrder]="openOrderBox" [selectedOrders]="ordersSelected"></order-select>--> 
         </div>
-
         <div class="modelbox-footer">
           <div class="all-buttons text-right">
-            <button [disabled]="loading" type="button" class="btn btn-primary btn-sm margin-7-hr" (click)="loading=true;SendEmail()">
-              Send
-            </button>
-            <button type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="CloseSendEmailPopUp()">
-              Cancel
-            </button>
+            <button [disabled]="loading" type="button" class="btn btn-primary btn-sm margin-7-hr" (click)="loading=true;SendEmail()"> Send </button>
+            <button type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="CloseSendEmailPopUp()"> Cancel </button>
           </div>
         </div>
-
-
-
+<!--
         <div class="close-modelbox">
           <button class="btn btn-danger" (click)="CloseSendEmailPopUp()">X</button>
         </div>
-
+-->
       </div>
-    </div>
+    </div></div>
   </div>
 </div>
-
-
-

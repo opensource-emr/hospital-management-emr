@@ -10,6 +10,7 @@ import { DanpheHTTPResponse } from '../../shared/common-models';
 import * as moment from 'moment/moment';
 import { SecurityService } from '../../security/shared/security.service';
 import { VisitService } from '../shared/visit.service';
+import { ENUM_BillingStatus, ENUM_VisitStatus, ENUM_VisitType, ENUM_AppointmentType } from '../../shared/shared-enums';
 
 @Component({
   selector: "danphe-free-referal-visit",
@@ -103,11 +104,11 @@ export class FreeReferalVisitComponent {
 
     refVis.VisitDate = moment().format("YYYY-MM-DD");
     refVis.VisitTime = moment().add(5, 'minute').format("HH:mm");//by default we add 5 minutes to the new visit.
-    refVis.VisitType = "outpatient";
-    refVis.VisitStatus = "Initiated";
-    refVis.BillingStatus = "paid";
+    refVis.VisitType = ENUM_VisitType.outpatient;// "outpatient";
+    refVis.VisitStatus = ENUM_VisitStatus.initiated;// "Initiated";
+    refVis.BillingStatus = ENUM_BillingStatus.paid;// "paid";
     refVis.ReferredByProvider = this.selectedVisit.ProviderId.toString();
-    refVis.AppointmentType = "Referral";
+    refVis.AppointmentType = ENUM_AppointmentType.referral;// "Referral";
     refVis.ParentVisitId = this.selectedVisit.PatientVisitId;
     refVis.CreatedBy = this.securityService.loggedInUser.EmployeeId;
     refVis.CreatedOn = moment().format("YYYY-MM-DD HH:mm:ss");

@@ -1,4 +1,4 @@
-﻿import {
+import {
     NgForm,
     FormGroup,
     FormControl,
@@ -22,6 +22,7 @@ export class HomeMedication {
     public CreatedOn: string = null;
     public ModifiedOn: string = null;
     public Frequency: number = null;
+    public MedicationType: string = null;
     public HomeMedicationValidator: FormGroup = null;
     constructor() {
         var _formBuilder = new FormBuilder();
@@ -31,7 +32,8 @@ export class HomeMedication {
             'Route': ['', Validators.compose([Validators.required])],
             'LastTaken': ['', Validators.compose([Validators.required, this.dateValidator])],
             'Comments': ['', Validators.compose([Validators.maxLength(200)])],
-            'Frequency': ['', Validators.compose([Validators.required])]
+            'Frequency': ['', Validators.compose([Validators.required])],
+            'MedicationType': ['', Validators.compose([Validators.required])]
         });
     }
     dateValidator(control: FormControl): { [key: string]: boolean } {

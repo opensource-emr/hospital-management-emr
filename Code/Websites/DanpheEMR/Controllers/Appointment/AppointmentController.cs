@@ -30,6 +30,7 @@ using DanpheEMR.Core;
 using DanpheEMR.Core.Parameters;
 using Newtonsoft.Json.Linq;
 using DanpheEMR.Controllers.Billing;
+using DanpheEMR.Enums;
 // For more information on enabling Web API for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace DanpheEMR.Controllers
@@ -46,12 +47,16 @@ namespace DanpheEMR.Controllers
         public string Get(string department,
             string reqType,
             int providerId,
+            string providername,
+            DateTime FromDate,
+            DateTime ToDate,
             int patientId,
             DateTime requestDate,
             string status,
             int membershipTypeId)
         {
             AppointmentDbContext dbContextAppointment = new AppointmentDbContext(connString);
+           
             DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
 
             //RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
@@ -94,21 +99,143 @@ namespace DanpheEMR.Controllers
                 }
                 //loads appointments with requested status
                 else if (reqType == "getAppointments")
-                {
-                    var date = DateTime.Today;
-                    List<AppointmentModel> appointmentList = (from app in dbContextAppointment.Appointments
-                                                              select app
-                                                              ).OrderByDescending(x => x.AppointmentId).ToList();
-                    responseData.Status = "OK";
-                    responseData.Results = appointmentList;
+                {   
+                    var testdate = ToDate.AddDays(1);
+                    if (providerId == 0)
+                    {
+                        var apptListforall = (from app in dbContextAppointment.Appointments
+                                              where app.AppointmentDate >= FromDate && app.AppointmentDate < testdate 
+                                              select new
+                                              {
+                                                  AppointmentId = app.AppointmentId,
+                                                  PatientId = app.PatientId,
+                                                  FirstName = app.FirstName,
+                                                  LastName = app.LastName,
+                                                  MiddleName = app.MiddleName,
+                                                  FullName = app.FirstName + " " + (String.IsNullOrEmpty(app.MiddleName) ? " " : app.MiddleName) + " " + app.LastName,
+                                                  Gender = app.Gender,
+                                                  Age = app.Age,
+                                                  ContactNumber = app.ContactNumber,
+                                                  AppointmentDate = app.AppointmentDate,
+                                                  AppointmentTime = app.AppointmentTime,
+                                                  ProviderId = app.ProviderId.HasValue ? app.ProviderId : (from visit in dbContextAppointment.Visit
+                                                                                                           where visit.PatientId == app.PatientId
+                                                                                                           select visit.ProviderId).FirstOrDefault(),
+                                                  ProviderName = app.ProviderName,
+                                                  AppointmentType = app.AppointmentType,
+                                                  AppointmentStatus = app.AppointmentStatus,
+                                                  CreatedOn = app.CreatedOn,
+                                                  CreatedBy = app.CreatedBy,
+                                                  ModifiedBy = app.ModifiedBy,
+                                                  CancelledBy = app.CancelledBy,
+                                                  CreatedByName = dbContextAppointment.Employees.Where(a => a.EmployeeId == app.CreatedBy).Select(a => a.FirstName + " " + (string.IsNullOrEmpty(a.MiddleName) ? "" : a.MiddleName) + " " + a.LastName).ToList().FirstOrDefault(),
+                                                  ModifiedByName = dbContextAppointment.Employees.Where(a => a.EmployeeId == app.ModifiedBy).Select(a => a.FirstName + " " + (string.IsNullOrEmpty(a.MiddleName) ? "" : a.MiddleName) + " " + a.LastName).ToList().FirstOrDefault(),
+                                                  CancelledByName = dbContextAppointment.Employees.Where(a => a.EmployeeId == app.CancelledBy).Select(a => a.FirstName + " " + (string.IsNullOrEmpty(a.MiddleName) ? "" : a.MiddleName) + " " + a.LastName).ToList().FirstOrDefault(),
+                                                  ModifiedOn = app.ModifiedOn,
+                                                  //ModifiedBy = emp.FirstName + " " + (string.IsNullOrEmpty(emp.MiddleName) ? "" : emp.MiddleName + " ") + emp.LastName,
+                                                  Reason = app.Reason,
+                                                  CancelledOn = app.CancelledOn,
+                                                  //CancelledBy = employee.FirstName + " " + (string.IsNullOrEmpty(employee.MiddleName) ? "" : employee.MiddleName + " ") + employee.LastName,
+                                                  CancelledRemarks = app.CancelledRemarks,
+                                                  DepartmentId = app.DepartmentId,
+
+                                              }).OrderByDescending(x => x.AppointmentId).ToList();
+                        responseData.Status = "OK";
+                        responseData.Results = apptListforall;
+                    }
+                    if (providerId == -1)
+                    {
+                        var apptListforall = (from app in dbContextAppointment.Appointments
+                                              where app.AppointmentDate >= FromDate && app.AppointmentDate < testdate && app.ProviderId == null
+                                              select new
+                                              {
+                                                  AppointmentId = app.AppointmentId,
+                                                  PatientId = app.PatientId,
+                                                  FirstName = app.FirstName,
+                                                  LastName = app.LastName,
+                                                  MiddleName = app.MiddleName,
+                                                  FullName = app.FirstName + " " + (String.IsNullOrEmpty(app.MiddleName) ? " " : app.MiddleName) + " " + app.LastName,
+                                                  Gender = app.Gender,
+                                                  Age = app.Age,
+                                                  ContactNumber = app.ContactNumber,
+                                                  AppointmentDate = app.AppointmentDate,
+                                                  AppointmentTime = app.AppointmentTime,
+                                                  ProviderId = app.ProviderId,
+                                                  ProviderName = app.ProviderName,
+                                                  AppointmentType = app.AppointmentType,
+                                                  AppointmentStatus = app.AppointmentStatus,
+                                                  CreatedOn = app.CreatedOn,
+                                                  CreatedBy = app.CreatedBy,
+                                                  ModifiedBy = app.ModifiedBy,
+                                                  CancelledBy = app.CancelledBy,
+                                                  CreatedByName = dbContextAppointment.Employees.Where(a => a.EmployeeId == app.CreatedBy).Select(a => a.FirstName + " " + (string.IsNullOrEmpty(a.MiddleName) ? "" : a.MiddleName) + " " + a.LastName).ToList().FirstOrDefault(),
+                                                  ModifiedByName = dbContextAppointment.Employees.Where(a => a.EmployeeId == app.ModifiedBy).Select(a => a.FirstName + " " + (string.IsNullOrEmpty(a.MiddleName) ? "" : a.MiddleName) + " " + a.LastName).ToList().FirstOrDefault(),
+                                                  CancelledByName = dbContextAppointment.Employees.Where(a => a.EmployeeId == app.CancelledBy).Select(a => a.FirstName + " " + (string.IsNullOrEmpty(a.MiddleName) ? "" : a.MiddleName) + " " + a.LastName).ToList().FirstOrDefault(),
+                                                  ModifiedOn = app.ModifiedOn,
+                                                  //ModifiedBy = emp.FirstName + " " + (string.IsNullOrEmpty(emp.MiddleName) ? "" : emp.MiddleName + " ") + emp.LastName,
+                                                  Reason = app.Reason,
+                                                  CancelledOn = app.CancelledOn,
+                                                  //CancelledBy = employee.FirstName + " " + (string.IsNullOrEmpty(employee.MiddleName) ? "" : employee.MiddleName + " ") + employee.LastName,
+                                                  CancelledRemarks = app.CancelledRemarks,
+                                                  DepartmentId = app.DepartmentId,
+
+                                              }).OrderByDescending(x => x.AppointmentId).ToList();
+                        responseData.Status = "OK";
+                        responseData.Results = apptListforall;
+                    }
+
+                    if (providerId != 0 && providerId != -1)
+                    {
+                        var appointmentList = (from app in dbContextAppointment.Appointments
+                                               where app.AppointmentDate >= FromDate && app.AppointmentDate < testdate && app.ProviderId == providerId
+                                               select new
+                                               {
+                                                   AppointmentId = app.AppointmentId,
+                                                   PatientId = app.PatientId,
+                                                   FirstName = app.FirstName,
+                                                   LastName = app.LastName,
+                                                   MiddleName = app.MiddleName,
+                                                   FullName = app.FirstName + " " + (String.IsNullOrEmpty(app.MiddleName) ? " " : app.MiddleName) + " " + app.LastName,
+                                                   Gender = app.Gender,
+                                                   Age = app.Age,
+                                                   ContactNumber = app.ContactNumber,
+                                                   AppointmentDate = app.AppointmentDate,
+                                                   AppointmentTime = app.AppointmentTime,
+                                                   ProviderId = app.ProviderId,
+                                                   ProviderName = app.ProviderName,
+                                                   AppointmentType = app.AppointmentType,
+                                                   AppointmentStatus = app.AppointmentStatus,
+                                                   CreatedOn = app.CreatedOn,
+                                                   CreatedBy = app.CreatedBy,
+                                                   ModifiedBy = app.ModifiedBy,
+                                                   CancelledBy = app.CancelledBy,
+                                                   CreatedByName = dbContextAppointment.Employees.Where(a => a.EmployeeId == app.CreatedBy).Select(a => a.FirstName + " " + (string.IsNullOrEmpty(a.MiddleName) ? "" : a.MiddleName) + " " + a.LastName).ToList().FirstOrDefault(),
+                                                   ModifiedByName = dbContextAppointment.Employees.Where(a => a.EmployeeId == app.ModifiedBy).Select(a => a.FirstName + " " + (string.IsNullOrEmpty(a.MiddleName) ? "" : a.MiddleName) + " " + a.LastName).ToList().FirstOrDefault(),
+                                                   CancelledByName = dbContextAppointment.Employees.Where(a => a.EmployeeId == app.CancelledBy).Select(a => a.FirstName + " " + (string.IsNullOrEmpty(a.MiddleName) ? "" : a.MiddleName) + " " + a.LastName).ToList().FirstOrDefault(),
+                                                   ModifiedOn = app.ModifiedOn,
+                                                   //ModifiedBy = emp.FirstName + " " + (string.IsNullOrEmpty(emp.MiddleName) ? "" : emp.MiddleName + " ") + emp.LastName,
+                                                   Reason = app.Reason,
+                                                   CancelledOn = app.CancelledOn,
+                                                   //CancelledBy = employee.FirstName + " " + (string.IsNullOrEmpty(employee.MiddleName) ? "" : employee.MiddleName + " ") + employee.LastName,
+                                                   CancelledRemarks = app.CancelledRemarks,
+                                                   DepartmentId = app.DepartmentId,
+
+                                               }).OrderByDescending(x => x.AppointmentId).ToList();
+
+                        responseData.Status = "OK";
+                        responseData.Results = appointmentList;
+                    }
+                    
+
                 }
                 //get the patient's today's or future's appointments
                 else if (reqType == "checkForClashingAppointment")
                 {
-                    List<AppointmentModel> patAppointmentList = (from app in dbContextAppointment.Appointments
+
+                     List<AppointmentModel> patAppointmentList = (from app in dbContextAppointment.Appointments
                                                                  where app.PatientId == patientId
                                                                  && app.AppointmentDate >= DbFunctions.TruncateTime(requestDate.Date)
-                                                                 && app.ProviderId == providerId
+                                                                 && app.ProviderId == providerId 
                                                                  select app).ToList();
 
                     VisitDbContext dbContext = new VisitDbContext(base.connString);
@@ -116,10 +243,11 @@ namespace DanpheEMR.Controllers
                     List<VisitModel> patientvisitList = (from visit in dbContext.Visits
                                                          where visit.PatientId == patientId
                                                          && DbFunctions.TruncateTime(visit.VisitDate) == DbFunctions.TruncateTime(requestDate.Date)
-                                                         && visit.ProviderId == providerId
+                                                         && visit.ProviderId == providerId 
                                                          select visit).ToList();
 
-                    if ((patAppointmentList != null && patAppointmentList.Count != 0) || (patientvisitList != null && patientvisitList.Count != 0))
+                   
+                    if ((patAppointmentList != null  && patAppointmentList.Count != 0) || (patientvisitList != null && patientvisitList.Count != 0))
                     {
                         responseData.Status = "OK";
                         responseData.Results = true;
@@ -129,6 +257,13 @@ namespace DanpheEMR.Controllers
                         responseData.Status = "OK";
                         responseData.Results = false;
                     }
+                }
+                else if (reqType == "department")
+                {
+                    PatientDbContext patientDbContext = new PatientDbContext(connString);
+                    var departmentdetails = patientDbContext.Department.Where(x=>x.IsAppointmentApplicable == true).ToList();
+                    responseData.Status = "OK";
+                    responseData.Results = departmentdetails;
                 }
                 //get the discoutnpercantage using membershipTypeid
                 else if (reqType == "GetMembershipDeatils")
@@ -171,7 +306,9 @@ namespace DanpheEMR.Controllers
 
 
 
-                }   //getting appointment list of selected ProvideId
+                }   
+
+                //getting appointment list of selected ProvideId
                 else if (reqType == "get-appointment-list")
                 {
                     ////.ToList()is done two times,since we can't use requestDate.Date inside IQueryable
@@ -184,12 +321,18 @@ namespace DanpheEMR.Controllers
                     //responseData.Results = apptDay;
 
                     var apptList = (from apt in dbContextAppointment.Appointments
-                                    where apt.ProviderId == providerId && apt.AppointmentDate==requestDate
+                                    where apt.ProviderId == providerId && apt.AppointmentDate == requestDate && apt.CancelledBy == null
                                     select new
                                     {
                                         PatientName = apt.FirstName + " " + (string.IsNullOrEmpty(apt.MiddleName) ? "" : apt.MiddleName + " ") + apt.LastName,
                                         Time = apt.AppointmentTime,
                                         Date = apt.AppointmentDate,
+                                        CreatedBy = apt.CreatedBy,
+                                        EditedBy = apt.ModifiedBy,
+                                        CreatedByName = dbContextAppointment.Employees.Where(a => a.EmployeeId == apt.CreatedBy).Select(a => a.FirstName + " " + (string.IsNullOrEmpty(a.MiddleName) ? "" : a.MiddleName) + " " + a.LastName).ToList().FirstOrDefault(),
+                                        ModifiedByName = dbContextAppointment.Employees.Where(a => a.EmployeeId == apt.ModifiedBy).Select(a => a.FirstName + " " + (string.IsNullOrEmpty(a.MiddleName) ? "" : a.MiddleName) + " " + a.LastName).ToList().FirstOrDefault(),
+                                        PhoneNumber =apt.ContactNumber,
+
                                     }).ToList();
                     if (apptList != null)
                     {
@@ -288,12 +431,65 @@ namespace DanpheEMR.Controllers
                     AppointmentModel dbAppointment = dbContextUpdate.Appointments
                                                     .Where(a => a.AppointmentId == appointmentId)
                                                     .FirstOrDefault<AppointmentModel>();
+                    var providerId = ToInt(ReadQueryStringData("ProviderId"));
+                    var providerName = ReadQueryStringData("ProviderName");
+
                     dbAppointment.AppointmentStatus = status.ToLower();
+                    if(status == "checkedin")
+                    {
+                        dbAppointment.PatientId = dbContextUpdate.Visit
+                                                .Where(a => a.AppointmentId == appointmentId)
+                                                .Select(a => a.PatientId).ToList().FirstOrDefault();
+                    }
+
+
+                    dbAppointment.ProviderId = providerId;
+                    dbAppointment.ProviderName = providerName;
+                    dbContextUpdate.Appointments.Attach(dbAppointment);
                     dbContextUpdate.Entry(dbAppointment).State = EntityState.Modified;
+                    dbContextUpdate.Entry(dbAppointment).Property(x => x.ProviderId).IsModified = true;
+                    dbContextUpdate.Entry(dbAppointment).Property(x => x.ProviderName).IsModified = true;
                     dbContextUpdate.SaveChanges();
 
                     responseData.Status = "OK";
                     responseData.Results = "Appointment information updated successfully.";
+                }
+
+                //update provider details for phone book appointment
+                else if (reqType == "updateProviderDetails")
+                {
+                    AppointmentDbContext dbContextUpdate = new AppointmentDbContext(connString);
+                    
+                    AppointmentModel dbAppointment = dbContextUpdate.Appointments
+                                                    .Where(a => a.AppointmentId == appointmentId)
+                                                    .FirstOrDefault<AppointmentModel>();
+                    
+                    
+
+                    dbContextUpdate.SaveChanges();
+                    responseData.Status = "OK";
+                    responseData.Results = "Appointment information updated successfully.";
+                }
+
+                else if (reqType == "PutAppointment")
+                {
+                    AppointmentDbContext dbContextUpdate = new AppointmentDbContext(connString);
+                    AppointmentModel updatedAppointment = DanpheJSONConvert.DeserializeObject<AppointmentModel>(str);
+                    updatedAppointment.ModifiedBy = currentUser.EmployeeId;
+                    updatedAppointment.ModifiedOn = DateTime.Now;
+                    dbContextUpdate.Appointments.Attach(updatedAppointment);
+                    dbContextUpdate.Entry(updatedAppointment).State = EntityState.Modified;
+                    dbContextUpdate.Entry(updatedAppointment).Property(x => x.CreatedOn).IsModified = false;
+                    dbContextUpdate.Entry(updatedAppointment).Property(x => x.CreatedBy).IsModified = false;
+                    dbContextUpdate.Entry(updatedAppointment).Property(x => x.ModifiedOn).IsModified = true;
+                    dbContextUpdate.Entry(updatedAppointment).Property(x => x.ModifiedBy).IsModified = true;
+                    dbContextUpdate.Entry(updatedAppointment).Property(x => x.PatientId).IsModified = false;
+
+                    dbContextUpdate.SaveChanges();
+
+                    responseData.Status = "OK";
+                    responseData.Results = "Appointment information updated successfully";
+
                 }
                 else if (reqType == "updateAppointmentStatus")
                 {
@@ -442,7 +638,9 @@ namespace DanpheEMR.Controllers
                     VisitModel visit = visitDbContext.Visits
                                         .Where(a => a.PatientVisitId == patientVisitId)
                                         .FirstOrDefault<VisitModel>();
-                    if (visit.VisitType == "outpatient")
+
+                    //if (visit.VisitType == "outpatient")
+                    if (visit.VisitType == ENUM_VisitType.outpatient)
                         visit.VisitCode = "V" + (visit.PatientVisitId + 100000);
                     else
                         visit.VisitCode = "H" + (visit.PatientVisitId + 100000);

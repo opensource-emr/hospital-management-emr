@@ -12,6 +12,9 @@
     padding-left: 15px;
     padding-right: 15px;
 }
+.col-md-6 {
+	float: left;
+}
 .left {
     float: left;
 }
@@ -88,7 +91,6 @@ body, h1, h2, h3, h4, h5, h6 {
 *{
     font-size:12px;
 }
-
 
 
 

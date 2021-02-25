@@ -22,14 +22,14 @@ namespace DanpheEMR.ServerModel
         public string Remarks { get; set; }
         public int? CreatedBy { get; set; }
         public DateTime? CreatedOn { get; set; }
+        public int? TermsId { get; set; } //sanjit: 18May'20 to add dynamic terms id.
         public virtual List<PHRMPurchaseOrderItemsModel> PHRMPurchaseOrderItems { get; set; }
         public virtual PHRMSupplierModel PHRMSupplier  { get; set; }
         ////public virtual PHRMCompanyModel PHRMCompany { get; set; }
        
         [NotMapped]
         public string SupplierName { get; set; }
-
-
-
+        [NotMapped]
+        public string TermText { get; set; }
     }
 }

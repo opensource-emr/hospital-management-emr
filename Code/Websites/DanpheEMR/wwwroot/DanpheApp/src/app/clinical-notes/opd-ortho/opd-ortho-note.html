@@ -1,0 +1,1099 @@
+<style>
+    .qtn-plus {
+        background-color: #7878ce;
+        color: #fff;
+        padding: 2px;
+        cursor: pointer;
+    }
+
+    .qtn-minus {
+        background-color: #e51245;
+        color: #fff;
+        padding: 2px;
+        cursor: pointer;
+    }
+
+    .margin-botttom {
+        margin-bottom: 10px;
+    }
+
+    p {
+        margin-bottom: 0px;
+    }
+
+    .mg-btm0 {
+        margin-bottom: 0;
+    }
+
+    .mar0 {
+        margin: 0px !important;
+        padding: 0px !important;
+        font-weight: 700;
+    }
+
+    .canvas-holder:hover {
+        background: #fff;
+    }
+    /*to show less margin*/
+    .mar-bottom {
+        margin: 0px !important;
+        margin-bottom: 3px !important;
+        padding: 0px !important;
+    }
+
+
+
+    .div-row:hover {
+        background-color: #dce8dc;
+    }
+
+
+    .qtn-icon {
+        color: #e6ede6;
+        padding: 3px 5px;
+        background-color: #7878ce;
+        border-radius: 4px !important;
+    }
+
+    .qtn-plus {
+        background-color: #7878ce;
+        color: #fff;
+        padding: 2px;
+        cursor: pointer;
+    }
+
+    .qtn-minus {
+        background-color: #e51245;
+        color: #fff;
+        padding: 2px;
+        cursor: pointer;
+    }
+
+    .motor-table tr td {
+        padding: 5px 0px !important;
+    }
+
+        .motor-table tr td input {
+            width: 80%;
+        }
+</style>
+
+<div class="row" style="margin-top:-4px;">
+    <div class="portlet box green-meadow">
+        <div class="portlet-title">
+            <div class="caption">
+                <b style="font-size: large;text-decoration: underline;">OPD Note (Orthopedics)</b>
+            </div>
+        </div>
+
+        <div class="portlet-body" style="display: block;">
+            <div class="row">
+                <p style="padding-left: 15px;"><span class="pull-left"></span><b>1 &nbsp;Sites</b></p>
+                <div class="col-md-12" *ngFor="let rw of allData; let i = index;" style="padding: 10px 0px;">
+                    <div class="col-md-1">
+                        <a (click)="AddNewRow_Sites()" class="btn btn-success delBtn" title="Click to add new item"><i class="fa fa-plus"></i></a>
+                    </div>
+                    <div class="col-md-3">
+                        <select id="site{{i}}" class="hideLabel form-control" [(ngModel)]="rw.allCheckBox" (change)="selectName(rw.allCheckBox, i);">
+                            <option [ngValue]="k.allOptions" *ngFor="let k of rw.values">
+                                {{k.name}}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-md-7" style="padding: 6px 0px;">
+                        <label *ngFor="let item of rw.allCheckBox" class="mt-checkbox mt-checkbox-outline mg-btm0">
+                            <input type="checkbox" name="{{item}}" value="{{item}}" (change)="OnSitesItemChanged(item, i)">{{item}} &nbsp;
+                            <span></span>
+                        </label>
+                    </div>
+                    <div class="col-md-1">
+                        <a (click)="RemoveRow_Sites(i)" class="btn btn-danger delBtn" title="Click to remove this item"><i class=" fa fa-cross">X</i></a>
+                    </div>
+                </div>
+
+
+
+                <div class="col-md-12 margin-botttom">
+                    <span class="pull-left">2 &nbsp;</span>
+                    <div style="width: 96%; float: left;">
+                        <label class="control-label col-lg-5 col-md-5 mar0">Main Pathology</label>
+                        <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+
+
+
+                        <div class="col-lg-6 col-md-6 mar-bottom">
+                            <p>
+                                <span>
+                                    <span>
+                                        <input type="radio" name="mainPathology">
+                                        <i>Degenerative</i>
+                                    </span>
+                                </span><span>
+                                    <span>
+                                        <input type="radio" name="mainPathology">
+                                        <i>Fracture</i>
+                                    </span>
+                                </span><span>
+                                    <span>
+                                        <input type="radio" name="mainPathology">
+                                        <i>Trauma</i>
+                                    </span>
+                                </span><span>
+                                    <span>
+                                        <input type="radio" name="mainPathology">
+                                        <i>Pathological</i>
+                                    </span>
+                                </span><span>
+                                    <span>
+                                        <input type="radio" name="mainPathology">
+                                        <i>Inflammation</i>
+                                    </span>
+                                </span><span>
+                                    <span>
+                                        <input type="radio" name="mainPathology">
+                                        <i>Infection</i>
+                                    </span>
+                                </span><span>
+                                    <span>
+                                        <input type="radio" name="mainPathology">
+                                        <i>Tumor</i>
+                                    </span>
+                                </span><span>
+                                    <span>
+                                        <input type="radio" name="mainPathology">
+                                        <i>Revision</i>
+                                    </span>
+                                </span><span>
+                                    <span>
+                                        <input type="radio" name="mainPathology">
+                                        <i>Surgery</i>
+                                    </span>
+                                </span>
+
+                                <span href="#demo40" data-toggle="collapse">
+                                    <span>
+                                        <input type="radio" name="mainPathology">
+                                        <i>other</i>
+                                    </span>
+                                </span>
+
+                            </p>
+
+                            <p id="demo40" class="collapse">
+                                <b style="float: left;">Please Specify!!</b>
+                                <textarea style="width: 300px;" rows="2"></textarea>
+                            </p>
+
+
+                        </div>
+
+
+
+                    </div>
+                </div>
+
+                <div class="col-md-12 margin-botttom">
+                    <span class="pull-left">3 &nbsp;</span>
+                    <div style="width: 96%; float: left;">
+                        <label class="control-label col-lg-5 col-md-5 mar0">History</label>
+                        <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+
+                        <div class="col-lg-6 col-md-6 mar-bottom">
+
+                        </div>
+                    </div>
+
+                    <div class="margin-botttom" style="padding-left: 25px;">
+                        <div style="width: 96%; float: left;">
+                            <label class="control-label col-lg-5 col-md-5 mar0">Onset</label>
+                            <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+
+                            <div class="col-lg-6 col-md-6 mar-bottom margin-botttom">
+                                <p>
+                                    <span>
+                                        <span>
+                                            <input type="radio" name="history_onset">
+                                            <i>Trauma</i>
+                                        </span>
+                                    </span><span>
+                                        <span>
+                                            <input type="radio" name="history_onset">
+                                            <i>Spontaneous</i>
+                                        </span>
+                                    </span><span>
+                                        <span>
+                                            <input type="radio" name="history_onset">
+                                            <i>Acute</i>
+                                        </span>
+                                    </span><span>
+                                        <span>
+                                            <input type="radio" name="history_onset">
+                                            <i>Chronic</i>
+                                        </span>
+                                    </span><span>
+                                        <span>
+                                            <input type="radio" name="history_onset">
+                                            <i>Insidious</i>
+                                        </span>
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="margin-botttom" style="padding-left: 25px;">
+                        <div style="width: 96%; float: left;">
+                            <label class="control-label col-lg-5 col-md-5 mar0">Pain</label>
+                            <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+
+                            <div class="col-lg-6 col-md-6 mar-bottom margin-botttom">
+                                <p>
+                                    <span>
+                                        <span>
+                                            <input type="radio" name="history_pain">
+                                            <i>Throbbing</i>
+                                        </span>
+                                    </span><span>
+                                        <span>
+                                            <input type="radio" name="history_pain">
+                                            <i>Dull aching</i>
+                                        </span>
+                                    </span><span>
+                                        <span>
+                                            <input type="radio" name="history_pain">
+                                            <i>Activity Related</i>
+                                        </span>
+                                    </span><span>
+                                        <span>
+                                            <input type="radio" name="history_pain">
+                                            <i>At Rest</i>
+                                        </span>
+                                    </span><span>
+                                        <span>
+                                            <input type="radio" name="history_pain">
+                                            <i>At Night</i>
+                                        </span>
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="margin-botttom" style="padding-left: 25px;">
+                        <div style="width: 96%; float: left;">
+                            <label class="control-label col-lg-5 col-md-5 mar0">Duration</label>
+                            <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+
+                            <div class="col-lg-6 col-md-6 mar-bottom margin-botttom">
+                                <p>
+                                    <span>
+                                        <input type="text" />
+                                    </span>
+                                    <span>
+                                        <span>
+                                            <input type="radio" name="duration">
+                                            <i>Days</i>
+                                        </span>
+                                    </span>
+                                    <span>
+                                        <span>
+                                            <input type="radio" name="duration">
+                                            <i>Weeks</i>
+                                        </span>
+                                    </span>
+                                    <span>
+                                        <span>
+                                            <input type="radio" name="duration">
+                                            <i>Months</i>
+                                        </span>
+                                    </span>
+                                    <span>
+                                        <span>
+                                            <input type="radio" name="duration">
+                                            <i>Years</i>
+                                        </span>
+                                    </span>
+
+                                </p>
+
+                                <p id="demo41" class="collapse">
+                                    <b style="float: left;">Please Specify!!</b>
+                                    <textarea style="width: 300px;" rows="2"></textarea>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="margin-botttom" style="padding-left: 25px;">
+                        <div style="width: 96%; float: left;">
+                            <label class="control-label col-lg-5 col-md-5 mar0">Past History</label>
+                            <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+
+                            <div class="col-lg-6 col-md-6 mar-bottom">
+                                <p style="padding-bottom: 5px;"><i href="#demo" data-toggle="collapse" title="show answer" class="fa fa-plus qtn-plus"></i></p>
+                                <textarea style="width: 300px;" rows="2" id="demo" class="collapse">
+                                  </textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="margin-botttom" style="padding-left: 25px;">
+                        <div style="width: 96%; float: left;">
+                            <label class="control-label col-lg-5 col-md-5 mar0">Family History</label>
+                            <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+
+                            <div class="col-lg-6 col-md-6 mar-bottom">
+                                <p style="padding-bottom: 5px;"><i href="#demo1" data-toggle="collapse" title="show answer" class="fa fa-plus qtn-plus"></i></p>
+                                <textarea style="width: 300px;" rows="2" id="demo1" class="collapse">
+                                </textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="margin-botttom" style="padding-left: 25px;">
+                        <div style="width: 96%; float: left;">
+                            <label class="control-label col-lg-5 col-md-5 mar0">Treatment History</label>
+                            <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+
+                            <div class="col-lg-6 col-md-6 mar-bottom">
+                                <p style="padding-bottom: 5px;">
+                                    <i href="#demo2" data-toggle="collapse" title="show answer" class="fa fa-plus qtn-plus"></i>
+                                </p>
+                                <textarea style="width: 300px;" rows="2" id="demo2" class="collapse" [(ngModel)]="model.History_Treatment">
+                                </textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <!-- End of 3 -->
+
+                <div class="col-md-12 margin-botttom">
+                    <span class="pull-left">4 &nbsp;</span>
+                    <div style="width: 96%; float: left;">
+                        <label class="control-label col-lg-5 col-md-5 mar0">Local Examination</label>
+                        <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+
+                        <div class="col-lg-6 col-md-6 mar-bottom">
+
+                        </div>
+                    </div>
+
+                    <div class="margin-botttom" style="padding-left: 25px;">
+                        <div style="width: 96%; float: left;">
+                            <label class="control-label col-lg-5 col-md-5 mar0">Local Temperature</label>
+                            <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+
+                            <div class="col-lg-6 col-md-6 mar-bottom">
+                                <p style="padding-bottom: 5px;"><i href="#demo3" data-toggle="collapse" title="show answer" class="fa fa-plus qtn-plus"></i></p>
+                                <textarea style="width: 300px;" rows="2" id="demo3" class="collapse">
+                                                       
+                                                    </textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="margin-botttom" style="padding-left: 25px;">
+                        <div style="width: 96%; float: left;">
+                            <label class="control-label col-lg-5 col-md-5 mar0">Tenderness</label>
+                            <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+
+                            <div class="col-lg-6 col-md-6 mar-bottom">
+                                <p style="padding-bottom: 5px;"><i href="#demo4" data-toggle="collapse" title="show answer" class="fa fa-plus qtn-plus"></i></p>
+                                <textarea style="width: 300px;" rows="2" id="demo4" class="collapse">
+                                                       
+                                                    </textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="margin-botttom" style="padding-left: 25px;">
+                        <div style="width: 96%; float: left;">
+                            <label class="control-label col-lg-5 col-md-5 mar0">Swelling</label>
+                            <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+
+                            <div class="col-lg-6 col-md-6 mar-bottom">
+                                <p style="padding-bottom: 5px;"><i href="#demo5" data-toggle="collapse" title="show answer" class="fa fa-plus qtn-plus"></i></p>
+                                <textarea style="width: 300px;" rows="2" id="demo5" class="collapse">
+                                                       
+                                                    </textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="margin-botttom" style="padding-left: 25px;">
+                        <div style="width: 96%; float: left;">
+                            <label class="control-label col-lg-5 col-md-5 mar0">Sinuses</label>
+                            <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+
+                            <div class="col-lg-6 col-md-6 mar-bottom">
+                                <p style="padding-bottom: 5px;"><i href="#demo6" data-toggle="collapse" title="show answer" class="fa fa-plus qtn-plus"></i></p>
+                                <textarea style="width: 300px;" rows="2" id="demo6" class="collapse">
+                                                       
+                                                    </textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="margin-botttom" style="padding-left: 25px;">
+                        <div style="width: 96%; float: left;">
+                            <label class="control-label col-lg-5 col-md-5 mar0">Neighboring Joints</label>
+                            <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+
+                            <div class="col-lg-6 col-md-6 mar-bottom">
+                                <p style="padding-bottom: 5px;"><i href="#demo7" data-toggle="collapse" title="show answer" class="fa fa-plus qtn-plus"></i></p>
+                                <textarea style="width: 300px;" rows="2" id="demo7" class="collapse">
+                                                       
+                                                    </textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="margin-botttom" style="padding-left: 25px;">
+                        <div style="width: 96%; float: left;">
+                            <label class="control-label col-lg-5 col-md-5 mar0">Muscular Wasting</label>
+                            <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+
+                            <div class="col-lg-6 col-md-6 mar-bottom">
+                                <p style="padding-bottom: 5px;"><i href="#demo8" data-toggle="collapse" title="show answer" class="fa fa-plus qtn-plus"></i></p>
+                                <textarea style="width: 300px;" rows="2" id="demo8" class="collapse">
+                                                       
+                                                    </textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="margin-botttom" style="padding-left: 25px;">
+                        <div style="width: 96%; float: left;">
+                            <label class="control-label col-lg-5 col-md-5 mar0">Shortening or Lengthening of the Bone</label>
+                            <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+
+                            <div class="col-lg-6 col-md-6 mar-bottom">
+                                <p style="padding-bottom: 5px;"><i href="#demo9" data-toggle="collapse" title="show answer" class="fa fa-plus qtn-plus"></i></p>
+                                <textarea style="width: 300px;" rows="2" id="demo9" class="collapse">
+                                                       
+                                                    </textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="margin-botttom" style="padding-left: 25px;">
+                        <div style="width: 96%; float: left;">
+                            <label class="control-label col-lg-5 col-md-5 mar0">Lymph Nodes</label>
+                            <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+
+                            <div class="col-lg-6 col-md-6 mar-bottom">
+                                <p style="padding-bottom: 5px;"><i href="#demo10" data-toggle="collapse" title="show answer" class="fa fa-plus qtn-plus"></i></p>
+                                <textarea style="width: 300px;" rows="2" id="demo10" class="collapse">
+                                                       
+                                                    </textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="margin-botttom" style="padding-left: 25px;">
+                        <div style="width: 96%; float: left;">
+                            <label class="control-label col-lg-5 col-md-5 mar0">Range of Motion of the Joints</label>
+                            <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+
+                            <div class="col-lg-6 col-md-6 mar-bottom">
+                                <p>
+                                    <span>
+                                        <span>
+                                            <input type="radio" name="jointsMotion">
+                                            <i>Flexion-Extension</i>
+                                        </span>
+                                    </span><span>
+                                        <span>
+                                            <input type="radio" name="jointsMotion">
+                                            <i>Adduction-Abduction</i>
+                                        </span>
+                                    </span><span>
+                                        <span>
+                                            <input type="radio" name="jointsMotion">
+                                            <i>Supination-Pronation</i>
+                                        </span>
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="margin-botttom" style="padding-left: 25px;">
+                        <div style="width: 96%; float: left;">
+                            <label class="control-label col-lg-5 col-md-5 mar0">Special Test</label>
+                            <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+
+                            <div class="col-lg-6 col-md-6 mar-bottom">
+                                <p style="padding-bottom: 5px;"><i href="#demo11" data-toggle="collapse" title="show answer" class="fa fa-plus qtn-plus"></i></p>
+                                <textarea style="width: 300px;" rows="2" id="demo11" class="collapse">
+                                                       
+                                                    </textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <!-- End of 4 -->
+
+                <div class="col-md-12 margin-botttom">
+                    <span class="pull-left">5 &nbsp;</span>
+                    <div style="width: 96%; float: left;">
+                        <label class="control-label col-lg-5 col-md-5 mar0">Neurology</label>
+                        <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+                        <div class="col-lg-6 col-md-6 mar-bottom"></div>
+                    </div>
+
+                    <div class="margin-botttom" style="padding-left: 25px;">
+                        <div style="width: 96%; float: left;">
+                            <label class="control-label col-lg-5 col-md-5 mar0" style="padding: 15px 0px !important;">Motor</label>
+                            <!-- <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label> -->
+
+                            <div class="col-lg-12 col-md-12 mar-bottom" style="padding:5px; background: #ececec;">
+                                <table class="motor-table table table-striped table-responsive">
+
+                                    <tr>
+                                        <th>Root</th>
+                                        <th>Primary Motion</th>
+                                        <th>Tested Muscles</th>
+                                        <th>Sensory</th>
+                                        <th>Right</th>
+                                        <th>Left</th>
+                                    </tr>
+                                    <tbody>
+                                        <tr>
+                                            <td>C4</td>
+                                            <td>Scapular Stabilization(Winging)</td>
+                                            <td>Serratus</td>
+                                            <td></td>
+                                            <td><input type="text"></td>
+                                            <td><input type="text"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>C5</td>
+                                            <td>Shoulder Abduction<br>Elbow Flexion(Palm up)</td>
+                                            <td>Deltoid<br>Biceps</td>
+                                            <td>Lateral Arm Below Deltoid</td>
+                                            <td><input type="text"></td>
+                                            <td><input type="text"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>C6</td>
+                                            <td>Elbow Flexion(thumb up)<br>Wrist Extension</td>
+                                            <td>Brachioradialis <br>ECRL</td>
+                                            <td></td>
+                                            <td><input type="text"></td>
+                                            <td><input type="text"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>C7</td>
+                                            <td>Elbow Extension<br>Wrist Flexion(thumb up)</td>
+                                            <td>Triceps <br>FCR</td>
+                                            <td>Fingers 2,3,4</td>
+                                            <td><input type="text"></td>
+                                            <td><input type="text"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>C8</td>
+                                            <td>Finger Flexion, hand grip,thumb extension</td>
+                                            <td>FDS</td>
+                                            <td>Finger 5</td>
+                                            <td><input type="text"></td>
+                                            <td><input type="text"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>T1</td>
+                                            <td>Finger Abduction</td>
+                                            <td>Interossei(ulnar,n)</td>
+                                            <td>Media elbow</td>
+                                            <td><input type="text"></td>
+                                            <td><input type="text"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>L1</td>
+                                            <td></td>
+                                            <td></td>
+                                            <td>Eliac crest and groin</td>
+                                            <td><input type="text"></td>
+                                            <td><input type="text"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>L2,3</td>
+                                            <td>Hip Flexion<br>Hip adduction</td>
+                                            <td>Iliopsoas(lumbar plexus, femoral n.)<br>hip adductors(obturator n.)</td>
+                                            <td>Anterior and Inner thigh</td>
+                                            <td><input type="text"></td>
+                                            <td><input type="text"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>L4</td>
+                                            <td>Knee Extension(also L3)</td>
+                                            <td>Quadriceps(femoral n.)</td>
+                                            <td>Lateral thigh,anterior knee & medical leg</td>
+                                            <td><input type="text"></td>
+                                            <td><input type="text"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>L5</td>
+                                            <td>
+                                                Ankle dorsiflexion(also L4)<br>
+                                                Foot Inversion<br>
+                                                Toe dorsiflexion<br>
+                                                Hip Extension<br>
+                                                Hip Abduction
+                                            </td>
+                                            <td>
+                                                tibialis anterior<br>
+                                                tibialis posterior<br>
+                                                EHL (DPN), EDL()DPN<br>
+                                                hamstrings(tibial) & gluteus max<br>
+                                                gluteus medius(sup, gluteal n.)
+                                            </td>
+                                            <td>Lateral leg & dorsal foot</td>
+                                            <td><input type="text"></td>
+                                            <td><input type="text"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>S1</td>
+                                            <td>Foot Planter flexion<br>Foot eversion</td>
+                                            <td>Gastroc-Soleus(tibial n.)<br> Poroneals(SPN)</td>
+                                            <td>Posterior Leg</td>
+                                            <td><input type="text"></td>
+                                            <td><input type="text"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>S2</td>
+                                            <td>Toe planter flexion</td>
+                                            <td>FHL(tibial n.), FDL(tibial)</td>
+                                            <td>Plantar Foot</td>
+                                            <td><input type="text"></td>
+                                            <td><input type="text"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>S3,4</td>
+                                            <td>Bower & Bladder function</td>
+                                            <td>bladder</td>
+                                            <td>Perianal</td>
+                                            <td><input type="text"></td>
+                                            <td><input type="text"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="margin-botttom" style="padding-left: 25px;">
+                        <div style="width: 96%; float: left;">
+                            <label class="control-label col-lg-5 col-md-5 mar0">Sensory</label>
+                            <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+
+                            <div class="col-lg-6 col-md-6 mar-bottom">
+                                <p style="padding-bottom: 5px;"><i href="#demo12" data-toggle="collapse" title="show answer" class="fa fa-plus qtn-plus"></i></p>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="margin-botttom collapse" style="padding-left: 25px;" id="demo12">
+                        <select class='select-option pull-right' [(ngModel)]='imageUrl' (ngModelChange)='CanvasImageChanged($event)'>
+                            <option class='option' *ngFor='let option of allImage' [value]="option.url">{{option.name}}</option>
+                        </select>
+                        <div style="width: 96%; float: left;">
+                            <!--<app-canvas [imageUrl]="imageUrl"></app-canvas>-->
+                        </div>
+                    </div>
+
+                    <div class="margin-botttom" style="padding-left: 25px;">
+                        <div style="width: 96%; float: left;">
+                            <label class="control-label col-lg-5 col-md-5 mar0">Reflexes</label>
+                            <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+
+                            <div class="col-lg-6 col-md-6 mar-bottom">
+                                <p>
+                                    <span>
+                                        <span>
+                                            <input type="radio" name="reflexes">
+                                            <i>Biceps</i>
+                                        </span>
+                                    </span><span>
+                                        <span>
+                                            <input type="radio" name="reflexes">
+                                            <i>Triceps</i>
+                                        </span>
+                                    </span><span>
+                                        <span>
+                                            <input type="radio" name="reflexes">
+                                            <i>Brachioradialis</i>
+                                        </span>
+                                    </span><span>
+                                        <span>
+                                            <input type="radio" name="reflexes">
+                                            <i>Knee</i>
+                                        </span>
+                                    </span><span>
+                                        <span>
+                                            <input type="radio" name="reflexes">
+                                            <i>Ankle</i>
+                                        </span>
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="margin-botttom" style="padding-left: 25px;">
+                        <div style="width: 96%; float: left;">
+                            <label class="control-label col-lg-5 col-md-5 mar0">Bulbocavernous Reflex</label>
+                            <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+
+                            <div class="col-lg-6 col-md-6 mar-bottom">
+                                <p style="padding-bottom: 5px;"><i href="#demo13" data-toggle="collapse" title="show answer" class="fa fa-plus qtn-plus"></i></p>
+                                <textarea style="width: 300px;" rows="2" id="demo13" class="collapse">
+                                                       
+                                                    </textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="margin-botttom" style="padding-left: 25px;">
+                        <div style="width: 96%; float: left;">
+                            <label class="control-label col-lg-5 col-md-5 mar0">Anal Sensation</label>
+                            <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+
+                            <div class="col-lg-6 col-md-6 mar-bottom">
+                                <p style="padding-bottom: 5px;"><i href="#demo14" data-toggle="collapse" title="show answer" class="fa fa-plus qtn-plus"></i></p>
+                                <textarea style="width: 300px;" rows="2" id="demo14" class="collapse">
+                                                       
+                                                    </textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="margin-botttom" style="padding-left: 25px;">
+                        <div style="width: 96%; float: left;">
+                            <label class="control-label col-lg-5 col-md-5 mar0">Anal Tone</label>
+                            <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+
+                            <div class="col-lg-6 col-md-6 mar-bottom">
+                                <p style="padding-bottom: 5px;"><i href="#demo15" data-toggle="collapse" title="show answer" class="fa fa-plus qtn-plus"></i></p>
+                                <textarea style="width: 300px;" rows="2" id="demo15" class="collapse">
+                                                       
+                                                    </textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="margin-botttom" style="padding-left: 25px;">
+                        <div style="width: 96%; float: left;">
+                            <label class="control-label col-lg-5 col-md-5 mar0">Bowel/Bladder</label>
+                            <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+
+                            <div class="col-lg-6 col-md-6 mar-bottom">
+                                <p style="padding-bottom: 5px;"><i href="#demo16" data-toggle="collapse" title="show answer" class="fa fa-plus qtn-plus"></i></p>
+                                <textarea style="width: 300px;" rows="2" id="demo16" class="collapse">
+                                                       
+                                                    </textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="margin-botttom" style="padding-left: 25px;">
+                        <div style="width: 96%; float: left;">
+                            <label class="control-label col-lg-5 col-md-5 mar0"> Babinski Sign</label>
+                            <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+
+                            <div class="col-lg-6 col-md-6 mar-bottom">
+                                <p style="padding-bottom: 5px;"><i href="#demooo16" data-toggle="collapse" title="show answer" class="fa fa-plus qtn-plus"></i></p>
+                                <textarea style="width: 300px;" rows="2" id="demooo16" class="collapse">
+                                                       
+                                                    </textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <!-- End of 5 -->
+
+                <div class="col-md-12 margin-botttom">
+                    <span class="pull-left">6 &nbsp;</span>
+                    <div style="width: 96%; float: left;">
+                        <label class="control-label col-lg-5 col-md-5 mar0">Risk factors- comorbidities</label>
+                        <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+                        <div class="col-lg-6 col-md-6 mar-bottom">
+                            <p>
+                                <span>
+                                    <span>
+                                        <input type="radio" name="riskFactors">
+                                        <i>rheumatoid arthritis</i>
+                                    </span>
+                                </span><span>
+                                    <span>
+                                        <input type="radio" name="riskFactors">
+                                        <i>musculoskeletal comorbidities</i>
+                                    </span>
+                                </span><span>
+                                    <span>
+                                        <input type="radio" name="riskFactors">
+                                        <i>diabetes   mellitus</i>
+                                    </span>
+                                </span><span>
+                                    <span>
+                                        <input type="radio" name="riskFactors">
+                                        <i>anticoagulation</i>
+                                    </span>
+                                </span><span>
+                                    <span>
+                                        <input type="radio" name="riskFactors">
+                                        <i>hypertension</i>
+                                    </span>
+                                </span><span>
+                                    <span>
+                                        <input type="radio" name="riskFactors">
+                                        <i>thrombembolic history</i>
+                                    </span>
+                                </span><span>
+                                    <span>
+                                        <input type="radio" name="riskFactors">
+                                        <i>gastroenterological</i>
+                                    </span>
+                                </span><span>
+                                    <span>
+                                        <input type="radio" name="riskFactors">
+                                        <i>cardiovascular</i>
+                                    </span>
+                                </span>
+                                <span href="#demo17" data-toggle="collapse">
+                                    <span>
+                                        <input type="radio" name="riskFactors">
+                                        <i>other</i>
+                                    </span>
+                                </span>
+                            </p>
+
+                            <p id="demo17" class="collapse">
+                                <b style="float: left;">Please Specify!!</b>
+                                <textarea style="width: 300px;" rows="2"></textarea>
+                            </p>
+
+
+
+                        </div>
+                    </div>
+
+                </div>
+                <!-- End of 6 -->
+
+                <div class="col-md-12 margin-botttom">
+                    <span class="pull-left">7 &nbsp;</span>
+                    <div style="width: 96%; float: left;">
+                        <label class="control-label col-lg-5 col-md-5 mar0">Investigations</label>
+                        <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+                        <div class="col-lg-6 col-md-6 mar-bottom">
+                            <div style="width: 100%;float: left;margin-bottom: 10px;" *ngFor="let row of allRows; let i=index;">
+
+                                <div class="col-md-1">
+                                    <a (click)="AddNew_Investigation()" class="btn btn-success delBtn" title="Click to add new item"><i class="fa fa-plus"></i></a>
+                                </div>
+                                <div class="col-md-4">
+                                    <select id="investigation" class="hideLabel form-control">
+                                        <option [ngValue]="k" *ngFor="let k of investigations">
+                                            {{k}}
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" class="form form-control" style="width: 300px;">
+                                </div>
+                                <div class="col-md-1">
+                                    <a (click)="Remove_Investigation(i)" class="btn btn-danger delBtn" title="Click to remove this item"><i class=" fa fa-cross">X</i></a>
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <!-- End of 7 -->
+
+                <div class="col-md-12 margin-botttom">
+                    <span class="pull-left">8 &nbsp;</span>
+                    <div style="width: 96%; float: left;">
+                        <label class="control-label col-lg-5 col-md-5 mar0">Scores</label>
+                        <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+                        <div class="col-lg-6 col-md-6 mar-bottom">
+                            <p>
+                                <span>
+                                    <span>
+                                        <input type="radio" name="scores">
+                                        <i>COMI</i>
+                                    </span>
+                                </span><span>
+                                    <span>
+                                        <input type="radio" name="scores">
+                                        <i>SF-36 MCS</i>
+                                    </span>
+                                </span><span>
+                                    <span>
+                                        <input type="radio" name="scores">
+                                        <i>SF-36 PCS</i>
+                                    </span>
+                                </span><span>
+                                    <span>
+                                        <input type="radio" name="scores">
+                                        <i>SRS-22</i>
+                                    </span>
+                                </span><span>
+                                    <span>
+                                        <input type="radio" name="scores">
+                                        <i>ODI </i>
+                                    </span>
+                                </span><span>
+                                    <span>
+                                        <input type="radio" name="scores">
+                                        <i>VAS</i>
+                                    </span>
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!-- End of 8 -->
+
+
+                <div class="col-md-12 margin-botttom">
+                    <span class="pull-left">9 &nbsp;</span>
+                    <div style="width: 96%; float: left;">
+                        <label class="control-label col-lg-5 col-md-5 mar0">Diagnosis</label>
+                        <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+                        <div class="col-lg-6 col-md-6 mar-bottom">
+                            <p style="padding-bottom: 5px;"><i href="#demo22" data-toggle="collapse" title="show answer" class="fa fa-plus qtn-plus"></i></p>
+                            <textarea style="width: 300px;" rows="2" id="demo22" class="collapse">
+                                           
+                                        </textarea>
+                        </div>
+                    </div>
+                </div>
+                <!-- End of 9 -->
+
+                <div class="col-md-12 margin-botttom">
+                    <span class="pull-left">10 &nbsp;</span>
+                    <div style="width: 96%; float: left;">
+                        <label class="control-label col-lg-5 col-md-5 mar0">Treatment</label>
+                        <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+
+                        <div class="col-lg-6 col-md-6 mar-bottom">
+
+                        </div>
+                    </div>
+
+                    <div class="margin-botttom" style="padding-left: 25px;">
+                        <div style="width: 96%; float: left;">
+                            <label class="control-label col-lg-5 col-md-5 mar0">Medication</label>
+                            <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+
+                            <div class="col-lg-6 col-md-6 mar-bottom">
+                                <p style="padding-bottom: 5px;"><i href="#6" data-toggle="collapse" title="show answer" class="fa fa-plus qtn-plus"></i></p>
+                                <textarea style="width: 300px;" rows="2" id="6" class="collapse">
+                                                       
+                                                    </textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="margin-botttom" style="padding-left: 25px;">
+                        <div style="width: 96%; float: left;">
+                            <label class="control-label col-lg-5 col-md-5 mar0">Physiotherapy</label>
+                            <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+
+                            <div class="col-lg-6 col-md-6 mar-bottom">
+                                <p style="padding-bottom: 5px;"><i href="#demo24" data-toggle="collapse" title="show answer" class="fa fa-plus qtn-plus"></i></p>
+                                <textarea style="width: 300px;" rows="2" id="demo24" class="collapse">
+                                                       
+                                                    </textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- End of 10 -->
+
+                <div class="col-md-12 margin-botttom">
+                    <span class="pull-left">11 &nbsp;</span>
+                    <div style="width: 96%; float: left;">
+                        <label class="control-label col-lg-5 col-md-5 mar0">Plan</label>
+                        <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+
+                        <div class="col-lg-6 col-md-6 mar-bottom">
+
+                        </div>
+                    </div>
+
+                    <div class="margin-botttom" style="padding-left: 25px;">
+                        <div style="width: 96%; float: left;">
+                            <label class="control-label col-lg-5 col-md-5 mar0">Conservative</label>
+                            <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+
+                            <div class="col-lg-6 col-md-6 mar-bottom margin-botttom">
+                                <p>
+                                    <span>
+                                        <span>
+                                            <input type="radio" name="plan_Conserv">
+                                            <i>Medication</i>
+                                        </span>
+                                    </span><span>
+                                        <span>
+                                            <input type="radio" name="plan_Conserv">
+                                            <i>Physiotherapy/Medication</i>
+                                        </span>
+                                    </span><span>
+                                        <span>
+                                            <input type="radio" name="plan_Conserv">
+                                            <i>Physiotherapy</i>
+                                        </span>
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="margin-botttom" style="padding-left: 25px;">
+                        <div style="width: 96%; float: left;">
+                            <label class="control-label col-lg-5 col-md-5 mar0">Surgey</label>
+                            <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+
+                            <div class="col-lg-6 col-md-6 mar-bottom">
+                                <p style="padding-bottom: 5px;"><i href="#demo26" data-toggle="collapse" title="show answer" class="fa fa-plus qtn-plus"></i></p>
+                                <textarea style="width: 300px;" rows="2" id="demo26" class="collapse">
+                                                       
+                                                    </textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <!-- End of 11 -->
+
+                <div class="col-md-12 margin-botttom">
+                    <span class="pull-left">12 &nbsp;</span>
+                    <div style="width: 96%; float: left;">
+                        <label class="control-label col-lg-5 col-md-5 mar0">Follow Up Date</label>
+                        <label class="control-label col-lg-1 col-md-1 mar0"><b>:</b></label>
+                        <div class="col-lg-6 col-md-6 mar-bottom">
+                            <p style="padding-bottom: 5px;"><i href="#demo23" data-toggle="collapse" title="show answer" class="fa fa-plus qtn-plus"></i></p>
+                            <textarea style="width: 300px;" rows="2" id="demo23" class="collapse">
+                                           
+                                        </textarea>
+                        </div>
+                    </div>
+                </div>
+                <!-- End of 12 -->
+
+
+
+            </div>
+
+
+        </div>
+
+    </div>
+</div>

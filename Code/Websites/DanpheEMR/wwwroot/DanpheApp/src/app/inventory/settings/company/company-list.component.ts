@@ -1,4 +1,4 @@
-﻿import { Component,  ChangeDetectorRef } from '@angular/core'
+import { Component, ChangeDetectorRef } from '@angular/core'
 import { CompanyModel } from '../../settings/shared/company/company.model';
 import { CompanyService } from '../../settings/shared/company/company.service';
 import GridColumnSettings from '../../../shared/danphe-grid/grid-column-settings.constant';
@@ -23,7 +23,7 @@ export class CompanyListComponent {
 
     constructor(public companyService: CompanyService, public routeFromService: RouteFromService,
         public messageboxService: MessageboxService, public changeDetector: ChangeDetectorRef) {
-            this.companyGridColumns = GridColumnSettings.CompanyList;
+        this.companyGridColumns = GridColumnSettings.CompanyList;
     }
 
     ngOnInit() {
@@ -31,16 +31,22 @@ export class CompanyListComponent {
     }
 
     pushToList($event) {
-        if (this.selIndex != null) {
-            this.companyList[this.selIndex] = $event.newCompany;
-
-        }
-        else {
-            this.companyList.push($event.newCompany);
-            this.showAddPage = false;
+        if ($event != null) {
+            //find the index of currently added/updated company in the list of all companys (grid)
+            let index = this.companyList.findIndex(a => a.CompanyID == $event.newCompany.CompanyID);
+            //index will be -1 when this company is currently added. 
+            if (index < 0) {
+                this.companyList.splice(0, 0, $event.newCompany);//this will add this company to 0th index.
+            }
+            else {
+                this.companyList.splice(index, 1, $event.newCompany);//this will replace one company at particular index. 
+            }
         }
         this.companyList = this.companyList.slice();
-
+        this.changeDetector.detectChanges();
+        this.showAddPage = false;
+        this.company = null;
+        this.selIndex = null;
 
     }
 
@@ -68,7 +74,7 @@ export class CompanyListComponent {
 
         switch (action) {
             case 'edit': {
-             
+
                 this.selIndex = $event.RowIndex;
                 this.company = $event.Data;
                 this.showAddPage = false;

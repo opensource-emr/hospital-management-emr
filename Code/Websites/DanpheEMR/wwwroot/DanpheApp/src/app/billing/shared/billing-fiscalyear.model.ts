@@ -8,4 +8,6 @@
     public CreatedOn: string = null;
     public CreatedBy: number = null;
     public IsActive: boolean = true;
+
+    public currentlyActive: boolean = false;
 }

@@ -4,10 +4,13 @@ import { LabReportTemplateModel } from '../../shared/lab-report-template.model';
 import { LabTest } from '../../shared/lab-test.model';
 import * as _ from 'lodash';
 import { LabSignatoriesViewModel } from './lab-signatories.model';
-import { CFGParameterModel } from '../../../settings/shared/cfg-parameter.model';
+import { CFGParameterModel } from '../../../settings-new/shared/cfg-parameter.model';
 import { LabComponentModel } from '../../shared/lab-component-json.model';
 import { LabVendorsModel } from '../../external-labs/vendors-settings/lab-vendors.model';
 import { CoreCFGLookUp } from './coreCFGLookUp.model';
+import { LabCategoryModel } from '../../shared/lab-category.model';
+import { GovernmentItems } from '../../shared/lab-government-items.model';
+import { MappedGovernmentItems } from '../../shared/map-government-items.model';
 //import { LabVendorsModel } from '../external-labs/vendors/lab-vendors.model';
 
 
@@ -49,6 +52,15 @@ export class LabSettingsBLService {
       map(res => { return res });
   }
 
+  GetAllLabCategory() {
+    return this.labSettingDlServ.GetAllLabCategory()
+      .map(res => { return res });
+  }
+  GetAllSpecimenList() {
+    return this.labSettingDlServ.GetAllLabSpecimen()
+      .map(res => { return res });
+  }
+
   
 
   //Post New Report Template
@@ -86,8 +98,21 @@ export class LabSettingsBLService {
     return this.labSettingDlServ.PostLabLookUp(data)
       .map(res => { return res })
   }
-
-
+  PostNewLabCategory(category: LabCategoryModel) {
+    let data = JSON.stringify(category);
+    return this.labSettingDlServ.PostNewLabCategory(data)
+      .map(res => { return res })
+  }
+  PostNewLabSpecimen(specimen: string) {
+    return this.labSettingDlServ.PostNewLabSpecimen(specimen)
+      .map(res => { return res })
+  }
+  PutLabCategory(category: LabCategoryModel) {
+    let data = JSON.stringify(category);
+    return this.labSettingDlServ.PutLabCategory(data)
+      .map(res => { return res })
+  }
+  
 
   //Update the template
   UpdateTemplate(reportTemplateData: LabReportTemplateModel) {
@@ -99,7 +124,12 @@ export class LabSettingsBLService {
   }
 
   UpdateNewLabTest(labTestData: LabTest) {
-    let newlabTestData: any = _.omit(labTestData, ['LabTestValidator']);
+    if (labTestData.LabTestComponentMap && labTestData.LabTestComponentMap.length) {
+      labTestData.LabTestComponentMap.forEach(val => {
+        val.LabTestComponent = _.omit(val.LabTestComponent, ['LabComponentJsonValidator']);
+      });
+    }
+    let newlabTestData: any = _.omit(labTestData, ['LabTestValidator']);    
     let data = JSON.stringify(newlabTestData);
     return this.labSettingDlServ.PutNewLabTest(data)
       .map(res => { return res })
@@ -146,4 +176,27 @@ export class LabSettingsBLService {
   }
 
   //end: sud:28Apr'19--for lab-external vendors.
+
+  //start: Anjana: 8/31/2020 : getting all gov specified lab components
+  GetAllGovLabComponents(){
+    return this.labSettingDlServ.GetAllGovLabComponents();
+  }
+
+  GetAllMappedComponents(){
+    return this.labSettingDlServ.GetAllMappedComponents();
+  }
+  
+  MapGovLabComponent(comp: MappedGovernmentItems){
+    let temp = _.omit(comp, ['GovItemValidator']);
+    let data = JSON.stringify(temp);
+    return this.labSettingDlServ.MapGovLabComponent(data).map(res => {return res });
+  }
+
+  UpdateMappedGovLabComponent(comp: MappedGovernmentItems){
+    let temp = _.omit(comp, ['GovItemValidator']);
+    let data = JSON.stringify(temp);
+
+    return this.labSettingDlServ.UpdateMappedGovLabComponent(data).map(res => {return res });
+  }
+  //end: Anjana: 8/31/2020 : getting all gov specified lab components
 }

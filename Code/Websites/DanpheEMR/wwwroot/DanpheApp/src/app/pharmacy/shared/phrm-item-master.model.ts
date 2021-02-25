@@ -21,6 +21,7 @@ export class PHRMItemMasterModel {
     public BudgetedQuantity: number = 0;
     public VATPercentage: number = 0;
     public IsVATApplicable: boolean = false;
+    public PackingTypeId:number = null;
     public CreatedBy: number = null;
     public CreatedOn: string = null;
     public ModifiedBy: number = null;
@@ -30,12 +31,13 @@ export class PHRMItemMasterModel {
     public GenericId: number = 0;
     public ABCCategory: string;
     public Dosage: string;
-    public RackName: string = null;
+    public RackName: string = null; //Dispensary Rack Name
+    public StoreRackId: number = null;
     public VED: string;
     public SalesCategoryId: number = 0;
-
+    public CCCharge: number = 0;
     public ItemValidator: FormGroup = null;
-
+    public IsNarcotic :boolean = false;
     constructor() {
         var _formBuilder = new FormBuilder();
         this.ItemValidator = _formBuilder.group({
@@ -45,6 +47,7 @@ export class PHRMItemMasterModel {
             'ItemTypeId': ['', Validators.required],
             'UOMId': ['', Validators.required],
             'GenericId': ['', Validators.required],
+            'PackingTypeId': ['', Validators.required],
             'ReOrderQuantity': ['', Validators.compose([ Validators.pattern('^(0|[1-9]{1}[0-9]*)$')])],
             'MinStockQuantity': ['', Validators.compose([Validators.pattern('^(0|[1-9]{1}[0-9]*)$')])],
             'BudgetedQuantity': ['', Validators.compose([Validators.pattern('^(0|[1-9]{1}[0-9]*)$')])],

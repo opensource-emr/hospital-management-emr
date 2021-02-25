@@ -1,0 +1,86 @@
+<div class="col-md-12" style="padding:0px!important;">
+
+  <div class="col-md-12" style="font-size:larger; margin-bottom:20px !important; padding: 0px !important;">
+    <div class="col-md-4" style="padding-left:0px !important;">
+      <h5><strong>{{currentPatInfo.Name}} ({{currentPatInfo.Age}} / {{currentPatInfo.Gender}})</strong></h5>
+    </div>
+    <div class="col-md-4">
+      <h5>
+        <strong>
+          Admitted On: <date-lbl [value]="currentPatInfo.AdmittedDate" [show-time]="true"></date-lbl>
+        </strong></h5>
+    </div>
+    <div class="col-md-4">
+      <h5><strong> Admitted Doc: {{currentPatInfo.AdmittingDoctorName}}</strong> </h5>
+    </div>
+  </div>
+  <div class="col-md-12"
+    style="margin-bottom:10px !important; padding: 0px !important; font-weight:700; font-size:small;">
+    <p *ngIf="previousWardBedInfo" class="col-md-6">
+      Transfered from : {{previousWardBedInfo?.WardName}} /
+      {{previousWardBedInfo?.BedCode}} - {{previousWardBedInfo?.BedFeature}}
+    </p>
+    <div *ngIf="currentWardBedInfo" class="col-md-6">
+      <p *ngIf="currentWardBedInfo.Action == 'admission'">
+        Admitted By/On : {{currentWardBedInfo.CreatedBy }} / <date-lbl [value]="currentWardBedInfo.CreatedOn"
+          [show-time]="true"></date-lbl>
+      </p>
+      <p *ngIf="currentWardBedInfo.Action == 'transfer'">
+        Transfered By/On : {{currentWardBedInfo.CreatedBy }} / <date-lbl [value]="currentWardBedInfo.StartDate"
+          [show-time]="true"></date-lbl>
+      </p>
+    </div>
+  </div>
+  <div class="col-md-12" style="padding:0px!important;">
+    <div class="row">
+      <!--Start: Vitals and add vital selector -->
+      <div class="col-md-8">
+        <vitals-list [returnVitalsList]="true" (vitalsEmitter)="GetAllVitals($event)"></vitals-list>
+      </div>
+      <!--End: Vitals and add vital selector -->
+
+      <div class=" col-md-4">
+        <div>
+          <label class="control-label col-md-4" style="font-weight:700; font-size:small; padding:0px !important;">
+            Received On <b class="color-red">*</b>
+            <b>:</b>
+          </label>
+          <div class="col-md-8">
+            <danphe-date-picker [(ngModel)]="note.ReceivedOn" [ngModelOptions]="{standalone: true}"
+                            [showTime]="true" [CalendarTypes]="'en,np'">
+            </danphe-date-picker>
+          </div>
+        </div>
+
+        <!--Start: Add Receive note -->
+        <div>
+          <label class="control-label col-md-12">
+            <label style="font-weight: 800;font-size: large;padding: 0px !important;">
+              Receive Note *
+            </label>
+            <label style="color:green;margin-left: 10px;">
+              [mandatory]
+            </label>
+
+          </label>
+          <!--<textarea class="col-md-12"
+              rows="8"
+              name="receiveNote"
+              [(ngModel)]="note.FreeTextNote.FreeText">
+          </textarea>-->
+          <danphe-ckeditor [readonly]="false" (get-html-content)="onChangeEditorData($event)" [panel-height]="'270px'">
+          </danphe-ckeditor>
+        </div>
+        <!--End: Add Receive note -->
+      </div>
+    </div>
+
+    <div class="panel-footer text-right" style="margin-top:30px !important;">
+      <button class="btn primary-btn" (click)="SubmitReceiveNote()" [disabled]="!note.ReceivedOn">
+        Receive and
+        Continue
+      </button>
+      <button class="btn danger-btn" (click)="Discard()">Discard</button>
+    </div>
+  </div>
+</div>

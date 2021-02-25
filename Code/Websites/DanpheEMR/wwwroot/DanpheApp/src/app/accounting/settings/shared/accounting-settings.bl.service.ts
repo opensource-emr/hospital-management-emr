@@ -11,6 +11,8 @@ import * as moment from 'moment/moment';
 import * as _ from 'lodash';
 import { VoucherModel } from './voucher.model';
 import { VoucherHeadModel } from './voucherhead.model';
+import { SectionModel } from './section.model';
+import { ChartofAccountModel } from './chart-of-account.model';
 
 @Injectable()
 export class AccountingSettingsBLService {
@@ -22,7 +24,11 @@ export class AccountingSettingsBLService {
     public GetLedgerList() {
         return this.accountingSettingsDLService.GetLedgersList()
             .map(res => { return res});
-    }
+    }   
+    public getPrimaryGroupList() {
+        return this.accountingSettingsDLService.getPrimaryGroupList()
+            .map(res => { return res});
+    }  
     public GetLedgers() {
         return this.accountingSettingsDLService.GetLedgers()
             .map(res => { return res });
@@ -47,6 +53,57 @@ export class AccountingSettingsBLService {
             throw ex;
         }
     }
+      
+    //
+    GetEmployeeList() {
+        try {
+            return this.accountingSettingsDLService.GetEmployeeList()
+                .map((responseData) => {
+                    return responseData;
+                });
+        } catch (ex) {
+            throw ex;
+        }
+    }
+    GetCreditOrgList() {
+        try {
+            return this.accountingSettingsDLService.GetCreditOrgList()
+                .map((responseData) => {
+                    return responseData;
+                });
+        } catch (ex) {
+            throw ex;
+        }
+    }
+    GetInvVendorList(){
+        try{
+            return this.accountingSettingsDLService.GetInvVendorList()
+                .map((responseData) =>{
+                    return responseData;
+                });
+        }
+        catch (ex){
+            throw ex;
+        }
+    }
+    //get inventory subcategory list
+    GetInvSubcategoryList(){
+    try{
+        return this.accountingSettingsDLService.GetInvSubcategoryList()
+            .map((responseData) =>{
+                return responseData;
+            });
+    }
+    catch (ex){
+        throw ex;
+    }
+}
+
+//get fiscal year activity details 
+public getfsyearactivitydetail() {
+    return this.accountingSettingsDLService.getfsyearactivitydetail()
+        .map(res => { return res});
+} 
     //public GetLedgerGroupwithMultipleVoucher() {
 
     //    return this.accountingSettingsDLService.GetLedgerGroupwithMultipleVoucher()
@@ -60,15 +117,22 @@ export class AccountingSettingsBLService {
         var temp = _.omit(CurrentLedger, ['LedgerValidator']);
         return this.accountingSettingsDLService.PostLedgers(temp)
             .map(res => { return res });
-  }
-  public AddLedgerList(CurrentLedgers: Array<LedgerModel>) { //postong Multiple Ledgers
-    //omiting the LedgerValidator during post because it causes cyclic error during serialization in server side.
-    var newLed: any = CurrentLedgers.map(led => {
-      return _.omit(led, ['LedgerValidator']);
-    });
-    return this.accountingSettingsDLService.PostLedgersList(newLed)
-      .map(res => { return res });
-  }
+    }
+   
+    public AddSection(CurrentSection :SectionModel) {  
+      //  omiting the SectionValidator during post because it causes cyclic error during serialization in server side.
+        var temp = _.omit(CurrentSection, ['SectionValidator']);
+        return this.accountingSettingsDLService.PostSection(temp)
+            .map(res => { return res });
+    } 
+    public AddLedgerList(CurrentLedgers: Array<LedgerModel>) { //postong Multiple Ledgers
+        //omiting the LedgerValidator during post because it causes cyclic error during serialization in server side.
+        var newLed: any = CurrentLedgers.map(led => {
+            return _.omit(led, ['LedgerValidator']);
+        });
+        return this.accountingSettingsDLService.PostLedgersList(newLed)
+            .map(res => { return res });
+    }
     public AddFiscalYear(fiscalyear: FiscalYearModel) {
         //omiting the FiscalYearValidator during post because it causes cyclic error during serialization in server side.
         var temp = _.omit(fiscalyear, ['FiscalYearValidator']);
@@ -97,6 +161,10 @@ export class AccountingSettingsBLService {
         return this.accountingSettingsDLService.PutFiscalYearStatus(selectedLedger)
             .map(res => { return res });
     }
+    public PutReopenFiscalYear(selectedLedger) {
+        return this.accountingSettingsDLService.PutReopenFiscalYear(selectedLedger)
+            .map(res => { return res });
+    }
 
     public UpdateCostCenterItemStatus(selectedCostCenterItm) {
         return this.accountingSettingsDLService.PutCostCenterItemStatus(selectedCostCenterItm)
@@ -118,7 +186,18 @@ export class AccountingSettingsBLService {
         return this.accountingSettingsDLService.PutVoucherHead(temp)
             .map(res => { return res });
     }
-
+    //update section
+    public UpdateSection(CurrentSection: SectionModel) {
+        //omiting the SectionValidator during post because it causes cyclic error during serialization in server side.
+        var temp = _.omit(CurrentSection, ['SectionValidator']);
+        return this.accountingSettingsDLService.PutSection(temp)
+            .map(res => { return res });
+    }
+    public UpdateCOA(coa: ChartofAccountModel) {
+        var temp = _.omit(coa, ['COAValidator']);
+        return this.accountingSettingsDLService.PutCOA(temp)
+            .map(res => { return res });
+    }
     //#endregion Ledger Settings Calls
 
     //#region voucher Settings Calls
@@ -157,6 +236,16 @@ export class AccountingSettingsBLService {
         return this.accountingSettingsDLService.GetChartofAccount()
             .map(res => { return res });
     }
+
+    //get provisional ledger code
+    public GetProvisionalLedgerCode() {
+        try {
+            return this.accountingSettingsDLService.GetProvisionalLedgerCode()
+                .map(res => { return res });
+        } catch (ex) {
+            throw ex;
+        }
+    }
     //Post
     public AddVouchers(CurrentVoucher: VoucherModel) {
         //omiting the VoucherValidator during post because it causes cyclic error during serialization in server side.
@@ -168,6 +257,11 @@ export class AccountingSettingsBLService {
         //omiting the VoucherValidator during post because it causes cyclic error during serialization in server side.
         var temp = _.omit(CurrentVoucherhead, ['VoucherHeadValidator']);
         return this.accountingSettingsDLService.PostVoucherHead(temp)
+            .map(res => { return res });
+    }
+    public PostCOA(COA: ChartofAccountModel) {
+        var temp = _.omit(COA, ['COAValidator']);
+        return this.accountingSettingsDLService.PostCOA(temp)
             .map(res => { return res });
     }
     //Put

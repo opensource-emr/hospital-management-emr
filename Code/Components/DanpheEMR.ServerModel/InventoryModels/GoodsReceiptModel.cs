@@ -14,11 +14,13 @@ namespace DanpheEMR.ServerModel
 
         [Key]
         public int GoodsReceiptID { get; set; }
-
+        public int GoodsReceiptNo { get; set; }
         public DateTime? GoodsReceiptDate { get; set; }
         public int? PurchaseOrderId { get; set; }
+        public string GRCategory { get; set; }
         public decimal TotalAmount { get; set; }
         public string Remarks { get; set; }
+        public string CancelRemarks { get; set; }
         public int? CreatedBy { get; set; }
         public DateTime? CreatedOn { get; set; }
         public int VendorId { get; set; }
@@ -50,6 +52,9 @@ namespace DanpheEMR.ServerModel
         public virtual List<GoodsReceiptItemsModel> GoodsReceiptItem { get; set; }
         public int? ModifiedBy { get; set; }
         public DateTime? ModifiedOn { get; set; }
+        public int FiscalYearId { get; set; }
+        [NotMapped]
+        public string FiscalYear { get; set; }
 
         //public VendorMasterModel Vendor { get; set; }
         //  public  decimal? TotalWithoutTDS { get; set; }
@@ -76,5 +81,26 @@ namespace DanpheEMR.ServerModel
         public string ItemName { get; set; }
         [NotMapped]
         public List<SyncBillingAccountingModel> BillSyncs { get; set; }
+        public bool IsVerificationEnabled { get; set; }
+        public string VerifierIds { get; set; }
+        [NotMapped]
+        public List<POVerifier> VerifierList { get; set; }
+        [NotMapped]
+        public bool IsVerificationAllowed { get; set; }
+        [NotMapped]
+        public string VerificationStatus { get; set; }
+        [NotMapped]
+        public int CurrentVerificationLevel { get; set; }
+        [NotMapped]
+        public int CurrentVerificationLevelCount { get; set; }
+        [NotMapped]
+        public int MaxVerificationLevel { get; set; }
+        public int? VerificationId { get; set; }
+        public string GRStatus { get; set; }
+        [NotMapped]
+        public List<int> ReferenceIdsOne { get; set; }
+
+        public int? CancelledBy { get; set; }//sud:15-Oct-2020: This property was there in db but not in here.
+        public DateTime? CancelledOn { get; set; }//sud:15-Oct-2020: This property was there in db but not in here.
     }
 }

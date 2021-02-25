@@ -17,6 +17,7 @@ export class VoucherHeadModel {
     public ModifiedBy: number = 0;
     public ModifiedOn: string = null;
     public IsActive: boolean = true;
+    public IsDefault : boolean = false;
     public VoucherHeadValidator: FormGroup = null;
     constructor() {
 

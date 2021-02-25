@@ -17,6 +17,7 @@ import { CommonFunctions } from "../../../shared/common.functions";
 import { PatientBillingContextVM } from "../../shared/patient-billing-context-vm";
 import { RouteFromService } from "../../../shared/routefrom.service";
 import { BillingTransaction } from "../../shared/billing-transaction.model";
+import { ENUM_BillingStatus } from "../../../shared/shared-enums";
 
 @Component({
   templateUrl: './ins-provisional-billing.html'
@@ -55,7 +56,7 @@ export class INSProvisionalBillingComponent {
   public showPatBillHistory: boolean = false;
   public loading: boolean = false;
   public showInpatientMessage = false;
-  public itemList: Array<any>;
+  //public itemList: Array<any>;
 
   //Insurance Item Request:
   public showInsuranceAddItemPopUp: boolean = false;
@@ -101,7 +102,7 @@ export class INSProvisionalBillingComponent {
       this.callbackservice.CallbackRoute = '/Billing/InsuranceMain/InsProvisional';
       this.router.navigate(['/Billing/CounterActivate']);
     } else {
-      this.GetBillingItems();
+      //this.GetBillingItems();
       this.creditBillGridColumns = GridColumnSettings.InsuranceBillCreditBillSearch;
       this.GetInsuranceUnpaidTotalBills();
       this.GetDoctorsList();
@@ -225,7 +226,7 @@ export class INSProvisionalBillingComponent {
       });
 
       this.billingTransaction.BillingTransactionItems.forEach(itm => {
-        itm.BillStatus = "unpaid";
+        itm.BillStatus = ENUM_BillingStatus.unpaid;// "unpaid";
         //itm.PaidCounterId = this.counterId; //Insurance is Claimed 
       });
 
@@ -302,21 +303,21 @@ export class INSProvisionalBillingComponent {
     this.router.navigate(['Billing/ReceiptPrint']);
   }
 
-  public GetBillingItems() {
-    this.billingBLService.GetBillItemList()
-      .subscribe(res => {
-        if (res.Status == 'OK' && res.Results.length) {
-          this.itemList = res.Results;
-        }
-        else {
-          this.msgBoxServ.showMessage('Failed', ["Unable to get Item List. Check log for error message."]);
-          console.log(res.ErrorMessage);
-        }
-      },
-        err => {
-          console.log(err.ErrorMessage);
-        });
-  }
+  //public GetBillingItems() {
+  //  this.billingBLService.GetBillItemList()
+  //    .subscribe(res => {
+  //      if (res.Status == 'OK' && res.Results.length) {
+  //        this.itemList = res.Results;
+  //      }
+  //      else {
+  //        this.msgBoxServ.showMessage('Failed', ["Unable to get Item List. Check log for error message."]);
+  //        console.log(res.ErrorMessage);
+  //      }
+  //    },
+  //      err => {
+  //        console.log(err.ErrorMessage);
+  //      });
+  //}
 
   GetPatientInsuranceProvisionalItems(patientId: number, printProvisional: boolean = false) {
     this.billingBLService.GetInsuranceProvisionalItemsByPatientId(patientId)

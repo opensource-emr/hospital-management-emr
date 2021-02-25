@@ -36,6 +36,10 @@ namespace DanpheEMR.ServerModel
 
         public int? DiagnosisId { get; set; }
 
+        public string WardName { get; set; }
+                
+        public bool IsActive { get; set; }        
+
         public virtual VisitModel Visit { get; set; }       
 
         public virtual PatientModel Patient { get; set; }
@@ -45,6 +49,18 @@ namespace DanpheEMR.ServerModel
        //required for billing for listing the imaging items <dinesh:19Jan'17>
         public virtual RadiologyImagingItemModel ImagingItem { get; set; }
         public bool? HasInsurance { get; set; }
-        
+        public bool? IsScanned { get; set; }
+        public int? ScannedBy { get; set; }
+        public DateTime? ScannedOn { get; set; }
+        public string ScanRemarks { get; set; }
     }  
+    
+    public class RadiologyScanDoneDetail
+    {
+        public int ImagingRequisitionId { get; set; }
+        public string ScannedOn { get; set; }
+        public string Remarks { get; set; }
+        public string PatientCode { get; set; }
+        public string ShortName { get; set; }
+    }
 }

@@ -22,7 +22,9 @@
 </style>
 <base href="/">
 <div class="row">
-    <div class="page-bar" style="margin: 0px 0px 20px 0px;">
+  <div class="col-md-12">
+	  
+    <div class="page-bar page-bar-primary" style="margin: 0px 0px 20px 0px;">
         <ul class="page-breadcrumb" *ngIf="validRoutes != undefined">
         <!--Start: Primary Menu Items -->
             <li *ngFor="let route of primaryNavItems">
@@ -54,6 +56,7 @@
 
 
 
+    </div>
     </div>
 </div>
 

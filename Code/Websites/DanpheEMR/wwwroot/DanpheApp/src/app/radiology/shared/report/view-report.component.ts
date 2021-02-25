@@ -16,27 +16,19 @@ import { CoreService } from '../../../../../src/app/core/shared/core.service';
 import { SecurityService } from '../../../security/shared/security.service';
 
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { RadEmailModel } from '../rad-email.model';
-import * as html2canvas from 'html2canvas';
+import { RadEmailModel, ImageAttachmentModel } from '../rad-email.model';
+import html2canvas from 'html2canvas';
 import * as jsPDF from 'jspdf';
 import { CoreCFGEmailSettingsModel } from '../CoreCFGEmailSettings.model';
+import { CompileReflector } from '@angular/compiler';
 
 @Component({
   selector: "danphe-view-imaging-report",
   templateUrl: "./view-report.html",
-  styles: [`.rad-single-signature{flex: 0 0 33%;padding: 15px;}
-.main-rad-sgn{float: right;text-align: left;}
-.rad-signature{white-space: pre-line;padding-top: 10px;margin-top: 50px;border-top: 2px dashed;}
-.flow-hr-reverse{flex-direction: row-reverse;}
-.rad-hdr-flex-col{padding: 3px 0px;}
-.rad-hdr-flex-col:nth-child(odd) {flex-basis: 50%;}
-.rad-hdr-flex-col:nth-child(even) {flex-basis: 40%;}
-.border-wrap{border: 1px solid;padding: 10px;}
-.rad-report-holder{margin-top: 15px;}
-.ref-label{margin-bottom: 0; line-height:36px;}`]
+  styleUrls: ['./rad-view-report.style.css']
 })
 export class ViewReportComponent {
-  public showImagingReport: boolean = false;
+
   public report: ImagingReportViewModel = new ImagingReportViewModel();
   //requisitionId used instead of reportId because we're using using this component in patientoverview page where getting list of requisitions.
   @Input("requisitionId")
@@ -52,8 +44,11 @@ export class ViewReportComponent {
   @Output("on-report-edit")
   onReportEdit: EventEmitter<Object> = new EventEmitter<Object>();
 
-  public showPopUp: boolean = false;
-  public doctorsList: Array<any> = [];
+  @Input("print-without-preview")
+  printWithoutPreview: boolean = false;
+
+  public showChangeReferrerPopUp: boolean = false;
+
   public doctorSelected: any;
   public hospitalCode: string = null;
   public topHeightInReportClass: string = '';
@@ -67,7 +62,8 @@ export class ViewReportComponent {
 
   public imageUploadFolderPath: string = null;//sud:18Aug'19--for radiology image upload.
 
-
+  public ExtRefSettings = null;
+  public enableDoctorUpdateFromSignatory: boolean = false;
 
   constructor(public imagingBLService: ImagingBLService, public coreService: CoreService,
     public radiologyService: RadiologyService, public securityService: SecurityService,
@@ -87,16 +83,19 @@ export class ViewReportComponent {
     this.hospitalCode = this.coreService.GetHospitalCode();
     this.loggedInUserId = this.securityService.loggedInUser.EmployeeId;
     this.emailSettings = this.coreService.GetEmailSettings();
+    this.enableDoctorUpdateFromSignatory = this.coreService.UpdateAssignedToDoctorFromAddReportSignatory();
 
     if (this.hospitalCode && this.hospitalCode.toLowerCase() == 'mnk') {
       this.topHeightInReportClass = 'mnk-rad-hdr-gap default-radheader-gap';
-    } else {
+    }
+    else {
       this.topHeightInReportClass = 'rad-hdr-gap default-radheader-gap';
     }
 
-    this.GetDoctorsList();
 
     this.imageUploadFolderPath = this.radiologyService.GetImageUploadFolderPath();
+    this.ExtRefSettings = this.radiologyService.GetExtReferrerSettings();
+    this.RptHdrSettng = this.ReportHeaderPatientNameSettings();
 
   }
 
@@ -109,6 +108,7 @@ export class ViewReportComponent {
       this.globalListenFunc();
     }
   }
+
   ngAfterViewInit() {
     //CTRL+P  -> FOR Printing.
     this.globalListenFunc = this.renderer.listen('document', 'keydown', e => {
@@ -125,52 +125,46 @@ export class ViewReportComponent {
     });
   }
 
+  public showImagingReport: boolean = false;
+  public isReportLoadCompleted: boolean = false;
 
-  @Input("showImagingReport")
-  public set value(val: boolean) {
-    if (val && this.requisitionId) {
-      this.GetImagingReport();
+  ngOnInit() {
+    if (this.requisitionId) {
+      this.GetImagingReport(this.printWithoutPreview);
     }
-    else
-      this.showImagingReport = false;
   }
 
-  public GetDoctorsList() {
-    this.imagingBLService.GetDoctorsList()
-      .subscribe(res => {
-        if (res.Status == 'OK') {
-          if (res.Results.length) {
-            this.doctorsList = res.Results;
-          }
-          else {
-            console.log(res.ErrorMessage);
-          }
-        }
-      },
-        err => {
-          this.messageBoxService.showMessage('Failed', ["unable to get Doctors list.. check log for more details."]);
-        });
+  ngAfterViewChecked() {
+    var doc = document.getElementById("print_page_end");
+    // this is callback method. so,print function called while condition is matched.
+    if (doc && this.printWithoutPreview && this.isReportLoadCompleted) {
+      this.PrintReportHTML();
+      this.isReportLoadCompleted = false;
+    }
   }
 
-  public GetImagingReport() {
+
+  public GetImagingReport(printWoPreview: boolean = false) {
+
     this.imagingBLService.GetImagingReportByRequisitionId(this.requisitionId)
       .subscribe(res => {
         if (res.Status == "OK" && res.Results) {
+
           this.report = res.Results;
           //IMPORTANT: sanitizer.bypassSecurity : Needed to retain style/css of innerHTML !! --sud:12Apr'18'
           let rptText = res.Results.ReportText;
           this.report.ReportText = this.sanitizer.bypassSecurityTrustHtml(rptText);
 
-          //this.report.DoctorSignatureJSON = JSON.parse(this.report.DoctorSignatureJSON);
           this.report.Signatories = JSON.parse(this.report.Signatories);
 
-          //var signatoryArray = JSON.parse(this.report.Signatories);
-          //var userSignedIn = signatoryArray.find(a => a.EmployeeId == this.loggedInUserId);
-          //if (userSignedIn && this.report.SignatoryImageBase64) {
-          //  this.showDigitalSignatureImage = true;
-          //}
+          this.SetPatHeaderOnLoad();
 
           this.SetImagePath();
+
+          this.showImagingReport = true;
+          this.isReportLoadCompleted = true;
+          this.printWithoutPreview = printWoPreview;
+
         }
         else {
           this.messageBoxService.showMessage("failed", [res.ErrorMessage]);
@@ -185,11 +179,13 @@ export class ViewReportComponent {
     //split the string ImageName into array pathToImage.
     if (this.report.ImageName) {
       this.album = [];
+      let groupOf3Img = [];//push 3 images at a time to this variable, and push the array in album variable above.
+
       let imageNames = this.report.ImageName.split(";");
       imageNames.forEach(imgName => {
 
-       // let imgPath = "/app/fileuploads/Radiology/" + this.report.ImagingTypeName + "/" + imgName;
-        let imgPath = "/DanpheApp/src/app/fileuploads/Radiology/" + this.report.ImagingTypeName + "/" + imgName;
+        // let imgPath = "/app/fileuploads/Radiology/" + this.report.ImagingTypeName + "/" + imgName;
+        let imgPath = "/fileuploads/Radiology/" + this.report.ImagingTypeName + "/" + imgName;
         //let imgPath = this.imageUploadFolderPath + this.report.ImagingTypeName + "/" + imgName;
 
         const image = {
@@ -197,15 +193,30 @@ export class ViewReportComponent {
           caption: imgName,
           thumb: null
         }
-        this.album.push(image);
+
+        groupOf3Img.push(image);
+        //if groupOf3Img is full (length=3) then push it to album[] and clear it again.
+        if (groupOf3Img.length == 3) {
+          this.album.push(groupOf3Img);
+          groupOf3Img = [];
+        }
+
       });
+
+      //push remaining images to album[] array, if any (there may be 1 or 2 images (max) since they won't be pushed inside loop.)
+      if (groupOf3Img.length > 0) {
+        this.album.push(groupOf3Img);
+      }
+
     }
     this.showImagingReport = true;
   }
-  open(index: number): void {
+
+  OpenLightBox(vIndex: number, hIndex: number): void {
     // open lightbox
-    this.lightbox.open(this.album, index);
+    this.lightbox.open(this.album[vIndex], hIndex);
   }
+
   Close() {
     this.report = null;
     this.requisitionId = null;
@@ -214,22 +225,7 @@ export class ViewReportComponent {
     this.onReportEdit.emit({ Submit: true });
   }
 
-  PrintReport() {
-    this.dlService.ReadExcel("/RadiologyReport/GetImagingReport?reportId=" + this.report.ImagingReportId)
-      .map(res => res)
-      .subscribe(res => {
-        let blob = res;
-        let a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = this.report.PatientName + " " + this.report.ImagingItemName + " " + moment().format("DD-MMM-YYYY_HHmmA") + '.docx';
-        document.body.appendChild(a);
-        a.click();
 
-      },
-        err => {
-          console.log(err.ErrorMessage);
-        });
-  }
   PrintReportHTML() {
     let popupWinindow;
     var printContents = document.getElementById("printpage").innerHTML;
@@ -272,7 +268,10 @@ export class ViewReportComponent {
   public reportToEdit: ImagingReportViewModel = null;
   public currentPatient: Patient = null;
   EditReport() {
+
     this.reportToEdit = Object.assign({}, this.report);
+    this.reportToEdit.ProviderId = this.report.ProviderId;
+
     this.currentPatient = <Patient>{
       PatientId: this.report.PatientId,
       ShortName: this.report.PatientName,
@@ -281,7 +280,11 @@ export class ViewReportComponent {
       DateOfBirth: this.report.DateOfBirth,
       Gender: this.report.Gender,
       PatientCode: this.report.PatientCode
+
     };
+
+    this.selectedRefName = this.reportToEdit.ProviderName;
+    this.selectedRefId = this.reportToEdit.ProviderId;
     this.showEditReportWindow = false;
     this.showImagingReport = true;
     this.changeDetector.detectChanges();
@@ -290,9 +293,6 @@ export class ViewReportComponent {
     this.reportToEdit.ReportText = this.sanitizer.sanitize(SecurityContext.HTML, this.report.ReportText);
     this.showEditReportWindow = true;
 
-
-
-    //this.onReportEdit.emit({ report: this.report });
   }
 
 
@@ -313,49 +313,24 @@ export class ViewReportComponent {
       if (selReport.ImagingReportId)
         isUpdate = true;
       let orderStatus = $event.orderStatus;
-
+      //now we're getting report files separately.
+      let filesToUpload = $event.reportFiles;
+      this.album = [];//need to empty the album since it's showing duplicate images: sud:21Oct'19
 
       //filesToUpload,selReport,OrderStatus
-      this.imagingBLService.AddImgItemReport(null, selReport, orderStatus)
+      this.imagingBLService.AddImgItemReport(filesToUpload, selReport, orderStatus, this.enableDoctorUpdateFromSignatory)
         .subscribe(res => {
 
           if (res.Status == "OK") {
-
             this.showEditReportWindow = true;
             this.showImagingReport = false;
-
             this.changeDetector.detectChanges();
-
-            //this.reportToEdit.Signatories = JSON.stringify(this.report.Signatories);
-            //this.reportToEdit.ReportText = this.sanitizer.sanitize(SecurityContext.HTML, this.report.ReportText);
-            //this.showEditReportWindow = true;
-
             this.report = new ImagingReportViewModel();//reset the value of current report, it'll be loaded again from function below..
-
             this.showEditReportWindow = false;
             this.showImagingReport = true;
-
-            this.GetImagingReport();
-
-
-            // this.GetImagingReqsAndReportsByStatus();
-            // this.selectedReport.ImagingReportId = res.Results.ImagingReportId;
-            if (printReport) {
-
-              //this.ViewReport(res.Results.ImagingRequisitionId);
-              //this.showreport = false;
-            }
-            //if (res.Results.OrderStatus == "final")
-            //    this.showreport = false;
-
-            //if (isUpdate)
-            //    this.msgBoxServ.showMessage("success", ["Report Updated Successfully"]);
-            //else
-
-            // this.msgBoxServ.showMessage("success", ["Report Added Successfully"]);
+            this.GetImagingReport(true);//assigning printWithoutPreview argument true to print after view page loaded completly.
           }
-          //else
-          //    this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
+
         });
 
     } catch (exception) {
@@ -365,62 +340,63 @@ export class ViewReportComponent {
 
   }
 
-  openPopUpBox() {
-    this.showPopUp = false;
+
+  OpenChangeDocPopup() {
+    this.showChangeReferrerPopUp = false;
+    this.selectedRefId = null;
     this.changeDetector.detectChanges();
-    this.showPopUp = true;
+    this.showChangeReferrerPopUp = true;
   }
 
-  AssignSelectedDoctor() {
-    if (this.doctorSelected) {
-      this.UpdateDoctor();
-    } else {
+
+
+  closeReferrerPopup() {
+    this.showChangeReferrerPopUp = false;
+  }
+
+
+
+  UpdateReferredByDrToDB() {
+
+    if (!this.selectedRefId && !this.selectedRefName) {
       this.messageBoxService.showMessage("failed", ["No Doctor Selected or Written."]);
     }
-    this.showPopUp = false;
-  }
-
-  closePopUpBox() {
-    this.showPopUp = false;
-  }
-
-  UpdateDoctor() {
-    if (this.requisitionId && this.doctorSelected) {
-      var providerName: string = null;
-      var providerId: number = 0;
-      if (this.doctorSelected.EmployeeId) {
-        providerName = this.doctorSelected.LongSignature;
-        providerId = this.doctorSelected.EmployeeId;
-      } else if (this.doctorSelected.trim() != '') {
-        providerName = this.doctorSelected;
-      }
-
-      if (providerName && providerName.trim() != '') {
-        this.imagingBLService.PutDoctor(providerId, providerName, this.requisitionId)
-          .subscribe(res => {
-            if (res.Status == "OK") {
-              this.report["ProviderName"] = res.Results;
-              this.messageBoxService.showMessage("success", ["Doctor Updated"]);
-              this.doctorSelected = '';
-            } else {
-              this.doctorSelected = '';
-              this.messageBoxService.showMessage("failed", ["Doctor Name cannot be Updated in your Lab Report"]);
-            }
-          });
-      } else {
-        this.messageBoxService.showMessage("failed", ["No Doctor Selected or Written."]);
-        this.doctorSelected = '';
-      }
-
-    }
     else {
-      this.messageBoxService.showMessage("failed", ["There is no requisitions !!"]);
+      if (this.requisitionId) {
+        //if selected refId is null or undefined or empty then make it zero (see previous logic)
+        if (!this.selectedRefId) {
+          this.selectedRefId = 0;
+        }
+
+        if (this.selectedRefName && this.selectedRefName.trim() != '') {
+          this.imagingBLService.PutDoctor(this.selectedRefId, this.selectedRefName, this.requisitionId)
+            .subscribe(res => {
+              if (res.Status == "OK") {
+                this.report["ProviderName"] = res.Results;
+                this.messageBoxService.showMessage("success", ["Doctor Updated"]);
+                this.doctorSelected = '';
+              }
+              else {
+                this.doctorSelected = '';
+                this.messageBoxService.showMessage("failed", ["Doctor Name cannot be Updated in your Lab Report"]);
+              }
+            });
+        }
+        else {
+          this.messageBoxService.showMessage("failed", ["No Doctor Selected or Written."]);
+          this.doctorSelected = '';
+        }
+
+      }
+      else {
+        this.messageBoxService.showMessage("failed", ["There is no requisitions !!"]);
+      }
     }
+
+    this.showChangeReferrerPopUp = false;
+
   }
 
-  AssignedToDocListFormatter(data: any): string {
-    return data["FullName"];
-  }
 
   RemoveSignatureImage() {
     if (this.showDigitalSignatureImage) {
@@ -442,8 +418,6 @@ export class ViewReportComponent {
     this.loading = false;
 
     this.radEmail = new RadEmailModel();
-
-
 
     if (this.emailSettings.PdfContent) {
       html2canvas(document.getElementById("printpage"), {
@@ -470,16 +444,84 @@ export class ViewReportComponent {
     this.radEmail.SenderEmailAddress = this.emailSettings.SenderEmail;
     this.radEmail.Subject = 'Report of ' + this.report.PatientName;
 
+    this.LoadEmailAttachments_Images();
+
 
   }
 
 
+  public attachmentImages = [];
+
+  public LoadEmailAttachments_Images() {
+    if (this.report.ImageName) {
+      this.attachmentImages = [];
+      let albumTemp = [];
+      let imageNames = this.report.ImageName.split(";");
+      let count: number = 1;
+      let patName = this.report.PatientName;
+      let todayDate = moment().format("YYYYMMDD_HHmmss");
+      imageNames.forEach(imgName => {
+        let imgPath = "/fileuploads/Radiology/" + this.report.ImagingTypeName + "/" + imgName;
+        this.ConvertImgSrcUrlToBase64(imgPath, function (dataUri) {
+          let img: ImageAttachmentModel = new ImageAttachmentModel();
+          //we've to send only the base64 content. dataUri format includes the string: data:image/png.. in its value so we're replacing it with empty string.
+          img.src = dataUri;//this will be used to show preview on email box.
+          img.ImageBase64 = dataUri.replace("data:image/png;base64,", "");
+          img.ImageName = patName + "_" + todayDate + "_" + count.toString();
+          img.IsSelected = true;
+          ////everytime count increases, re-assign to preview image count.
+          count++;
+          albumTemp.push(img);
+        });
+      });
+
+      //this.attachmentImages = albumTemp;
+      this.radEmail.ImageAttachments_Preview = albumTemp;
+      this.email_previewImage_Count = imageNames.length;
+    }
+  }
 
 
+
+  public ConvertImgSrcUrlToBase64(url, callback) {
+    let image = new Image();
+    image.onload = function () {
+      var canvas = document.createElement('canvas');
+      canvas.width = image.width; // or 'width' if you want a special/scaled size //this.naturalWidth
+      canvas.height = image.height; // or 'height' if you want a special/scaled size //this.naturalHeight
+      canvas.getContext('2d').drawImage(image, 0, 0);
+      // Get raw image data
+      callback(canvas.toDataURL('image/png'));
+      //callback(canvas.toDataURL(''));
+    };
+
+    image.src = url;
+  }
+
+
+  public email_showImagePreview: boolean = false;
+  public email_previewImage_Src: string = null;
+  public email_previewImage_Count: number = 0;
+
+
+
+  email_imagePreview_onMouseOver(imgObj): void {
+    this.email_previewImage_Src = imgObj.src;
+    this.email_showImagePreview = true;
+  }
+
+  email_imagePreview_onMouseOut(): void {
+    this.email_showImagePreview = false;
+  }
+
+  ImgPreviewChkOnChange() {
+    this.email_previewImage_Count = this.radEmail.ImageAttachments_Preview.filter(a => a.IsSelected == true).length;
+  }
 
   public SendEmail() {
     if (this.emailSettings.TextContent) {
-      var itemDiv = document.getElementById("printpage").innerHTML;
+      //we have to take only text content, image won't be sent.
+      var itemDiv = document.getElementById("rptContentNoImage").innerHTML;
       let data = this.sanitizer.sanitize(SecurityContext.HTML, itemDiv);
 
       this.radEmail.HtmlContent = data;
@@ -499,19 +541,30 @@ export class ViewReportComponent {
         var allEmailIsValid = true;
 
         emailList.forEach(value => {
-          if (this.ValidateEmail(value)) {
-            this.radEmail.EmailList.push(value);
-          } else {
-            allEmailIsValid = false;
+          if (value) {//if user provides semicolon after Only one Email, split will create two objects in array, second with empty space.
+            if (this.ValidateEmail(value)) {
+              this.radEmail.EmailList.push(value);
+            } else {
+              allEmailIsValid = false;
+            }
           }
         });
 
         if (allEmailIsValid) {
-          console.log(this.radEmail);
+          //console.log(this.radEmail);
+          //remove unselected images before sending.
+          this.radEmail.ImageAttachments = this.radEmail.ImageAttachments_Preview.filter(a => a.IsSelected == true);
+
+          if (this.radEmail.ImageAttachments.length > 5) {
+            this.messageBoxService.showMessage("error", ["Cannot attach more than 5 images, please remove some and send again."]);
+            this.loading = false;
+            return;
+          }
+
           this.imagingBLService.sendEmail(this.radEmail)
             .subscribe(res => {
               if (res.Status == "OK") {
-                this.messageBoxService.showMessage('success', ['Email send to the given email.']);
+                this.messageBoxService.showMessage('success', ['Email sent successfuly.']);
                 this.loading = false;
                 this.CloseSendEmailPopUp();
               } else {
@@ -537,4 +590,79 @@ export class ViewReportComponent {
     return reg.test(email);
   }
 
+
+  //prat: 20sep2019 for internal and external referrer 
+  public defaultExtRef: boolean = false;
+  selectedRefId: number = null;
+  selectedRefName: string = null;
+
+  OnReferrerChanged($event) {
+    this.selectedRefId = $event.ReferrerId; //EmployeeId comes as ReferrerId from select referrer component.
+    this.selectedRefName = $event.ReferrerName;//EmployeeName comes as ReferrerName from select referrer component.
+
+  }
+
+  //end: Pratik: 20Sept'19--For External Referrals
+
+
+  //start: Pratik:20Sept show Patient Name of Report Header in Local Language
+
+  public isLocalNameSelected: boolean = false;
+  public PatientNameToDisplay: string = null;
+
+
+  SetPatHeaderOnLoad() {
+
+    if (this.RptHdrSettng.LocalNameEnabled) {
+      if (this.RptHdrSettng.DefaultLocalLang) {
+        this.isLocalNameSelected = true;//if default local language then  isLocalName should be true
+        if (this.report.PatientNameLocal) {
+          this.PatientNameToDisplay = this.report.PatientNameLocal;
+        }
+        else {
+          this.switchLocalLang();
+        }
+      }
+      else {
+        this.PatientNameToDisplay = this.report.PatientName;
+      }
+
+    }
+    else {
+      this.PatientNameToDisplay = this.report.PatientName;
+    }
+  }
+
+
+  public switchLocalLang() {
+    this.isLocalNameSelected = !this.isLocalNameSelected;
+
+    if (this.isLocalNameSelected) {
+      if (this.report.PatientNameLocal) {
+        this.PatientNameToDisplay = this.report.PatientNameLocal;
+      }
+      else {
+        this.messageBoxService.showMessage("notice", ["Patient Name not found in LOCAL Language."]);
+        this.isLocalNameSelected = false;
+      }
+    }
+    else {
+      this.PatientNameToDisplay = this.report.PatientName;
+    }
+  }
+
+  public RptHdrSettng = { LocalNameEnabled: true, DefaultLocalLang: true };//this is default value for rptHdr
+  public ReportHeaderPatientNameSettings() {
+    var currParam = this.coreService.Parameters.find(a => a.ParameterGroupName == "Radiology" && a.ParameterName == "ReportHeaderPatientNameSettings");
+    if (currParam && currParam.ParameterValue) {
+      return JSON.parse(currParam.ParameterValue);
+    }
+    else {
+      return { LocalNameEnabled: false, DefaultLocalLang: false };
+    }
+  }
+
+  //end: Pratik:20Sept show Patient Name of Report Header in Local Language
+
 }
+

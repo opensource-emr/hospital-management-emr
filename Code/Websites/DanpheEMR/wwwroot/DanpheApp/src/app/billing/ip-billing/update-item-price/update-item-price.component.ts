@@ -5,6 +5,10 @@ import { DanpheHTTPResponse } from '../../../shared/common-models';
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 import { CommonFunctions } from '../../../shared/common.functions';
 import { BillItemPrice } from '../../shared/billitem-price.model';
+import { BillingService } from '../../shared/billing.service';
+import { BillItemPriceVM } from '../../shared/billing-view-models';
+import { CoreService } from '../../../core/shared/core.service';
+import { SecurityService } from '../../../security/shared/security.service';
 
 @Component({
   selector: 'update-items',
@@ -24,19 +28,41 @@ export class UpdateItemPriceComponent implements OnInit {
   public IsInsurance: boolean = false;
 
   //Yubraj 29th July --Used for DiscableApplicable scenario only
-  public AllItemLists: Array<BillItemPrice> = new Array<BillItemPrice>();
+  public AllItemLists: Array<BillItemPriceVM> = new Array<BillItemPriceVM>();
   public discountApplicable: boolean = true;
+
+
+  public ShowAssignDocInPopup: boolean = false;
+  //public DocObj = { EmployeeId: null, EmployeeName: null};
+  public providerList: any;
 
   //@Input()
   public someItems: Array<BillingTransactionItem> = [];
   constructor(public msgBoxServ: MessageboxService,
-    public billingBLService: BillingBLService) {
+    public coreService: CoreService,
+    public billingBLService: BillingBLService,
+    public billingService: BillingService,
+    public securityService: SecurityService) {
+    this.GetProviderList();
   }
 
   ngOnInit() {
-    this.LoadAllBillItems();
-    var items = this.filteredItems.map(a => Object.assign(new BillingTransactionItem, a));
-    this.filteredItems = items;
+    this.AllItemLists = this.billingService.allBillItemsPriceList;
+    if (this.filteredItems && this.filteredItems.length > 0 && this.AllItemLists && this.AllItemLists.length > 0) {
+      //assign into newBillingTransaactionitem so that we can use its functions and validations.
+      this.filteredItems = this.filteredItems.map(a => {
+        return Object.assign(new BillingTransactionItem(), a);
+      });
+      this.FilterDiscountApplicableItems();
+      // this.AssignDoc
+    }
+
+
+    //console.log(this.filteredItems);
+
+
+    //var items = this.filteredItems.map(a => Object.assign(new BillingTransactionItem, a));
+    //this.filteredItems = items;
 
     //This component is used in OutPatient, InPatient and Insurance view detail page
     //Checking for insurance billing items
@@ -44,30 +70,27 @@ export class UpdateItemPriceComponent implements OnInit {
     this.IsInsurance = this.filteredItems[0].IsInsurance;
   }
 
-  //Getting All Billitem List to check with filtered items
-  LoadAllBillItems() {
-    this.billingBLService.GetBillItemList()
-      .subscribe(res => {
-        if (res.Status == 'OK') {
-          this.AllItemLists = res.Results;
-          this.FilterDiscountApplicableItems();
-        }
-      },
-        err => {
-          this.msgBoxServ.showMessage("error", ["Some error issue in updating group discount. Please try again."]);
-          this.loading = false;
-        });
-  }
+
 
   //Find and Get the DiscountApplicable item disable textbox for DiscountApplcable=false
   FilterDiscountApplicableItems() {
-    this.AllItemLists;
-    this.filteredItems;
+
     this.filteredItems.forEach(a => {
       var ItemDetails = this.AllItemLists.find(b => a.ItemId == b.ItemId && a.ItemName == b.ItemName);
-      this.discountApplicable = ItemDetails.DiscountApplicable;
-      if (!this.discountApplicable)
-        a.EnableControl("DiscountPercent", false)
+      if (ItemDetails) {
+        this.discountApplicable = ItemDetails.DiscountApplicable;
+        if (!this.discountApplicable) {
+          a.EnableControl("DiscountPercent", false);
+        }
+        if (ItemDetails.IsDoctorMandatory) {
+          this.ShowAssignDocInPopup = true;
+          a.IsDoctorMandatory = ItemDetails.IsDoctorMandatory;
+        }
+        if (a.ProviderId) {
+          a.DocObj.EmployeeId = a.ProviderId;
+          a.DocObj.FullName = a.ProviderName;
+        }
+      }
     });
   }
 
@@ -113,7 +136,14 @@ export class UpdateItemPriceComponent implements OnInit {
         currTxnItem.EnableControl("ItemName", false);
         currTxnItem.EnableControl("ServiceDepartmentId", false);
         currTxnItem.EnableControl("RequestedBy", false);
-        currTxnItem.EnableControl("ProviderId", false);
+        if (this.filteredItems[i].IsDoctorMandatory) {
+          //currTxnItem.EnableControl("ProviderId", true);
+          currTxnItem.UpdateValidator('on', 'ProviderId', 'required');
+        }
+        else {
+          currTxnItem.UpdateValidator('off', 'ProviderId', null);
+        }
+
 
         for (var valCtrls in currTxnItem.BillingTransactionItemValidator.controls) {
           currTxnItem.BillingTransactionItemValidator.controls[valCtrls].markAsDirty();
@@ -162,6 +192,17 @@ export class UpdateItemPriceComponent implements OnInit {
       .subscribe(res => {
         if (res.Status == 'OK') {
           this.msgBoxServ.showMessage("success", ["Item/s updated successfully"]);
+
+
+          //sud:1May'20--Need to set modifiedbyid to currentloggedinempie..--
+          //temporary solution for now, need to get the data from server and then use that same ID ..
+          //itemstoupdate and discountgroupitems are same object-reference, so we change in one and it should reflect in another as well.
+          if (modifiedItems && modifiedItems.length > 0) {
+            modifiedItems.forEach(itm => {
+              itm.ModifiedBy = this.securityService.loggedInUser.EmployeeId;
+            });
+          }
+
           // this.UpdateLocalListItems(modifiedItems);
           this.closeUpdatItemsPopUp.emit({ modifiedItems: modifiedItems });
           this.loading = false;
@@ -194,5 +235,43 @@ export class UpdateItemPriceComponent implements OnInit {
   CloseGroupDiscountPopUp() {
     this.closeUpdatItemsPopUp.emit();
     this.loading = false;
+  }
+
+  //load doctor  
+  GetProviderList(): void {
+    this.billingBLService.GetProviderList()
+      .subscribe(res => this.CallBackGenerateDoctor(res));
+  }
+
+  ////this is a success callback of GenerateDoctorList function.
+  CallBackGenerateDoctor(res) {
+    if (res.Status == "OK") {
+      this.providerList = [];
+      if (res && res.Results) {
+        //res.Results.forEach(a => {
+        //  this.providerList.push(a);
+        //});
+        let doclist: Array<any> = res.Results;
+        this.providerList = doclist.map(a => {
+          return { EmployeeId: a.EmployeeId, FullName: a.EmployeeName }
+        });
+       // this.providerList.unshift({ EmployeeId: 0, FullName: "--Select--" });
+      }
+    }
+    else {
+      this.msgBoxServ.showMessage("error", ["Not able to get Doctor list"]);
+      console.log(res.ErrorMessage)
+    }
+  }
+
+  //used to format the display of item in ng-autocomplete.
+  ProviderListFormatter(data: any): string {
+    let html = data["FullName"];
+    return html;
+  }
+
+  DoctorChange(itm: BillingTransactionItem) {
+    itm.ProviderId = itm.DocObj.EmployeeId;
+    itm.ProviderName = itm.DocObj.FullName;
   }
 }

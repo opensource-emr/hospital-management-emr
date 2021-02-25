@@ -61,7 +61,7 @@ import { SettlementsMainComponent } from '../billing/bill-settlements/settlement
 import { BillingProvisionalReceiptComponent } from "./receipt/billing-provisional-receipt.component";
 import { QrBillingComponent } from '../shared/qr-code/billing/qr-billing.component';
 import { IPBillingReceiptComponent } from './receipt/ip-billing-receipt.component';
-import { AdmissionDLService } from '../admission/shared/admission.dl.service';
+import { ADT_DLService } from '../adt/shared/adt.dl.service';
 import { IpBillMainComponent } from './ip-billing/ip-billing.main.component';
 import { PatientIpSummaryComponent } from './ip-billing/patient/patient-ip-summary.component';
 import { IpBillItemRequest } from './ip-billing/bill-request/ip-bill-item-request';
@@ -77,15 +77,17 @@ import { DuplicateProvisionalReceiptComponent } from './bill-duplicate-prints/du
 import { BillingSharedModule } from './billing-shared.module';
 import { BillOutpatientAddComponent } from './op-patient-add/bill-op-patient-add.component';
 import { PatientSharedModule } from '../patients/patient-shared.module';
+import { BillReturnPartialComponent } from './bill-return/partial-return/bill-return-partial.component';
 
 
+import { SettingsSharedModule } from '../settings-new/settings-shared.module';
 @NgModule({
   providers: [
     //BillingService,//commented for Quick-Appointment. //review it and correct it later: sudarshan.
     BillingBLService, BillingDLService, LabsDLService,
 
     VisitDLService, AppointmentDLService, PatientsDLService,
-    ImagingDLService, OrdersBLService, AdmissionDLService, PatientsBLService,
+    ImagingDLService, OrdersBLService, ADT_DLService, PatientsBLService,
     BillingSelectPatientCanActivateGuard],
 
   imports: [BillingRoutingModule,
@@ -96,8 +98,8 @@ import { PatientSharedModule } from '../patients/patient-shared.module';
     DanpheAutoCompleteModule,
     FormsModule, SharedModule, QRCodeModule,
     BillingSharedModule,
-    PatientSharedModule
-
+    PatientSharedModule,
+    SettingsSharedModule
   ],
   declarations: [
     BillingMainComponent,
@@ -145,10 +147,11 @@ import { PatientSharedModule } from '../patients/patient-shared.module';
     //UpdateInsuranceBalanceComponent,
     BillingDenominationComponent,
     DuplicateProvisionalReceiptComponent,
-    BillOutpatientAddComponent
+    BillOutpatientAddComponent,
     //BillPastTestListComponent,
     //InsuranceProvisionalBillingComponent, //Yubraj: 3rd July '19
     //InsuranceBillItemRequest //Yubraj: 14th july '19
+    BillReturnPartialComponent,//Rajesh: 12sept'19
   ],
   bootstrap: []//do we need anything here ? <sudarshan:2jan2017>
 })

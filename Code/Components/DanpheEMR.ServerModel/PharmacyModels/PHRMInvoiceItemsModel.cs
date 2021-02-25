@@ -1,4 +1,5 @@
-﻿using DanpheEMR.ServerModel.PharmacyModels;
+﻿using Audit.EntityFramework;
+using DanpheEMR.ServerModel.PharmacyModels;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -9,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace DanpheEMR.ServerModel
 {
+    [AuditInclude]
     public class PHRMInvoiceTransactionItemsModel
     {
         [Key]
@@ -35,8 +37,13 @@ namespace DanpheEMR.ServerModel
         public int? PrescriptionItemId { get; set; }
         public int? CounterId { get; set; }
         public int? GrItemId { get; set; }
+        public string VisitType { get; set; }
+        public decimal? TotalDisAmt { get; set; }
+        public decimal? PerItemDisAmt { get; set; }
         //[NotMapped]
         public DateTime? ExpiryDate { get; set; }
+        [NotMapped]
+        public int StockId { get; set; }
         [NotMapped]
         public int? GoodReceiptItemId { get; set; }
         [NotMapped]
@@ -64,7 +71,9 @@ namespace DanpheEMR.ServerModel
             return retInvItem;
         }
         [NotMapped]
-        public string WardName { get; set; }       
-    }
+        public string WardName { get; set; }
+        [NotMapped]
+        public string WardUser { get; set; }
+     }
 
 }

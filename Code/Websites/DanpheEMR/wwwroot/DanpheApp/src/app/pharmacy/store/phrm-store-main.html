@@ -1,0 +1,24 @@
+<div class="sub-navtab fixed-subnavtab">
+  <ul class="nav nav-tabs" *ngIf="validRoutes != undefined">
+      <li *ngFor="let route of validRoutes">
+          <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'a-tab-active'">{{route.DisplayName}}<i class="{{route.Css}}"></i></a>
+      </li>
+      <li>
+          <a routerLink="StoreRequisition" [routerLinkActive]="'a-tab-active'">Dispensary Request</a>
+      </li>
+  </ul>
+
+  <!--@*this is hardcoded tab we have to replace with Db*@-->
+  <!-- <ul class="nav nav-tabs">
+    <li>
+      <a class="btn blue bordered " routerLink="ReturnItemsToSupplier" [routerLinkActive]="'a-tab-active'">
+        <span class="glyphicon glyphicon-plus"> </span>New Return Order
+      </a>
+    </li>
+    <li><a routerLink="ReturnItemsToSupplierList" [routerLinkActive]="'a-tab-active'">ReturnToSupplier ItemList</a></li>
+    <li><a routerLink="StoreDetails" [routerLinkActive]="'a-tab-active'">Store Details List</a></li>
+    <li><a routerLink="SalesCategoryList" [routerLinkActive]="'a-tab-active'"> Sales Category List</a></li>
+  </ul> -->
+</div>
+<router-outlet>
+</router-outlet>

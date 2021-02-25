@@ -23,6 +23,7 @@ export class AccountHeadAddComponent {
     @Output("callback-add")
     callbackAdd: EventEmitter<Object> = new EventEmitter<Object>();
     public update: boolean = false;
+    public loading: boolean = false;
 
     public CurrentAccountHead: AccountHeadModel;
 
@@ -67,15 +68,18 @@ export class AccountHeadAddComponent {
 
 
         if (this.CurrentAccountHead.IsValidCheck(undefined, undefined)) {
+            this.loading = true;
             this.invSettingBL.AddAccountHead(this.CurrentAccountHead)
                 .subscribe(
                 res => {
                     this.showMessageBox("success", "AccountHead Added");
                     this.CurrentAccountHead = new AccountHeadModel();
                     this.CallBackAddAccountHead(res)
+                    this.loading = false;
                 },
                 err => {
                     this.logError(err);
+                    this.loading = false;
                 });
         }
     }
@@ -88,22 +92,24 @@ export class AccountHeadAddComponent {
         }
 
         if (this.CurrentAccountHead.IsValidCheck(undefined, undefined)) {
+            this.loading = true;
             this.invSettingBL.UpdateAccountHead(this.CurrentAccountHead)
                 .subscribe(
                 res => {
                     this.showMessageBox("success", "AccountHead List Updated");
                     this.CurrentAccountHead = new AccountHeadModel();
                     this.CallBackAddAccountHead(res)
+                    this.loading = false;
 
                 },
                 err => {
                     this.logError(err);
+                    this.loading = false;
                 });
         }
     }
 
     Close() {
-        this.callbackAdd.emit();
         this.selectedAccountHead = null;
         this.update = false;
         this.accountheadlist = this.completeaccountheadlist;

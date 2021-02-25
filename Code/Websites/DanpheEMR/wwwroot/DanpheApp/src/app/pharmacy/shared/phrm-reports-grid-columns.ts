@@ -15,13 +15,30 @@ export default class PHRMReportsGridColumns {
 
   ]
   static PHRMUserwiseCollectionReport = [
-    { headerName: "Date", field: "Date", width: 110, cellRenderer: PHRMReportsGridColumns.DateConverterRenderer },
-    { headerName: "User Name", field: "UserName", width: 200 },
-    { headerName: "Total Amount", field: "TotalAmount", width: 150 },
-    { headerName: "Returned Amount", field: "ReturnedAmount", width: 150 },
-    { headerName: "Net Amount", field: "NetAmount", width: 150 },
+    { headerName: "Date", field: "Date", width: 90, cellRenderer: PHRMReportsGridColumns.DateConverterRenderer },
+    { headerName: "Type", field: "TransactionType", width: 90 },
+    { headerName: "ReceiptNo", field: "ReceiptNo", width: 110 },
+    { headerName: "Hospital Number", field: "HospitalNo", width: 90 },
+    { headerName: "PatientName", field: "PatientName", width: 220 },
+    { headerName: "SubTotal", field: "SubTotal", width: 80 },
+    { headerName: "Discount", field: "DiscountAmount", width: 80 },
+    { headerName: "Net Total", field: "TotalAmount", width: 100 },
+    { headerName: "Cash Collection", field: "CashCollection", width: 80 },
+    { headerName: "User", field: "CreatedBy", width: 100 },
+    { headerName: "Remarks", field: "Remarks", width: 100 },
+    { headerName: "Counter", field: "CounterId", width: 100 }
   ]
 
+  static PHRMCashCollectionSummaryReport = [
+    { headerName: "Date", field: "Date", width: 110, cellRenderer: PHRMReportsGridColumns.DateConverterRenderer },
+    { headerName: "User Name", field: "UserName", width: 200 },
+    { headerName: "Invoice Amount", field: "TotalAmount", width: 150 },
+    { headerName: "Invoice Returned", field: "ReturnedAmount", width: 150 },
+    { headerName: "Discount Amount", field: "DiscountAmount", width: 150 },
+    { headerName: "Deposit", field: "DepositAmount", width: 150 },
+    { headerName: "Deposit Return", field: "DepositReturn", width: 150 },
+    { headerName: "Net Amount", field: "NetAmount", width: 150 }
+  ]
   static PHRMSaleReturnReport = [
     { headerName: "Return Date", field: "Date", width: 100, cellRenderer: PHRMReportsGridColumns.DateConverterRenderer },
     { headerName: "Invoice Date", field: "InvDate", width: 100, cellRenderer: PHRMReportsGridColumns.InvoiceDate },
@@ -72,7 +89,7 @@ export default class PHRMReportsGridColumns {
     { headerName: "Hospital Number", field: "PatientCode", width: 80 },
     { headerName: "Patient Name", field: "PatientName", width: 80 },
     { headerName: "Deposit Amt", field: "DepositBalance", width: 80 },
-  
+
   ]
 
   static PHRMGoodsReceiptProductReport = [
@@ -97,34 +114,36 @@ export default class PHRMReportsGridColumns {
     { headerName: "Dispensary/Store Name", field: "Name", width: 100 },
   ]
 
-    static PHRMSupplierInfoReport = [
-        { headerName: "SupplierName", field: "SupplierName", width: 110 },
-        { headerName: "Contact No", field: "ContactNo", width: 200 },
-        { headerName: "City", field: "City", width: 150 },
-        { headerName: "Pan No.", field: "Pin", width: 150 },
-        { headerName: "ContactAddress", field: "ContactAddress", width: 150 },
-        { headerName: "Email", field: "Email", width: 150 },
-    ]
+  static PHRMSupplierInfoReport = [
+    { headerName: "SupplierName", field: "SupplierName", width: 110 },
+    { headerName: "Contact No", field: "ContactNo", width: 200 },
+    { headerName: "City", field: "City", width: 150 },
+    { headerName: "Pan No.", field: "Pin", width: 150 },
+    { headerName: "ContactAddress", field: "ContactAddress", width: 150 },
+    { headerName: "Email", field: "Email", width: 150 },
+  ]
 
   static PHRMCreditInOutPatReport = [
-        { headerName: 'Date', field: "Date", width: 80, cellRenderer: PHRMReportsGridColumns.DateConverterRenderer },
-        { headerName: "InvoiceNo", field: "InvoiceNum", width: 100 },
-        { headerName: "HospitalNo", field: "PatientCode", width: 110 },
-        { headerName: "PatientName", field: "PatientName", width: 200 },
-        { headerName: "Address", field: "Address", width: 150 },
-        { headerName: "CreditAmount", field: "PaidAmount", width: 150 },
-        { headername: "VisitType", field: "VisitType", width: 150 },
+    { headerName: 'Date', field: "Date", width: 80, cellRenderer: PHRMReportsGridColumns.DateConverterRenderer },
+    { headerName: "InvoiceNo", field: "InvoiceNum", width: 100 },
+    { headerName: "HospitalNo", field: "PatientCode", width: 110 },
+    { headerName: "PatientName", field: "PatientName", width: 200 },
+    { headerName: "Address", field: "Address", width: 150 },
+    { headerName: "CreditAmount", field: "PaidAmount", width: 100 },
+    { headername: "VisitType", field: "VisitType", width: 100 },
+    { headername: "Organization", field: "OrganizationName", width: 150 },
+    { headername: "Remark", field: "Remark", width: 150 },
 
   ]
 
   static PHRMStockItemsReport = [
     { headerName: "ItemName", field: "ItemName", width: 200 },
     { headerName: "Batch No.", field: "BatchNo", width: 150 },
-    { headerName: "GRP", field: "GRItemPrice", width: 100 },
+    { headerName: "ExpiryDate", field: "ExpiryDate", width: 150, cellRenderer: PHRMReportsGridColumns.DateOfExpiry },
     { headerName: "MRP", field: "MRP", width: 100 },
     { headerName: "Quantity", field: "AvailableQuantity", width: 100, cellRenderer: PHRMReportsGridColumns.MinimumStockRenderer },
     { headerName: "Min. Stock", field: "MinStockQuantity", width: 100 },
-    { headerName: "NetAmount", field: "TotalAmount", width: 150 },
+    { headerName: "Location", field: "Location", width: 150 },
 
   ]
 
@@ -158,6 +177,7 @@ export default class PHRMReportsGridColumns {
     { headerName: "Sales Value", field: "SalesValue", width: 150 },
   ]
   static PHRMSupplierStockReport = [
+    { headerName: "Receipt Date", field: "GoodReceiptDate", width: 150 },
     { headerName: "Company Name", field: "CompanyName", width: 150 },
     { headerName: "Supplier Name", field: "SupplierName", width: 200 },
     { headerName: "Item Name", field: "ItemName", width: 170 },
@@ -208,6 +228,50 @@ export default class PHRMReportsGridColumns {
     { headerName: "PaymentMode", field: "PaymentMode", width: 150 },
 
   ]
+  static PHRMRackStockDistributionReport = [
+    { headerName: "Rack Name", field: "RackName", width: 100 },
+    { headerName: "Item Name", field: "ItemName", width: 150 },
+    { headerName: "Batch No.", field: "BatchNo", width: 150 },
+    { headerName: "Expiry Date", field: "ExpiryDate", width: 200, cellRenderer: PHRMReportsGridColumns.DateOfExpiry },
+    { headerName: "Available Quantity", field: "AvailableQuantity", width: 150 },
+    { headerName: "Price", field: "Price", width: 150 },
+    { headerName: "Stock Value", field: "StockValue", width: 150 },
+    { headerName: "Location", field: "Location", width: 150 },
+  ]
+  static PHRMStockSummaryReport = [
+    { headerName: "OpeningAmt", field: "OpeningAmount", width: 100 },
+    { headerName: "Item Name", field: "ItemName", width: 150, cellRenderer: PHRMReportsGridColumns.GetItemAction },
+    { headerName: "Unit", field: "UOMName", width: 100 },
+    { headerName: "Purchase Amt", field: "PurchaseAmount", width: 100 },
+    { headerName: "Purchase Return Amt", field: "PurchaseReturnAmount", width: 150 },
+    { headerName: "StockManage IN Amt", field: "StockManageInAmount", width: 150 },
+    { headerName: "Sale Amt", field: "SaleAmount", width: 100 },
+    { headerName: "SaleReturnAmount", field: "SaleReturnAmount", width: 150 },
+    { headerName: "StockManage OUT Amt", field: "StockManageOutAmount", width: 180 },
+    { headerName: "ClosingAmt", field: "ClosingAmount", width: 180 },
+  ]
+  static GetItemAction(params) {
+    return `<a danphe-grid-action="itemTxnDetail">
+               ${params.data.ItemName}
+             </a>`;
+  }
+  static PHRMItemTxnSummaryReport = [
+    { headerName: "Date", field: "Date", width: 120 },
+    { headerName: "Ref No", field: "ReferenceNo", width: 100, cellRenderer: PHRMReportsGridColumns.ItemTxnReferenceNoRenderer },
+    { headerName: "Type", field: "Type", width: 100 },
+    { headerName: "In", field: "StockIn", width: 100 },
+    { headerName: "Out", field: "StockOut", width: 100 },
+    { headerName: "Rate", field: "Rate", width: 150 },
+    { headerName: "MRP", field: "MRP", width: 150 },
+    { headerName: "Expiry", field: "ExpiryDate", width: 100 },
+
+  ]
+  static ItemTxnReferenceNoRenderer(params) {
+    return `<a danphe-grid-action="showPrintPopUp">
+                ${params.data.ReferenceNoPrefix}${params.data.ReferencePrintNo}
+            </a>`;
+  };
+
   static PHRMDailyStockSummaryReport = [
     { headerName: "Item Name", field: "ItemName", width: 200 },
     { headerName: "BatchNo", field: "BatchNo", width: 150 },
@@ -253,7 +317,26 @@ export default class PHRMReportsGridColumns {
     { headerName: "CreditNote Num", field: "CreditNoteNum", width: 150 },
     { headerName: "Remarks", field: "Remarks", width: 150 },
   ]
-
+  static PHRMTransferToStoreReport = [
+    { headerName: "Transferred Date", field: "Date", width: 100, cellRenderer: PHRMReportsGridColumns.DateConverterRenderer },
+    { headerName: "Item Name", field: "ItemName", width: 200 },
+    { headerName: "Batch No", field: "BatchNo", width: 70 },
+    { headerName: "Expiry Date", field: "ExpiryDate", width: 70, cellRenderer: PHRMReportsGridColumns.DateConverterRendererForExpiry },
+    { headerName: "Transferred Qty", field: "Quantity", width: 90 },
+    { headerName: "Total Amt", field: "TotalAmount", width: 80 },
+    { headerName: "Store Name", field: "StoreName", width: 80 },
+    { headerName: "User", field: "FullName", width: 80 },
+  ]
+  static PHRMTransferToDispensaryReport = [
+    { headerName: "Transferred Date", field: "Date", width: 100, cellRenderer: PHRMReportsGridColumns.DateConverterRenderer },
+    { headerName: "Item Name", field: "ItemName", width: 200 },
+    { headerName: "Batch No", field: "BatchNo", width: 70 },
+    { headerName: "Expiry Date", field: "ExpiryDate", width: 70, cellRenderer: PHRMReportsGridColumns.DateConverterRendererForExpiry },
+    { headerName: "Transferred Qty", field: "Quantity", width: 90 },
+    { headerName: "Total Amt", field: "TotalAmount", width: 70 },
+    { headerName: "Store Name", field: "StoreName", width: 80 },
+    { headerName: "User", field: "FullName", width: 80 },
+  ]
   static PHRMDrugCategoryWiseReport = [
     { headerName: "Date", field: "Date", width: 110, cellRenderer: PHRMReportsGridColumns.DateConverterRenderer },
     { headerName: "CategoryName", field: "CategoryName", width: 150 },
@@ -270,7 +353,10 @@ export default class PHRMReportsGridColumns {
     let Date: string = params.data.Date;
     return moment(Date).format('DD-MMM-YYYY');
   }
-
+  static DateConverterRendererForExpiry(params) {
+    let Date: string = params.data.ExpiryDate;
+    return moment(Date).format('DD-MMM-YYYY');
+  }
 
   static InvoiceDate(params) {
     let InvDate: string = params.data.InvDate;
@@ -286,7 +372,8 @@ export default class PHRMReportsGridColumns {
       return "<span style=';color:black'>" + quantity + "</span>";
   }
   static DateOfExpiry(params) {
-    let expiryDate: Date = params.data.ExpiryDate;
+    let expiryDate: Date = (params.data.ExpiryDate);
+    let expiryDateFormatted = moment(expiryDate).format('YYYY-MM-DD');
     let expiryDate1 = new Date(params.data.ExpiryDate)
     let date = new Date();
     let datenow = date.setMonth(date.getMonth() + 0);
@@ -294,15 +381,15 @@ export default class PHRMReportsGridColumns {
     let expDate = expiryDate1.setMonth(expiryDate1.getMonth() + 0);
 
     if (expDate <= datenow) {
-      return "<span style='background-color:red;color:white'>" + expiryDate + "(" + "Expired" + ")" + "</span>";
+      return "<span style='background-color:red;color:white'>" + expiryDateFormatted + "(" + "Expired" + ")" + "</span>";
     }
     if (expDate < datethreemonth && expDate > datenow) {
 
-      return "<span style='background-color:green;color:white'>" + expiryDate + "(" + "Nearly Expired" + ")" + "</span>";
+      return "<span style='background-color:yellow;color:black'>" + expiryDateFormatted + "(" + "Nearly Expired" + ")" + "</span>";
     }
     if (expDate > datethreemonth) {
 
-      return "<span style='background-color:green;color:white'>" + expiryDate + "(" + "Not Expire" + ")" + "</span>";
+      return "<span style='background-color:green;color:white'>" + expiryDateFormatted + "(" + "Not Expired" + ")" + "</span>";
     }
 
 

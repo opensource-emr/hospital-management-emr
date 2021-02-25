@@ -34,9 +34,12 @@ import { VisitMainComponent } from './visit/visit-main.component';
 import { VisitPatientInfoComponent } from './visit/visit-patient-info.component';
 import { VisitInfoComponent } from './visit/visit-info.component';
 import { VisitBillingInfoComponent } from './visit/visit-billing-info.component';
-import { AdmissionDLService } from '../admission/shared/admission.dl.service';
+import { ADT_DLService } from '../adt/shared/adt.dl.service';
 import { FreeReferalVisitComponent } from './referral/free-referral-visit.component';
 import { PatientSharedModule } from '../patients/patient-shared.module';
+import { SettingsSharedModule } from '../settings-new/settings-shared.module';
+import { BillingSharedModule } from '../billing/billing-shared.module';
+
 @NgModule({
   providers: [AppointmentDLService,
     AppointmentBLService,
@@ -44,7 +47,7 @@ import { PatientSharedModule } from '../patients/patient-shared.module';
     VisitDLService,
     BillingDLService,
     PatientsDLService,
-    AdmissionDLService,
+    ADT_DLService,
     { provide: LocationStrategy, useClass: HashLocationStrategy }],
   imports: [AppointmentsRoutingModule,
     CommonModule,
@@ -54,7 +57,9 @@ import { PatientSharedModule } from '../patients/patient-shared.module';
     //AgGridModule.forRoot(),
     DanpheAutoCompleteModule,
     SharedModule,
-    PatientSharedModule
+    PatientSharedModule,
+    SettingsSharedModule,
+    BillingSharedModule
   ],
   declarations: [
     AppointmentsMainComponent,

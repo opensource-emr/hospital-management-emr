@@ -1,9 +1,11 @@
-﻿
-<base href="/">
-<div class="row">
+﻿<base href="/">
+<div class="sub-navtab">
     <ul class="nav nav-tabs" *ngIf="validRoutes != undefined">
         <li *ngFor="let route of validRoutes">
             <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'a-tab-active'">{{route.DisplayName}}<i class="{{route.Css}}"></i></a>
+        </li>
+        <li *ngIf="IsReverseTransfer == true">
+            <a routerLink="ReverseTransaction" [routerLinkActive]="'a-tab-active'"><b style="color:red;">Reverse Transaction</b></a>
         </li>
     </ul>
 </div>

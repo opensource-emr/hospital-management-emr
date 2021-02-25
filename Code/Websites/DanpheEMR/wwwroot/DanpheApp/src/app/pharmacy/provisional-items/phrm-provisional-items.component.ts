@@ -19,7 +19,7 @@ import { DanpheHTTPResponse } from "../../shared/common-models";
 
 @Component({
 
-    templateUrl: "../../view/pharmacy-view/Provisional/ProvisionalItems.html" //"/PharmacyView/ProvisionalItems"
+    templateUrl: "./phrm-provisional-items.html"
 })
 export class PHRMProvisionalItems {
     patients: Array<Patient> = new Array<Patient>();

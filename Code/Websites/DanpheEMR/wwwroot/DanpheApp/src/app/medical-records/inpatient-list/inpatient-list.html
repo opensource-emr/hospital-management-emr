@@ -1,0 +1,144 @@
+<style>
+  .lbl-text {
+    margin-top: 6px;
+    font-size: 12px;
+  }
+</style>
+
+<div class="row">
+  <div class="col-md-5 col-xs-12" style="padding-left: 1px;">
+    <div class="form-group">
+      <label class="control-label col-md-4">From Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
+      <div class="col-md-8">
+        <danphe-date-picker [(ngModel)]="fromDate" ngDefaultControl [CalendarTypes]="'en,np'">
+        </danphe-date-picker>
+        <!-- <span class="color-red font-sm" *ngIf="currentdailysales.IsDirty('fromDate')" [hidden]="currentdailysales.IsValidCheck('fromDate','required')"> From Date is required</span><br />
+        <span class="color-red font-sm" *ngIf="currentdailysales.IsDirty('fromDate')" [hidden]="currentdailysales.IsValidCheck('fromDate','wrongDate')"> Enter Valid Date</span> -->
+      </div>
+    </div>
+  </div>
+  <div class="col-md-5 col-xs-12" style="padding-left: 1px;">
+    <div class="form-group">
+      <label class="control-label col-md-4">To Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
+      <div class="col-md-8">
+        <danphe-date-picker [(ngModel)]="toDate" ngDefaultControl [CalendarTypes]="'en,np'">
+        </danphe-date-picker>
+        <!-- <span class="color-red font-sm" *ngIf="currentdailysales.IsDirty('toDate')" [hidden]="currentdailysales.IsValidCheck('toDate','required')"> To Date is required</span><br />
+        <span class="color-red font-sm" *ngIf="currentdailysales.IsDirty('toDate')" [hidden]="currentdailysales.IsValidCheck('toDate','wrongDate')"> Can't select future date</span> -->
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2 col-xs-12">
+    <div class="form-group">
+      <button class="btn blue" type="button" (click)="LoadAllDischargedPatients()">
+        <i class="fa fa-search"></i>
+        Load
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<div class="row">
+  <div class="col-md-4">
+    <input id="searchBxLabReport" class="custom-table-search" [(ngModel)]="searchString" onclick="this.select();" placeholder="Search">
+  </div>
+  <div class="col-md-8">
+    <div *ngIf="showActionsForSelectedPat" class="margin-8-tp">
+      <button *ngIf="!selectedInpatient.MedicalRecordId" [disabled]="loading" class="btn btn-primary actionbtn margin-7-hr" (click)="AddMedicalRecords()">Add MR</button>
+      <button *ngIf="selectedInpatient.MedicalRecordId" [disabled]="loading" class="btn btn-primary actionbtn margin-7-hr" (click)="ViewMedicalRecords()">View MR</button>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="table-responsive scroll-y">
+      <table class="table discharge-pat-tbl fixed-header">
+        <thead class="table-header-bg">
+          <tr>
+            <th scope="col"></th>
+            <th scope="col">S.N.</th>
+            <th scope="col" class="wd-70">
+              Ip-Date
+            </th>
+            <th scope="col" class="wd-70">
+              Dis Date
+            </th>
+            <th scope="col">
+              Patient No.
+            </th>
+            <th scope="col">
+              InPatient No.
+            </th>
+            <th scope="col">
+              Ward
+            </th>
+            <th scope="col">
+              Patient Name
+            </th>
+            <th scope="col">
+              Doctor
+            </th>
+            <th scope="col">
+              Gender
+            </th>
+            <th scope="col">
+              Age
+            </th>
+            <th scope="col">
+              Department
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <ng-container *ngFor="let patient of dischargedList | searchFilter: searchString | async ; let i = index;">
+            <tr id="patient{{patient.PatientVisitId}}" [ngClass]="[patient.MedicalRecordId ? 'saved-rec':'new-rec', patient.IsSelected ? 'highlightbg':'donthighlight']" (click)="SelectUnselectRow(patient, patient.PatientVisitId)">
+              <td><input type="checkbox" [(ngModel)]="patient.IsSelected" /></td>
+              <td>
+                {{i+1}}
+              </td>
+              <td class="wd-70">
+                {{patient.AdmittedDate | DanpheDateTime:'format':'YYYY-MM-DD'}}
+              </td>
+              <td class="wd-70">
+                {{patient.DischargedDate | DanpheDateTime:'format':'YYYY-MM-DD'}}
+              </td>
+              <td>
+                {{patient.PatientCode}}
+              </td>
+              <td>
+                {{patient.VisitCode}}
+              </td>
+              <td>
+                {{patient.BedInformation.Ward}}
+              </td>
+              <td>
+                {{patient.Name}}
+              </td>
+              <td>
+                {{patient.AdmittingDoctorName}}
+              </td>
+              <td>
+                {{patient.Gender}}
+              </td>
+              <td>
+                {{patient.DateOfBirth | DanpheDateTime:'age' }}
+              </td>
+              <td>
+                {{patient.Department}}
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<view-mr-summary *ngIf="showViewMedicalRecords" [patDetail]="selectedInpatient" (closeViewMrPopup)="CloseViewMRPopUp($event)"></view-mr-summary>
+<add-mr-summary *ngIf="showAddMedicalRecords" [patDetail]="selectedInpatient" (closeAddNewMrPopup)="CloseAddUpdateMRPopUp($event)"></add-mr-summary>
+
+
+

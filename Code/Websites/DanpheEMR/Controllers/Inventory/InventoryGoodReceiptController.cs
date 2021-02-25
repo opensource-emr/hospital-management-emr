@@ -111,7 +111,7 @@ namespace DanpheEMR.Controllers
             catch (Exception ex)
             {
                 responseData.Status = "Failed";
-                responseData.ErrorMessage = ex.Message + " exception details:" + ex.ToString();
+                responseData.ErrorMessage = ex.Message;
             }
             return Ok(responseData);
         }

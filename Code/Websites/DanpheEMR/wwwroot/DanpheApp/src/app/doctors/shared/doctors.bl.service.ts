@@ -1,13 +1,14 @@
-﻿import { Injectable, Directive } from '@angular/core';
+import { Injectable, Directive } from '@angular/core';
 import { DoctorsDLService } from './doctors.dl.service';
 import { ClinicalDLService } from '../../clinical/shared/clinical.dl.service';
 import * as _ from 'lodash';
 import { Visit } from '../../appointments/shared/visit.model';
+import { NursingDLService } from '../../nursing/shared/nursing.dl.service';
 //Note: mapping is done here by blservice, component will only do the .subscribe().
 @Injectable()
 export class DoctorsBLService {
 
-    constructor(public doctorsDlService: DoctorsDLService,
+  constructor(public doctorsDlService: DoctorsDLService, public nursingDLService: NursingDLService,
         public clinicalDLService: ClinicalDLService) {
 
     }
@@ -45,6 +46,7 @@ export class DoctorsBLService {
         return this.doctorsDlService.GetPatientPreview(patientId, patientVisitId)
             .map(res => res);
     }
+
     GetPatientOtherRequests(patientId: number, patientVisitId: number) {
         return this.doctorsDlService.GetPatientOtherRequests(patientId, patientVisitId)
             .map(res => res);
@@ -71,5 +73,23 @@ export class DoctorsBLService {
     public ConcludeVisit(visitid) {
         return this.doctorsDlService.ConcludeVisit(visitid)
             .map(res => res);
-    }
+  }
+
+  public AddComplaints(chiefComplains) {
+    return this.nursingDLService.AddNewComplaint(chiefComplains).map((responseData) => {
+      return responseData;
+    })
+  }
+
+  public GetComplaints(patVisitId) {
+    return this.nursingDLService.GetComplaints(patVisitId).map((responseData) => {
+      return responseData;
+    })
+  }
+
+  public UpdateComplaint(complain) {
+    return this.nursingDLService.UpdateComplaint(complain).map((responseData) => {
+      return responseData;
+    });
+  }
 }

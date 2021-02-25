@@ -21,7 +21,7 @@ import * as moment from 'moment/moment';
 import { PatientFilesModel } from '../shared/patient-files.model';
 
 @Component({
-  templateUrl: "../../view/PatientView/RegisterPatientMain.html"  //"/PatientView/RegisterPatientMain"
+  templateUrl: "./patient-registration-main.html"
 })
 
 // App Component class
@@ -97,73 +97,28 @@ export class PatientRegistrationMainComponent {
       this.msgBoxServ.showMessage("notice-message", ["One or more fields are invalid. please correct them and submit again."]);
       this.router.navigate(['/Patient/RegisterPatient/BasicInfo']);
     }
-    if (!this.Patient.IsValidMembershipTypeName) {
+    else if (!this.Patient.IsValidMembershipTypeName) {
       this.msgBoxServ.showMessage("error", ["Please Enter Valid Membership Type"]);
       this.router.navigate(['/Patient/RegisterPatient/BasicInfo']);
       return;
     }
     else {
-
+      var midName = this.Patient.MiddleName;
+      if (midName) {
+        midName = this.Patient.MiddleName.trim() + " ";
+      } else {
+        midName = "";
+      }
+      //removing extra spaces typed by the users
+      this.Patient.FirstName = this.Patient.FirstName.trim();
+      this.Patient.MiddleName = this.Patient.MiddleName ? this.Patient.MiddleName.trim() : null;
+      this.Patient.LastName = this.Patient.LastName.trim();
+      this.Patient.ShortName = this.Patient.FirstName + " " + midName + this.Patient.LastName;
       this.loading = true;
       this.Patient.ModifiedBy = this.securityService.GetLoggedInUser().EmployeeId;
       this.ConcatinateAgeAndUnit();
       this.updatePatient();
 
-      //this.patientBLService.GetExistedMatchingPatientList(this.Patient.FirstName, this.Patient.LastName,
-      //    this.Patient.PhoneNumber)
-      //    .subscribe(
-      //        res => {
-      //            if (res.Status == "OK" && res.Results.length > 0) {
-
-      //                this.matchedPatientList = res.Results;                                  
-
-
-      //                if (this.matchedPatientList.length) {
-      //                    this.showExstingPatientList = true;
-      //                }
-      //                else {
-      //                    this.showExstingPatientList = false;
-      //                    this.updatePatient();
-      //                }
-
-
-      //            }
-      //            else {
-      //                this.updatePatient();
-      //            }
-
-      //        },
-      //        err => {
-      //            this.loading = false;
-      //            this.msgBoxServ.showMessage("Please, Try again . Error in Getting Existed Match patient list", [err.ErrorMessage]);
-      //        });
-
-
-
-
-      //this.patientBLService.PutPatient(this.Patient)
-      //    .subscribe(
-      //    res => {
-      //        if (res.Status == "OK") {
-      //            //we've to check res.Status here and decide if it was updated
-      //            //alert('patient information updated successfully');
-      //            this.msgBoxServ.showMessage("success", ["patient information updated successfully"]);
-      //            this.loading = false;
-      //            this.router.navigate(['/Patient/SearchPatient']);
-      //        }
-      //        else {
-      //            this.msgBoxServ.showMessage("error", ["failed to update. please check log for details."]);
-      //            console.log(res.ErrorMessage);
-      //        }
-
-
-      //    },
-      //    err => {
-      //        //alert('failed to update. please check log for details.');
-      //        this.msgBoxServ.showMessage("error", ["failed to update. please check log for details."]);
-      //        console.log(err.ErrorMessage);
-
-      //    });
     }
   }
 
@@ -264,60 +219,13 @@ export class PatientRegistrationMainComponent {
     }
 
     this.patientBLService.GetExistedMatchingPatientList(this.Patient.FirstName, this.Patient.LastName,
-      this.Patient.PhoneNumber)
+      this.Patient.PhoneNumber, this.Patient.Age, this.Patient.Gender)
       .subscribe(
         res => {
           if (res.Status == "OK" && res.Results.length > 0) {
             this.loading = false;
             this.matchedPatResult = res.Results;
-
-            //this.matchedPatientList = new Array<Patient>();
-
-            //var nowYear: number = Number(moment().format("YYYY"));
-            //var patYear: number = Number(this.Patient.Age);
-
-            //if (this.Patient.AgeUnit == 'Y') {
-            //  res.Results.forEach(patient => {
-            //    var originalYear: number = Number(moment(patient.DateOfBirth).format("YYYY"));
-            //    var diff: number = (nowYear - originalYear - patYear)
-            //    if ((diff > -3 && diff < 3) || (this.Patient.PhoneNumber == patient.PhoneNumber)) {
-            //      this.matchedPatientList.push(patient);
-            //      return true;
-            //    } else {
-            //      return false;
-            //    }
-            //  });
-            //}
-            //else {
-            //  this.matchedPatientList = res.Results;
-            //}
-
-
-            //if (this.matchedPatientList.length) {
-            //  let PatientFullName = this.Patient.FirstName.trim() + " " + this.Patient.LastName.trim();
-            //  this.matchedPatientList.forEach(a => {
-            //    if (a.FullName.toLowerCase() == PatientFullName.toLowerCase()) {
-            //      a["NameExists"] = true;
-
-            //    } else {
-            //      a["NameExists"] = false;
-            //    }
-
-            //    if (a.PhoneNumber == this.Patient.PhoneNumber) {
-            //      a["NumberExists"] = true;
-            //    } else {
-            //      a["NumberExists"] = false;
-            //    }
-            //  })
-
             this.showExstingPatientListPage = true;
-            //}
-            //else {
-            //  this.showExstingPatientList = false;
-            //  this.RegisterFreshAndNewPatient();
-            //}
-
-
           }
           else {
             this.RegisterFreshAndNewPatient();
@@ -331,13 +239,26 @@ export class PatientRegistrationMainComponent {
   }
 
   RegisterFreshAndNewPatient() {
-    if (this.Patient.IsValid) {
 
+    if (this.Patient.IsValid) {
       this.capitalizeFirstLetter('FirstName');
       this.capitalizeFirstLetter('MiddleName');
       this.capitalizeFirstLetter('LastName');
       this.capitalizeFirstLetter('Address');
 
+      //check if middlename exists or not to append to Shortname 
+      var midName = this.Patient.MiddleName;
+      if (midName) {
+        midName = this.Patient.MiddleName.trim() + " ";
+      } else {
+        midName = "";
+      }
+
+      //removing extra spaces typed by the users
+      this.Patient.FirstName = this.Patient.FirstName.trim();
+      this.Patient.MiddleName = this.Patient.MiddleName ? this.Patient.MiddleName.trim() : null;
+      this.Patient.LastName = this.Patient.LastName.trim();
+      this.Patient.ShortName = this.Patient.FirstName + " " + midName + this.Patient.LastName;
       this.Patient.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
       this.ConcatinateAgeAndUnit();
 

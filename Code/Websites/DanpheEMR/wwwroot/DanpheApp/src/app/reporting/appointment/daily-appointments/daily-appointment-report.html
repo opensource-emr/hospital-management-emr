@@ -1,105 +1,79 @@
-
-<div class="row">
-
+<div class="wrapper">
+  <div class="row">
     <form [formGroup]="currentdailyappointment.DailyAppointmentValidator" class="form-horizontal">
-        <div class="form-body">
-          <div class="col-md-12">
-            <div class="caption">
-
-              <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
-              <span class="caption-subject font-red-sunglo bold uppercase">Daily&nbsp; Appointment&nbsp; Report</span>
+      <div class="form-body">
+        <div class="col-md-12">
+          <div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Daily Appointment Report</span> </div>
+          <!--<div class="col-md-5 col-xs-12">
+            <div class="form-group">
+              <label class="control-label col-md-4">From Date<b class="color-red"> *</b><b style="float:right;">:</b></label>
+              <div class="col-md-8">
+                <danphe-date-picker [(ngModel)]="currentdailyappointment.fromDate" ngDefaultControl [CalendarTypes]="'en,np'" formControlName="fromDate"> </danphe-date-picker>
+                <span class="color-red font-sm" *ngIf="currentdailyappointment.IsDirty('fromDate')" [hidden]="currentdailyappointment.IsValidCheck('fromDate','required')"> From Date is required</span><br />
+                <span class="color-red font-sm" *ngIf="currentdailyappointment.IsDirty('fromDate')" [hidden]="currentdailyappointment.IsValidCheck('fromDate','wrongDate')"> Enter Valid Date</span> </div>
             </div>
-
-            <div class="col-md-5 col-xs-12">
-              <div class="form-group">
-                <label class="control-label col-md-4">From Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
-                <div class="col-md-8">
-                  <danphe-date-picker [(ngModel)]="currentdailyappointment.fromDate" ngDefaultControl [CalendarTypes]="'en,np'" formControlName="fromDate">
-                  </danphe-date-picker>
-
-
-                  <span class="color-red font-sm" *ngIf="currentdailyappointment.IsDirty('fromDate')" [hidden]="currentdailyappointment.IsValidCheck('fromDate','required')"> From Date is required</span><br />
-                  <span class="color-red font-sm" *ngIf="currentdailyappointment.IsDirty('fromDate')" [hidden]="currentdailyappointment.IsValidCheck('fromDate','wrongDate')"> Enter Valid Date</span>
-
-                </div>
-              </div>
-
-            </div>
-            <div class="col-md-5 col-xs-12">
-              <div class="form-group">
-                <label class="control-label col-md-4">To Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
-                <div class="col-md-8">
-                  <danphe-date-picker [(ngModel)]="currentdailyappointment.toDate" ngDefaultControl [CalendarTypes]="'en,np'" formControlName="toDate">
-                  </danphe-date-picker>
-                  <span class="color-red font-sm" *ngIf="currentdailyappointment.IsDirty('toDate')" [hidden]="currentdailyappointment.IsValidCheck('toDate','required')"> To Date is required</span><br />
-                  <span class="color-red font-sm" *ngIf="currentdailyappointment.IsDirty('toDate')" [hidden]="currentdailyappointment.IsValidCheck('toDate','wrongDate')"> Can't select future date</span>
-
-                </div>
-              </div>
-
-            </div>
-
-            </div>
-            <div class="col-md-12">
-            <div class="col-md-5 col-xs-12">
-              <div class="form-group">
-                <label class="control-label col-md-5">Provider Name<b style="float:right;">:</b></label>
-                <div class="col-md-6">
-
-                  <input class="form-control" danphe-auto-complete
-                         [(ngModel)]="selProvider"
-                         [ngModelOptions]="{standalone: true}"
-                         [list-formatter]="myListFormatter"
-                         [source]="doctorList"
-                         placeholder="Enter Provider Name"
-                         display-property-name="FullName"
-                         value-property-name=null
-                         (focusout)="providerChanged()">
-
-                </div>
-              </div>
-            </div>
-              <div class="col-md-5 col-xs-12">
-                  <div class="form-group">
-                      <label class="control-label col-md-5">Appointment Type<b style="float:right;">:</b></label>
-                      <div class="col-md-6">
-                          <select [(ngModel)]="currentdailyappointment.AppointmentType" [ngModelOptions]="{standalone: true}" style="width:200px;height:30px;" >
-                            <option value="">All</option>
-                              <option value="New" selected="selected">New</option>
-                              <option value="Transfer">Transfer</option>
-                              <option value="Referral">Referral</option>
-                              <option value="followup">Followup</option>
-                          </select>
-                       </div>
-                    </div>
-                </div>
-            <div class="col-md-2 col-xs-12">
-              <div class="form-group">
-                <button class="btn blue" type="button" (click)="Load()" [disabled]="!(currentdailyappointment.IsValid())">
-                  <i class="fa fa-search"></i>
-                  Show Report
-                </button>
-              </div>
-            </div>
-
-
           </div>
-        
+          <div class="col-md-5 col-xs-12">
+            <div class="form-group">
+              <label class="control-label col-md-4">To Date<b class="color-red"> *</b><b style="float:right;">:</b></label>
+              <div class="col-md-8">
+                <danphe-date-picker [(ngModel)]="currentdailyappointment.toDate" ngDefaultControl [CalendarTypes]="'en,np'" formControlName="toDate"> </danphe-date-picker>
+                <span class="color-red font-sm" *ngIf="currentdailyappointment.IsDirty('toDate')" [hidden]="currentdailyappointment.IsValidCheck('toDate','required')"> To Date is required</span><br />
+                <span class="color-red font-sm" *ngIf="currentdailyappointment.IsDirty('toDate')" [hidden]="currentdailyappointment.IsValidCheck('toDate','wrongDate')"> Can't select future date</span> </div>
+            </div>
+          </div>-->
+          <div class="row"><div class="col-md-6 col-xs-12">
+            <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'">
+            </from-to-date-select>
+          </div></div>
+        </div>
+        <div class="col-md-12">
+          <div class="row mt10"><div class="col-md-5 col-xs-12">
+            <div class="form-group">
+              <label class="control-label col-md-4">Doctor Name<b style="float:right;">:</b></label>
+              <div class="col-md-6">
+                <input class="form-control" danphe-auto-complete
+                       [(ngModel)]="selProvider"
+                       [ngModelOptions]="{standalone: true}"
+                       [list-formatter]="myListFormatter"
+                       [source]="doctorList"
+                       placeholder="Enter Doctor Name"
+                       display-property-name="FullName"
+                       value-property-name=null
+                       (focusout)="providerChanged()"
+                       onClick="this.select()">
+              </div>
+            </div>
+          </div>
+          <div class="col-md-5 col-xs-12">
+            <div class="form-group">
+              <label class="control-label col-md-5">Appointment Type<b style="float:right;">:</b></label>
+              <div class="col-md-6">
+                <select [(ngModel)]="currentdailyappointment.AppointmentType" [ngModelOptions]="{standalone: true}" style="width:200px;height:30px;">
+                  <option value="">All</option>
+                  <option value="New" selected="selected">New</option>
+                  <option value="Transfer">Transfer</option>
+                  <option value="Referral">Referral</option>
+                  <option value="followup">Followup</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-2 col-xs-12">
+            <div class="form-group">
+              <button class="btn blue" type="button" (click)="Load()"> <i class="fa fa-search"></i> Show Report </button>
+            </div>
+          </div></div>
+        </div>
       </div>
-
-
     </form>
-
-</div>
-
-<div class="row">
+  </div>
+  <div class="row">
     <div class="col-lg-12 col-sm-12" *ngIf="DailyAppointmentReportData.length>0">
-        <danphe-grid [grid-colDefaults]="DailyAppointmentReportColumns"
-                     [grid-data]="DailyAppointmentReportData"
-                     [grid-exportOptions]="gridExportOptions" [grid-showExportNew]="true" (grid-onExport)="OnGridExport($event)">
-        </danphe-grid>
+      <danphe-grid [grid-colDefaults]="DailyAppointmentReportColumns"
+                   [grid-data]="DailyAppointmentReportData"
+                   [grid-exportOptions]="gridExportOptions" [grid-showExportNew]="true" (grid-onExport)="OnGridExport($event)"
+                   [NepaliDateInGridParams]="NepaliDateInGridSettings"> </danphe-grid>
     </div>
+  </div>
 </div>
-
-
-

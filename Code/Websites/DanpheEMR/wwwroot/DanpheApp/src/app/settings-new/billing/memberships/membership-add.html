@@ -1,0 +1,82 @@
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showAddPage">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-4 col-md-offset-4">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3> <span *ngIf="!update">Add Membership</span> <span *ngIf="update">Update Membership</span> </h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a> </div>
+          <form [formGroup]="CurrentMembership.MembershipValidator" class="form-horizontal hm-form">
+            <div class="form-body">
+              <div class="form-group">
+                <label class="control-label col-md-5">Community<sup>*</sup><b>:</b></label>
+                <div class="col-md-7">
+                  <input danphe-auto-complete class="form-control"
+									   formControlName="CommunityName"
+									   [(ngModel)]="CurrentMembership.CommunityName"
+									   [source]="communityLists"
+									   placeholder="community"
+									   value-property-name=null
+									   no-match-found-text=" "
+									   onClick="this.select();"
+									   max-num-list="10" />
+                  
+                  <!--<select class="form-control" [(ngModel)]="CurrentMembership.CommunityName" formControlName="CommunityName">
+								  <option *ngFor="let community of communityLists" value="{{community}}">{{community}}</option>
+								</select>--> 
+                  
+                  <span Class="color-red font-sm" [hidden]="CurrentMembership.IsValidCheck('CommunityName','required') || !(CurrentMembership.IsDirty('CommunityName'))">enter/select community name</span> </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Membership Name<sup>*</sup><b>:</b></label>
+                <div class="col-md-7">
+                  <input type="text" name="" required value="" class="form-control" maxlength="40"
+									   [(ngModel)]="CurrentMembership.MembershipTypeName"
+									   formControlName="MembershipTypeName"
+									   id="MembershipTypeName" placeholder="Membership Name" />
+                  <span Class="color-red font-sm" [hidden]="CurrentMembership.IsValidCheck('MembershipTypeName','required') || !(CurrentMembership.IsDirty('MembershipTypeName'))">Enter Membership Name</span> </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Discount %<sup>*</sup><b>:</b></label>
+                <div class="col-md-7">
+                  <input type="text" name="" required value="" class="form-control" maxlength="3"
+									   [(ngModel)]="CurrentMembership.DiscountPercent"
+									   formControlName="DiscountPercent"
+									   id="Discount" placeholder="Discount Percentage" />
+                  <span class="color-red font-sm" [hidden]="CurrentMembership.IsValidCheck('DiscountPercent', 'required') || !(CurrentMembership.IsDirty('DiscountPercent'))">Enter Discount Percentage</span> <span class="color-red font-sm" [hidden]="CurrentMembership.IsValidCheck('DiscountPercent', 'min') || !(CurrentMembership.IsDirty('DiscountPercent'))">Discount Percent can't be negative</span> <span class="color-red font-sm" [hidden]="CurrentMembership.IsValidCheck('DiscountPercent', 'max') || !(CurrentMembership.IsDirty('DiscountPercent'))">Discount Percent can't be more than 100</span> </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Description<b>:</b></label>
+                <div class="col-md-7">
+                  <input type="text" name="" value="" class="form-control" maxlength="100"
+									   [(ngModel)]="CurrentMembership.Description"
+									   [ngModelOptions]="{standalone: true}"
+									   id="Description" placeholder="Description" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Is Active <b>:</b> </label>
+                <div class="col-md-7">
+                  <div class="input-group">
+                    <div class="icheck-inline">
+                      <label class="mt-checkbox mt-checkbox-outline">
+                        <input id="IsActive" name="IsActive" type="checkbox" value=""
+											 [(ngModel)]="CurrentMembership.IsActive"
+											 [ngModelOptions]="{standalone: true}">
+                        <span></span> </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+            </div>
+			  <div class="panel-footer">
+                <input type="button" class="btn btn-primary" *ngIf="!update" (click)="Add()" value="Add" />
+                <input type="button" class="btn btn-primary" *ngIf="update" (click)="Update()" value="Update" />
+              </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

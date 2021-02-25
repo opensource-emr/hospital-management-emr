@@ -1,0 +1,646 @@
+<div class="row">
+  <div class="col-lg-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="EyeHistoryColumn"
+                 [grid-data]="EyeHistoryList"
+                 (grid-actions)="EyeGridAction($event)"> </danphe-grid>
+  </div>
+</div>
+<style>
+  @media Print {
+    .hide-this {
+      display: none;
+    }
+
+    .col-50 {
+      width: 50% !important;
+    }
+
+    fieldset {
+      width: 100%;
+      text-align: left;
+      font-size: 11px !important;
+      border: 1px solid #333333;
+      padding: 15px;
+      position: relative;
+      padding-top: 30px;
+      text-align: left;
+      display: inline-flex;
+      margin: 1% 0%;
+      vertical-align: top;
+      margin-bottom: 20px;
+    }
+
+      fieldset legend {
+        text-align: left;
+        display: inline-block !important;
+        width: auto;
+        position: absolute;
+        top: -12px;
+        font-size: 14px;
+        background: #fff;
+        left: 20px;
+        border: none;
+        padding: 0px 15px;
+        font-weight: bold;
+        font-size: 14px;
+      }
+  }
+
+  table tr th {
+    font-size: 11px !important;
+    font-weight: bold;
+    font-family: 'Open Sans';
+    border: 1px solid #ececec !important;
+    color: #000;
+    text-align: center;
+    vertical-align: middle;
+    padding: 10px;
+  }
+
+  td {
+    background: #f6f6f6;
+    padding: 10px;
+    vertical-align: middle;
+    font-size: 11px !important;
+  }
+
+  fieldset {
+    width: 100%;
+    border: 1px solid #333333;
+    padding: 15px;
+    position: relative;
+    padding-top: 30px;
+    display: inline-flex;
+    margin: 1% 2%;
+    vertical-align: top;
+  }
+
+    fieldset legend {
+      display: inline-block !important;
+      width: auto;
+      position: absolute;
+      top: -12px;
+      font-size: 14px;
+      background: #fff;
+      left: 20px;
+      border: none;
+      padding: 0px 15px;
+      font-weight: 600;
+    }
+</style>
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="eyeSlip">
+  <div id="printpage"> 
+    <!--Model Box Body Start-->
+    <div class="form-body modal-md clearfix"> 
+		<a class="btn btn-danger cancel-btn" (click)="Close()" title="Cancel"><i class="fa fa-times"></i></a>
+      <div class="modelbox-div">
+        <div class="row">
+          <div class="hidden-xs hidden-sm noPrint"> </div>
+          <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="table-responsive">
+              <h2><b> Refraction</b></h2>
+              <table class="table table-striped table-hover table-bordered">
+                <thead>
+                  <tr>
+                    <td></td>
+                    <td><b>Date</b></td>
+                    <td><b>TimePoint</b></td>
+                    <td><b>UCVA</b></td>
+                    <td><b>ULett</b></td>
+                    <td><b>NUC</b></td>
+                    <td><b>Sph</b></td>
+                    <td><b>Cyf</b></td>
+                    <td><b>Axis</b></td>
+                    <td><b>BSCVA</b></td>
+                    <td><b>BLett</b></td>
+                    <td><b>DCNV</b></td>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of EyeMaster.RefractionOD ; let i= index">
+                    <td><b>OD</b></td>
+                    <td>{{ row.Date}}</td>
+                    <td>{{row.TimePoint}}</td>
+                    <td>{{row.UCVA}}</td>
+                    <td>{{row.ULett}}</td>
+                    <td>{{row.NUC}}</td>
+                    <td>{{row.Sph}}</td>
+                    <td>{{row.Cyf}}</td>
+                    <td>{{row.Axis}}</td>
+                    <td>{{row.BSCVA}}</td>
+                    <td>{{row.BLett}}</td>
+                    <td>{{row.DCNV}}</td>
+                  </tr>
+                  <tr *ngFor="let row of EyeMaster.RefractionOS ; let i= index">
+                    <td><b>OS</b></td>
+                    <td>{{ row.Date}}</td>
+                    <td>{{row.TimePoint}}</td>
+                    <td>{{row.UCVA}}</td>
+                    <td>{{row.ULett}}</td>
+                    <td>{{row.NUC}}</td>
+                    <td>{{row.Sph}}</td>
+                    <td>{{row.Cyf}}</td>
+                    <td>{{row.Axis}}</td>
+                    <td>{{row.BSCVA}}</td>
+                    <td>{{row.BLett}}</td>
+                    <td>{{row.DCNV}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="table-responsive">
+              <fieldset>
+                <legend><b> Operation Notes OS </b> </legend>
+                <p> {{EyeMaster.OperationNotesOD.Notes}}</p>
+              </fieldset>
+              <fieldset>
+                <legend><b>Operation Notes OS</b> </legend>
+                <p>{{EyeMaster.OperationNotesOS.Notes}}</p>
+              </fieldset>
+            </div>
+            <div class="table-responsive">
+              <h2><b>Laser Data</b></h2>
+              <table class="table table-striped table-hover table-bordered">
+                <thead>
+                  <tr>
+                    <td></td>
+                    <td><b>Sph</b></td>
+                    <td><b>Cyf</b></td>
+                    <td><b>Axis</b></td>
+                    <td><b>Zone</b></td>
+                    <td><b>Transmission</b></td>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of EyeMaster.LaserDataOD ; let i= index">
+                    <td><b>OD</b></td>
+                    <td>{{ row.Sph}}</td>
+                    <td>{{row.Cyf}}</td>
+                    <td>{{row.Axis}}</td>
+                    <td>{{row.Zone}}</td>
+                    <td>{{row.Transmission}}</td>
+                  </tr>
+                  <tr *ngFor="let row of EyeMaster.LaserDataOS ; let i= index">
+                    <td><b>OS</b></td>
+                    <td>{{ row.Sph}}</td>
+                    <td>{{row.Cyf}}</td>
+                    <td>{{row.Axis}}</td>
+                    <td>{{row.Zone}}</td>
+                    <td>{{row.Transmission}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <h2><b>Ablation Profile OD</b></h2>
+                <table class="table table-striped table-hover table-bordered">
+                  <thead>
+                    <tr>
+                      <td><b>Profile</b></td>
+                      <td><b>DZP Factor</b></td>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>{{EyeMaster.AblationOD.Profile}}</td>
+                      <td>{{EyeMaster.AblationOD.DZPFactor}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="col-md-6">
+                <h2><b>Ablation Profile OS</b></h2>
+                <table class="table table-striped table-hover table-bordered">
+                  <thead>
+                    <tr>
+                      <td><b>Profile</b></td>
+                      <td><b>DZP Factor</b></td>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>{{EyeMaster.AblationOS.Profile}}</td>
+                      <td>{{EyeMaster.AblationOS.DZPFactor}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="row  clearfix">
+              <div class="col-md-6"><b>Ablation Profile OD</b>
+                <form action="">
+                  <div class="modal-cb">
+                    <input type="checkbox" name="isSXDone" value="isSXDone" disabled [ngModel]="EyeMaster.AblationOD.isSXDone">
+                    SX Done</div>
+                  <div class="modal-cb">
+                    <input type="checkbox" name="isPTKPerformed" value="isPTKPerformed" disabled [ngModel]="EyeMaster.AblationOD.isPTKPerformed">
+                    PTKPerformed</div>
+                </form>
+              </div>
+              <div class="col-md-6"> <b>Ablation Profile OS </b>
+                <form action="">
+                  <div class="modal-cb">
+                    <input type="checkbox" name="isSXDone" value="isSXDone" disabled [ngModel]="EyeMaster.AblationOS.isSXDone">
+                    SX Done</div>
+                  <div class="modal-cb">
+                    <input type="checkbox" name="isPTKPerformed" value="isPTKPerformed" disabled [ngModel]="EyeMaster.AblationOS.isPTKPerformed">
+                    PTKPerformed</div>
+                </form>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <fieldset>
+                <legend><b> Ablation Profile Notes OD </b> </legend>
+                <p> {{EyeMaster.AblationOD.Notes}}</p>
+              </fieldset>
+              <fieldset>
+                <legend><b>Ablation Profile Notes OS</b> </legend>
+                <p>{{EyeMaster.AblationOS.Notes}}</p>
+              </fieldset>
+            </div>
+            <div class="table-responsive">
+              <h2><b>PreOp Pachymetry</b></h2>
+              <table class="table table-striped table-hover table-bordered">
+                <thead>
+                  <tr>
+                    <td></td>
+                    <td><b>PentMin</b></td>
+                    <td><b>PentCentral</b></td>
+                    <td><b>USMin</b></td>
+                    <td><b>VisanteMin</b></td>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of EyeMaster.PrePachymetryOD ; let i= index">
+                    <td><b>OD</b></td>
+                    <td>{{ row.PentMin}}</td>
+                    <td>{{row.PentCentral}}</td>
+                    <td>{{row.USMin}}</td>
+                    <td>{{row.VisanteMin}}</td>
+                  </tr>
+                  <tr *ngFor="let row of EyeMaster.PrePachymetryOS ; let i= index">
+                    <td><b>OS</b></td>
+                    <td>{{ row.PentMin}}</td>
+                    <td>{{row.PentCentral}}</td>
+                    <td>{{row.USMin}}</td>
+                    <td>{{row.VisanteMin}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="table-responsive">
+                  <h2><b>LASIK RST OD</b></h2>
+                  <table class="table table-striped table-hover table-bordered">
+                    <thead>
+                      <tr>
+                        <td width="25%"></td>
+                        <td><b>Microns</b></td>
+                        <td><b>Notes</b></td>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><b>Pachymetry</b></td>
+                        <td>{{EyeMaster.LasikRSTOD.PachymetryMicrons}}</td>
+                        <td>{{EyeMaster.LasikRSTOD.PachymetryNotes}}</td>
+                      </tr>
+                      <tr>
+                        <td><b>Flat Depth</b></td>
+                        <td>{{EyeMaster.LasikRSTOD.FlapDepthMicrons}}</td>
+                        <td>{{EyeMaster.LasikRSTOD.FlapDepthNotes}}</td>
+                      </tr>
+                      <tr>
+                        <td><b>Ablation Depth</b></td>
+                        <td>{{EyeMaster.LasikRSTOD.AblationDepthMicrons}}</td>
+                        <td>{{EyeMaster.LasikRSTOD.AblationDepthNotes}}</td>
+                      </tr>
+                      <tr>
+                        <td><b>Predicted RST</b></td>
+                        <td>{{EyeMaster.LasikRSTOD.PredictedRSTMicrons}}</td>
+                        <td>{{EyeMaster.LasikRSTOD.PredictedRSTNotes}}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="table-responsive">
+                  <h2><b>LASIK RST OS</b></h2>
+                  <table class="table table-striped table-hover table-bordered">
+                    <thead>
+                      <tr>
+                        <td width="25%"></td>
+                        <td><b>Microns</b></td>
+                        <td><b>Notes</b></td>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><b>Pachymetry</b></td>
+                        <td>{{EyeMaster.LasikRSTOS.PachymetryMicrons}}</td>
+                        <td>{{EyeMaster.LasikRSTOS.PachymetryNotes}}</td>
+                      </tr>
+                      <tr>
+                        <td><b>Flat Depth</b></td>
+                        <td>{{EyeMaster.LasikRSTOS.FlapDepthMicrons}}</td>
+                        <td>{{EyeMaster.LasikRSTOS.FlapDepthNotes}}</td>
+                      </tr>
+                      <tr>
+                        <td><b>Ablation Depth</b></td>
+                        <td>{{EyeMaster.LasikRSTOS.AblationDepthMicrons}}</td>
+                        <td>{{EyeMaster.LasikRSTOS.AblationDepthNotes}}</td>
+                      </tr>
+                      <tr>
+                        <td><b>Predicted RST</b></td>
+                        <td>{{EyeMaster.LasikRSTOS.PredictedRSTMicrons}}</td>
+                        <td>{{EyeMaster.LasikRSTOS.PredictedRSTNotes}}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="table-responsive">
+                  <h2><b>SMILE Setting OD</b></h2>
+                  <table class="table table-striped table-hover table-bordered">
+                    <thead>
+                      <tr>
+                        <td width="25%"></td>
+                        <td><b>Lent</b></td>
+                        <td><b>Lent Side</b></td>
+                        <td><b>Cap</b></td>
+                        <td><b>Cap Side</b></td>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><b>Spot Distance</b></td>
+                        <td>{{EyeMaster.SmileSettingOD.SpotDistanceLent}}</td>
+                        <td>{{EyeMaster.SmileSettingOD.SpotDistanceLentSide}}</td>
+                        <td>{{EyeMaster.SmileSettingOD.SpotDistanceCap}}</td>
+                        <td>{{EyeMaster.SmileSettingOD.SpotDistanceCapSide}}</td>
+                      </tr>
+                      <tr>
+                        <td><b>Track Distance</b></td>
+                        <td>{{EyeMaster.SmileSettingOD.TrackDistanceLent}}</td>
+                        <td>{{EyeMaster.SmileSettingOD.TrackDistanceLentSide}}</td>
+                        <td>{{EyeMaster.SmileSettingOD.TrackDistanceCap}}</td>
+                        <td>{{EyeMaster.SmileSettingOD.TrackDistanceCapSide}}</td>
+                      </tr>
+                      <tr>
+                        <td><b>Energy Offset</b></td>
+                        <td>{{EyeMaster.SmileSettingOD.EnergyOffsetLent}}</td>
+                        <td>{{EyeMaster.SmileSettingOD.EnergyOffsetLentSide}}</td>
+                        <td>{{EyeMaster.SmileSettingOD.EnergyOffsetCap}}</td>
+                        <td>{{EyeMaster.SmileSettingOD.EnergyOffsetCapSide}}</td>
+                      </tr>
+                      <tr>
+                        <td><b>Scan Direction</b></td>
+                        <td>{{EyeMaster.SmileSettingOD.ScanDirectionLent}}</td>
+                        <td>{{EyeMaster.SmileSettingOD.ScanDirectionLentSide}}</td>
+                        <td>{{EyeMaster.SmileSettingOD.ScanDirectionCap}}</td>
+                        <td>{{EyeMaster.SmileSettingOD.ScanDirectionCapSide}}</td>
+                      </tr>
+                      <tr>
+                        <td><b>Min. Thickness</b></td>
+                        <td>{{EyeMaster.SmileSettingOD.MinThicknessLent}}</td>
+                        <td>{{EyeMaster.SmileSettingOD.MinThicknessLentSide}}</td>
+                        <td>{{EyeMaster.SmileSettingOD.MinThicknessCap}}</td>
+                        <td>{{EyeMaster.SmileSettingOD.MinThicknessCapSide}}</td>
+                      </tr>
+                      <tr>
+                        <td><b>Side Cut</b></td>
+                        <td>{{EyeMaster.SmileSettingOD.SidecutLent}}</td>
+                        <td>{{EyeMaster.SmileSettingOD.SidecutLentSide}}</td>
+                        <td>{{EyeMaster.SmileSettingOD.SidecutCap}}</td>
+                        <td>{{EyeMaster.SmileSettingOD.SidecutCapSide}}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="table-responsive">
+                  <h2><b>SMILE Setting OS</b></h2>
+                  <table class="table table-striped table-hover table-bordered">
+                    <thead>
+                      <tr>
+                        <td width="25%"></td>
+                        <td><b>Lent</b></td>
+                        <td><b>Lent Side</b></td>
+                        <td><b>Cap</b></td>
+                        <td><b>Cap Side</b></td>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><b>Spot Distance</b></td>
+                        <td>{{EyeMaster.SmileSettingOS.SpotDistanceLent}}</td>
+                        <td>{{EyeMaster.SmileSettingOS.SpotDistanceLentSide}}</td>
+                        <td>{{EyeMaster.SmileSettingOS.SpotDistanceCap}}</td>
+                        <td>{{EyeMaster.SmileSettingOS.SpotDistanceCapSide}}</td>
+                      </tr>
+                      <tr>
+                        <td><b>Track Distance</b></td>
+                        <td>{{EyeMaster.SmileSettingOS.TrackDistanceLent}}</td>
+                        <td>{{EyeMaster.SmileSettingOS.TrackDistanceLentSide}}</td>
+                        <td>{{EyeMaster.SmileSettingOS.TrackDistanceCap}}</td>
+                        <td>{{EyeMaster.SmileSettingOS.TrackDistanceCapSide}}</td>
+                      </tr>
+                      <tr>
+                        <td><b>Energy Offset</b></td>
+                        <td>{{EyeMaster.SmileSettingOS.EnergyOffsetLent}}</td>
+                        <td>{{EyeMaster.SmileSettingOS.EnergyOffsetLentSide}}</td>
+                        <td>{{EyeMaster.SmileSettingOS.EnergyOffsetCap}}</td>
+                        <td>{{EyeMaster.SmileSettingOS.EnergyOffsetCapSide}}</td>
+                      </tr>
+                      <tr>
+                        <td><b>Scan Direction</b></td>
+                        <td>{{EyeMaster.SmileSettingOS.ScanDirectionLent}}</td>
+                        <td>{{EyeMaster.SmileSettingOS.ScanDirectionLentSide}}</td>
+                        <td>{{EyeMaster.SmileSettingOS.ScanDirectionCap}}</td>
+                        <td>{{EyeMaster.SmileSettingOS.ScanDirectionCapSide}}</td>
+                      </tr>
+                      <tr>
+                        <td><b>Min. Thickness</b></td>
+                        <td>{{EyeMaster.SmileSettingOS.MinThicknessLent}}</td>
+                        <td>{{EyeMaster.SmileSettingOS.MinThicknessLentSide}}</td>
+                        <td>{{EyeMaster.SmileSettingOS.MinThicknessCap}}</td>
+                        <td>{{EyeMaster.SmileSettingOS.MinThicknessCapSide}}</td>
+                      </tr>
+                      <tr>
+                        <td><b>Side Cut</b></td>
+                        <td>{{EyeMaster.SmileSettingOS.SidecutLent}}</td>
+                        <td>{{EyeMaster.SmileSettingOS.SidecutLentSide}}</td>
+                        <td>{{EyeMaster.SmileSettingOS.SidecutCap}}</td>
+                        <td>{{EyeMaster.SmileSettingOS.SidecutCapSide}}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <h2> <b>Pachymetry </b></h2>
+              <table class="table table-striped table-hover table-bordered">
+                <thead>
+                  <tr>
+                    <td></td>
+                    <td><b>Date</b></td>
+                    <td><b>TimePointPre</b></td>
+                    <td><b>USMin</b></td>
+                    <td><b>VisanteRST</b></td>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of EyeMaster.PachymetryOD ; let i= index">
+                    <td><b>OD</b></td>
+                    <td>{{ row.Date}}</td>
+                    <td>{{row.TimePointPre}}</td>
+                    <td>{{row.USMin}}</td>
+                    <td>{{row.VisanteRST}}</td>
+                  </tr>
+                  <tr *ngFor="let row of EyeMaster.PachymetryOS ; let i= index">
+                    <td><b>OS</b></td>
+                    <td>{{ row.Date}}</td>
+                    <td>{{row.TimePointPre}}</td>
+                    <td>{{row.USMin}}</td>
+                    <td>{{row.VisanteRST}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="table-responsive">
+              <h2><b>ATOS</b></h2>
+              <table class="table table-striped table-hover table-bordered">
+                <thead>
+                  <tr>
+                    <td></td>
+                    <td>Thickness</td>
+                    <td><b>Diameter</b></td>
+                    <td><b>Hinge</b></td>
+                    <td><b>Glass</b></td>
+                    <td><b>Sidecut</b></td>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><b>OD</b></td>
+                    <td>{{EyeMaster.VisumaxOD.Thickness}}</td>
+                    <td>{{EyeMaster.VisumaxOD.Diameter}}</td>
+                    <td>{{EyeMaster.VisumaxOD.Hinge}}</td>
+                    <td>{{EyeMaster.VisumaxOD.Glass}}</td>
+                    <td>{{EyeMaster.VisumaxOD.Sidecut}}</td>
+                  </tr>
+                  <tr>
+                    <td><b>OS</b></td>
+                    <td>{{EyeMaster.VisumaxOS.Thickness}}</td>
+                    <td>{{EyeMaster.VisumaxOS.Diameter}}</td>
+                    <td>{{EyeMaster.VisumaxOS.Hinge}}</td>
+                    <td>{{EyeMaster.VisumaxOS.Glass}}</td>
+                    <td>{{EyeMaster.VisumaxOS.Sidecut}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="table-responsive">
+              <h2><b>WaveFront</b></h2>
+              <table class="table table-striped table-hover table-bordered">
+                <thead>
+                  <tr>
+                    <td></td>
+                    <td><b>Date</b></td>
+                    <td><b>Timepoint</b></td>
+                    <td><b>Coma</b></td>
+                    <td><b>SphAb</b></td>
+                    <td><b>HoRMS</b></td>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of EyeMaster.WavefrontOD ; let i= index">
+                    <td><b>OD</b></td>
+                    <td>{{ row.Date}}</td>
+                    <td>{{row.Timepoint}}</td>
+                    <td>{{row.Coma}}</td>
+                    <td>{{row.SphAb}}</td>
+                    <td>{{row.HoRMS}}</td>
+                  </tr>
+                  <tr *ngFor="let row of EyeMaster.WavefrontOS ; let i= index">
+                    <td><b>OS</b></td>
+                    <td>{{ row.Date}}</td>
+                    <td>{{row.Timepoint}}</td>
+                    <td>{{row.Coma}}</td>
+                    <td>{{row.SphAb}}</td>
+                    <td>{{row.HoRMS}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="table-responsive">
+              <h2><b>ORA</b></h2>
+              <table class="table table-striped table-hover table-bordered">
+                <thead>
+                  <tr>
+                    <td></td>
+                    <td><b>Date</b></td>
+                    <td><b>Timepoint</b></td>
+                    <td><b>IOPcc</b></td>
+                    <td><b>CRF</b></td>
+                    <td><b>CH</b></td>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of EyeMaster.ORAOD ; let i= index">
+                    <td><b>OD</b></td>
+                    <td>{{ row.Date}}</td>
+                    <td>{{row.Timepoint}}</td>
+                    <td>{{row.IOPcc}}</td>
+                    <td>{{row.CRF}}</td>
+                    <td>{{row.CH}}</td>
+                  </tr>
+                  <tr *ngFor="let row of EyeMaster.ORAOS ; let i= index">
+                    <td><b>OS</b></td>
+                    <td>{{ row.Date}}</td>
+                    <td>{{row.Timepoint}}</td>
+                    <td>{{row.IOPcc}}</td>
+                    <td>{{row.CRF}}</td>
+                    <td>{{row.CH}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="table-responsive">
+              <h2><b>Smile Incision</b></h2>
+              <table class="table table-striped table-hover table-bordered">
+                <thead>
+                  <tr>
+                    <td></td>
+                    <td><b>Position</b></td>
+                    <td><b>Width</b></td>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><b>OD</b></td>
+                    <td>{{EyeMaster.SmileIncisionOD.Position}}</td>
+                    <td>{{EyeMaster.SmileIncisionOD.Width}}</td>
+                  </tr>
+                  <tr>
+                    <td><b>OS</b></td>
+                    <td>{{EyeMaster.SmileIncisionOS.Position}}</td>
+                    <td>{{EyeMaster.SmileIncisionOS.Width}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

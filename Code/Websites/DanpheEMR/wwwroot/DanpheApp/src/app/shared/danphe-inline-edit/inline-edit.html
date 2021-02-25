@@ -1,0 +1,22 @@
+<ng-container *ngIf="!isTextArea">
+  <span *ngIf="editing">
+    <input #inlineEditControl (blur)="onBlur($event)"
+           [(ngModel)]="value" [type]="type" class="inline-edit" />
+  </span>
+  <span *ngIf="!editing">
+    <span title="{{tooltipText}}" (click)="edit(value)" (focus)="edit(value);" tabindex="0" class="inline-edit">
+      {{ipvalue}}&nbsp;
+    </span>
+  </span>
+</ng-container>
+
+<ng-container *ngIf="isTextArea">
+  <div *ngIf="editing">
+    <textarea #inlineEditControl (blur)="onTextAreaBlur($event)"
+           [(ngModel)]="value" class="inline-edit"></textarea>
+  </div>
+  <div *ngIf="!editing">
+    <p title="{{tooltipText}}" [innerHtml]="ipvalue" (click)="edit(value)" (focus)="edit(value);" tabindex="0" class="textarea-edit">
+    </p>
+  </div>
+</ng-container>

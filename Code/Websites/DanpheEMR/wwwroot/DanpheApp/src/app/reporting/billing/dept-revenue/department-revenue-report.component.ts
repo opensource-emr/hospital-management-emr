@@ -252,5 +252,14 @@ export class RPT_BIL_DepartmentRevenueReportComponent {
             let filename = 'Billing Department Revenue Report';
             CommonFunctions.ConvertHTMLTableToExcel(id, this.fromDate, this.toDate, workSheetName, Heading, filename);
         }
-    }
+  }
+
+  //Anjana:11June'20--reusable From-ToDate-In Reports..
+  OnFromToDateChange($event) {
+    this.fromDate = $event ? $event.fromDate : this.fromDate;
+    this.toDate = $event ? $event.toDate : this.toDate;
+
+    //this.reportData.fromDate = this.fromDate;
+    //this.reportData.toDate = this.toDate;
+  }
 }

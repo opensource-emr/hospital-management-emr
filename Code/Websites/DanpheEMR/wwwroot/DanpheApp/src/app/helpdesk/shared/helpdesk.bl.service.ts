@@ -21,4 +21,11 @@ export class HelpDeskBLService {
         return this.helpdeskDLService.GetWardinfo(status)
             .map(res => res);
     }
+  LoadBedFeature() {
+    return this.helpdeskDLService.GetBedFeature().map(res => res);
+  }
+
+  LoadBedPatientInfo() {
+    return this.helpdeskDLService.GetBedPatientInfo().map(res => res);
+  }
 }

@@ -31,22 +31,60 @@ namespace DanpheEMR.DalLayer
         {
             var columnNames = dt.Columns.Cast<DataColumn>().Select(c => c.ColumnName.ToLower()).ToList();
             var properties = typeof(T).GetProperties();
-            return dt.AsEnumerable().Select(row =>
+            //return dt.AsEnumerable().Select(row =>
+            //{
+            //    var objT = Activator.CreateInstance<T>();
+            //    foreach (var pro in properties)
+            //    {
+            //        if (columnNames.Contains(pro.Name.ToLower()))
+            //        {
+            //            try
+            //            {
+            //                pro.SetValue(objT, row[pro.Name]);
+            //            }
+            //            catch (Exception ex) 
+            //            { 
+
+            //            }
+            //        }
+            //    }
+            //    return objT;
+            //}).ToList();
+
+
+            List<T> result = new List<T>();
+            foreach (DataRow dataRow in dt.AsEnumerable())
             {
                 var objT = Activator.CreateInstance<T>();
-                foreach (var pro in properties)
+                foreach (var prop in properties)
                 {
-                    if (columnNames.Contains(pro.Name.ToLower()))
+                    if (columnNames.Contains(prop.Name.ToLower()))
                     {
                         try
                         {
-                            pro.SetValue(objT, row[pro.Name]);
+                            if(dataRow[prop.Name] != DBNull.Value)
+                            {
+                                prop.SetValue(objT, dataRow[prop.Name]);
+                            }
+                            else
+                            {
+                                prop.SetValue(objT, GetDefaultValue(prop.PropertyType));
+                            }
                         }
-                        catch (Exception ex) { }
+                        catch (Exception)
+                        {
+                            throw;
+                        }
                     }
                 }
-                return objT;
-            }).ToList();
+                result.Add(objT);
+            }
+            return result;
+        }
+
+        private static object GetDefaultValue(Type type)
+        {
+            return type.IsValueType ? Activator.CreateInstance(type) : null;
         }
     }
 }

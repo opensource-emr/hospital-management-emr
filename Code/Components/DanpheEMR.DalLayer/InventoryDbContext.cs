@@ -39,6 +39,7 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<PackagingTypeMasterModel>().ToTable("INV_MST_PackagingType");
             modelBuilder.Entity<AccountHeadMasterModel>().ToTable("INV_MST_AccountHead");
             modelBuilder.Entity<ReturnToVendorItemsModel>().ToTable("INV_TXN_ReturnToVendorItems");
+            modelBuilder.Entity<ReturnToVendorModel>().ToTable("INV_TXN_ReturnToVendor");
             modelBuilder.Entity<InventoryCompanyModel>().ToTable("INV_MST_Company");
             modelBuilder.Entity<InventoryTermsModel>().ToTable("INV_MST_Terms");
             modelBuilder.Entity<DepartmentModel>().ToTable("MST_Department");
@@ -49,7 +50,18 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<WARDStockModel>().ToTable("WARD_Stock");
             modelBuilder.Entity<QuotationItems>().ToTable("INV_QuotationItems");
             modelBuilder.Entity<QuotationUploadedFiles>().ToTable("INV_QuotationUploadedFiles");
+
             modelBuilder.Entity<ItemSubCategoryMasterModel>().ToTable("INV_MST_ItemSubCategory");
+            modelBuilder.Entity<PurchaseRequestModel>().ToTable("INV_TXN_PurchaseRequest");
+            modelBuilder.Entity<PurchaseRequestItemModel>().ToTable("INV_TXN_PurchaseRequestItems");
+            modelBuilder.Entity<PHRMStoreModel>().ToTable("PHRM_MST_Store"); //it was supposed to be exclusive to pharmacy, but later on used in both pharmacy and inventory
+            modelBuilder.Entity<WARDInventoryStockModel>().ToTable("WARD_INV_Stock");
+            modelBuilder.Entity<WARDInventoryTransactionModel>().ToTable("WARD_INV_Transaction");
+            modelBuilder.Entity<VerificationModel>().ToTable("TXN_Verification");
+            modelBuilder.Entity<CfgParameterModel>().ToTable("CORE_CFG_Parameters");
+            modelBuilder.Entity<BillingFiscalYear>().ToTable("BIL_CFG_FiscalYears");
+            modelBuilder.Entity<InventoryFiscalYear>().ToTable("INV_CFG_FiscalYears");
+            modelBuilder.Entity<InventoryFiscalYearStock>().ToTable("INV_FiscalYearStock");
         }
         public DbSet<PurchaseOrderModel> PurchaseOrders { get; set; }
         public DbSet<ItemMasterModel> Items { get; set; }
@@ -69,6 +81,7 @@ namespace DanpheEMR.DalLayer
         public DbSet<PackagingTypeMasterModel> PackagingTypeMaster { get; set; }
         public DbSet<AccountHeadMasterModel> AccountHeadMaster { get; set; }
         public DbSet<ReturnToVendorItemsModel> ReturnToVendorItems { get; set; }
+        public DbSet<ReturnToVendorModel> ReturnToVendor { get; set; }
         public DbSet<InventoryCompanyModel> InventoryCompany { get; set; }
         public DbSet<InventoryTermsModel> InventoryTerms { get; set; }
         public DbSet<DepartmentModel> Departments { get; set; }
@@ -80,6 +93,16 @@ namespace DanpheEMR.DalLayer
         public DbSet<QuotationUploadedFiles> quotationUploadedFiles { get; set; }
         public DbSet<WARDStockModel> WardStock { get; set; }
         public DbSet<ItemSubCategoryMasterModel> ItemSubCategoryMaster { get; set; }
+        public DbSet<PurchaseRequestModel> PurchaseRequest { get; set; }
+        public DbSet<PurchaseRequestItemModel> PurchaseRequestItems { get; set; }
+        public DbSet<PHRMStoreModel> StoreMasterModel { get; set; }
+        public DbSet<WARDInventoryStockModel> WardInventoryStockModel { get; set; }
+        public DbSet<WARDInventoryTransactionModel> WardInventoryTransactionModel { get; set; }
+        public DbSet<VerificationModel> Verifications { get; set; }
+        public DbSet<CfgParameterModel> CfgParameters { get; set; }
+        public DbSet<BillingFiscalYear> FiscalYears { get; set; }
+        public DbSet<InventoryFiscalYear> InventoryFiscalYears { get; set; }
+        public DbSet<InventoryFiscalYearStock> InventoryFiscalYearStocks { get; set; }
 
     }
 }

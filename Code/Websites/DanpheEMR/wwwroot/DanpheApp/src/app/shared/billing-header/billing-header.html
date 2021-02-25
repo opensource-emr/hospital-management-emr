@@ -1,17 +1,41 @@
-﻿<div *ngIf="headerDetail">
-    <div class="col-md-3">
-        <div *ngIf="'ShowLogo' | booleanParameter : 'Billing'">
-            <img class="img-responsive" style="max-height:90px;" src="../../../themes/theme-default/images/hospital-logo.PNG" />
-        </div>
+
+
+<div class="flex-container" style="align-items: center;" *ngIf="headerDetail">
+  <div class="flex-1">
+    <div class="flex-container" *ngIf="'ShowLogo' | booleanParameter : 'Billing'">
+      <img class="img-responsive" style="height:90px; width: 90px; position: relative; top: 10px;" src="../../../themes/theme-default/images/hospital-logo.PNG" />
+      <img class="img-watermark"  src="../../../themes/theme-default/images/hospital-logo.PNG" />
     </div>
-    <div class="col-md-6 bill-head-div">
-        <div class="text-center billing-head" style="text-align: center;font-family:sans-serif;padding-top: 5px;">
-            <span style="font-size:14px;"><strong>{{headerDetail.CustomerName}}</strong></span><br />
-            <span style="font-size:14px;">{{headerDetail.Address}}</span><br />
-            <span style="font-size:13px;">{{headerDetail.CustomerRegLabel}}</span><br />
-            <span style="font-size:13px;"> Ph No: {{headerDetail.Tel}}</span><br />
-            <!--<span style="font-size:13px;">{{headerDetail.CustomerRegLabel}}: {{headerDetail.CustomerRegNo}}, Ph No: {{headerDetail.Tel}}</span><br />-->
-        </div>
+  </div>
+  <div class="flex-2">
+    <div class="flex-container" style="justify-content: center;">
+      <p class="bill-header-text" style="font-size:13px; font-weight: bold;"><strong>{{headerDetail.CustomerName}}</strong></p>
+      <p class="bill-header-text" style="font-size:12px; font-weight:500;">{{headerDetail.Address}}</p>
+      <p class="bill-header-text" style="font-size:12px; font-weight: 500;">Ph No: {{headerDetail.Tel}}</p>
+      <p class="bill-header-text" style="font-size:11px; font-weight: 500;">{{headerDetail.CustomerRegLabel}}</p>
+      <!--<p class="bill-header-text">{{headerDetail.CustomerRegLabel}}: {{headerDetail.CustomerRegNo}}, Ph No: {{headerDetail.Tel}}</p>-->
     </div>
-    <div class="col-md-3"></div>
+  </div>
+
+  <div class="flex-1">
+
+  </div>
+
+
 </div>
+
+<!--<div class="col-md-3">
+      <div *ngIf="'ShowLogo' | booleanParameter : 'Billing'">
+          <img class="img-responsive" style="max-height:90px;" src="../../../themes/theme-default/images/hospital-logo.PNG" />
+      </div>
+  </div>
+  <div class="col-md-6 bill-head-div">
+      <div class="text-center billing-head" style="text-align: center;font-family:sans-serif;padding-top: 5px;">
+          <span style="font-size:14px;"><strong>{{headerDetail.CustomerName}}</strong></span><br />
+          <span style="font-size:14px;">{{headerDetail.Address}}</span><br />
+          <span style="font-size:13px;">{{headerDetail.CustomerRegLabel}}</span><br />
+          <span style="font-size:13px;"> Ph No: {{headerDetail.Tel}}</span><br />
+          <span style="font-size:13px;">{{headerDetail.CustomerRegLabel}}: {{headerDetail.CustomerRegNo}}, Ph No: {{headerDetail.Tel}}</span><br />
+      </div>
+  </div>
+  <div class="col-md-3"></div>-->

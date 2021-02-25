@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Audit.EntityFramework;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -7,7 +8,8 @@ using System.Threading.Tasks;
 
 namespace DanpheEMR.ServerModel
 {
-   public class PHRMBillTransactionItem
+    [AuditInclude]
+    public class PHRMBillTransactionItem
     {
         [Key]
         public int BilTransactionItemId { get; set; }

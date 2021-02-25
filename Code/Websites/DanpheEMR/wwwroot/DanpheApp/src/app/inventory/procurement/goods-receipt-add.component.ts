@@ -1,4 +1,4 @@
-import { Component, ChangeDetectorRef, OnInit } from "@angular/core";
+import { Component, ChangeDetectorRef, OnInit, OnDestroy } from "@angular/core";
 import { Router } from '@angular/router';
 import { GoodsReceipt } from "../shared/goods-receipt.model"
 import { MessageboxService } from "../../shared/messagebox/messagebox.service"
@@ -13,24 +13,27 @@ import { InventoryService } from "../shared/inventory.service";
 import { VendorMaster } from "../shared/vendor-master.model";
 import { toArray } from "rxjs/operator/toArray";
 import { CommonFunctions } from "../../shared/common.functions";
-import { PHRMGoodsReceiptModel } from "../../pharmacy/shared/phrm-goods-receipt.model";
+import { CoreService } from "../../core/shared/core.service";
+import { ItemModel } from "../settings/shared/item.model";
+import { ENUM_GRCategory } from "../../shared/shared-enums";
+import { POVerifier } from "../shared/purchase-order.model";
 @Component({
   templateUrl: "./goods-receipt-add.html",
 })
-export class GoodsReceiptAddComponent implements OnInit {
+export class GoodsReceiptAddComponent implements OnInit, OnDestroy {
 
   public goodsReceipt: GoodsReceipt = new GoodsReceipt();
   //public model: Array<GoodsReceiptItems> = new Array<GoodsReceiptItems>();
   public purchaseOrderId: number = 0;
-  public VendorName: string = "";
+
+  public selectedVendor: any = null;
   public disableButton: boolean = false;
   public disableTextBox: boolean = false;
-  loading: boolean = false;
-  public ItemList: any[];
+  public loading: boolean = false;
+  public ItemList: any[] = [];
   public VendorList: any[];
   public receivedqty: number;
   public rowCount: number = 0;
-  public SelectedVendor: VendorMaster = new VendorMaster();
   public checkIsItemPresent: boolean = false;
   public index: number = 0;
   public showAddItemPopUp: boolean = false;
@@ -39,6 +42,15 @@ export class GoodsReceiptAddComponent implements OnInit {
   public isGrFromPOMode: boolean = false;
   public TDSApplicable: boolean = false;
   public editGR: boolean = false;
+  public editPO: boolean = false;
+  public GRCategories: string[] = [];
+  public ItemListFiltered: any[] = [];
+  public vendorBillHistoryList: any[] = [];
+  public duplicateVendorGRBillList: any[] = [];
+  //this controls whether to show verification part or not. controlled by core cfg settings.
+  public IsVerificationActivated: boolean = true;
+  public canUserEnterDate: boolean = false;
+  public VerifierList: POVerifier[] = [];
 
   constructor(public routeFrom: RouteFromService,
     public goodReceiptService: GoodReceiptService,
@@ -47,38 +59,101 @@ export class GoodsReceiptAddComponent implements OnInit {
     public inventoryService: InventoryService,
     public changeDetectorRef: ChangeDetectorRef,
     public messageBoxService: MessageboxService,
+    public coreService: CoreService,
     public router: Router) {
 
     this.disableTextBox = true;
     this.disableButton = true;
+    this.LoadGRCategory();
   }
+  private checkIfDateEntryAllowed(decidingFactorForEditMode = true) {
+    //in normal scenario, if user has permission, s/he can adjusts date
+    //in edit mode, no other txns should exists for that particular gr, or else date adjustment is not possible
+    this.canUserEnterDate = this.securityService.HasPermission('inventory-gr-backdate-entry-button') && decidingFactorForEditMode;
+  }
+
   ngOnInit() {
     this.goodsReceipt.GoodsReceiptDate = moment().format('YYYY-MM-DD');
     this.LoadItemList();
-    this.LoadVendorList();
-    if (this.inventoryService.POId > 0) {
+    this.LoadVerifiersForGR();
+    //this.isRecreateOrEditMode(); put inside LoadVerifiersForPO method because of its dependency
+    this.goodsReceipt.PaymentMode = "Credit";
+    this.LoadVendorList(); //vendor must be loaded at last, because, in edit GR case, we may need inactive vendors as well.
+  }
+  private CheckForEditRecreateMode() {
+    if (this.inventoryService.POId > 0) { //this comes from PO LIst -> Add GR. 
       this.LoadPo(this.inventoryService.POId);
       this.isGrFromPOMode = true;
       this.inventoryService.POId = 0;
+      this.checkIfDateEntryAllowed();
     }
-    else if (this.inventoryService.Id > 0) {
-      this.LoadGoodsReceiptDetails(this.inventoryService.Id);
+    else if (this.inventoryService.GoodsReceiptId > 0) { //this comes from GR-Edit Page. (Changed: sud-19Feb'20- inventoryService.id was wrongly implemented.)
+      this.LoadGoodsReceiptDetails(this.inventoryService.GoodsReceiptId);
       this.editGR = true;
-      this.isGrFromPOMode = true;
-      this.inventoryService.Id = 0;
+      this.inventoryService.GoodsReceiptId = 0;
     }
     else {
-      this.goodsReceipt.GoodsReceiptItem.push(new GoodsReceiptItems());
+      this.AddRowRequest();
       this.isGrFromPOMode = false;
       this.editGR = false;
+      this.SetDefaultVerifier();
+      this.checkIfDateEntryAllowed();
     }
-    this.goodsReceipt.PaymentMode = "Credit";
   }
-  LoadGoodsReceiptDetails(id: number) {
 
-    if (id != null) {
+  ngOnDestroy(): void {
+    if (this.editGR == true) {
+      this.inventoryService.GoodsReceiptId = 0;
+    }
+    if (this.isGrFromPOMode == true) {
+      this.inventoryService.POId = 0;
+    }
+  }
+  public SetDefaultVerifier() {
+    var ProcurementVerificationSetting = this.coreService.Parameters.find(param => param.ParameterGroupName == "Inventory" && param.ParameterName == "ProcurementVerificationSettings").ParameterValue;
+    var ProcurementVerificationSettingParsed = JSON.parse(ProcurementVerificationSetting);
+    if (ProcurementVerificationSettingParsed != null) {
+      if (ProcurementVerificationSettingParsed.EnableVerification == true) {
+        this.goodsReceipt.IsVerificationEnabled = true;
+        this.SetVerifiersFromVerifierIdsObj(ProcurementVerificationSettingParsed.VerifierIds);
+      }
+      else {
+        this.IsVerificationActivated = false;
+      }
+    }
+  }
+  private SetVerifiersFromVerifierIdsObj(VerifierIds: any) {
+    if (this.goodsReceipt.IsVerificationEnabled == true && this.VerifierList != null) {
+      this.goodsReceipt.VerifierList = [];
+      var VerifierIdsParsed: any[] = (typeof (VerifierIds) == "string") ? JSON.parse(VerifierIds) : VerifierIds;
+      if (VerifierIdsParsed == null || VerifierIdsParsed.length == 0) {
+        this.AddVerifier();
+      }
+      else {
+        //if more than three verifiers are selected, it will take only first three.
+        VerifierIdsParsed = VerifierIdsParsed.slice(0, 2);
+        VerifierIdsParsed.forEach(a => this.goodsReceipt.VerifierList.push(this.VerifierList.find(v => v.Id == a.Id && v.Type == a.Type)));
+      }
+    }
+  }
+  public LoadVerifiersForGR() {
+    this.inventoryBLService.GetAllPOVerifiers().finally(() => { this.CheckForEditRecreateMode(); })
+      .subscribe(res => {
+        if (res.Status == "OK") {
+          this.VerifierList = res.Results;
+        }
+        else {
+          console.log("Verifiers Not Found.");
+        }
+      }, err => {
+        this.messageBoxService.showMessage("Failed", ["err.error.ErrorMessage"]);
+      })
+  }
+  LoadGoodsReceiptDetails(goodsReceiptId: number) {
+
+    if (goodsReceiptId) {
       //this.goodsreceiptID = id;
-      this.inventoryBLService.GetGRItemsByGRId(id)
+      this.inventoryBLService.GetGRItemsByGRId(goodsReceiptId)
         .subscribe(res => this.ShowGoodsReceiptDetails(res));
     }
     else {
@@ -87,16 +162,28 @@ export class GoodsReceiptAddComponent implements OnInit {
     }
   }
 
+
   ShowGoodsReceiptDetails(res) {
     if (res.Status == "OK") {
+      //for date change option
+      this.checkIfDateEntryAllowed(res.Results.canUserEditDate);
       //for the edit options
       //to add the good receipt details 
 
-      var goodsReceiptDetail: GoodsReceipt = res.Results.grDetails[0];
-      goodsReceiptDetail.SelectedItem = this.VendorList.filter(s => s.VendorName == goodsReceiptDetail.VendorName)[0];
+      let goodsReceiptDetail: GoodsReceipt = res.Results.grDetails;
+      this.changeDetectorRef.detectChanges();
       this.goodsReceipt = Object.assign(this.goodsReceipt, goodsReceiptDetail);
-      this.SelectedVendor = this.goodsReceipt.SelectedItem;
-      this.VendorName = this.SelectedVendor.VendorName;
+      //to check for previous verifiers from edit mode
+      this.SetVerifiersFromVerifierIdsObj(this.goodsReceipt.VerifierIds);
+
+      let currVendor = this.VendorList.find(s => s.VendorName == goodsReceiptDetail.VendorName);
+      if (currVendor != undefined) {
+        this.selectedVendor = currVendor.VendorName;
+        this.goodsReceipt.VendorId = currVendor.VendorId;
+      }
+      else {
+        this.messageBoxService.showMessage("Notice-message", ["This vendor is inactive now. Please select another vendor."])
+      }
 
 
       //to add the goods receipt item since the validators are not passed from the controller
@@ -105,23 +192,35 @@ export class GoodsReceiptAddComponent implements OnInit {
       for (let i = 0; i < goodsReceiptItems.length; i++) {
         this.changeDetectorRef.detectChanges();
         var currGRItem: GoodsReceiptItems = new GoodsReceiptItems();
-        currGRItem.ItemName = goodsReceiptItems[i].ItemName;
-        currGRItem.BatchNO = goodsReceiptItems[i].BatchNo;
-        currGRItem.ReceivedQuantity = goodsReceiptItems[i].ReveivedQuantity;
-        currGRItem.ExpiryDate = goodsReceiptItems[i].ExpiryDate;
-        currGRItem.FreeQuantity = goodsReceiptItems[i].FreeQuantity;
-        currGRItem.ItemRate = goodsReceiptItems[i].GRItemRate;
-        currGRItem.VATAmount = goodsReceiptItems[i].VATAmount;
-        currGRItem.CcAmount = goodsReceiptItems[i].CcAmount;
-        currGRItem.DiscountAmount = goodsReceiptItems[i].DiscountAmount;
-        currGRItem.TotalAmount = goodsReceiptItems[i].ItemTotalAmount;
-        currGRItem.OtherCharge = goodsReceiptItems[i].OtherCharge;
-        currGRItem.GoodsReceiptItemId = goodsReceiptItems[i].GoodsReceiptItemId;
-        currGRItem.GoodsReceiptId = goodsReceiptItems[i].GoodsReceiptId;
-        currGRItem.SelectedItem = this.ItemList.find(i => i.ItemName == currGRItem.ItemName);
-
+        const grItemFromServer = goodsReceiptItems[i];
+        currGRItem.ItemId = grItemFromServer.ItemId;
+        //does not trigger the validators for itemid
+        currGRItem.GoodsReceiptItemValidator.get("ItemId").disable();
+        currGRItem.ItemName = grItemFromServer.ItemName;
+        currGRItem.BatchNO = grItemFromServer.BatchNo;
+        currGRItem.ReceivedQuantity = grItemFromServer.ReveivedQuantity;
+        currGRItem.ExpiryDate = grItemFromServer.ExpiryDate;
+        currGRItem.FreeQuantity = grItemFromServer.FreeQuantity;
+        currGRItem.ItemRate = grItemFromServer.GRItemRate;
+        currGRItem.VATAmount = grItemFromServer.VATAmount;
+        currGRItem.CcAmount = grItemFromServer.CcAmount;
+        currGRItem.DiscountAmount = grItemFromServer.DiscountAmount;
+        currGRItem.TotalAmount = grItemFromServer.ItemTotalAmount;
+        //calculate vat percentage from vatamount
+        const totalAmountBeforeVAT = grItemFromServer.ItemTotalAmount - grItemFromServer.VATAmount;
+        currGRItem.VAT = CommonFunctions.parseAmount((grItemFromServer.VATAmount / totalAmountBeforeVAT) * 100);
+        currGRItem.OtherCharge = grItemFromServer.OtherCharge;
+        currGRItem.GoodsReceiptItemId = grItemFromServer.GoodsReceiptItemId;
+        currGRItem.GoodsReceiptId = grItemFromServer.GoodsReceiptId;
+        //var currItem = this.ItemList.find(i => i.ItemName == currGRItem.ItemName);
+        // if(currItem != undefined){
+        //   currGRItem.SelectedItem = currItem;
+        // }
+        // else{
+        //   currGRItem.SelectedItem = new Item()
+        // }
         this.goodsReceipt.GoodsReceiptItem.push(currGRItem);
-        
+        this.goodsReceipt.GoodsReceiptItem = this.goodsReceipt.GoodsReceiptItem.slice();
       }
 
 
@@ -132,9 +231,7 @@ export class GoodsReceiptAddComponent implements OnInit {
         });
         this.goodsReceipt.GoodsReceiptDate = moment(this.goodsReceipt.GoodsReceiptDate).format('YYYY-MM-DD');
         this.goodsReceipt.ReceivedDate = moment(this.goodsReceipt.ReceivedDate).format('YYYY-MM-DD');
-        
         this.changeDetectorRef.detectChanges();
-
       }
       else {
         this.messageBoxService.showMessage("notice-message", ["Selected GoodsReceipt is without Items"]);
@@ -146,6 +243,7 @@ export class GoodsReceiptAddComponent implements OnInit {
       this.goodsreceiptList();
     }
   }
+
   //route to goods receipt list page
   goodsreceiptList() {
     this.router.navigate(['/Inventory/ProcurementMain/GoodsReceiptList']);
@@ -153,7 +251,7 @@ export class GoodsReceiptAddComponent implements OnInit {
   //for cancel button
   Cancel() {
     this.TDSApplicable = false;
-    this.inventoryService.Id = 0;
+    this.inventoryService.GoodsReceiptId = 0;
     this.inventoryService.POId = 0;
     this.isGrFromPOMode = false;
     this.editGR = false;
@@ -169,18 +267,27 @@ export class GoodsReceiptAddComponent implements OnInit {
     this.purchaseOrder = res.Results;
     this.changeDetectorRef.detectChanges();
     this.purchaseOrderId = this.purchaseOrder.PurchaseOrderId;
-    this.VendorName = this.purchaseOrder.Vendor.VendorName;
+    let vendorName = this.purchaseOrder.Vendor.VendorName;
     this.TDSApplicable = this.purchaseOrder.Vendor.IsTDSApplicable;
     this.goodsReceipt.VendorId = this.purchaseOrder.VendorId;
     this.goodsReceipt.PurchaseOrderId = this.purchaseOrder.PurchaseOrderId;
-
-    this.goodsReceipt.SelectedItem = this.VendorList.filter(s => s.VendorId == this.goodsReceipt.VendorId)[0];
-    this.SelectedVendor = this.goodsReceipt.SelectedItem;
+    let currVendor = this.VendorList.find(s => s.VendorId == this.goodsReceipt.VendorId);
+    if (currVendor != undefined) {
+      this.selectedVendor = currVendor.VendorName;
+      this.goodsReceipt.VendorId = currVendor.VendorId;
+    }
+    else {
+      this.messageBoxService.showMessage("Notice-message", ["This vendor is inactive now. Please select another vendor."])
+    }
+    //load verifiers
+    this.goodsReceipt.IsVerificationEnabled = this.purchaseOrder.IsVerificationEnabled;
+    this.SetVerifiersFromVerifierIdsObj(this.purchaseOrder.VerifierIds);
     this.GetGrItemsFromPoItems();
   }
   //Metho  for transform POItems to GRItems
   GetGrItemsFromPoItems() {
     for (var i = 0; i < this.purchaseOrder.PurchaseOrderItems.length; i++) {
+
       this.changeDetectorRef.detectChanges();
       var currGRItem: GoodsReceiptItems = new GoodsReceiptItems();
       currGRItem.ItemId = this.purchaseOrder.PurchaseOrderItems[i].ItemId;
@@ -188,94 +295,93 @@ export class GoodsReceiptAddComponent implements OnInit {
       currGRItem.VAT = this.purchaseOrder.PurchaseOrderItems[i].Item.VAT;
       currGRItem.ItemRate = this.purchaseOrder.PurchaseOrderItems[i].StandardRate;
       currGRItem.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
-      currGRItem.Quantity = this.purchaseOrder.PurchaseOrderItems[i].Quantity;
-      currGRItem.SelectedItem = this.ItemList.filter(i => i.ItemId == currGRItem.ItemId)[0];
+      currGRItem.Quantity = this.purchaseOrder.PurchaseOrderItems[i].PendingQuantity;
+
+      currGRItem.SelectedItem = this.ItemList.find(i => i.ItemId == currGRItem.ItemId);
 
       this.goodsReceipt.GoodsReceiptItem.push(currGRItem);
 
     }
   }
+
   //used to format display item in ng-autocomplete
-  myListFormatter(data: any): string {
+  itemListFormatter(data: any): string {
     let html = data["ItemName"];
     return html;
   }
 
-  //used to format display vendro in ng-autocomplete
+  //used to format display vendor in ng-autocomplete
   myVendorListFormatter(data: any): string {
     let html = data["VendorName"];
     return html;
   }
-
-
+  public LoadGRCategory() {
+    this.GRCategories = Object.values(ENUM_GRCategory).filter(p => isNaN(p as any));
+  }
   LoadItemList(): void {
-    this.inventoryBLService.GetItemList()
-      .subscribe(
-        res =>
-          this.CallBackGetItemList(res));
-  }
+    try {
+      this.ItemList = this.inventoryService.allItemList;
+      if (this.editGR == false) {
+        this.ItemList = this.ItemList.filter(item => item.IsActive == true);
+        this.FilterItemByGRCategory();
+      }
+      if (!this.ItemList || this.ItemList.length == 0) {
 
+        this.messageBoxService.showMessage("warning", ['ItemList not available. Plese add some item and try again.']);
+      }
+
+    } catch (ex) {
+      this.messageBoxService.showMessage("failed", ['failed to get Item.. please check log for details.']);
+    }
+  }
+  FilterItemByGRCategory() {
+    this.ItemListFiltered = this.ItemList.filter(item => item.ItemType === this.goodsReceipt.GRCategory);
+    this.ItemListFiltered = this.ItemListFiltered.slice();
+  }
   LoadVendorList(): void {
-    this.goodReceiptService.GetVendorList()
-      .subscribe(
-        res => this.VendorList = res.Results
-      );
+    try {
+      this.VendorList = this.inventoryService.allVendorList;
+      if (this.editGR == false) {
+        this.VendorList = this.VendorList.filter(vendor => vendor.IsActive == true);
+      }
+    } catch (ex) {
+      this.messageBoxService.showMessage("failed", ['failed to get vendor List.. please check log for details.']);
+    }
   }
 
-  CallBackGetItemList(res) {
-    if (res.Status == 'OK') {
-      this.ItemList = [];
-      if (res && res.Results) {
-        res.Results.forEach(a => {
-          this.ItemList.push({
-            "ItemId": a.ItemId, "ItemName": a.ItemName, StandardRate: a.StandardRate, VAT: a.VAT
-          });
-        });
-      }
-    }
-    else {
-      err => {
-        this.messageBoxService.showMessage("failed", ['failed to get Item.. please check log for details.']);
-      }
-    }
-  }
 
   SelectItemFromSearchBox(Item: ItemMaster, index) {
-    //if proper item is selected then the below code runs ..othewise it goes out side the function
-    //if (typeof Item === "object" && !Array.isArray(Item) && Item !== null) {
-    //    //this for loop with if conditon is to check whether the  item is already present in the array or not 
-    //    //means to avoid duplication of item
-    //    for (var i = 0; i < this.goodsReceipt.GoodsReceiptItem.length; i++) {
-    //        if (this.goodsReceipt.GoodsReceiptItem[i].ItemId == Item.ItemId) {
-    //            this.checkIsItemPresent = true;
-
-    //        }
-    //    }
-    //    //id item is present the it show alert otherwise it assign the value
-    //    if (this.checkIsItemPresent == true) {
-    //        this.messageBoxService.showMessage("notice-message", [Item.ItemName + " is already added.Please Check!!!"]);
-    //        this.checkIsItemPresent = false;
-    //        this.changeDetectorRef.detectChanges();
-    //        this.goodsReceipt.GoodsReceiptItem.splice(index, 1);
-    //        //this.goodsReceiptItem = new GoodsReceiptItems();
-    //        //this.goodsReceiptItem.ReceivedQuantity = 1;
-    //        this.goodsReceipt.GoodsReceiptItem.push(new GoodsReceiptItems());
-
-    //    } else {
-    //        this.goodsReceipt.GoodsReceiptItem[i].ItemId = Item.ItemId
-    //    }
-
-    //}
-
-    this.goodsReceipt.GoodsReceiptItem[index].ItemId = Item.ItemId
-
+    if (this.goodsReceipt.GoodsReceiptItem.length > 0) {
+      this.goodsReceipt.GoodsReceiptItem[index].ItemId = Item.ItemId;
+      if (this.goodsReceipt.GoodsReceiptItem[index].ItemRate == 0)
+        this.goodsReceipt.GoodsReceiptItem[index].ItemRate = Item.StandardRate;
+      if (this.goodsReceipt.GoodsReceiptItem[index].VAT == 0)
+        this.goodsReceipt.GoodsReceiptItem[index].VAT = Item.VAT;
+      this.goodsReceipt.GoodsReceiptItem[index].itemPriceHistory = this.inventoryService.allItemPriceList
+        .filter((item) => item.ItemId == Item.ItemId)
+        .filter((u, i) => i < 3); //taking top 3
+    }
   }
+  SelectVendorFromSearchBox() {
 
-  SelectVendorFromSearchBox(Vendor: VendorMaster) {
-    this.goodsReceipt.VendorId = Vendor.VendorId;
-    this.goodsReceipt.VendorName = Vendor.VendorName;
-    this.goodsReceipt.CreditPeriod = Vendor.CreditPeriod;
-    this.TDSApplicable = Vendor.IsTDSApplicable;
+    let selVendorObj: VendorMaster = null;
+    if (typeof (this.selectedVendor) == 'string' && this.VendorList.length) {
+      selVendorObj = this.VendorList.find(v => v.VendorName.toLowerCase() == this.selectedVendor.toLowerCase());
+      //item = this.itemList.filter(a => a.ItemName.toLowerCase() == this.selectedItems[index].toLowerCase())[0];   //for billing order.                
+    }
+    else if (typeof (this.selectedVendor) == 'object') {
+      selVendorObj = this.selectedVendor;
+    }
+
+    if (selVendorObj) {
+      this.goodsReceipt.VendorId = selVendorObj.VendorId;
+      this.goodsReceipt.VendorName = selVendorObj.VendorName;
+      this.goodsReceipt.CreditPeriod = selVendorObj.CreditPeriod;
+      this.TDSApplicable = selVendorObj.IsTDSApplicable;
+
+      //Bikash:23June'20 - for getting selected vendor's bill history
+      this.GetVendorBillHistory();
+    }
   }
 
   Calculations() {
@@ -307,7 +413,7 @@ export class GoodsReceiptAddComponent implements OnInit {
         totalwithTDS = CommonFunctions.parseAmount(totalwithTDS - TDSAmount);
 
         let Vat1 = item.VAT / 100;
-        let vatAmount1 = CommonFunctions.parseAmount(totalwithTDS * Vat1);
+        let vatAmount1 = CommonFunctions.parseAmount(totalAmount * Vat1);
         totalwithTDS = CommonFunctions.parseAmount(totalwithTDS + vatAmount1);
 
         this.goodsReceipt.TotalWithTDS += totalwithTDS;
@@ -345,115 +451,170 @@ export class GoodsReceiptAddComponent implements OnInit {
 
   //add a new row 
   AddRowRequest() {
-    var goodItem = new GoodsReceiptItems();
-    this.goodsReceipt.GoodsReceiptItem.push(goodItem);
+    if (this.editGR) {
+      this.messageBoxService.showMessage("Failed", ["Cannot add items in edit mode."]);
+    }
+    else {
+      var goodItem = new GoodsReceiptItems();
+      this.goodsReceipt.GoodsReceiptItem.push(goodItem);
+      let len = this.goodsReceipt.GoodsReceiptItem.length - 1;
+
+      window.setTimeout(function () {
+        let itmNameBox = document.getElementById("itemName" + len);
+        if (itmNameBox) {
+          itmNameBox.focus();
+        }
+      }, 600);
+
+    }
   }
 
   //to delete the row
   DeleteRow(index) {
-    //to stop rowCount value going negative
-    if (this.rowCount > 0) {
-      this.rowCount--;
-    }
-
-    //this will remove the data from the array
-    this.goodsReceipt.GoodsReceiptItem.splice(index, 1);
-
-    if (index == 0) {
-      this.goodsReceipt.GoodsReceiptItem.push(new GoodsReceiptItems());
-
-      //this.Calculationforall(this.BillingTransactionItems[index]);
-      this.Calculations();
-      this.changeDetectorRef.detectChanges();
-
+    if (this.editGR) {
+      this.messageBoxService.showMessage("Failed", ["Cannot delete items in edit mode."]);
     }
     else {
-      this.Calculations();
-      this.changeDetectorRef.detectChanges();
+      //to stop rowCount value going negative
+      if (this.rowCount > 0) {
+        this.rowCount--;
+      }
+
+      //this will remove the data from the array
+      this.goodsReceipt.GoodsReceiptItem.splice(index, 1);
+
+      if (index == 0 && this.goodsReceipt.GoodsReceiptItem.length == 0) {
+        this.goodsReceipt.GoodsReceiptItem.push(new GoodsReceiptItems());
+
+        //this.Calculationforall(this.BillingTransactionItems[index]);
+        this.Calculations();
+        this.changeDetectorRef.detectChanges();
+
+      }
+      else {
+        this.Calculations();
+        this.changeDetectorRef.detectChanges();
+      }
     }
   }
-
-  //CalculationForGR() {
-  //  this.goodsReceipt.SubTotal = 0;
-  //  this.goodsReceipt.VATTotal = 0;
-  //  this.goodsReceipt.TotalAmount = 0;
-
-  //  for (var i = 0; i < this.goodsReceipt.GoodsReceiptItem.length; i++) {
-  //    //this.goodsReceipt.SubTotal = this.goodsReceipt.SubTotal + (this.goodsReceipt.GoodsReceiptItem[i].)
-  //    let qty = this.goodsReceipt.GoodsReceiptItem[i].ReceivedQuantity;
-  //    let price = this.goodsReceipt.GoodsReceiptItem[i].ItemRate;
-  //    let vat = this.goodsReceipt.GoodsReceiptItem[i].VAT / 100;
-  //    this.goodsReceipt.GoodsReceiptItem[i].TotalAmount = (qty * price) + vat;
-  //    //this.goodsReceipt.VATTotal = (Math.round(this.goodsReceipt.VATTotal + this.goodsReceipt.GoodsReceiptItem[i].VATAmount));
-  //    this.goodsReceipt.TotalAmount = (Math.round((this.goodsReceipt.TotalAmount + this.goodsReceipt.GoodsReceiptItem[i].TotalAmount) * 100) / 100);
-  //  }
-
-  //}
-
   //Save data to database
   SaveGoodsReceipt() {
     if (this.editGR) { this.isGrFromPOMode = false };
     if (this.goodsReceipt != null) {
-
-      let CheckIsValid = true;
-      for (var a in this.goodsReceipt.GoodsReceiptValidator.controls) {
-        this.goodsReceipt.GoodsReceiptValidator.controls[a].markAsDirty();
-        this.goodsReceipt.GoodsReceiptValidator.controls[a].updateValueAndValidity();
-      }
-      if (this.goodsReceipt.IsValidCheck(undefined, undefined) == false) { CheckIsValid = false }
-      this.goodsReceipt.GoodsReceiptItem.forEach(item => {
-        item.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
-        for (var b in item.GoodsReceiptItemValidator.controls) {
-          item.GoodsReceiptItemValidator.controls[b].markAsDirty();
-          item.GoodsReceiptItemValidator.controls[b].updateValueAndValidity();
-        }
-        if (item.IsValidCheck(undefined, undefined) == false) { CheckIsValid = false }
-      });
-
+      let validationObj = this.CheckValidation();
       this.goodsReceipt.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
-      if (CheckIsValid) {
+      this.goodsReceipt.GRStatus = this.goodsReceipt.IsVerificationEnabled ? "pending" : "active";
+      this.goodsReceipt.GoodsReceiptDate = moment(this.goodsReceipt.GoodsReceiptDate).format('YYYY-MM-DD') + ' ' + moment().format('HH:mm:ss.SSS');
+      if (validationObj.isValid) {
 
         for (let index = 0; index < this.goodsReceipt.GoodsReceiptItem.length; index++) {
           if (this.goodsReceipt.GoodsReceiptItem[index].ReceivedQuantity == 0) {
             this.goodsReceipt.GoodsReceiptItem.splice(index, 1);
             index--;
           }
-        }
-        this.goodsReceipt.GoodsReceiptItem.forEach(item => {
-          item.OtherCharge = (item.TotalAmount * this.goodsReceipt.OtherCharges) / (this.goodsReceipt.SubTotal);
-        });
-        if (this.goodsReceipt.GoodsReceiptItem.length > 0) {
-          this.loading = true;
-          if (this.editGR) {
-            this.UpdateGoodsReceipt();
-          }
           else {
-            this.goodReceiptService.AddGoodReceipt(this.goodsReceipt)
-              .subscribe(
-                res => {
-                  if (res.Status == 'OK') {
-                    //this function for navigate to POList page
-                    this.RouteToViewDetails(res.Results);
-                  }
-                  else {
-                    this.loading = false;
-                    this.messageBoxService.showMessage("failed", ["failed to add result.. please check log for details."]);
-                  }
-                });
+            this.goodsReceipt.GoodsReceiptItem[index].OtherCharge = (this.goodsReceipt.GoodsReceiptItem[index].TotalAmount * this.goodsReceipt.OtherCharges) / (this.goodsReceipt.SubTotal);
           }
+        }
+
+        if (this.editGR) {
+          this.UpdateGoodsReceipt();
         }
         else {
-          this.messageBoxService.showMessage("notice-message", ['Please fill received quantity']);
+          this.goodReceiptService.AddGoodReceipt(this.goodsReceipt)
+            .finally(() => {
+              this.loading = false;
+            })
+            .subscribe(
+              res => {
+                if (res.Status == 'OK') {
+                  this.messageBoxService.showMessage("success", ["Goods Receipt Created Successfully."]);
+                  //this function for navigate to POList page
+                  this.RouteToViewDetails(res.Results);
+                }
+                else {
+                  this.messageBoxService.showMessage("failed", ["failed to add result.. please check log for details."]);
+                  console.log(res.ErrorMessage);
+                }
+              },
+              err => {
+                console.log(err.error.ErrorMessage);
+              });
         }
       }
       else {
-        this.messageBoxService.showMessage("error-message", ['Please enter all the required field']);
+        this.loading = false;
+        this.messageBoxService.showMessage("warning", validationObj.messageArr);
       }
     }
     else {
+      this.loading = false;
       this.messageBoxService.showMessage("notice-message", ["Add Item ...Before Requesting"]);
     }
   }
+
+  //check for the validation in current fraction entries.
+  //returns a object with True/False  and Error messages if False.
+  CheckValidation(): any {
+
+    let validationObj = { isValid: true, messageArr: [] };
+
+
+    //Start: Validation before saving-- move it to separate function if required.. 
+    //validation-1: save without adding anything.. 
+    if (!this.goodsReceipt.GoodsReceiptItem || this.goodsReceipt.GoodsReceiptItem.length == 0) {
+      validationObj.isValid = false;
+      validationObj.messageArr.push("Please add at-least one item..");
+
+      return validationObj;
+    }
+
+    //validation-2: Check Type, AssignedTo, IncentivePercent
+    if (!this.goodsReceipt.VendorId) {
+      validationObj.isValid = false;
+      validationObj.messageArr.push("Invalid Vendor..");
+    }
+    if (this.IsGoodsReceiptDateValid == false) {
+      validationObj.isValid = false;
+      validationObj.messageArr.push("Invalid Fiscal Year Vendor Bill Date..");
+    }
+    if (!this.goodsReceipt.BillNo) {
+      validationObj.isValid = false;
+      validationObj.messageArr.push("Invalid Bill No.");
+    }
+    //validation 3 -- check for all the form controls.
+    for (var a in this.goodsReceipt.GoodsReceiptValidator.controls) {
+      this.goodsReceipt.GoodsReceiptValidator.controls[a].markAsDirty();
+      this.goodsReceipt.GoodsReceiptValidator.controls[a].updateValueAndValidity();
+    }
+    if (this.goodsReceipt.IsValidCheck(undefined, undefined) == false) {
+      validationObj.isValid = false;
+      validationObj.messageArr.push("Please check all the required fields.");
+    }
+    this.loading = true;
+    this.goodsReceipt.GoodsReceiptItem.forEach(item => {
+      item.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
+      for (var b in item.GoodsReceiptItemValidator.controls) {
+        item.GoodsReceiptItemValidator.controls[b].markAsDirty();
+        item.GoodsReceiptItemValidator.controls[b].updateValueAndValidity();
+      }
+      if (item.IsValidCheck(undefined, undefined) == false) {
+        validationObj.isValid = false;
+        validationObj.messageArr.push("Please fill required item fields.");
+      }
+    });
+
+    //Validation:4 -- Duplicate Consultant Validation -- Can't have one employee in more than one place..
+    //loop on each item and try to find if there's more than one object of same employee. 
+
+    if (this.HasDuplicateItems()) {
+      validationObj.isValid = false;
+      validationObj.messageArr.push("Duplicate items are not allowed.");
+    }
+
+    return validationObj;
+  }
+
   UpdateGoodsReceipt() {
     this.goodsReceipt.ModifiedBy = this.securityService.GetLoggedInUser().EmployeeId;
     this.goodsReceipt.ModifiedOn = new Date();
@@ -465,15 +626,25 @@ export class GoodsReceiptAddComponent implements OnInit {
       .subscribe(res => {
         if (res.Status == "OK") {
           this.editGR = false;
-          this.inventoryService.Id = 0;
+          this.inventoryService.GoodsReceiptId = 0;//sud:3Mar'20-Property Rename in InventoryService
           this.messageBoxService.showMessage("success", ["Good Receipt has been saved."]);
           this.goodsreceiptList();
         }
+        else {
+          this.messageBoxService.showMessage("Failed", [res.ErrorMessage]);
+          this.loading = false;
+        }
       });
   }
-
-  RouteToViewDetails(id) {
-    this.inventoryService.Id = id;
+  HasDuplicateItems(itemId?: number) {
+    let seen = new Set();
+    var hasDuplicates = this.goodsReceipt.GoodsReceiptItem.some(currentObject => {
+      return seen.size == seen.add(currentObject.ItemId).size && currentObject.ItemId != 0 && (currentObject.ItemId == itemId || itemId == null);
+    });
+    return hasDuplicates;
+  }
+  RouteToViewDetails(grId: number) {
+    this.inventoryService.GoodsReceiptId = grId;//sud:3Mar'20-Property Rename in InventoryService
     this.inventoryService.POId = null;
     this.isGrFromPOMode = false;
     this.router.navigate(['/Inventory/ProcurementMain/GoodsReceiptDetails']);
@@ -490,27 +661,91 @@ export class GoodsReceiptAddComponent implements OnInit {
     this.showAddItemPopUp = false;
     var item = $event.item;
     this.ItemList.push({
-      "ItemId": item.ItemId, "ItemName": item.ItemName, StandardRate: item.StandardRate, VAT: item.VAT
+      "ItemId": item.ItemId, "ItemName": item.ItemName, StandardRate: item.StandardRate, VAT: item.VAT,
+      Code: item.Code, ItemType: item.ItemType, UOMName: item.UOMName
     });
-    let currentGRItem = new GoodsReceiptItems();
-    currentGRItem.ReceivedQuantity = 1;
-    this.goodsReceipt.GoodsReceiptItem.splice(this.index, 1, currentGRItem);
-    this.goodsReceipt.GoodsReceiptItem[this.index].ItemId = item.ItemId;
-    this.goodsReceipt.GoodsReceiptItem[this.index].ItemName = item.ItemName;
+    this.ItemList = this.ItemList.slice();
+    this.FilterItemByGRCategory();
+    // let currentGRItem = new GoodsReceiptItems();
+    // currentGRItem.ReceivedQuantity = 1;
+    // this.goodsReceipt.GoodsReceiptItem.splice(this.index, 1, currentGRItem);
+    // this.goodsReceipt.GoodsReceiptItem[this.index].ItemId = item.ItemId;
+    // this.goodsReceipt.GoodsReceiptItem[this.index].ItemName = item.ItemName;
   }
-  //for supplier add popup
-  AddSupplierPopUp() {
+  //for vendor add popup
+  AddVendorPopUp() {
     this.showAddVendorPopUp = false;
     this.changeDetectorRef.detectChanges();
     this.showAddVendorPopUp = true;
   }
-  OnNewSupplierAdded($event) {
+  OnNewVendorAdded($event) {
     this.showAddVendorPopUp = false;
-    var supplier = $event.vendor;
-    this.VendorList.push(supplier);
+    var newVendor = $event.vendor;
+    this.VendorList.push(newVendor);
     this.VendorList.slice();
   }
+
+  GoToNextInput(idToSelect: string) {
+    if (document.getElementById(idToSelect)) {
+      let nextEl = <HTMLInputElement>document.getElementById(idToSelect);
+      nextEl.focus();
+      nextEl.select();
+    }
+  }
+
+  public GetVendorBillHistory() {
+    this.vendorBillHistoryList = [];
+    if (this.inventoryService.allGRBillingList && this.inventoryService.allGRBillingList.length > 0) {
+      this.vendorBillHistoryList = this.inventoryService.allGRBillingList.filter(a => a.VendorId == this.goodsReceipt.VendorId);
+      if (this.goodsReceipt.BillNo) { // if user writes bill no. before selecting vendor, then checking duplicate bills of that vendor
+        this.CheckDuplicateBill();
+      }
+    }
+  }
+
+  public CheckDuplicateBill() {
+    this.duplicateVendorGRBillList = [];
+    if (this.goodsReceipt.BillNo && this.vendorBillHistoryList.length > 0) {
+      this.vendorBillHistoryList.forEach(a => {
+        if (a.BillNo == this.goodsReceipt.BillNo) {
+          this.duplicateVendorGRBillList.push(a);
+        }
+      });
+    }
+  }
+  public FocusOutBillNo() {
+    this.CheckDuplicateBill()
+  }
+  VerifierListFormatter(data: any): string {
+    return `${data["Name"]} (${data["Type"]})`;
+  }
+  ShowVerifiers() {
+    if (this.goodsReceipt.IsVerificationEnabled == true) {
+      this.AddVerifier();
+    }
+    else {
+      this.goodsReceipt.VerifierList = [];
+    }
+  }
+  AddVerifier() {
+    this.goodsReceipt.VerifierList.push(new POVerifier())
+  }
+  DeleteVerifier(index: number) {
+    this.goodsReceipt.VerifierList.splice(index, 1);
+  }
+  AssignVerifier($event, index) {
+    if (typeof $event == "object") {
+      this.goodsReceipt.VerifierList[index] = $event;
+    }
+  }
+  CheckIfAddVerifierAllowed() {
+    return this.goodsReceipt.VerifierList.some(V => V.Id == undefined) || this.goodsReceipt.VerifierList.length >= 3 || this.editGR ? true : false;
+  }
+  CheckIfDeleteVerifierAllowed() {
+    return this.goodsReceipt.VerifierList.length <= 1 || this.editGR ? true : false;
+  }
+
+  public get IsGoodsReceiptDateValid() {
+    return this.inventoryService.allFiscalYearList.some(fy => (fy.IsClosed == null || fy.IsClosed == false) && moment(this.goodsReceipt.GoodsReceiptDate).isBetween(fy.StartDate, fy.EndDate)) as Boolean;
+  }
 }
-
-
-

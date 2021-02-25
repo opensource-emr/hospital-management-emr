@@ -1,0 +1,19 @@
+<div>
+  <ul class="nav nav-tabs em_tab">
+    <li>
+      <a [routerLink]="'Prescriptionslip'" [routerLinkActive]="'a-tab-active'">New EMR</a>
+    </li>
+    <li>
+      <a [routerLink]="'PrescriptionslipHistory'" [routerLinkActive]="'a-tab-active'">EMR History</a>
+    </li>
+    <li>
+      <a routerLink="NewEMR" [routerLinkActive]="'a-tab-active'">Final Data</a>
+    </li>
+    <li>
+      <a [routerLink]="'EMRHistory'" [routerLinkActive]="'a-tab-active'">Final Data History</a>
+    </li>
+  </ul>
+</div>
+<router-outlet>
+
+</router-outlet>

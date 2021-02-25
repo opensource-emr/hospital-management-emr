@@ -44,14 +44,22 @@ namespace DanpheEMR.ServerModel
         public double? EHSPrice { get; set; }//sud:24Feb'19--New prices required.
         public double? SAARCCitizenPrice { get; set; }//sud:24Feb'19--New prices required.
         public double? ForeignerPrice { get; set; }//sud:24Feb'19--New prices required.
+        public double? InsForeignerPrice { get; set; }//Pratik:8Nov'19--New prices required.
 
         public bool? IsNormalPriceApplicable { get; set; }//sud:18Apr'19--For Normal price 
         public bool? IsEHSPriceApplicable { get; set; }//sud:18Apr'19--For Normal price 
         public bool? IsForeignerPriceApplicable { get; set; }//sud:18Apr'19--For Normal price 
         public bool? IsSAARCPriceApplicable { get; set; }//sud:18Apr'19--For Normal price 
+        public bool? IsInsForeignerPriceApplicable { get; set; }//Pratik:8Nov'19--For Normal price 
+
         public bool? IsOT { get; set; }
         public bool? IsProc { get; set; }
         public string Category { get; set; }
+
+        public bool? AllowMultipleQty { get; set; } //pratik 18th oct '19
+        public string DefaultDoctorList { get; set; }
+        public bool? IsValidForReporting { get; set; }//pratik:7Aug2020
+
 
         [NotMapped]
         public string ServiceDepartmentName { get; set; }

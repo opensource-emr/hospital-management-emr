@@ -271,6 +271,8 @@ export class DrugsRequestComponent {
 
     Close()
     {
+      this.router.navigate(['/Nursing/InPatient']);
+      //navigate to Nursing/InPatient
         //if (this.currSaleItems.length == 0) {
         //    this.AddRowRequest(0);
         //}

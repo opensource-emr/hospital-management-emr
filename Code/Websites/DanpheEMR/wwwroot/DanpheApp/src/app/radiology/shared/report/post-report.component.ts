@@ -53,7 +53,7 @@ export class PostReportComponent {
 
   public reportingDoctors: Array<ReportingDoctor> = new Array<ReportingDoctor>();
   public reportTemplates: Array<RadiologyReportTemplate> = [];
-  public referredByDrList: Array<{ EmployeeId: number, FullName: string }> = [];
+  // public referredByDrList: Array<{ EmployeeId: number, FullName: string }> = [];
   public selReferredByDr: any;
   public selectedTemplate: RadiologyReportTemplate;
   public changeReportTemplate: boolean = false;
@@ -65,6 +65,10 @@ export class PostReportComponent {
   public defaultSigEmpIdList: Array<number>;
   public hospitalCode: string = null;
   public imageUploadFolderPath: string = null;//sud:18Aug'19--for radiology image upload.
+  public enableDoctorUpdateFromSignatory: boolean = false;
+
+  public ExtRefSettings = null;
+ 
 
   constructor(
     public msgBoxServ: MessageboxService,
@@ -75,12 +79,16 @@ export class PostReportComponent {
 
     this.enableImgUpload = this.radiologyService.EnableImageUpload();
     this.enableDicomImages = this.radiologyService.EnableDicomImages();
-
-    this.GetReferredByDoctorList();
+    //this.GetReferredByDoctorList();
     this.hospitalCode = this.coreService.GetHospitalCode();
-    if (this.hospitalCode) { this.hospitalCode = this.hospitalCode.toLowerCase(); }
+    if (this.hospitalCode) {
+      this.hospitalCode = this.hospitalCode.toLowerCase();
+    }
 
     this.imageUploadFolderPath = this.radiologyService.GetImageUploadFolderPath();
+
+    this.ExtRefSettings = this.radiologyService.GetExtReferrerSettings();
+    this.enableDoctorUpdateFromSignatory = this.coreService.UpdateAssignedToDoctorFromAddReportSignatory();
   }
 
 
@@ -128,6 +136,10 @@ export class PostReportComponent {
         this.changeReportTemplate = false;
         this.changeDicomImageList = false;
         this.MakeImgAlbum();
+
+        this.selectedRefId = this.report.ProviderId;
+        this.selectedRefName = this.report.ProviderName ? this.report.ProviderName : "Self";
+
         //this.GetReportingDoctor();
         if (this.report && this.report.ProviderName) {
           this.selReferredByDr = { EmployeeId: this.report.ReportingDoctorId, FullName: this.report.ProviderName };
@@ -206,69 +218,44 @@ export class PostReportComponent {
 
   }
 
-  //private GetReportingDoctor() {
-  //  this.reportingDoctors = new Array<ReportingDoctor>();
-  //  if (this.report.ImagingTypeId != null) {
-  //    this.imagingBLService.GetReportingDoctor(this.report.ImagingTypeId)
-  //      .subscribe(res => {
-  //        if (res.Status == "OK") {
-  //          if (res.Results.length) {
-  //            this.reportingDoctors = res.Results;
-  //            this.reportingDoctors.forEach(a => {
-  //              a.DoctorSignatureJSON = JSON.parse(a.DoctorSignatureJSON);
-  //            });
-  //            this.UpdateValidator("on", "Signatories", "required");
-  //          }
-  //        }
-  //        else {
-  //          this.msgBoxServ.showMessage("failed", ["Failed to get ReportingDoctros. Check Log"]);
-  //          console.log(res.ErrorMessage);
-  //        }
-  //      });
-  //  }
-  //}
-
-
-  public GetReferredByDoctorList() {
-    this.imagingBLService.GetDoctorList()
-      .subscribe(res => {
-        if (res.Status == "OK") {
-          this.referredByDrList = res.Results;
-          this.referredByDrList.push({
-            EmployeeId: null,
-            FullName: "Self"
-          });
-
-          //once referredbydoctor is loaded, we've to set the value again.
-          // if (this.report.ProviderName) {
-          //   this.setReferredByDr();
-          // }
-        }
-        else {
-          this.msgBoxServ.showMessage("failed", ["Failed to get Referred By Doctor List. Check Log"]);
-          console.log(res.ErrorMessage);
-        }
-      });
-  }
   //this for make image album for show in lightbox
   public MakeImgAlbum() {
     try {
       if (this.report.ImageName) {
-        this.album = [];
+        let albumTemp = [];
+        //this.album = [];
         let imageNames = this.report.ImageName.split(";");
         imageNames.forEach(imgName => {
 
           //let imgPath = this.imageUploadFolderPath + this.report.ImagingTypeName + "/" + imgName;
           // let imgPath = "/app/fileuploads/Radiology/" + this.report.ImagingTypeName + "/" + imgName;
-          let imgPath = "/DanpheApp/src/app/fileuploads/Radiology/" + this.report.ImagingTypeName + "/" + imgName;
-          const image = {
-            src: imgPath,
-            caption: imgName,
-            thumb: null,
-            isActive: false
-          }
-          this.album.push(image);
+          let imgPath = "/fileuploads/Radiology/" + this.report.ImagingTypeName + "/" + imgName;
+          //const image = {
+          //  src: imgPath,
+          //  caption: imgName,
+          //  thumb: null,
+          //  isActive: false
+          //}
+
+          //this.album.push(image);
+
+          this.ConvertImgSrcUrlToBase64(imgPath, function (dataUri) {
+            // Do whatever you'd like with the Data URI!
+
+            let image = {
+              src: dataUri,
+              caption: imgName,
+              thumb: null,
+              isActive: false
+            }
+
+            albumTemp.push(image);
+
+          });
+
         });
+
+        this.album = albumTemp;
       }
     } catch (exception) {
       this.ShowCatchErrMessage(exception);
@@ -285,22 +272,28 @@ export class PostReportComponent {
 
   SubmitAndPrintReport() {
     this.AddReport("final");
+    //this.PrintReportHTML();
   }
 
 
   AddReport(orderStatus) {
     try {
-      this.AssignReferredByDr();
+      //this.AssignReferredByDr();
+
+      this.report.ProviderName = this.selectedRefName ? this.selectedRefName : 'self';
+      this.report.ReportingDoctorId = this.selectedRefId ? this.selectedRefId : 0;
+
+
       if (this.report.ReportText) {
         if (!this.reportingDoctors.length)
           this.UpdateValidator("off", "Signatories", "required");
+
         for (var a in this.ReportValidator.controls) {
           this.ReportValidator.controls[a].markAsDirty();
           this.ReportValidator.controls[a].updateValueAndValidity();
         }
 
-        if (this.CheckIfSignatureValid() && this.CheckSelReferredByDr()) {
-
+        if (this.CheckIfSignatureValid()) {          
           //if (orderStatus == "final") {
           //  var createNew: boolean;
           //  createNew = window.confirm('You wont be able to make further changes. Do you want to continue?');
@@ -309,8 +302,30 @@ export class PostReportComponent {
           //}
           let files = [];
           if (this.enableImgUpload) {
-            files = this.fileInput.nativeElement.files;
+            if (this.album.length > 0) {
+
+              let count = 1;
+              this.album.forEach(img => {
+                let singleFile = this.ConvertDataURLtoFile(img.src, "img_" + count);
+                files.push(singleFile);
+                count++;
+              });
+            }
+            //files = this.fileInput.nativeElement.files;
           }
+
+
+          //get the first provider to put in the BillTxnItem table Provider detail
+          if (this.enableDoctorUpdateFromSignatory) {
+            let signData = JSON.parse(this.report.Signatories);
+            this.report.ProviderIdInBilling = this.report.ProviderNameInBilling = null;
+            if (signData && signData.length == 1) {
+              this.report.ProviderIdInBilling = signData[0].EmployeeId;
+              this.report.ProviderNameInBilling = signData[0].EmployeeFullName;
+            }
+          }
+
+          //uncomment this as soon as above is tested.
           this.addreport.emit({ reportFiles: files, report: this.report, orderStatus: orderStatus });
 
         }
@@ -357,6 +372,7 @@ export class PostReportComponent {
     }
 
   }
+
   open(index: number): void {
     try {
       // open lightbox
@@ -366,7 +382,7 @@ export class PostReportComponent {
     }
   }
   //Fires when user click select all for delete
-  onCheckedChanged() {
+  SelectImageCheckboxOnChange() {
     try {
       //all selected check
       let flag = true;
@@ -382,6 +398,7 @@ export class PostReportComponent {
     }
 
   }
+
   //when user check or uncheck AllImages checkbox  fires this method
   SelectDeselectAllImages() {
     try {
@@ -418,7 +435,7 @@ export class PostReportComponent {
         });
 
         var deleteImages: boolean;
-        deleteImages = window.confirm('You wont to delete images and save. Do you want to continue?');
+        deleteImages = window.confirm('Are you sure you want to delete selected images ?');
         if (!deleteImages)
           return;
         reportNewForDel = Object.assign(reportNewForDel, this.report);
@@ -438,13 +455,16 @@ export class PostReportComponent {
           });
       }
       else {
-        this.msgBoxServ.showMessage("notice", ["Please select image for delete."]);
+        this.msgBoxServ.showMessage("notice", ["Please select image to delete."]);
       }
 
-    } catch (exception) {
+    }
+    catch (exception) {
       this.ShowCatchErrMessage(exception);
     }
   }
+
+
   CallBackDeleteImages(result) {
     try {
       this.loading = false;
@@ -488,36 +508,16 @@ export class PostReportComponent {
   ReportTempListFormatter(data: any): string {
     return data["TemplateName"];
   }
+
   public AssignReferredByDr() {
-    this.report.ProviderName = null;
-    this.report.ReportingDoctorId = null;
-    if (typeof (this.selReferredByDr) == 'object') {
-      if (this.selReferredByDr.FullName == "Self") {
-        this.report.ProviderName = 'self';
-        this.report.ReportingDoctorId = null;
-      }
-      else {
-        this.report.ProviderName = this.selReferredByDr.FullName;
-        this.report.ReportingDoctorId = this.selReferredByDr.EmployeeId;
-      }
-    } else {
-      if (this.selReferredByDr && this.selReferredByDr.trim() != '') {
-        this.report.ProviderName = this.selReferredByDr;
-        this.report.ReportingDoctorId = null;
-      }
-    }
+    this.report.ProviderName = this.selectedRefName;
+    this.report.ReportingDoctorId = this.selectedRefId;
+
+
+
 
   }
-  //validation check if the item is selected from the list
-  public CheckSelReferredByDr(): boolean {
-    if (this.report.ProviderName && this.report.ProviderName.trim() != '') {
-      return true;
-    } else {
-      this.selReferredByDr = '';
-      this.msgBoxServ.showMessage("failed", ["Invalid ReferredBy Dr. Please select Doctor from the list."]);
-      return false;
-    }
-  }
+
 
   //validation check if the item is selected from the list
   public CheckIfSignatureValid(): boolean {
@@ -535,9 +535,7 @@ export class PostReportComponent {
 
   }
 
-  ReferredByDrListFormatter(data: any): string {
-    return data["FullName"];
-  }
+
   //using validation logic here instead of model. because we're not initializing new ImnagingItemReport() but
   //direclty getting the report model from server side which don't have validation.
   public IsDirty(fieldName): boolean {
@@ -579,4 +577,93 @@ export class PostReportComponent {
     }
 
   }
+
+  //prat: 13sep2019 for internal and external referrer 
+  public defaultExtRef: boolean = true;
+  selectedRefId: number = null;
+  selectedRefName: string = null;
+
+  OnReferrerChanged($event) {
+    this.selectedRefId = $event.ReferrerId; //EmployeeId comes as ReferrerId from select referrer component.
+    this.selectedRefName = $event.ReferrerName;//EmployeeName comes as ReferrerName from select referrer component.
+  }
+
+  //end: Pratik: 12Sept'19--For External Referrals
+
+
+
+  public fileChangeEvent(fileInput: any) {
+    //this.album = [];
+    if (fileInput.target.files && fileInput.target.files.length > 0) {
+
+      let albumTemp = this.album;//since we can't access this.album inside the reader.onload function because of this-that issue of javascript/typescript.
+      for (var i = 0; i < fileInput.target.files.length; i++) {
+
+        let currFile = fileInput.target.files[i];
+        //console.log();
+
+        var reader = new FileReader();
+        //reader["FileName"] = currFile.name;//adding a new property to reader object so that we can access it later inside onload funciton.
+        //this.album
+        reader.onload = function (e: any) {
+          let imgDataUrl = e.target.result;
+          let image = {
+            src: imgDataUrl,
+            caption: e.target.FileName,
+            thumb: null,
+            isActive: false
+          }
+
+          albumTemp.push(image);
+
+        }
+        reader.readAsDataURL(currFile);
+      }
+
+      this.fileInput.nativeElement.value = "";
+
+      this.album = albumTemp;
+
+    }
+  }
+
+  RemoveSingleImage(indx) {
+    this.album.splice(indx, 1);
+  }
+
+  public ConvertDataURLtoFile(dataurl, filename) {
+    var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+      bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], filename, { type: mime });
+  }
+
+
+  public ConvertImgSrcUrlToBase64(url, callback) {
+    let image = new Image();
+    image.onload = function () {
+      var canvas = document.createElement('canvas');
+      canvas.width = image.width; // or 'width' if you want a special/scaled size //this.naturalWidth
+      canvas.height = image.height; // or 'height' if you want a special/scaled size //this.naturalHeight
+      canvas.getContext('2d').drawImage(image, 0, 0);
+      // Get raw image data
+      callback(canvas.toDataURL('image/png'));
+    };
+
+    image.src = url;
+  }
+
+
+
+  //ImageReArrange_Drop(event: CdkDragDrop<string[]>) {
+  //  moveItemInArray(this.album, event.previousIndex, event.currentIndex);
+  //}
+
+
+
+
 }
+
+

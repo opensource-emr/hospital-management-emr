@@ -36,6 +36,8 @@ namespace DanpheEMR.ServerModel
         public int? CreatedBy { get; set; }
         public DateTime? CreatedOn { get; set; }
         public bool? IsActive { get; set; }
+        [NotMapped]
+        public float Tender { get; set; }
 
         [NotMapped]
         public List<BillingTransactionItemModel> ReturnedItems { get; set; }
@@ -48,5 +50,8 @@ namespace DanpheEMR.ServerModel
         public bool? IsRealtime { get; set; }//sud: 10May'18
 
         //public bool? IsLocalSynced { get; set; }//sud: 10May'18
+
+        [NotMapped]
+        public int? PartialReturnTxnId { get; set; }
     }
 }

@@ -11,6 +11,9 @@ export class DanpheCkEditorComponent {
   @Input("readonly")
   public isReadOnly = true;
 
+  @Input("panel-height")
+  public panelHeight:string = "480px";//default is 480px, can be assigned from required pages.
+
   //input parameter input template data from other component
   @Input("set-html-content")
   public ckeditorContent: any = null;
@@ -45,21 +48,23 @@ export class DanpheCkEditorComponent {
       // { name: 'others' },
       // { name: 'about' }
     ];
-    let btnsToRemove = 'Print,Preview,NewPage,Subscript,Superscript,Styles,Font';
+    //let btnsToRemove = 'Print,Preview,NewPage,Subscript,Superscript,Styles,Font';
+    let btnsToRemove = 'Print,Preview,NewPage,Styles,Font';
     btnsToRemove += ',Redo,Cut,Copy,Paste,PasteText,PasteFromWord';
     btnsToRemove += ',ShowBlocks,Flash,Image,HorizontalRule,Smiley,PageBreak,Iframe';
     //remove selected buttons fromt the editor.
     this.editorConfig.removeButtons = btnsToRemove;
     this.editorConfig.removePlugins = 'elementspath,scayt';//to remove footer text.
     //this.editorConfig.height = '380px';
-    this.editorConfig.height = '480px';
+    this.editorConfig.height = this.panelHeight;//sud:28May'20
     this.editorConfig.disableNativeSpellChecker = false;//sud: 1June'19--it allows browser's default spellcheck to work
-
+    this.editorConfig.tabSpaces = 4;//this will add 4 spaces when user clicks on Tab key, by default it goes outside of ckeditor (html property)
     // this.editorConfig.enterMode = "<br>";
     //this.editorConfig.autoParagraph = false;
   }
 
   ngOnInit() {
+    this.editorConfig.height = this.panelHeight;//sud:28May'20
     this.getEditorContent.emit(this.ckeditorContent);
   }
 

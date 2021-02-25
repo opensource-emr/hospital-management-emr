@@ -20,6 +20,7 @@ using System.Data.SqlClient;
 using System.Data;
 using DanpheEMR.Core;
 using DanpheEMR.Core.Parameters;
+using DanpheEMR.Enums;
 
 namespace DanpheEMR.Controllers
 {
@@ -28,10 +29,12 @@ namespace DanpheEMR.Controllers
     {
 
         double cacheExpMinutes;//= 5;//this should come from configuration later on.
+        bool realTimeRemoteSyncEnabled = false;
         string InvoiceCode = "BL"; //get this from parameters when possible.
         public BillingController(IOptions<MyConfiguration> _config) : base(_config)
         {
             cacheExpMinutes = _config.Value.CacheExpirationMinutes;
+            realTimeRemoteSyncEnabled = _config.Value.RealTimeRemoteSyncEnabled;
         }
 
 
@@ -70,21 +73,23 @@ namespace DanpheEMR.Controllers
             {
                 BillingDbContext dbContext = new BillingDbContext(connString);
                 LabDbContext labDbContext = new LabDbContext(connString);
+                RadiologyDbContext radiologyDbContext = new RadiologyDbContext(connString);
                 #region //1.("allPatient")2.("Patientonly") 3.("Receipt") ------CREDIT VIEW--------
                 #region //1. List out all the patient with the credit amount 
 
                 if (reqType != null && reqType.ToLower() == "listpatientunpaidtotal")
                 {
                     var allPatientCreditReceipts = (from bill in dbContext.BillingTransactionItems.Include("Patient")
-                                                    where bill.BillStatus == "provisional"
-                                                    && (bill.IsInsurance == false || bill.IsInsurance == null)
+                                                    where bill.BillStatus == ENUM_BillingStatus.provisional // "provisional"
+                                                    && (bill.IsInsurance == false || bill.IsInsurance == null) && (bill.VisitType == "outpatient" || bill.VisitType == "emergency")
                                                     //couldn't use Patient.ShortName directly since it's not mapped to DB and hence couldn't be used inside LINQ.
-                                                    group bill by new { bill.PatientId, bill.Patient.PatientCode, bill.Patient.FirstName, bill.Patient.LastName, bill.Patient.MiddleName, bill.Patient.DateOfBirth, bill.Patient.Gender } into p
+                                                    group bill by new { bill.PatientId, bill.Patient.PatientCode, bill.Patient.FirstName, bill.Patient.LastName, bill.Patient.MiddleName, bill.Patient.DateOfBirth, bill.Patient.Gender, bill.Patient.PhoneNumber } into p
                                                     select new
                                                     {
                                                         PatientId = p.Key.PatientId,
                                                         PatientCode = p.Key.PatientCode,
                                                         ShortName = p.Key.FirstName + " " + (string.IsNullOrEmpty(p.Key.MiddleName) ? "" : p.Key.MiddleName + " ") + p.Key.LastName,
+                                                        PhoneNumber = p.Key.PhoneNumber,
                                                         Gender = p.Key.Gender,
                                                         DateOfBirth = p.Max(a => a.Patient.DateOfBirth.Value),
                                                         LastCreditBillDate = p.Max(a => a.RequisitionDate.Value),
@@ -94,11 +99,26 @@ namespace DanpheEMR.Controllers
                     responseData.Results = allPatientCreditReceipts;
                 }
                 #endregion
+
+                #region //1. List out all the provisional items 
+
+                else if (reqType != null && reqType == "allProvisionalItems")
+                {
+                    List<SqlParameter> paramList = new List<SqlParameter>() {
+                        new SqlParameter("@FromDate", FromDate),
+                        new SqlParameter("@ToDate", ToDate)
+                    };
+
+                    DataTable provisionalItems = DALFunctions.GetDataTableFromStoredProc("SP_Inpatient_Provisional_Items_List", paramList, dbContext);
+                    responseData.Results = provisionalItems;
+                }
+                #endregion
+
                 //Getting unpaid insurance bill details
                 else if (reqType != null && reqType.ToLower() == "listpatientinsuranceprovisional")
                 {
                     var allPatientInsuranceCreditReceipts = (from bill in dbContext.BillingTransactionItems.Include("Patient")
-                                                             where bill.BillStatus == "provisional"
+                                                             where bill.BillStatus == ENUM_BillingStatus.provisional// "provisional"
                                                              && bill.IsInsurance == true
                                                              //couldn't use Patient.ShortName directly since it's not mapped to DB and hence couldn't be used inside LINQ.
                                                              group bill by new { bill.PatientId, bill.Patient.PatientCode, bill.Patient.FirstName, bill.Patient.LastName, bill.Patient.MiddleName, bill.Patient.DateOfBirth, bill.Patient.Gender } into p
@@ -122,7 +142,11 @@ namespace DanpheEMR.Controllers
                     //    .Max(t => t.PatientVisitId == null ? 0 : t.PatientVisitId);
 
                     //for this request type, patientid comes as inputid.
-                    double? patientCreditReceipts = dbContext.BillingTransactionItems.Where(bill => bill.PatientVisitId == InputId && (bill.BillStatus == "provisional" || bill.BillStatus == "unpaid")).DefaultIfEmpty()
+                    double? patientCreditReceipts = dbContext.BillingTransactionItems
+                        .Where(bill => bill.PatientVisitId == InputId
+                        //&& (bill.BillStatus == "provisional" || bill.BillStatus == "unpaid")
+                        && (bill.BillStatus == ENUM_BillingStatus.provisional || bill.BillStatus == ENUM_BillingStatus.unpaid)
+                    ).DefaultIfEmpty()
                         .Sum(a => a.TotalAmount == null ? 0 : a.TotalAmount);
 
                     //for this request type, patientid comes as inputid.
@@ -205,7 +229,8 @@ namespace DanpheEMR.Controllers
 
                     //for this request type, patientid comes as inputid.
                     var patCreditItems = (from bill in dbContext.BillingTransactionItems.Include("ServiceDepartment")
-                                          where bill.BillStatus == "provisional" && bill.PatientId == InputId
+                                          where bill.BillStatus == ENUM_BillingStatus.provisional && (bill.BillingType == "outpatient" || bill.BillingType == "emergency") // "provisional" 
+                                          && bill.PatientId == InputId
                                           && (bill.IsInsurance == false || bill.IsInsurance == null)
                                           select bill).ToList<BillingTransactionItemModel>().OrderBy(b => b.ServiceDepartmentId);
 
@@ -279,7 +304,8 @@ namespace DanpheEMR.Controllers
 
                     //for this request type, patientid comes as inputid.
                     var patCreditItems = (from bill in dbContext.BillingTransactionItems.Include("ServiceDepartment")
-                                          where bill.BillStatus == "provisional" && bill.PatientId == InputId
+                                          where bill.BillStatus == ENUM_BillingStatus.provisional //"provisional" 
+                                          && bill.PatientId == InputId
                                           && bill.IsInsurance == true
                                           select bill).ToList<BillingTransactionItemModel>().OrderBy(b => b.ServiceDepartmentId);
 
@@ -334,10 +360,8 @@ namespace DanpheEMR.Controllers
                     PatientModel currPatient = dbContext.Patient.Where(pat => pat.PatientId == InputId).FirstOrDefault();
                     if (currPatient != null)
                     {
-                        string subDivName = (from pat in dbContext.Patient
-                                             join countrySubdiv in dbContext.CountrySubdivisions
-                                             on pat.CountrySubDivisionId equals countrySubdiv.CountrySubDivisionId
-                                             where pat.PatientId == currPatient.PatientId
+                        string subDivName = (from countrySubdiv in dbContext.CountrySubdivisions
+                                             where countrySubdiv.CountrySubDivisionId == currPatient.CountrySubDivisionId
                                              select countrySubdiv.CountrySubDivisionName
                                           ).FirstOrDefault();
 
@@ -348,7 +372,8 @@ namespace DanpheEMR.Controllers
 
                     //for this request type, patientid comes as inputid.
                     var patCreditItems = (from bill in dbContext.BillingTransactionItems.Include("ServiceDepartment")
-                                          where bill.BillStatus == "provisional" && bill.PatientId == InputId && bill.PatientVisitId == patVisitId
+                                          where bill.BillStatus == ENUM_BillingStatus.provisional //"provisional" 
+                                          && bill.PatientId == InputId && bill.PatientVisitId == patVisitId
                                           select bill).ToList<BillingTransactionItemModel>().OrderBy(b => b.ServiceDepartmentId);
 
                     //clear patient object from Items, not needed since we're returning patient object separately
@@ -414,7 +439,8 @@ namespace DanpheEMR.Controllers
 
                     //for this request type, patientid comes as inputid.
                     var patCreditItems = (from bill in dbContext.BillingTransactionItems.Include("ServiceDepartment")
-                                          where bill.BillStatus == "provisional" && bill.PatientId == InputId && bill.PatientVisitId == patVisitId
+                                          where bill.BillStatus == ENUM_BillingStatus.provisional // "provisional"
+                                          && bill.PatientId == InputId && bill.PatientVisitId == patVisitId
                                           select bill).ToList<BillingTransactionItemModel>().OrderBy(b => b.ServiceDepartmentId);
 
 
@@ -501,13 +527,22 @@ namespace DanpheEMR.Controllers
                             blItm.RequestingUserDept = item.RequestingUserDept;
 
                             //Added by Anish: Oct 10- In case Of lab User should not be able to cancel the LabItem whose Report is already Generated
-                            if (item.ServiceDepartment.IntegrationName == "LAB")
+                            if (item.ServiceDepartment.IntegrationName != null && item.ServiceDepartment.IntegrationName.ToLower() == "lab")
                             {
                                 blItm.AllowCancellation = !(
                                                       (from cmp in labDbContext.LabTestComponentResults
                                                        where cmp.RequisitionId == item.RequisitionId
                                                       && cmp.LabReportId.HasValue
                                                        select cmp).ToList().Count > 0
+                                                   );
+                            }
+                            else if (item.ServiceDepartment.IntegrationName != null && item.ServiceDepartment.IntegrationName.ToLower() == "radiology")
+                            {
+                                blItm.AllowCancellation = !(
+                                                      (from req in radiologyDbContext.ImagingRequisitions
+                                                       where req.ImagingRequisitionId == item.RequisitionId
+                                                      && req.OrderStatus == "final"
+                                                       select req).ToList().Count > 0
                                                    );
                             }
                             else
@@ -524,300 +559,488 @@ namespace DanpheEMR.Controllers
                     var patCreditDetails = new
                     {
                         Patient = currPatient,
-                        CreditItems = billItemVM.OrderBy(itm => itm.CreatedOn).ToList()
+                        CreditItems = billItemVM.OrderByDescending(itm => itm.CreatedOn).ToList()
                     };
 
 
                     responseData.Results = patCreditDetails;
                 }
+                //to get Inpatient order list using SP
+                else if (reqType != null && reqType == "inPatientProvisionalItemList")
+                {
+                    string module = this.ReadQueryStringData("module");
 
+                    PatientModel currPatient = dbContext.Patient.Where(pat => pat.PatientId == patientId).FirstOrDefault();
+                    if (currPatient != null)
+                    {
+                        string subDivName = (from pat in dbContext.Patient
+                                             join countrySubdiv in dbContext.CountrySubdivisions
+                                             on pat.CountrySubDivisionId equals countrySubdiv.CountrySubDivisionId
+                                             where pat.PatientId == currPatient.PatientId
+                                             select countrySubdiv.CountrySubDivisionName
+                                          ).FirstOrDefault();
+
+                        currPatient.CountrySubDivisionName = subDivName;
+                        //remove relational property of patient//sud: 12May'18
+                        //currPatient.BillingTransactionItems = null;
+                    }
+
+                    List<SqlParameter> paramList = new List<SqlParameter>() {
+                        new SqlParameter("@patientId", patientId),
+                        new SqlParameter("@patientVisitId", visitId),
+                        new SqlParameter("@moduleName", module)
+                    };
+
+                    DataTable patCreditItems = DALFunctions.GetDataTableFromStoredProc("SP_InPatient_Item_Details", paramList, dbContext);    
+
+
+                    //create new anonymous type with patient information + Credit Items information : Anish:4May'18
+                    var patCreditDetails = new
+                    {
+                        Patient = currPatient,
+                        BillItems = patCreditItems
+                    };
+                    responseData.Status = "OK";
+                    responseData.Results = patCreditDetails;
+                }
                 // to list out the invoice details for duplicate printing
                 else if (reqType != null && reqType.ToLower() == "listinvoicewisebill")
                 {
-                    int searchListLength = 0;//this is default value.
-                    List<ParameterModel> allParams = coreDbContext.Parameters.ToList();
+                    //int searchListLength = 0;//this is default value.
+                    //List<ParameterModel> allParams = coreDbContext.Parameters.ToList();
 
-                    ParameterModel listNumber = allParams.Where(a => a.ParameterGroupName == "Common" && a.ParameterName == "ServerSideSearchListLength").FirstOrDefault<ParameterModel>();
-                    if (listNumber != null)
+                    //ParameterModel listNumber = allParams.Where(a => a.ParameterGroupName == "Common" && a.ParameterName == "ServerSideSearchListLength").FirstOrDefault<ParameterModel>();
+                    //if (listNumber != null)
+                    //{
+                    //    searchListLength = Convert.ToInt32(listNumber.ParameterValue);
+                    //}
+
+                    search = search == null ? string.Empty : search.ToLower();
+                    DateTime startDate = string.IsNullOrEmpty(FromDate) ? DateTime.Now.AddDays(-1000).Date : DateTime.Parse(FromDate).Date;
+                    DateTime endDate = string.IsNullOrEmpty(ToDate) ? DateTime.Now.Date : DateTime.Parse(ToDate).Date;
+
+                    var allInvoiceReceipts = (from bill in dbContext.BillingTransactions.Include("Patient").Include("BillingTransactionItems")
+                                              join yr in dbContext.BillingFiscalYears
+                                              on bill.FiscalYearId equals yr.FiscalYearId
+                                              where (DbFunctions.TruncateTime(bill.CreatedOn) >= startDate && DbFunctions.TruncateTime(bill.CreatedOn) <= endDate)
+                                              where (bill.Patient.FirstName + " " + (string.IsNullOrEmpty(bill.Patient.MiddleName) ? "" : bill.Patient.MiddleName + " ") + bill.Patient.LastName + bill.Patient.PatientCode + bill.Patient.PhoneNumber + (bill.InvoiceCode + bill.InvoiceNo)).Contains(search)
+                                              orderby bill.BillingTransactionId
+                                              //couldn't use Patient.ShortName directly since it's not mapped to DB and hence couldn't be used inside LINQ.
+                                              group bill by new
+                                              {
+                                                  bill.PatientId,
+                                                  bill.Patient.PatientCode,
+                                                  bill.Patient.FirstName,
+                                                  bill.Patient.LastName,
+                                                  bill.Patient.MiddleName,
+                                                  bill.Patient.Gender,
+                                                  bill.Patient.PhoneNumber,
+                                                  bill.Patient.DateOfBirth,
+                                                  bill.BillingTransactionId,
+                                                  bill.InvoiceNo,
+                                                  bill.InvoiceCode,
+                                                  yr.FiscalYearFormatted,
+                                                  yr.FiscalYearId,
+                                                  bill.PrintCount,
+                                                  bill.DepositBalance,
+                                                  bill.SubTotal,
+                                                  bill.DiscountAmount,
+                                                  bill.TaxTotal,
+                                                  bill.TotalAmount,
+                                                  bill.DepositReturnAmount,
+                                                  bill.Tender,
+                                                  bill.Change,
+                                                  bill.Remarks,
+                                                  bill.TransactionType,//added: sud:6Aug'17
+                                                  bill.PaymentMode,//added: sud:4May'18
+                                                  bill.BillStatus,//added: sud:4May'18
+                                                  bill.PaymentDetails,//added: sud:4May'18
+                                                  bill.IsInsuranceBilling,
+                                                  bill.OrganizationId, //yubraj 22nd April '19
+                                                  bill.ExchangeRate
+                                              } into p
+                                              select new
+                                              {
+                                                  PatientId = p.Key.PatientId,
+                                                  PatientCode = p.Key.PatientCode,
+                                                  ShortName = p.Key.FirstName + " " + (string.IsNullOrEmpty(p.Key.MiddleName) ? "" : p.Key.MiddleName + " ") + p.Key.LastName,
+                                                  Gender = p.Key.Gender,
+                                                  DateOfBirth = p.Max(a => a.Patient.DateOfBirth.Value),
+                                                  PaidDate = p.Max(a => a.PaidDate),
+                                                  TransactionDate = p.Max(a => a.CreatedOn),
+                                                  TotalAmount = p.Sum(a => a.TotalAmount),
+                                                  BillingTransactionId = p.Key.BillingTransactionId,
+                                                  InvoiceNumber = p.Key.InvoiceNo,
+
+                                                  InvoiceCode = p.Key.InvoiceCode,//
+                                                  FiscalYear = p.Key.FiscalYearFormatted,
+                                                  FiscalYearId = p.Key.FiscalYearId,
+                                                  InvoiceNumFormatted = p.Key.InvoiceCode + p.Key.InvoiceNo.ToString(),
+
+                                                  PhoneNumber = p.Key.PhoneNumber,
+                                                  IsInsuranceBilling = p.Key.IsInsuranceBilling,
+
+                                                  //Yubraj :: 22nd April '19 For finding creditOrganizationName to show in duplicate print
+                                                  OrganizationId = p.Key.OrganizationId,
+                                                  OrganizationName = p.Key.OrganizationId != null ? dbContext.CreditOrganization.Where(a =>
+                                                                       a.OrganizationId == p.Key.OrganizationId)
+                                                                       .Select(b => b.OrganizationName).FirstOrDefault() : null
+                                              }).OrderByDescending(a => a.FiscalYearId).ThenByDescending(a => a.InvoiceNumber).AsQueryable();
+
+
+
+                    if (CommonFunctions.GetCoreParameterBoolValue(coreDbContext, "Common", "ServerSideSearchComponent", "BillingDuplicatePrint") == true && search == "")
                     {
-                        searchListLength = Convert.ToInt32(listNumber.ParameterValue);
+                        allInvoiceReceipts = allInvoiceReceipts.Take(CommonFunctions.GetCoreParameterIntValue(coreDbContext, "Common", "ServerSideSearchListLength"));
                     }
-                    if (search == null)
-                    {
-                        var allInvoiceReceipts = (from bill in dbContext.BillingTransactions.Include("Patient").Include("BillingTransactionItems")
-                                                  join yr in dbContext.BillingFiscalYears
-                                                  on bill.FiscalYearId equals yr.FiscalYearId
-                                                  orderby bill.BillingTransactionId
-                                                  //couldn't use Patient.ShortName directly since it's not mapped to DB and hence couldn't be used inside LINQ.
-                                                  group bill by new
-                                                  {
-                                                      bill.PatientId,
-                                                      bill.Patient.PatientCode,
-                                                      bill.Patient.FirstName,
-                                                      bill.Patient.LastName,
-                                                      bill.Patient.MiddleName,
-                                                      bill.Patient.Gender,
-                                                      bill.Patient.PhoneNumber,
-                                                      bill.Patient.DateOfBirth,
-                                                      bill.BillingTransactionId,
-                                                      bill.InvoiceNo,
-                                                      bill.InvoiceCode,
-                                                      yr.FiscalYearFormatted,
-                                                      yr.FiscalYearId,
-                                                      bill.PrintCount,
-                                                      bill.DepositBalance,
-                                                      bill.SubTotal,
-                                                      bill.DiscountAmount,
-                                                      bill.TaxTotal,
-                                                      bill.TotalAmount,
-                                                      bill.DepositReturnAmount,
-                                                      bill.Tender,
-                                                      bill.Change,
-                                                      bill.Remarks,
-                                                      bill.TransactionType,//added: sud:6Aug'17
-                                                      bill.PaymentMode,//added: sud:4May'18
-                                                      bill.BillStatus,//added: sud:4May'18
-                                                      bill.PaymentDetails,//added: sud:4May'18
-                                                      bill.IsInsuranceBilling,
-                                                      bill.OrganizationId, //yubraj 22nd April '19
-                                                      bill.ExchangeRate
-                                                  } into p
-                                                  select new
-                                                  {
-                                                      PatientId = p.Key.PatientId,
-                                                      PatientCode = p.Key.PatientCode,
-                                                      ShortName = p.Key.FirstName + " " + (string.IsNullOrEmpty(p.Key.MiddleName) ? "" : p.Key.MiddleName + " ") + p.Key.LastName,
-                                                      Gender = p.Key.Gender,
-                                                      DateOfBirth = p.Max(a => a.Patient.DateOfBirth.Value),
-                                                      PaidDate = p.Max(a => a.PaidDate),
-                                                      TransactionDate = p.Max(a => a.CreatedOn),
-                                                      TotalAmount = p.Sum(a => a.TotalAmount),
-                                                      BillingTransactionId = p.Key.BillingTransactionId,
-                                                      InvoiceNumber = p.Key.InvoiceNo,
-                                                      //Sud: 2-Oct'18--commented unused fields, it was increasing the response size un-necessarily.
-                                                      InvoiceCode = p.Key.InvoiceCode,//
-                                                      FiscalYear = p.Key.FiscalYearFormatted,
-                                                      FiscalYearId = p.Key.FiscalYearId,
-                                                      InvoiceNumFormatted = p.Key.InvoiceCode + p.Key.InvoiceNo.ToString(),
-                                                      PhoneNumber = p.Key.PhoneNumber,
-                                                      IsInsuranceBilling = p.Key.IsInsuranceBilling,
+                    var finalResults = allInvoiceReceipts.ToList();
+                    responseData.Results = finalResults;
 
-                                                      //Yubraj :: 22nd April '19 For finding creditOrganizationName to show in duplicate print
-                                                      OrganizationId = p.Key.OrganizationId,
-                                                      OrganizationName = p.Key.OrganizationId != null ? dbContext.CreditOrganization.Where(a =>
-                                                                           a.OrganizationId == p.Key.OrganizationId)
-                                                                           .Select(b => b.OrganizationName).FirstOrDefault() : null
-                                                  }).OrderByDescending(a => a.FiscalYearId).ThenByDescending(a => a.InvoiceNumber).Take(searchListLength).ToList();
-                        responseData.Results = allInvoiceReceipts;
-                    }
-                    else
-                    {
-                        var allInvoiceReceipts = (from bill in dbContext.BillingTransactions.Include("Patient").Include("BillingTransactionItems")
-                                                  join yr in dbContext.BillingFiscalYears
-                                                  on bill.FiscalYearId equals yr.FiscalYearId
-                                                  //where (DbFunctions.TruncateTime(bill.CreatedOn) >= FromDate && DbFunctions.TruncateTime(bill.CreatedOn) <= ToDate)
-                                                  where (bill.Patient.FirstName + " " + (string.IsNullOrEmpty(bill.Patient.MiddleName) ? "" : bill.Patient.MiddleName + " ") + bill.Patient.LastName + bill.Patient.PatientCode + bill.Patient.PhoneNumber + (bill.InvoiceCode + bill.InvoiceNo)).Contains(search)
-                                                  orderby bill.BillingTransactionId
-                                                  //couldn't use Patient.ShortName directly since it's not mapped to DB and hence couldn't be used inside LINQ.
-                                                  group bill by new
-                                                  {
-                                                      bill.PatientId,
-                                                      bill.Patient.PatientCode,
-                                                      bill.Patient.FirstName,
-                                                      bill.Patient.LastName,
-                                                      bill.Patient.MiddleName,
-                                                      bill.Patient.Gender,
-                                                      bill.Patient.PhoneNumber,
-                                                      bill.Patient.DateOfBirth,
-                                                      bill.BillingTransactionId,
-                                                      bill.InvoiceNo,
-                                                      bill.InvoiceCode,
-                                                      yr.FiscalYearFormatted,
-                                                      yr.FiscalYearId,
-                                                      bill.PrintCount,
-                                                      bill.DepositBalance,
-                                                      bill.SubTotal,
-                                                      bill.DiscountAmount,
-                                                      bill.TaxTotal,
-                                                      bill.TotalAmount,
-                                                      bill.DepositReturnAmount,
-                                                      bill.Tender,
-                                                      bill.Change,
-                                                      bill.Remarks,
-                                                      bill.TransactionType,//added: sud:6Aug'17
-                                                      bill.PaymentMode,//added: sud:4May'18
-                                                      bill.BillStatus,//added: sud:4May'18
-                                                      bill.PaymentDetails,//added: sud:4May'18
-                                                      bill.IsInsuranceBilling,
-                                                      bill.OrganizationId, //yubraj 22nd April '19
-                                                      bill.ExchangeRate
-                                                  } into p
-                                                  select new
-                                                  {
-                                                      PatientId = p.Key.PatientId,
-                                                      PatientCode = p.Key.PatientCode,
-                                                      ShortName = p.Key.FirstName + " " + (string.IsNullOrEmpty(p.Key.MiddleName) ? "" : p.Key.MiddleName + " ") + p.Key.LastName,
-                                                      Gender = p.Key.Gender,
-                                                      DateOfBirth = p.Max(a => a.Patient.DateOfBirth.Value),
-                                                      PaidDate = p.Max(a => a.PaidDate),
-                                                      TransactionDate = p.Max(a => a.CreatedOn),
-                                                      TotalAmount = p.Sum(a => a.TotalAmount),
-                                                      BillingTransactionId = p.Key.BillingTransactionId,
-                                                      InvoiceNumber = p.Key.InvoiceNo,
 
-                                                      InvoiceCode = p.Key.InvoiceCode,//
-                                                      FiscalYear = p.Key.FiscalYearFormatted,
-                                                      FiscalYearId = p.Key.FiscalYearId,
-                                                      InvoiceNumFormatted = p.Key.InvoiceCode + p.Key.InvoiceNo.ToString(),
+                    //if (search == null)
+                    //{
+                    //    var allInvoiceReceipts = (from bill in dbContext.BillingTransactions.Include("Patient").Include("BillingTransactionItems")
+                    //                              join yr in dbContext.BillingFiscalYears
+                    //                              on bill.FiscalYearId equals yr.FiscalYearId
+                    //                              orderby bill.BillingTransactionId
+                    //                              //couldn't use Patient.ShortName directly since it's not mapped to DB and hence couldn't be used inside LINQ.
+                    //                              group bill by new
+                    //                              {
+                    //                                  bill.PatientId,
+                    //                                  bill.Patient.PatientCode,
+                    //                                  bill.Patient.FirstName,
+                    //                                  bill.Patient.LastName,
+                    //                                  bill.Patient.MiddleName,
+                    //                                  bill.Patient.Gender,
+                    //                                  bill.Patient.PhoneNumber,
+                    //                                  bill.Patient.DateOfBirth,
+                    //                                  bill.BillingTransactionId,
+                    //                                  bill.InvoiceNo,
+                    //                                  bill.InvoiceCode,
+                    //                                  yr.FiscalYearFormatted,
+                    //                                  yr.FiscalYearId,
+                    //                                  bill.PrintCount,
+                    //                                  bill.DepositBalance,
+                    //                                  bill.SubTotal,
+                    //                                  bill.DiscountAmount,
+                    //                                  bill.TaxTotal,
+                    //                                  bill.TotalAmount,
+                    //                                  bill.DepositReturnAmount,
+                    //                                  bill.Tender,
+                    //                                  bill.Change,
+                    //                                  bill.Remarks,
+                    //                                  bill.TransactionType,//added: sud:6Aug'17
+                    //                                  bill.PaymentMode,//added: sud:4May'18
+                    //                                  bill.BillStatus,//added: sud:4May'18
+                    //                                  bill.PaymentDetails,//added: sud:4May'18
+                    //                                  bill.IsInsuranceBilling,
+                    //                                  bill.OrganizationId, //yubraj 22nd April '19
+                    //                                  bill.ExchangeRate,
+                    //                                  bill.PackageName
+                    //                              } into p
+                    //                              select new
+                    //                              {
+                    //                                  PatientId = p.Key.PatientId,
+                    //                                  PatientCode = p.Key.PatientCode,
+                    //                                  ShortName = p.Key.FirstName + " " + (string.IsNullOrEmpty(p.Key.MiddleName) ? "" : p.Key.MiddleName + " ") + p.Key.LastName,
+                    //                                  Gender = p.Key.Gender,
+                    //                                  DateOfBirth = p.Max(a => a.Patient.DateOfBirth.Value),
+                    //                                  PaidDate = p.Max(a => a.PaidDate),
+                    //                                  TransactionDate = p.Max(a => a.CreatedOn),
+                    //                                  TotalAmount = p.Sum(a => a.TotalAmount),
+                    //                                  BillingTransactionId = p.Key.BillingTransactionId,
+                    //                                  InvoiceNumber = p.Key.InvoiceNo,
+                    //                                  //Sud: 2-Oct'18--commented unused fields, it was increasing the response size un-necessarily.
+                    //                                  InvoiceCode = p.Key.InvoiceCode,//
+                    //                                  FiscalYear = p.Key.FiscalYearFormatted,
+                    //                                  FiscalYearId = p.Key.FiscalYearId,
+                    //                                  InvoiceNumFormatted = p.Key.InvoiceCode + p.Key.InvoiceNo.ToString(),
+                    //                                  PhoneNumber = p.Key.PhoneNumber,
+                    //                                  IsInsuranceBilling = p.Key.IsInsuranceBilling,
+                    //                                  PackageName = p.Key.PackageName,
+                    //                                  //Yubraj :: 22nd April '19 For finding creditOrganizationName to show in duplicate print
+                    //                                  OrganizationId = p.Key.OrganizationId,
+                    //                                  OrganizationName = p.Key.OrganizationId != null ? dbContext.CreditOrganization.Where(a =>
+                    //                                                       a.OrganizationId == p.Key.OrganizationId)
+                    //                                                       .Select(b => b.OrganizationName).FirstOrDefault() : null
+                    //                              }).OrderByDescending(a => a.FiscalYearId).ThenByDescending(a => a.InvoiceNumber).Take(searchListLength).ToList();
+                    //    responseData.Results = allInvoiceReceipts;
+                    //}
+                    //else
+                    //{
+                    //    var allInvoiceReceipts = (from bill in dbContext.BillingTransactions.Include("Patient").Include("BillingTransactionItems")
+                    //                              join yr in dbContext.BillingFiscalYears
+                    //                              on bill.FiscalYearId equals yr.FiscalYearId
+                    //                              //where (DbFunctions.TruncateTime(bill.CreatedOn) >= FromDate && DbFunctions.TruncateTime(bill.CreatedOn) <= ToDate)
+                    //                              where (bill.Patient.FirstName + " " + (string.IsNullOrEmpty(bill.Patient.MiddleName) ? "" : bill.Patient.MiddleName + " ") + bill.Patient.LastName + bill.Patient.PatientCode + bill.Patient.PhoneNumber + (bill.InvoiceCode + bill.InvoiceNo)).Contains(search)
+                    //                              orderby bill.BillingTransactionId
+                    //                              //couldn't use Patient.ShortName directly since it's not mapped to DB and hence couldn't be used inside LINQ.
+                    //                              group bill by new
+                    //                              {
+                    //                                  bill.PatientId,
+                    //                                  bill.Patient.PatientCode,
+                    //                                  bill.Patient.FirstName,
+                    //                                  bill.Patient.LastName,
+                    //                                  bill.Patient.MiddleName,
+                    //                                  bill.Patient.Gender,
+                    //                                  bill.Patient.PhoneNumber,
+                    //                                  bill.Patient.DateOfBirth,
+                    //                                  bill.BillingTransactionId,
+                    //                                  bill.InvoiceNo,
+                    //                                  bill.InvoiceCode,
+                    //                                  yr.FiscalYearFormatted,
+                    //                                  yr.FiscalYearId,
+                    //                                  bill.PrintCount,
+                    //                                  bill.DepositBalance,
+                    //                                  bill.SubTotal,
+                    //                                  bill.DiscountAmount,
+                    //                                  bill.TaxTotal,
+                    //                                  bill.TotalAmount,
+                    //                                  bill.DepositReturnAmount,
+                    //                                  bill.Tender,
+                    //                                  bill.Change,
+                    //                                  bill.Remarks,
+                    //                                  bill.TransactionType,//added: sud:6Aug'17
+                    //                                  bill.PaymentMode,//added: sud:4May'18
+                    //                                  bill.BillStatus,//added: sud:4May'18
+                    //                                  bill.PaymentDetails,//added: sud:4May'18
+                    //                                  bill.IsInsuranceBilling,
+                    //                                  bill.OrganizationId, //yubraj 22nd April '19
+                    //                                  bill.ExchangeRate
+                    //                              } into p
+                    //                              select new
+                    //                              {
+                    //                                  PatientId = p.Key.PatientId,
+                    //                                  PatientCode = p.Key.PatientCode,
+                    //                                  ShortName = p.Key.FirstName + " " + (string.IsNullOrEmpty(p.Key.MiddleName) ? "" : p.Key.MiddleName + " ") + p.Key.LastName,
+                    //                                  Gender = p.Key.Gender,
+                    //                                  DateOfBirth = p.Max(a => a.Patient.DateOfBirth.Value),
+                    //                                  PaidDate = p.Max(a => a.PaidDate),
+                    //                                  TransactionDate = p.Max(a => a.CreatedOn),
+                    //                                  TotalAmount = p.Sum(a => a.TotalAmount),
+                    //                                  BillingTransactionId = p.Key.BillingTransactionId,
+                    //                                  InvoiceNumber = p.Key.InvoiceNo,
 
-                                                      PhoneNumber = p.Key.PhoneNumber,
-                                                      IsInsuranceBilling = p.Key.IsInsuranceBilling,
+                    //                                  InvoiceCode = p.Key.InvoiceCode,//
+                    //                                  FiscalYear = p.Key.FiscalYearFormatted,
+                    //                                  FiscalYearId = p.Key.FiscalYearId,
+                    //                                  InvoiceNumFormatted = p.Key.InvoiceCode + p.Key.InvoiceNo.ToString(),
 
-                                                      //Yubraj :: 22nd April '19 For finding creditOrganizationName to show in duplicate print
-                                                      OrganizationId = p.Key.OrganizationId,
-                                                      OrganizationName = p.Key.OrganizationId != null ? dbContext.CreditOrganization.Where(a =>
-                                                                           a.OrganizationId == p.Key.OrganizationId)
-                                                                           .Select(b => b.OrganizationName).FirstOrDefault() : null
-                                                  }).ToList().OrderByDescending(a => a.FiscalYearId).ThenByDescending(a => a.InvoiceNumber);
-                        responseData.Results = allInvoiceReceipts;
-                    }
+                    //                                  PhoneNumber = p.Key.PhoneNumber,
+                    //                                  IsInsuranceBilling = p.Key.IsInsuranceBilling,
+
+                    //                                  //Yubraj :: 22nd April '19 For finding creditOrganizationName to show in duplicate print
+                    //                                  OrganizationId = p.Key.OrganizationId,
+                    //                                  OrganizationName = p.Key.OrganizationId != null ? dbContext.CreditOrganization.Where(a =>
+                    //                                                       a.OrganizationId == p.Key.OrganizationId)
+                    //                                                       .Select(b => b.OrganizationName).FirstOrDefault() : null
+                    //                              }).ToList().OrderByDescending(a => a.FiscalYearId).ThenByDescending(a => a.InvoiceNumber);
+                    //    responseData.Results = allInvoiceReceipts;
+                    //}
+
                 }
 
 
                 // to list out the Provisional details for duplicate printing
                 else if (reqType != null && reqType.ToLower() == "listprovisionalwisebill")
                 {
-                    int searchListLength = 0;//this is default value.
-                    List<ParameterModel> allParams = coreDbContext.Parameters.ToList();
+                    //int searchListLength = 0;//this is default value.
+                    //List<ParameterModel> allParams = coreDbContext.Parameters.ToList();
 
-                    ParameterModel listNumber = allParams.Where(a => a.ParameterGroupName == "Common" && a.ParameterName == "ServerSideSearchListLength").FirstOrDefault<ParameterModel>();
-                    if (listNumber != null)
-                    {
-                        searchListLength = Convert.ToInt32(listNumber.ParameterValue);
-                    }
-                    if (search == null)
-                    {
-                        var onlyProvList = (from bil in dbContext.BillingTransactionItems
-                                            where bil.ProvisionalReceiptNo.HasValue
-                                            //&& (!bil.BillingTransactionId.HasValue)
-                                            group bil by new
-                                            {
-                                                bil.PatientId,
-                                                bil.ProvisionalReceiptNo,
-                                                bil.ProvisionalFiscalYearId,
-                                                bil.BillStatus,
-                                                bil.IsInsurance
-                                                //bil.CreatedOn,
-                                                //bil.CreatedBy
-                                            } into p
+                    //ParameterModel listNumber = allParams.Where(a => a.ParameterGroupName == "Common" && a.ParameterName == "ServerSideSearchListLength").FirstOrDefault<ParameterModel>();
+                    //if (listNumber != null)
+                    //{
+                    //    searchListLength = Convert.ToInt32(listNumber.ParameterValue);
+                    //}
+
+                    search = search == null ? string.Empty : search.ToLower();
+
+                    var onlyProvList = (from bil in dbContext.BillingTransactionItems
+                                        join pat in dbContext.Patient on bil.PatientId equals pat.PatientId
+                                        where bil.ProvisionalReceiptNo.HasValue
+                                        && (pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName + pat.PatientCode + pat.PhoneNumber).Contains(search)
+                                        group bil by new
+                                        {
+                                            bil.PatientId,
+                                            bil.ProvisionalReceiptNo,
+                                            bil.ProvisionalFiscalYearId,
+                                            bil.BillStatus,
+                                            bil.IsInsurance
+                                        } into p
+                                        select new
+                                        {
+                                            ProvisionalReceiptNo = p.Key.ProvisionalReceiptNo,
+                                            ProvFiscalYearId = p.Key.ProvisionalFiscalYearId,
+                                            PatientId = p.Key.PatientId,
+                                            ItemCount = p.Count(),
+                                            SubTotal = p.Sum(a => a.SubTotal),
+                                            DiscountAmount = p.Sum(a => a.DiscountAmount),
+                                            TotalAmount = p.Sum(a => a.TotalAmount),
+                                            CurrentBillStatus = p.Key.BillStatus,
+                                            CreatedOn = p.Max(a => a.CreatedOn),
+                                            CreatedBy = p.Max(a => a.CreatedBy),
+                                            IsInsurance = p.Key.IsInsurance
+                                        }).OrderByDescending(a => a.ProvFiscalYearId).ThenByDescending(a => a.ProvisionalReceiptNo).AsQueryable();
+
+                    var patProvDetails_All = (
+                                            from prov in onlyProvList.AsEnumerable()
+                                            join yr in dbContext.BillingFiscalYears.AsQueryable() on prov.ProvFiscalYearId equals yr.FiscalYearId
+                                            join pat in dbContext.Patient.AsQueryable() on prov.PatientId equals pat.PatientId
                                             select new
                                             {
-                                                ProvisionalReceiptNo = p.Key.ProvisionalReceiptNo,
-                                                ProvFiscalYearId = p.Key.ProvisionalFiscalYearId,
-                                                PatientId = p.Key.PatientId,
-                                                ItemCount = p.Count(),
-                                                SubTotal = p.Sum(a => a.SubTotal),
-                                                DiscountAmount = p.Sum(a => a.DiscountAmount),
-                                                TotalAmount = p.Sum(a => a.TotalAmount),
-                                                CurrentBillStatus = p.Key.BillStatus,
-                                                CreatedOn = p.Max(a => a.CreatedOn),
-                                                CreatedBy = p.Max(a => a.CreatedBy),
-                                                IsInsurance = p.Key.IsInsurance
-                                            }).OrderByDescending(a => a.ProvFiscalYearId).ThenByDescending(a => a.ProvisionalReceiptNo).Take(searchListLength).ToList();
+                                                PatientId = prov.PatientId,
+                                                PatientCode = pat.PatientCode,
+                                                Address = pat.Address,
+                                                ShortName = pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName,
+                                                Gender = pat.Gender,
+                                                DateOfBirth = pat.DateOfBirth,
+                                                ProvisionalReceiptNo = prov.ProvisionalReceiptNo,
+                                                InvoiceCode = "PR", //Hard coded for Provisional Invoice code
+                                                FiscalYear = yr.FiscalYearFormatted,
+                                                CreatedOn = prov.CreatedOn,
+                                                SubTotal = prov.SubTotal,
+                                                DiscountAmount = prov.DiscountAmount,
+                                                Total = prov.TotalAmount,
+                                                FiscalYearId = prov.ProvFiscalYearId,
+                                                IsInsurance = prov.IsInsurance,
+                                                ProvReceiptNumFormatted = yr.FiscalYearFormatted + "/PR/" + prov.ProvisionalReceiptNo, // return FiscalYear + "/" + "PR" + "/" + ProvReceiptNo;
+                                                PhoneNumber = pat.PhoneNumber,
+                                                CurrentBillStatus = prov.CurrentBillStatus,
+                                                User = rbacDbContext.Users.Where(usr => usr.EmployeeId == prov.CreatedBy).FirstOrDefault()
+                                            }).OrderByDescending(a => a.FiscalYearId).ThenByDescending(a => a.ProvisionalReceiptNo).AsQueryable();
 
-                        var patProvDetails_All = (from prov in onlyProvList
-                                                  join yr in dbContext.BillingFiscalYears on prov.ProvFiscalYearId equals yr.FiscalYearId
-                                                  join pat in dbContext.Patient on prov.PatientId equals pat.PatientId
-                                                  //where prov.BillStatus == "provisional"
-                                                  select new
-                                                  {
-                                                      PatientId = prov.PatientId,
-                                                      PatientCode = pat.PatientCode,
-                                                      Address = pat.Address,
-                                                      ShortName = pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName,
-                                                      Gender = pat.Gender,
-                                                      DateOfBirth = pat.DateOfBirth,
-                                                      ProvisionalReceiptNo = prov.ProvisionalReceiptNo,
-                                                      InvoiceCode = "PR", //Hard coded for Provisional Invoice code
-                                                      FiscalYear = yr.FiscalYearFormatted,
-                                                      CreatedOn = prov.CreatedOn,
-                                                      SubTotal = prov.SubTotal,
-                                                      DiscountAmount = prov.DiscountAmount,
-                                                      Total = prov.TotalAmount,
-                                                      FiscalYearId = prov.ProvFiscalYearId,
-                                                      IsInsurance = prov.IsInsurance,
-                                                      ProvReceiptNumFormatted = yr.FiscalYearFormatted + "/PR/" + prov.ProvisionalReceiptNo, // return FiscalYear + "/" + "PR" + "/" + ProvReceiptNo;
-                                                      PhoneNumber = pat.PhoneNumber,
-                                                      CurrentBillStatus = prov.CurrentBillStatus,
-                                                      User = rbacDbContext.Users.Where(usr => usr.EmployeeId == prov.CreatedBy).FirstOrDefault()
-                                                  }).OrderByDescending(a => a.FiscalYearId).ThenByDescending(a => a.ProvisionalReceiptNo).ToList();
 
-                        responseData.Results = patProvDetails_All;
-                    }
-                    else
+                    if (CommonFunctions.GetCoreParameterBoolValue(coreDbContext, "Common", "ServerSideSearchComponent", "BillingProvisional") == true && search == "")
                     {
-                        var onlyProvList = (from bil in dbContext.BillingTransactionItems
-                                            join pat in dbContext.Patient on bil.PatientId equals pat.PatientId
-                                            where bil.ProvisionalReceiptNo.HasValue
-                                            && (pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ")
-                                            + pat.LastName
-                                            + pat.PatientCode
-                                            + pat.PhoneNumber).Contains(search)
-                                            group bil by new
-                                            {
-                                                bil.PatientId,
-                                                bil.ProvisionalReceiptNo,
-                                                bil.ProvisionalFiscalYearId,
-                                                bil.BillStatus,
-                                                bil.IsInsurance
-                                                //bil.CreatedOn,
-                                                //bil.CreatedBy
-                                            } into p
-                                            select new
-                                            {
-                                                ProvisionalReceiptNo = p.Key.ProvisionalReceiptNo,
-                                                ProvFiscalYearId = p.Key.ProvisionalFiscalYearId,
-                                                PatientId = p.Key.PatientId,
-                                                ItemCount = p.Count(),
-                                                SubTotal = p.Sum(a => a.SubTotal),
-                                                DiscountAmount = p.Sum(a => a.DiscountAmount),
-                                                TotalAmount = p.Sum(a => a.TotalAmount),
-                                                CurrentBillStatus = p.Key.BillStatus,
-                                                CreatedOn = p.Max(a => a.CreatedOn),
-                                                CreatedBy = p.Max(a => a.CreatedBy),
-                                                IsInsurance = p.Key.IsInsurance
-                                            }).OrderByDescending(a => a.ProvFiscalYearId).ThenByDescending(a => a.ProvisionalReceiptNo).ToList();
-
-                        var patProvDetails_All = (
-                                                from prov in onlyProvList
-                                                join yr in dbContext.BillingFiscalYears on prov.ProvFiscalYearId equals yr.FiscalYearId
-                                                join pat in dbContext.Patient on prov.PatientId equals pat.PatientId
-                                                //where prov.BillStatus == "provisional"
-
-                                                select new
-                                                {
-                                                    PatientId = prov.PatientId,
-                                                    PatientCode = pat.PatientCode,
-                                                    Address = pat.Address,
-                                                    ShortName = pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName,
-                                                    Gender = pat.Gender,
-                                                    DateOfBirth = pat.DateOfBirth,
-                                                    ProvisionalReceiptNo = prov.ProvisionalReceiptNo,
-                                                    InvoiceCode = "PR", //Hard coded for Provisional Invoice code
-                                                    FiscalYear = yr.FiscalYearFormatted,
-                                                    CreatedOn = prov.CreatedOn,
-                                                    SubTotal = prov.SubTotal,
-                                                    DiscountAmount = prov.DiscountAmount,
-                                                    Total = prov.TotalAmount,
-                                                    FiscalYearId = prov.ProvFiscalYearId,
-                                                    IsInsurance = prov.IsInsurance,
-                                                    ProvReceiptNumFormatted = yr.FiscalYearFormatted + "/PR/" + prov.ProvisionalReceiptNo, // return FiscalYear + "/" + "PR" + "/" + ProvReceiptNo;
-                                                    PhoneNumber = pat.PhoneNumber,
-                                                    CurrentBillStatus = prov.CurrentBillStatus,
-                                                    User = rbacDbContext.Users.Where(usr => usr.EmployeeId == prov.CreatedBy).FirstOrDefault()
-                                                }).OrderByDescending(a => a.FiscalYearId).ThenByDescending(a => a.ProvisionalReceiptNo).ToList();
-                        responseData.Results = patProvDetails_All;
+                        patProvDetails_All = patProvDetails_All.Take(CommonFunctions.GetCoreParameterIntValue(coreDbContext, "Common", "ServerSideSearchListLength"));
                     }
+                    var finalResults = patProvDetails_All.ToList();
+                    responseData.Results = finalResults;
+
+
+                    //if (search == null)
+                    //{
+                    //    var onlyProvList = (from bil in dbContext.BillingTransactionItems
+                    //                        where bil.ProvisionalReceiptNo.HasValue
+                    //                        //&& (!bil.BillingTransactionId.HasValue)
+                    //                        group bil by new
+                    //                        {
+                    //                            bil.PatientId,
+                    //                            bil.ProvisionalReceiptNo,
+                    //                            bil.ProvisionalFiscalYearId,
+                    //                            bil.BillStatus,
+                    //                            bil.IsInsurance
+                    //                            //bil.CreatedOn,
+                    //                            //bil.CreatedBy
+                    //                        } into p
+                    //                        select new
+                    //                        {
+                    //                            ProvisionalReceiptNo = p.Key.ProvisionalReceiptNo,
+                    //                            ProvFiscalYearId = p.Key.ProvisionalFiscalYearId,
+                    //                            PatientId = p.Key.PatientId,
+                    //                            ItemCount = p.Count(),
+                    //                            SubTotal = p.Sum(a => a.SubTotal),
+                    //                            DiscountAmount = p.Sum(a => a.DiscountAmount),
+                    //                            TotalAmount = p.Sum(a => a.TotalAmount),
+                    //                            CurrentBillStatus = p.Key.BillStatus,
+                    //                            CreatedOn = p.Max(a => a.CreatedOn),
+                    //                            CreatedBy = p.Max(a => a.CreatedBy),
+                    //                            IsInsurance = p.Key.IsInsurance
+                    //                        }).OrderByDescending(a => a.ProvFiscalYearId).ThenByDescending(a => a.ProvisionalReceiptNo).Take(searchListLength).ToList();
+
+                    //    var patProvDetails_All = (from prov in onlyProvList
+                    //                              join yr in dbContext.BillingFiscalYears on prov.ProvFiscalYearId equals yr.FiscalYearId
+                    //                              join pat in dbContext.Patient on prov.PatientId equals pat.PatientId
+                    //                              //where prov.BillStatus == "provisional"
+                    //                              select new
+                    //                              {
+                    //                                  PatientId = prov.PatientId,
+                    //                                  PatientCode = pat.PatientCode,
+                    //                                  Address = pat.Address,
+                    //                                  ShortName = pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName,
+                    //                                  Gender = pat.Gender,
+                    //                                  DateOfBirth = pat.DateOfBirth,
+                    //                                  ProvisionalReceiptNo = prov.ProvisionalReceiptNo,
+                    //                                  InvoiceCode = "PR", //Hard coded for Provisional Invoice code
+                    //                                  FiscalYear = yr.FiscalYearFormatted,
+                    //                                  CreatedOn = prov.CreatedOn,
+                    //                                  SubTotal = prov.SubTotal,
+                    //                                  DiscountAmount = prov.DiscountAmount,
+                    //                                  Total = prov.TotalAmount,
+                    //                                  FiscalYearId = prov.ProvFiscalYearId,
+                    //                                  IsInsurance = prov.IsInsurance,
+                    //                                  ProvReceiptNumFormatted = yr.FiscalYearFormatted + "/PR/" + prov.ProvisionalReceiptNo, // return FiscalYear + "/" + "PR" + "/" + ProvReceiptNo;
+                    //                                  PhoneNumber = pat.PhoneNumber,
+                    //                                  CurrentBillStatus = prov.CurrentBillStatus,
+                    //                                  User = rbacDbContext.Users.Where(usr => usr.EmployeeId == prov.CreatedBy).FirstOrDefault()
+                    //                              }).OrderByDescending(a => a.FiscalYearId).ThenByDescending(a => a.ProvisionalReceiptNo).ToList();
+
+                    //    responseData.Results = patProvDetails_All;
+                    //}
+                    //else
+                    //{
+                    //    var onlyProvList = (from bil in dbContext.BillingTransactionItems
+                    //                        join pat in dbContext.Patient on bil.PatientId equals pat.PatientId
+                    //                        where bil.ProvisionalReceiptNo.HasValue
+                    //                        && (pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ")
+                    //                        + pat.LastName
+                    //                        + pat.PatientCode
+                    //                        + pat.PhoneNumber).Contains(search)
+                    //                        group bil by new
+                    //                        {
+                    //                            bil.PatientId,
+                    //                            bil.ProvisionalReceiptNo,
+                    //                            bil.ProvisionalFiscalYearId,
+                    //                            bil.BillStatus,
+                    //                            bil.IsInsurance
+                    //                            //bil.CreatedOn,
+                    //                            //bil.CreatedBy
+                    //                        } into p
+                    //                        select new
+                    //                        {
+                    //                            ProvisionalReceiptNo = p.Key.ProvisionalReceiptNo,
+                    //                            ProvFiscalYearId = p.Key.ProvisionalFiscalYearId,
+                    //                            PatientId = p.Key.PatientId,
+                    //                            ItemCount = p.Count(),
+                    //                            SubTotal = p.Sum(a => a.SubTotal),
+                    //                            DiscountAmount = p.Sum(a => a.DiscountAmount),
+                    //                            TotalAmount = p.Sum(a => a.TotalAmount),
+                    //                            CurrentBillStatus = p.Key.BillStatus,
+                    //                            CreatedOn = p.Max(a => a.CreatedOn),
+                    //                            CreatedBy = p.Max(a => a.CreatedBy),
+                    //                            IsInsurance = p.Key.IsInsurance
+                    //                        }).OrderByDescending(a => a.ProvFiscalYearId).ThenByDescending(a => a.ProvisionalReceiptNo).ToList();
+
+                    //    var patProvDetails_All = (
+                    //                            from prov in onlyProvList
+                    //                            join yr in dbContext.BillingFiscalYears on prov.ProvFiscalYearId equals yr.FiscalYearId
+                    //                            join pat in dbContext.Patient on prov.PatientId equals pat.PatientId
+                    //                            //where prov.BillStatus == "provisional"
+
+                    //                            select new
+                    //                            {
+                    //                                PatientId = prov.PatientId,
+                    //                                PatientCode = pat.PatientCode,
+                    //                                Address = pat.Address,
+                    //                                ShortName = pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName,
+                    //                                Gender = pat.Gender,
+                    //                                DateOfBirth = pat.DateOfBirth,
+                    //                                ProvisionalReceiptNo = prov.ProvisionalReceiptNo,
+                    //                                InvoiceCode = "PR", //Hard coded for Provisional Invoice code
+                    //                                FiscalYear = yr.FiscalYearFormatted,
+                    //                                CreatedOn = prov.CreatedOn,
+                    //                                SubTotal = prov.SubTotal,
+                    //                                DiscountAmount = prov.DiscountAmount,
+                    //                                Total = prov.TotalAmount,
+                    //                                FiscalYearId = prov.ProvFiscalYearId,
+                    //                                IsInsurance = prov.IsInsurance,
+                    //                                ProvReceiptNumFormatted = yr.FiscalYearFormatted + "/PR/" + prov.ProvisionalReceiptNo, // return FiscalYear + "/" + "PR" + "/" + ProvReceiptNo;
+                    //                                PhoneNumber = pat.PhoneNumber,
+                    //                                CurrentBillStatus = prov.CurrentBillStatus,
+                    //                                User = rbacDbContext.Users.Where(usr => usr.EmployeeId == prov.CreatedBy).FirstOrDefault()
+                    //                            }).OrderByDescending(a => a.FiscalYearId).ThenByDescending(a => a.ProvisionalReceiptNo).ToList();
+                    //    responseData.Results = patProvDetails_All;
+                    //}
 
                 }
                 else if (reqType != null && reqType == "duplicateBillsByReceiptId" && InputId != null && InputId != 0)
@@ -837,6 +1060,16 @@ namespace DanpheEMR.Controllers
                     if (receipt.Transaction != null)
                     {
                         receipt.Transaction.OrganizationName = dbContext.CreditOrganization.Where(a => a.OrganizationId == receipt.Transaction.OrganizationId).Select(b => b.OrganizationName).FirstOrDefault();
+                    }
+
+                    //sud:10Nov'19-need to set Transaction Object of each TxnItem as null since it'll otherwise create issues in return invoice.
+                    //Transaction object is automatically assigned when we've done: INCLUDE("BillingTransaction") at the beginning.
+                    if (receipt.TransactionItems != null && receipt.TransactionItems.Count > 0)
+                    {
+                        receipt.TransactionItems.ForEach(txnItm =>
+                        {
+                            txnItm.BillingTransaction = null;
+                        });
                     }
 
                     if (receipt != null)
@@ -863,6 +1096,7 @@ namespace DanpheEMR.Controllers
                         {
                             BillInvoiceReturnModel retInv = dbContext.BillReturns.Where(br => br.BillingTransactionId == receipt.Transaction.BillingTransactionId).FirstOrDefault();
                             receipt.Transaction.Remarks = retInv.Remarks;
+                            receipt.Transaction.CreditNoteNumber = retInv.CreditNoteNumber;
                             userName = rbacDbContext.Users.Where(usr => usr.EmployeeId == retInv.CreatedBy).FirstOrDefault().UserName;
                         }
                         else
@@ -882,11 +1116,11 @@ namespace DanpheEMR.Controllers
                         receipt.Patient.BillingTransactionItems = null;
                         receipt.Transaction.Patient = null;
                         receipt.Transaction.BillingTransactionItems = null;
-                        receipt.TransactionItems.ForEach(txnItm =>
-                        {
-                            txnItm.Patient = null;
-                            txnItm.BillingTransaction = null;
-                        });
+                        //receipt.TransactionItems.ForEach(txnItm =>
+                        //{
+                        //    txnItm.Patient = null;
+                        //    txnItm.BillingTransaction = null;
+                        //});
 
                         // MasterDbContext masterDbContext = new MasterDbContext(connString);
 
@@ -936,6 +1170,53 @@ namespace DanpheEMR.Controllers
 
                     }
 
+                }
+
+                else if (reqType == "InPatientDetailForPartialBilling")
+                {
+                    var visitNAdmission = (from visit in dbContext.Visit.Include(v => v.Admission)
+                                           where visit.PatientVisitId == patVisitId
+                                           select visit).FirstOrDefault();
+
+                    var patientDetail = (from pat in dbContext.Patient
+                                         join sub in dbContext.CountrySubdivisions on pat.CountrySubDivisionId equals sub.CountrySubDivisionId
+                                         where pat.PatientId == visitNAdmission.PatientId
+                                         select new PatientDetailVM
+                                         {
+                                             PatientId = pat.PatientId,
+                                             PatientName = pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName,
+                                             HospitalNo = pat.PatientCode,
+                                             DateOfBirth = pat.DateOfBirth,
+                                             Gender = pat.Gender,
+                                             Address = pat.Address,
+                                             ContactNo = pat.PhoneNumber,
+                                             InpatientNo = visitNAdmission.VisitCode,
+                                             CountrySubDivision = sub.CountrySubDivisionName,
+                                             PANNumber = pat.PANNumber
+                                         }).FirstOrDefault();
+
+                    responseData.Results = patientDetail;
+                    responseData.Status = "OK";
+                }
+
+                else if (reqType == "getCancelItems")
+                {
+                    var results = (from pat in dbContext.Patient
+                                   join countrysub in dbContext.CountrySubdivisions on pat.CountrySubDivisionId equals countrysub.CountrySubDivisionId
+                                   where pat.PatientId == InputId
+                                   select new
+                                   {
+                                       PatientCode = pat.PatientCode,
+                                       ShortName = pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName) + " " + pat.LastName,
+                                       PhoneNumber = pat.PhoneNumber,
+                                       Address = pat.Address,
+                                       CountrySubDivisionName = countrysub.CountrySubDivisionName,
+                                       DateOfBirth = pat.DateOfBirth,
+                                       Gender = pat.Gender
+
+                                   }).FirstOrDefault();
+                    responseData.Results = results;
+                    responseData.Status = "OK";
                 }
 
                 //Provisional Duplicate invoices from ReceiptNo and Fiscal Year --7th June
@@ -1039,7 +1320,7 @@ namespace DanpheEMR.Controllers
                     //for this request type, patientid comes as inputid.
                     var patProvisional = (from bill in dbContext.BillingTransactionItems
                                               //sud: 4May'18 changed unpaid to provisional
-                                          where bill.PatientId == InputId && bill.BillStatus == "provisional" //here PatientId comes as InputId from client.
+                                          where bill.PatientId == InputId && bill.BillStatus == ENUM_BillingStatus.provisional // "provisional" //here PatientId comes as InputId from client.
                                           && (bill.IsInsurance == false || bill.IsInsurance == null)
                                           group bill by new { bill.PatientId } into p
                                           select new
@@ -1061,7 +1342,7 @@ namespace DanpheEMR.Controllers
 
                     var patCredits = (from bill in dbContext.BillingTransactionItems
                                       where bill.PatientId == InputId
-                                      && bill.BillStatus == "unpaid"
+                                      && bill.BillStatus == ENUM_BillingStatus.unpaid// "unpaid"
                                       && (bill.ReturnStatus == false || bill.ReturnStatus == null)
                                       && (bill.IsInsurance == false || bill.IsInsurance == null)
                                       group bill by new { bill.PatientId } into p
@@ -1075,7 +1356,7 @@ namespace DanpheEMR.Controllers
                     //Part-4: Get Total Paid Amount
                     var patPaid = (from bill in dbContext.BillingTransactionItems
                                    where bill.PatientId == InputId
-                                   && bill.BillStatus == "paid"
+                                   && bill.BillStatus == ENUM_BillingStatus.paid // "paid"
                                    && (bill.ReturnStatus == false || bill.ReturnStatus == null)
                                    && (bill.IsInsurance == false || bill.IsInsurance == null)
                                    group bill by new { bill.PatientId } into p
@@ -1095,7 +1376,7 @@ namespace DanpheEMR.Controllers
 
                     var patDiscount = (from bill in dbContext.BillingTransactionItems
                                        where bill.PatientId == InputId
-                                       && bill.BillStatus == "unpaid"
+                                       && bill.BillStatus == ENUM_BillingStatus.unpaid// "unpaid"
                                        && (bill.ReturnStatus == false || bill.ReturnStatus == null)
                                        && (bill.IsInsurance == false || bill.IsInsurance == null)
                                        group bill by new { bill.PatientId } into p
@@ -1110,7 +1391,7 @@ namespace DanpheEMR.Controllers
                     var patCancel = (from bill in dbContext.BillingTransactionItems
                                          //sud: 4May'18 changed unpaid to provisional
                                      where bill.PatientId == InputId
-                                     && bill.BillStatus == "cancel"
+                                     && bill.BillStatus == ENUM_BillingStatus.cancel// "cancel"
                                      && (bill.IsInsurance == false || bill.IsInsurance == null)
                                      group bill by new { bill.PatientId } into p
                                      select new
@@ -1167,7 +1448,7 @@ namespace DanpheEMR.Controllers
                     //Part-2: Get Total Provisional Items
                     //for this request type, patientid comes as inputid.
                     var patProvisional = (from bill in dbContext.BillingTransactionItems
-                                          where bill.PatientId == InputId && bill.BillStatus == "provisional" //here PatientId comes as InputId from client.
+                                          where bill.PatientId == InputId && bill.BillStatus == ENUM_BillingStatus.provisional // "provisional" //here PatientId comes as InputId from client.
                                           && bill.IsInsurance == true
                                           group bill by new { bill.PatientId } into p
                                           select new
@@ -1225,7 +1506,7 @@ namespace DanpheEMR.Controllers
                     var provisionalItems = (from txnItm in dbContext.BillingTransactionItems
                                             join srvDept in dbContext.ServiceDepartment on txnItm.ServiceDepartmentId equals srvDept.ServiceDepartmentId
                                             join fiscalYear in dbContext.BillingFiscalYears on txnItm.ProvisionalFiscalYearId equals fiscalYear.FiscalYearId
-                                            where txnItm.PatientId == patientId && txnItm.BillStatus == "provisional"
+                                            where txnItm.PatientId == patientId && txnItm.BillStatus == ENUM_BillingStatus.provisional // "provisional"
                                             && (txnItm.IsInsurance == false || txnItm.IsInsurance == null)
                                             select new
                                             {
@@ -1246,7 +1527,7 @@ namespace DanpheEMR.Controllers
                                      join srvDept in dbContext.ServiceDepartment on itms.ServiceDepartmentId equals srvDept.ServiceDepartmentId
                                      join billtxn in dbContext.BillingTransactions on itms.BillingTransactionId equals billtxn.BillingTransactionId
                                      join fiscalYear in dbContext.BillingFiscalYears on billtxn.FiscalYearId equals fiscalYear.FiscalYearId
-                                     where itms.PatientId == patientId && itms.BillStatus == "paid"
+                                     where itms.PatientId == patientId && itms.BillStatus == ENUM_BillingStatus.paid// "paid"
                                      && (itms.IsInsurance == false || itms.IsInsurance == null)
                                      select new
                                      {
@@ -1268,7 +1549,7 @@ namespace DanpheEMR.Controllers
                                        join srvDept in dbContext.ServiceDepartment on crdItems.ServiceDepartmentId equals srvDept.ServiceDepartmentId
                                        join billtxn in dbContext.BillingTransactions on crdItems.BillingTransactionId equals billtxn.BillingTransactionId
                                        join fiscalYear in dbContext.BillingFiscalYears on billtxn.FiscalYearId equals fiscalYear.FiscalYearId
-                                       where crdItems.PatientId == patientId && crdItems.BillStatus == "unpaid"
+                                       where crdItems.PatientId == patientId && crdItems.BillStatus == ENUM_BillingStatus.unpaid //"unpaid"
                                        && (crdItems.IsInsurance == false || crdItems.IsInsurance == null)
                                        select new
                                        {
@@ -1291,7 +1572,8 @@ namespace DanpheEMR.Controllers
                                          join fiscalYear in dbContext.BillingFiscalYears on billtxn.FiscalYearId equals fiscalYear.FiscalYearId
                                          where rtnItems.PatientId == patientId
                                          && billtxn.ReturnStatus == true
-                                         && (billtxn.BillStatus == "paid" || billtxn.BillStatus == "unpaid")
+                                         && (billtxn.BillStatus == ENUM_BillingStatus.paid || billtxn.BillStatus == ENUM_BillingStatus.unpaid)
+                                          //&& (billtxn.BillStatus == "paid" || billtxn.BillStatus == "unpaid")
                                           && (rtnItems.IsInsurance == false || rtnItems.IsInsurance == null)
                                          select new
                                          {
@@ -1358,7 +1640,7 @@ namespace DanpheEMR.Controllers
                     var CancelItems = (from cancelItems in dbContext.BillingTransactionItems
                                        join fiscalYear in dbContext.BillingFiscalYears on cancelItems.ProvisionalFiscalYearId equals fiscalYear.FiscalYearId
                                        where cancelItems.PatientId == patientId
-                                       && cancelItems.BillStatus == "cancel"
+                                       && cancelItems.BillStatus == ENUM_BillingStatus.cancel //"cancel"
                                        && (cancelItems.IsInsurance == false || cancelItems.IsInsurance == null)
                                        select new
                                        {
@@ -1456,7 +1738,7 @@ namespace DanpheEMR.Controllers
                 else if (reqType == "departmentwiseReport")
                 {
                     var result = (from val in dbContext.BillingTransactionItems.Include("BillingTransactions")
-                                  where val.BillStatus == "paid"
+                                  where val.BillStatus == ENUM_BillingStatus.paid //"paid"
                                   group val by new { val.ServiceDepartmentName } into p
                                   select new
                                   {
@@ -1516,6 +1798,7 @@ namespace DanpheEMR.Controllers
                                         SrvDeptIntegrationName = srv.IntegrationName,
                                         Displayseq = item.DisplaySeq,
                                         ItemId = item.ItemId,
+                                        ItemCode = item.ItemCode,  //pratik :17 jan2020 
                                         ItemName = item.ItemName,
                                         ProcedureCode = item.ProcedureCode,
                                         Price = item.Price,
@@ -1528,6 +1811,7 @@ namespace DanpheEMR.Controllers
                                         SAARCCitizenPrice = item.SAARCCitizenPrice != null ? item.SAARCCitizenPrice : 0,//sud:25Feb'19--For different price categories
                                         ForeignerPrice = item.ForeignerPrice != null ? item.ForeignerPrice : 0,//sud:25Feb'19--For different price categories
                                         GovtInsurancePrice = item.GovtInsurancePrice != null ? item.GovtInsurancePrice : 0,//sud:25Feb'19--For different price categories
+                                        InsForeignerPrice = item.InsForeignerPrice != null ? item.InsForeignerPrice : 0,//pratik:8Nov'19--For different price categories
 
                                         Doctor = (from doc in dbContext.Employee.DefaultIfEmpty()
                                                   where doc.IsAppointmentApplicable == true && doc.EmployeeId == item.ItemId && srv.ServiceDepartmentName == "OPD"
@@ -1542,10 +1826,14 @@ namespace DanpheEMR.Controllers
                                         IsNormalPriceApplicable = item.IsNormalPriceApplicable,
                                         IsEHSPriceApplicable = item.IsEHSPriceApplicable,
                                         IsForeignerPriceApplicable = item.IsForeignerPriceApplicable,
-                                        IsSAARCPriceApplicable = item.IsSAARCPriceApplicable
+                                        IsSAARCPriceApplicable = item.IsSAARCPriceApplicable,
+                                        IsInsForeignerPriceApplicable = item.IsInsForeignerPriceApplicable,
+                                        AllowMultipleQty = item.AllowMultipleQty,
+                                        DefaultDoctorList = item.DefaultDoctorList
 
 
                                     }).ToList().OrderBy(a => a.Displayseq);
+
                     responseData.Status = "OK";
                     responseData.Results = itemList;
 
@@ -1656,7 +1944,8 @@ namespace DanpheEMR.Controllers
                 {
                     //for this request type, patientid comes as inputid.
                     var patientUnpaidCancl = (from bill in dbContext.BillingTransactionItems.Include("Patient")
-                                              where bill.BillStatus == "provisional" && bill.PatientId == InputId
+                                              where bill.BillStatus == ENUM_BillingStatus.provisional // "provisional" 
+                                              && bill.PatientId == InputId
                                               select bill).ToList<BillingTransactionItemModel>()
                                               .OrderBy(b => b.ServiceDepartmentId).ToList();
 
@@ -1688,127 +1977,218 @@ namespace DanpheEMR.Controllers
                     //so i m adding  1 day to the todate 
                     //var toDate = ToDate.AddDays(1);
                     //List<PatientModel> allPatients = dbContext.Patient.AsEnumerable().ToList();
-                    int searchListLength = 0;//this is default value.
-                    List<ParameterModel> allParams = coreDbContext.Parameters.ToList();
+                    //int searchListLength = 0;//this is default value.
+                    //List<ParameterModel> allParams = coreDbContext.Parameters.ToList();
 
-                    ParameterModel listNumber = allParams.Where(a => a.ParameterGroupName == "Common" && a.ParameterName == "ServerSideSearchListLength").FirstOrDefault<ParameterModel>();
-                    if (listNumber != null)
-                    {
-                        searchListLength = Convert.ToInt32(listNumber.ParameterValue);
-                    }
+                    //ParameterModel listNumber = allParams.Where(a => a.ParameterGroupName == "Common" && a.ParameterName == "ServerSideSearchListLength").FirstOrDefault<ParameterModel>();
+                    //if (listNumber != null)
+                    //{
+                    //    searchListLength = Convert.ToInt32(listNumber.ParameterValue);
+                    //}
 
-                    if (search == null)
+                    search = search == null ? string.Empty : search.ToLower();
+                    //sud:13Mar'20--take fromdate-todate also in search scope, default fromdate is 1000 days back (almost 3 years)
+                    DateTime startDate = string.IsNullOrEmpty(FromDate) ? DateTime.Now.AddDays(-1000).Date : DateTime.Parse(FromDate).Date;
+                    DateTime endDate = string.IsNullOrEmpty(ToDate) ? DateTime.Now.Date : DateTime.Parse(ToDate).Date;
+
+
+
+                    var TxnItemList = (from itm in dbContext.BillingTransactionItems.Include("BillingTransaction")
+                                       join ser in srvDeptsWithEditApplicable on itm.ServiceDepartmentId equals ser.ServiceDepartmentId
+                                       join pat in dbContext.Patient on itm.PatientId equals pat.PatientId
+                                       from bip in dbContext.BillItemPrice.Where(b => b.ServiceDepartmentId == itm.ServiceDepartmentId && b.ItemId == itm.ItemId)
+                                       from emp in dbContext.Employee.Where(emp => emp.EmployeeId == itm.ProviderId).DefaultIfEmpty() //using left join yub--30th Sept 2018.
+                                       where
+                                          itm.BillStatus != ENUM_BillingStatus.cancel // "cancel" 
+                                          && itm.BillStatus != ENUM_BillingStatus.adtCancel
+                                          && itm.ReturnStatus != true
+
+                                          //sud:13Mar'20-- search between given dates as well.
+                                          && (DbFunctions.TruncateTime(itm.CreatedOn) >= startDate && DbFunctions.TruncateTime(itm.CreatedOn) <= endDate)
+
+                                           &&
+
+                                       (pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName
+                                       + pat.PatientCode
+                                       + pat.PhoneNumber
+                                       + ser.ServiceDepartmentName
+                                       + itm.ItemName
+                                       ).Contains(search)
+                                       select new
+                                       {
+                                           Date = itm.CreatedOn,
+                                           ServiceDepartmentId = itm.ServiceDepartmentId,
+                                           ServiceDepartmentName = ser.ServiceDepartmentName,
+                                           ItemId = itm.ItemId,
+                                           ItemName = itm.ItemName,
+                                           ProviderId = itm.ProviderId,
+                                           ProviderName = emp.FullName,
+                                           PatientId = itm.PatientId,
+                                           BillingTransactionItemId = itm.BillingTransactionItemId,
+                                           //receiptno here is: invoice code+ invoicenumber//added: sud-21May'18
+                                           ReceiptNo = itm.BillingTransaction != null ? itm.BillingTransaction.InvoiceCode + itm.BillingTransaction.InvoiceNo : "",
+                                           PatientName = pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName,
+                                           DateOfBirth = pat.DateOfBirth,
+                                           Gender = pat.Gender,
+                                           PhoneNumber = pat.PhoneNumber,
+                                           BillingTransactionId = itm.BillingTransactionId != null ? itm.BillingTransactionId : 0,  //Zero if NULL. 
+                                           PatientCode = pat.PatientCode,
+                                           BillStatus = itm.BillStatus,
+                                           ReferredById = itm.RequestedBy,
+                                           DoctorMandatory = bip.IsDoctorMandatory
+                                       }).OrderByDescending(a => a.BillingTransactionItemId).AsQueryable();
+
+
+                    //take 200 rows (or search length) only when FromDate-ToDate is null, else it's Coming From DateFilter and items are already filtered by Date Range.
+                    if (string.IsNullOrEmpty(FromDate) && string.IsNullOrEmpty(ToDate))
                     {
-                        if (string.IsNullOrEmpty(FromDate) && string.IsNullOrEmpty(ToDate))
+                        if (search == "" && CommonFunctions.GetCoreParameterBoolValue(coreDbContext, "Common", "ServerSideSearchComponent", "BillingEditDoctor") == true)
                         {
-                            var TxnItemList = (from itm in dbContext.BillingTransactionItems.Include("BillingTransaction")
-                                               join ser in srvDeptsWithEditApplicable on itm.ServiceDepartmentId equals ser.ServiceDepartmentId
-                                               join pat in dbContext.Patient on itm.PatientId equals pat.PatientId
-                                               from emp in dbContext.Employee.Where(emp => emp.EmployeeId == itm.ProviderId).DefaultIfEmpty()
-                                               where itm.BillStatus != "cancel" && itm.ReturnStatus != true
-                                               select new
-                                               {
-                                                   Date = itm.CreatedOn,
-                                                   ServiceDepartmentId = itm.ServiceDepartmentId,
-                                                   ServiceDepartmentName = ser.ServiceDepartmentName,
-                                                   ItemId = itm.ItemId,
-                                                   ItemName = itm.ItemName,
-                                                   ProviderId = itm.ProviderId,
-                                                   ProviderName = emp.FirstName + " " + (string.IsNullOrEmpty(emp.MiddleName) ? "" : emp.MiddleName + " ") + emp.LastName,
-                                                   PatientId = itm.PatientId,
-                                                   BillingTransactionItemId = itm.BillingTransactionItemId,
-                                                   ReceiptNo = itm.BillingTransaction != null ? itm.BillingTransaction.InvoiceCode + itm.BillingTransaction.InvoiceNo : "",
-                                                   PatientName = pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName,
-                                                   DateOfBirth = pat.DateOfBirth,
-                                                   Gender = pat.Gender,
-                                                   PhoneNumber = pat.PhoneNumber,
-                                                   BillingTransactionId = itm.BillingTransactionId != null ? itm.BillingTransactionId : 0,  //Zero if NULL. 
-                                                   PatientCode = pat.PatientCode,
-                                               }).OrderByDescending(a => a.BillingTransactionItemId).Take(searchListLength).ToList();
-                            responseData.Results = TxnItemList;
+                            TxnItemList = TxnItemList.Take(CommonFunctions.GetCoreParameterIntValue(coreDbContext, "Common", "ServerSideSearchListLength"));
                         }
-                        else // for search by Date. / sud/yub:11Aug'19 - return all items in matching date range.
-                        {
-                            //by default fromdate-todate will be today. convert incoming from-to dates string to startdate, enddate
-                            DateTime startDate = DateTime.Today;
-                            DateTime endDate = DateTime.Today;
-
-                            DateTime.TryParse(FromDate, out startDate);
-                            DateTime.TryParse(ToDate, out endDate);
-
-                            var TxnItemList = (from itm in dbContext.BillingTransactionItems.Include("BillingTransaction")
-                                               join ser in srvDeptsWithEditApplicable on itm.ServiceDepartmentId equals ser.ServiceDepartmentId
-                                               join pat in dbContext.Patient on itm.PatientId equals pat.PatientId
-
-                                               from emp in dbContext.Employee.Where(emp => emp.EmployeeId == itm.ProviderId).DefaultIfEmpty()
-
-                                               where itm.BillStatus != "cancel" && itm.ReturnStatus != true
-                                                  && (DbFunctions.TruncateTime(itm.CreatedOn) >= startDate.Date && DbFunctions.TruncateTime(itm.CreatedOn) <= endDate.Date)
-                                               select new
-                                               {
-                                                   Date = itm.CreatedOn,
-                                                   ServiceDepartmentId = itm.ServiceDepartmentId,
-                                                   ServiceDepartmentName = ser.ServiceDepartmentName,
-                                                   ItemId = itm.ItemId,
-                                                   ItemName = itm.ItemName,
-                                                   ProviderId = itm.ProviderId,
-                                                   ProviderName = emp.FirstName + " " + (string.IsNullOrEmpty(emp.MiddleName) ? "" : emp.MiddleName + " ") + emp.LastName,
-                                                   PatientId = itm.PatientId,
-                                                   BillingTransactionItemId = itm.BillingTransactionItemId,
-                                                   ReceiptNo = itm.BillingTransaction != null ? itm.BillingTransaction.InvoiceCode + itm.BillingTransaction.InvoiceNo : "",
-                                                   PatientName = pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName,
-                                                   DateOfBirth = pat.DateOfBirth,
-                                                   Gender = pat.Gender,
-                                                   PhoneNumber = pat.PhoneNumber,
-                                                   BillingTransactionId = itm.BillingTransactionId != null ? itm.BillingTransactionId : 0,  //Zero if NULL. 
-                                                   PatientCode = pat.PatientCode,
-                                               }).OrderByDescending(a => a.BillingTransactionItemId).ToList();
-                            responseData.Results = TxnItemList;
-
-                        }
-
-
-
                     }
-                    else
-                    {
-                        var TxnItemList = (from itm in dbContext.BillingTransactionItems.Include("BillingTransaction")
-                                           join ser in srvDeptsWithEditApplicable on itm.ServiceDepartmentId equals ser.ServiceDepartmentId
-                                           join pat in dbContext.Patient on itm.PatientId equals pat.PatientId
-                                           from emp in dbContext.Employee.Where(emp => emp.EmployeeId == itm.ProviderId).DefaultIfEmpty() //using left join yub--30th Sept 2018.
-                                           where
-                                              itm.BillStatus != "cancel" && itm.ReturnStatus != true
-                                              &&
 
-                                           (pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName
-                                           + pat.PatientCode
-                                           + pat.PhoneNumber
-                                           + ser.ServiceDepartmentName
-                                           + itm.ItemName
-                                           ).Contains(search)
-                                           select new
-                                           {
-                                               Date = itm.CreatedOn,
-                                               ServiceDepartmentId = itm.ServiceDepartmentId,
-                                               ServiceDepartmentName = ser.ServiceDepartmentName,
-                                               ItemId = itm.ItemId,
-                                               ItemName = itm.ItemName,
-                                               ProviderId = itm.ProviderId,
-                                               ProviderName = emp.FirstName + " " + (string.IsNullOrEmpty(emp.MiddleName) ? "" : emp.MiddleName + " ") + emp.LastName,
-                                               PatientId = itm.PatientId,
-                                               BillingTransactionItemId = itm.BillingTransactionItemId,
-                                               //receiptno here is: invoice code+ invoicenumber//added: sud-21May'18
-                                               ReceiptNo = itm.BillingTransaction != null ? itm.BillingTransaction.InvoiceCode + itm.BillingTransaction.InvoiceNo : "",
-                                               PatientName = pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName,
-                                               DateOfBirth = pat.DateOfBirth,
-                                               Gender = pat.Gender,
-                                               PhoneNumber = pat.PhoneNumber,
-                                               BillingTransactionId = itm.BillingTransactionId != null ? itm.BillingTransactionId : 0,  //Zero if NULL. 
-                                               PatientCode = pat.PatientCode,
-                                           }).OrderByDescending(a => a.BillingTransactionItemId).Take(searchListLength).ToList();
+                    var finalResults = TxnItemList.ToList();
+                    responseData.Results = finalResults;
 
-                        responseData.Results = TxnItemList;
-                    }
+
+                    //if (search == null)
+                    //{
+                    //    if (string.IsNullOrEmpty(FromDate) && string.IsNullOrEmpty(ToDate))
+                    //    {
+                    //        var TxnItemList = (from itm in dbContext.BillingTransactionItems.Include("BillingTransaction")
+                    //                           join ser in srvDeptsWithEditApplicable on itm.ServiceDepartmentId equals ser.ServiceDepartmentId
+                    //                           join pat in dbContext.Patient on itm.PatientId equals pat.PatientId
+                    //                           from emp in dbContext.Employee.Where(emp => emp.EmployeeId == itm.ProviderId).DefaultIfEmpty()
+                    //                           where itm.BillStatus != ENUM_BillingStatus.cancel // "cancel"
+                    //                           && itm.ReturnStatus != true
+                    //                           select new
+                    //                           {
+                    //                               Date = itm.CreatedOn,
+                    //                               ServiceDepartmentId = itm.ServiceDepartmentId,
+                    //                               ServiceDepartmentName = ser.ServiceDepartmentName,
+                    //                               ItemId = itm.ItemId,
+                    //                               ItemName = itm.ItemName,
+                    //                               ProviderId = itm.ProviderId,
+                    //                               ProviderName = emp.FirstName + " " + (string.IsNullOrEmpty(emp.MiddleName) ? "" : emp.MiddleName + " ") + emp.LastName,
+                    //                               PatientId = itm.PatientId,
+                    //                               BillingTransactionItemId = itm.BillingTransactionItemId,
+                    //                               ReceiptNo = itm.BillingTransaction != null ? itm.BillingTransaction.InvoiceCode + itm.BillingTransaction.InvoiceNo : "",
+                    //                               PatientName = pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName,
+                    //                               DateOfBirth = pat.DateOfBirth,
+                    //                               Gender = pat.Gender,
+                    //                               PhoneNumber = pat.PhoneNumber,
+                    //                               BillingTransactionId = itm.BillingTransactionId != null ? itm.BillingTransactionId : 0,  //Zero if NULL. 
+                    //                               PatientCode = pat.PatientCode,
+                    //                           }).OrderByDescending(a => a.BillingTransactionItemId).Take(searchListLength).ToList();
+                    //        responseData.Results = TxnItemList;
+                    //    }
+                    //    else // for search by Date. / sud/yub:11Aug'19 - return all items in matching date range.
+                    //    {
+                    //        //by default fromdate-todate will be today. convert incoming from-to dates string to startdate, enddate
+                    //        DateTime startDate = DateTime.Today;
+                    //        DateTime endDate = DateTime.Today;
+
+                    //        DateTime.TryParse(FromDate, out startDate);
+                    //        DateTime.TryParse(ToDate, out endDate);
+
+                    //        var TxnItemList = (from itm in dbContext.BillingTransactionItems.Include("BillingTransaction")
+                    //                           join ser in srvDeptsWithEditApplicable on itm.ServiceDepartmentId equals ser.ServiceDepartmentId
+                    //                           join pat in dbContext.Patient on itm.PatientId equals pat.PatientId
+
+                    //                           from emp in dbContext.Employee.Where(emp => emp.EmployeeId == itm.ProviderId).DefaultIfEmpty()
+
+                    //                           where itm.BillStatus != ENUM_BillingStatus.cancel // "cancel" 
+                    //                           && itm.ReturnStatus != true
+                    //                              && (DbFunctions.TruncateTime(itm.CreatedOn) >= startDate.Date && DbFunctions.TruncateTime(itm.CreatedOn) <= endDate.Date)
+                    //                           select new
+                    //                           {
+                    //                               Date = itm.CreatedOn,
+                    //                               ServiceDepartmentId = itm.ServiceDepartmentId,
+                    //                               ServiceDepartmentName = ser.ServiceDepartmentName,
+                    //                               ItemId = itm.ItemId,
+                    //                               ItemName = itm.ItemName,
+                    //                               ProviderId = itm.ProviderId,
+                    //                               ProviderName = emp.FirstName + " " + (string.IsNullOrEmpty(emp.MiddleName) ? "" : emp.MiddleName + " ") + emp.LastName,
+                    //                               PatientId = itm.PatientId,
+                    //                               BillingTransactionItemId = itm.BillingTransactionItemId,
+                    //                               ReceiptNo = itm.BillingTransaction != null ? itm.BillingTransaction.InvoiceCode + itm.BillingTransaction.InvoiceNo : "",
+                    //                               PatientName = pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName,
+                    //                               DateOfBirth = pat.DateOfBirth,
+                    //                               Gender = pat.Gender,
+                    //                               PhoneNumber = pat.PhoneNumber,
+                    //                               BillingTransactionId = itm.BillingTransactionId != null ? itm.BillingTransactionId : 0,  //Zero if NULL. 
+                    //                               PatientCode = pat.PatientCode,
+                    //                           }).OrderByDescending(a => a.BillingTransactionItemId).ToList();
+                    //        responseData.Results = TxnItemList;
+
+                    //    }
+
+
+
+                    //}
+                    //else
+                    //{
+                    //    var TxnItemList = (from itm in dbContext.BillingTransactionItems.Include("BillingTransaction")
+                    //                       join ser in srvDeptsWithEditApplicable on itm.ServiceDepartmentId equals ser.ServiceDepartmentId
+                    //                       join pat in dbContext.Patient on itm.PatientId equals pat.PatientId
+                    //                       from emp in dbContext.Employee.Where(emp => emp.EmployeeId == itm.ProviderId).DefaultIfEmpty() //using left join yub--30th Sept 2018.
+                    //                       where
+                    //                          itm.BillStatus != ENUM_BillingStatus.cancel // "cancel" 
+                    //                          && itm.ReturnStatus != true
+                    //                          &&
+
+                    //                       (pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName
+                    //                       + pat.PatientCode
+                    //                       + pat.PhoneNumber
+                    //                       + ser.ServiceDepartmentName
+                    //                       + itm.ItemName
+                    //                       ).Contains(search)
+                    //                       select new
+                    //                       {
+                    //                           Date = itm.CreatedOn,
+                    //                           ServiceDepartmentId = itm.ServiceDepartmentId,
+                    //                           ServiceDepartmentName = ser.ServiceDepartmentName,
+                    //                           ItemId = itm.ItemId,
+                    //                           ItemName = itm.ItemName,
+                    //                           ProviderId = itm.ProviderId,
+                    //                           ProviderName = emp.FirstName + " " + (string.IsNullOrEmpty(emp.MiddleName) ? "" : emp.MiddleName + " ") + emp.LastName,
+                    //                           PatientId = itm.PatientId,
+                    //                           BillingTransactionItemId = itm.BillingTransactionItemId,
+                    //                           //receiptno here is: invoice code+ invoicenumber//added: sud-21May'18
+                    //                           ReceiptNo = itm.BillingTransaction != null ? itm.BillingTransaction.InvoiceCode + itm.BillingTransaction.InvoiceNo : "",
+                    //                           PatientName = pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName,
+                    //                           DateOfBirth = pat.DateOfBirth,
+                    //                           Gender = pat.Gender,
+                    //                           PhoneNumber = pat.PhoneNumber,
+                    //                           BillingTransactionId = itm.BillingTransactionId != null ? itm.BillingTransactionId : 0,  //Zero if NULL. 
+                    //                           PatientCode = pat.PatientCode,
+                    //                       }).OrderByDescending(a => a.BillingTransactionItemId).Take(searchListLength).ToList();
+
+                    //    responseData.Results = TxnItemList;
+                    //}
+
+                }
+                else if (reqType != null && reqType == "GetTxnItemsForEditDoctorRad")
+                {
+                    //                    @FromDate Datetime = null,
+                    //@ToDate DateTime = null,
+                    //		@SearchText varchar(100),
+                    //		@SrvDptIntegrationName varchar(50)
+                    string radIntegrationName = "radiology";// this is hardcoded/reserved keyword for Radiology related Servicedepartments.
+
+                    List<SqlParameter> paramList = new List<SqlParameter>() {
+                        new SqlParameter("@FromDate", FromDate),
+                        new SqlParameter("@ToDate", ToDate) ,
+                        new SqlParameter("@SearchText", search) ,
+                       new SqlParameter("@SrvDptIntegrationName", radIntegrationName)
+
+                    };
+
+                    DataTable dtRadItemsForEdit = DALFunctions.GetDataTableFromStoredProc("SP_BIL_GetBillTxnItemsBetnDateRange_ForDepartment", paramList, dbContext);
+
+      
+                    responseData.Results = dtRadItemsForEdit;
 
                 }
                 else if (reqType != null && reqType == "opd-doctors-list")
@@ -1870,6 +2250,18 @@ namespace DanpheEMR.Controllers
                     responseData.Results = doctorList;
                 }
 
+                else if (reqType == "get-all-referrer-list")
+                {
+
+                    MasterDbContext mstDBContext = new MasterDbContext(connString);
+                    var doctorList = (from e in mstDBContext.Employees
+                                      where e.IsActive == true
+                                      && (e.IsExternal ? true : (e.IsAppointmentApplicable.HasValue && e.IsAppointmentApplicable == true))
+                                      select e).ToList();
+                    responseData.Results = doctorList;
+                }
+
+
                 else if (reqType == "billing-packageList")
                 {
                     List<BillingPackageModel> packageList = dbContext.BillingPackages.Where(a => a.IsActive == true && a.InsuranceApplicable == false).ToList();
@@ -1911,21 +2303,39 @@ namespace DanpheEMR.Controllers
                     //                               where amt.CreatedOn == todayDate
                     //                               select amt).OrderByDescending(a => a.HandoverId).FirstOrDefault();
 
-                    BillingHandoverModel handoverDetail = new BillingHandoverModel();
-                    List<BillingHandoverModel> handover = (from amt in dbContext.Handover
-                                                           where amt.UserId == currentUser.UserId //getting indiviual user handover information
-                                                           select amt).ToList();
+                    BillingHandoverModel handoverGiven = new BillingHandoverModel();
+                    List<BillingHandoverModel> hoGivenList = (from amt in dbContext.Handover
+                                                              where amt.UserId == currentUser.EmployeeId //getting indiviual user handover information
+                                                              select amt).ToList();
 
-                    handover.ForEach(val =>
+                    hoGivenList.ForEach(val =>
                     {
                         if (val.CreatedOn.HasValue ? val.CreatedOn.Value.Date == todayDate : false)
                         {
-                            handoverDetail = val;
+                            handoverGiven = val;
+                        }
+                    });
+
+
+                    BillingHandoverModel handoverReceived = new BillingHandoverModel();
+                    List<BillingHandoverModel> hoReceivedList = (from amt in dbContext.Handover
+                                                                 where amt.HandOverUserId == currentUser.EmployeeId //getting indiviual user handover information
+                                                                 select amt).ToList();
+
+                    hoReceivedList.ForEach(val =>
+                    {
+                        if (val.CreatedOn.HasValue ? val.CreatedOn.Value.Date == todayDate : false)
+                        {
+                            handoverGiven = val;
                         }
                     });
 
                     responseData.Status = "OK";
-                    responseData.Results = handoverDetail;
+
+                    responseData.Results = new { Given = handoverGiven, Received = handoverReceived };
+
+
+
                 }
                 else if (reqType == "patient-billing-context")
                 {
@@ -1963,7 +2373,7 @@ namespace DanpheEMR.Controllers
                                     .OrderByDescending(a => a.PatientVisitId)
                                     .FirstOrDefault();
                             //if the latest visit is inpatient even the patient was discharged use null for visitId
-                            if (patientVisit != null && patientVisit.VisitType.ToLower() != "inpatient")
+                            if (patientVisit != null && patientVisit.VisitType.ToLower() != ENUM_VisitType.inpatient)
                             {
                                 patientVisitId = (int?)patientVisit.PatientVisitId;
                             }
@@ -1995,7 +2405,7 @@ namespace DanpheEMR.Controllers
                                                      }).FirstOrDefault();
 
                         var patProvisional = (from bill in dbContext.BillingTransactionItems
-                                              where bill.PatientId == currPat.PatientId && bill.BillStatus == "provisional" //here PatientId comes as InputId from client.
+                                              where bill.PatientId == currPat.PatientId && bill.BillStatus == ENUM_BillingStatus.provisional // "provisional" //here PatientId comes as InputId from client.
                                               && bill.IsInsurance == true
                                               group bill by new { bill.PatientId } into p
                                               select new
@@ -2026,12 +2436,12 @@ namespace DanpheEMR.Controllers
                                              where billItem.ItemName == "Health Card"
                                              select new
                                              {
-                                                 billItem.ItemId,
-                                                 billItem.ItemName,
-                                                 billItem.ServiceDepartmentId,
-                                                 srvDept.ServiceDepartmentName,
-                                                 billItem.Price,
-                                                 billItem.TaxApplicable
+                                                 ItemId = billItem.ItemId,
+                                                 ItemName = billItem.ItemName,
+                                                 ServiceDepartmentId = billItem.ServiceDepartmentId,
+                                                 ServiceDepartmentName = srvDept.ServiceDepartmentName,
+                                                 Price = billItem.Price,
+                                                 TaxApplicable = billItem.TaxApplicable
                                              }).FirstOrDefault();
 
 
@@ -2179,10 +2589,17 @@ namespace DanpheEMR.Controllers
                                             ItemName = item.ItemName,
                                             ProcedureCode = item.ProcedureCode,
                                             Price = item.Price,
+                                            NormalPrice = item.Price,
                                             TaxApplicable = item.TaxApplicable,
                                             DiscountApplicable = item.DiscountApplicable,
                                             Description = item.Description,
-                                            IsDoctorMandatory = item.IsDoctorMandatory//sud:5Feb'18--added for ward billing
+                                            IsDoctorMandatory = item.IsDoctorMandatory,//sud:5Feb'18--added for ward billing
+                                            InsForeignerPrice = item.InsForeignerPrice,
+                                            EHSPrice = item.EHSPrice,
+                                            SAARCCitizenPrice = item.SAARCCitizenPrice,
+                                            ForeignerPrice = item.ForeignerPrice,
+                                            DefaultDoctorList = item.DefaultDoctorList//Pratik:23march'20--added for ward billing
+
                                         }).ToList().OrderBy(a => a.Displayseq);
                     responseData.Status = "OK";
                     responseData.Results = billingItems;
@@ -2292,6 +2709,14 @@ namespace DanpheEMR.Controllers
                     responseData.Status = "OK";
                     responseData.Results = patpastBills;
                 }
+                else if (reqType == "getVisitInfoforStickerPrint")
+                {
+
+                    List<SqlParameter> paramList = new List<SqlParameter>() { new SqlParameter("@BillingTransactionId", billingTransactionId) };
+                    DataTable patStickerDetails = DALFunctions.GetDataTableFromStoredProc("SP_Package_GetPatientVisitStickerInfo", paramList, dbContext);
+                    responseData.Results = patStickerDetails;
+                    responseData.Status = "OK";
+                }
                 else
                 {
                     responseData.Status = "Failed";
@@ -2319,6 +2744,7 @@ namespace DanpheEMR.Controllers
             string FilePath = this.ReadQueryStringData("FilePath");
             try
             {
+
                 RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
                 int CreatedBy = ToInt(this.ReadQueryStringData("CreatedBy"));
                 BillingDbContext billingDbContext = new BillingDbContext(connString);
@@ -2392,7 +2818,7 @@ namespace DanpheEMR.Controllers
                     {
                         try
                         {
-                            billTransaction = BillingTransactionBL.PostBillingTransaction(billingDbContext, connString, billTransaction, currentUser.EmployeeId, DateTime.Now);
+                            billTransaction = BillingTransactionBL.PostBillingTransaction(billingDbContext, connString, billTransaction, currentUser, DateTime.Now);
                             //RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
                             if (billTransaction.IsInsuranceBilling == true)
                             {
@@ -2403,7 +2829,7 @@ namespace DanpheEMR.Controllers
                                     currentUser.EmployeeId, billTransaction.TotalAmount ?? default(int), true);
                             }
 
-                           
+
                             //Billing User should be assigned from the server side avoiding assigning from client side 
                             //which is causing issue in billing receipt while 2 user loggedIn in the same browser
                             billTransaction.BillingUserName = currentUser.UserName;//Yubaraj: 28June'19
@@ -2412,7 +2838,19 @@ namespace DanpheEMR.Controllers
 
                             dbContextTransaction.Commit(); //end of transaction
 
-                           
+                            //send to IRD only after transaction is committed successfully: sud-23Dec'18
+                            //Below is asynchronous call, so even if IRD api is down, it won't hold the execution of other code..
+                            if (realTimeRemoteSyncEnabled)
+                            {
+                                if (billTransaction.Patient == null)
+                                {
+                                    PatientModel pat = billingDbContext.Patient.Where(p => p.PatientId == billTransaction.PatientId).FirstOrDefault();
+                                    billTransaction.Patient = pat;
+                                }
+                                //Sud:23Dec'18--making parallel thread call (asynchronous) to post to IRD. so that it won't stop the normal execution of logic.
+                                // BillingBL.SyncBillToRemoteServer(billTransaction, "sales", billingDbContext);
+                                Task.Run(() => BillingBL.SyncBillToRemoteServer(billTransaction, "sales", billingDbContext));
+                            }
                             responseData.Status = "OK";
                         }
                         catch (Exception ex)
@@ -2437,7 +2875,7 @@ namespace DanpheEMR.Controllers
                                 billTranItems = BillingTransactionBL.PostUpdateBillingTransactionItems(billingDbContext,
                                     connString,
                                     billTranItems,
-                                    currentUser.EmployeeId,
+                                    currentUser,
                                     DateTime.Now,
                                     billTranItems[0].BillStatus,
                                     billTranItems[0].CounterId);
@@ -2485,7 +2923,7 @@ namespace DanpheEMR.Controllers
                                 //if paymentmode is credit, paiddate and paidamount should be null
                                 //handle this in client side as well. 
                                 billTransaction.CreatedBy = currentUser.EmployeeId;
-                                if (billTransaction.BillStatus == "unpaid")
+                                if (billTransaction.BillStatus == ENUM_BillingStatus.unpaid)// "unpaid")
                                 {
                                     billTransaction.PaidDate = null;
                                     billTransaction.PaidAmount = null;
@@ -2519,7 +2957,7 @@ namespace DanpheEMR.Controllers
                                          .FirstOrDefault();
                                     BillingDeposit dep = new BillingDeposit()
                                     {
-                                        DepositType = "depositdeduct",
+                                        DepositType = ENUM_BillDepositType.DepositDeduct,// "depositdeduct",
                                         Remarks = "Deposit used in InvoiceNo. " + billTransaction.InvoiceCode + billTransaction.InvoiceNo,
                                         Amount = billTransaction.DepositReturnAmount,
                                         BillingTransactionId = billTransaction.BillingTransactionId,
@@ -2555,7 +2993,20 @@ namespace DanpheEMR.Controllers
                                 billingDbContext.SaveChanges();
                                 dbContextTransaction.Commit(); //end of transaction
 
-                              
+                                //send to IRD only after transaction is committed successfully: sud-23Dec'18
+                                if (realTimeRemoteSyncEnabled)
+                                {
+                                    if (billTransaction.Patient == null)
+                                    {
+                                        PatientModel pat = billingDbContext.Patient.Where(p => p.PatientId == billTransaction.PatientId).FirstOrDefault();
+                                        billTransaction.Patient = pat;
+                                    }
+                                    //Sud:23Dec'18--making parallel thread call (asynchronous) to post to IRD. so that it won't stop the normal execution of logic.
+                                    // BillingBL.SyncBillToRemoteServer(billTransaction, "sales", billingDbContext);
+                                    Task.Run(() => BillingBL.SyncBillToRemoteServer(billTransaction, "sales", billingDbContext));
+                                }
+
+
                                 responseData.Status = "OK";
                             }
                             catch (Exception ex)
@@ -2724,6 +3175,19 @@ namespace DanpheEMR.Controllers
                         billTransaction.FiscalYear = fiscYear.FiscalYearFormatted;//added: sud:5May'18
                         responseData.Results = billTransaction;//check if we need to send back all the input object back to client.--sudarshan
 
+                        if (realTimeRemoteSyncEnabled)
+                        {
+                            if (billTransaction.Patient == null)
+                            {
+                                PatientModel pat = billingDbContext.Patient.Where(p => p.PatientId == billTransaction.PatientId).FirstOrDefault();
+                                billTransaction.Patient = pat;
+                            }
+
+
+                            //Sud:23Dec'18--making parallel thread call (asynchronous) to post to IRD. so that it won't stop the normal execution of logic.
+                            //BillingBL.SyncBillToRemoteServer(billTransaction, "sales", billingDbContext);
+                            Task.Run(() => BillingBL.SyncBillToRemoteServer(billTransaction, "sales", billingDbContext));
+                        }
                     }
 
                     else
@@ -2823,17 +3287,25 @@ namespace DanpheEMR.Controllers
                 string str = this.ReadPostData();
                 string reqType = this.ReadQueryStringData("reqType");
                 string status = this.ReadQueryStringData("status");
-                string ProviderName = this.ReadQueryStringData("ProviderName");
+                //string Provider = this.ReadQueryStringData("ProviderObj");
                 string remarks = this.ReadQueryStringData("remarks");
                 int billItemReqId = ToInt(this.ReadQueryStringData("billItemReqId"));
                 int PrintCount = ToInt(this.ReadQueryStringData("PrintCount"));
-                int ProviderId = ToInt(this.ReadQueryStringData("ProviderId"));
+                //int ProviderId = ToInt(this.ReadQueryStringData("ProviderId"));
                 int CreatedBy = ToInt(this.ReadQueryStringData("CreatedBy"));
                 int billingTransactionId = ToInt(this.ReadQueryStringData("billingTransactionId"));
                 int invoiceNo = ToInt(this.ReadQueryStringData("invoiceNo"));
                 int patientId = ToInt(this.ReadQueryStringData("patientId"));
-                int insuranceProviderId = ToInt(this.ReadQueryStringData("patientId"));
+                int insuranceProviderId = ToInt(this.ReadQueryStringData("patientId"));//check and update this--
                 int updatedInsBalance = ToInt(this.ReadQueryStringData("updatedInsBalance"));
+
+
+                string Provider = this.ReadQueryStringData("ProviderObj");
+                string Referrer = this.ReadQueryStringData("ReferrerObj");
+
+
+                RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
+
 
                 if (reqType == "billItemReqsStatus")
                 {
@@ -2887,7 +3359,7 @@ namespace DanpheEMR.Controllers
                 //to cancel multiple items at once--needed in provisional items cancellation.sud:12May'18
                 else if (reqType == "cancelBillTxnItems")
                 {
-                    RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
+
                     // List<Int32> BillTransactionItemIds = DanpheJSONConvert.DeserializeObject<List<Int32>>(str);
                     List<BillingTransactionItemModel> txnItemsToCancel = DanpheJSONConvert.DeserializeObject<List<BillingTransactionItemModel>>(str);
 
@@ -2903,7 +3375,7 @@ namespace DanpheEMR.Controllers
                                     txnItemsToCancel[i] = BillingTransactionBL.UpdateTxnItemBillStatus(billingDbContext,
                                   txnItemsToCancel[i],
                                   "cancel",
-                                  currentUser.EmployeeId,
+                                  currentUser,
                                   DateTime.Now);
                                 }
                                 billingDbContext.SaveChanges();
@@ -2924,8 +3396,7 @@ namespace DanpheEMR.Controllers
                 // Update the Print Count on Bill transaction after the Receipt print 
                 else if (reqType == "UpdatePrintCountafterPrint")
                 {
-                    RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
-                    //BillingTransactionModel BillTxn = DanpheJSONConvert.DeserializeObject<BillingTransactionModel>(str);
+
 
                     BillingTransactionModel dbBillPrintReq = billingDbContext.BillingTransactions
                                             .Where(a => a.BillingTransactionId == billingTransactionId)
@@ -2948,24 +3419,105 @@ namespace DanpheEMR.Controllers
                 else if (reqType == "UpdateDoctorafterDoctorEdit")
                 {
                     int BillTxnItemId = DanpheJSONConvert.DeserializeObject<int>(str);
+
+                    var ProviderObj = DanpheJSONConvert.DeserializeObject<EmployeeBasicDetail>(Provider);
+                    var ReferrerObj = DanpheJSONConvert.DeserializeObject<EmployeeBasicDetail>(Referrer);
                     BillingTransactionItemModel dbEditDoctor = billingDbContext.BillingTransactionItems
                         .Where(a => a.BillingTransactionItemId == BillTxnItemId)
                         .FirstOrDefault<BillingTransactionItemModel>();
+
                     if (dbEditDoctor != null)
                     {
-                        dbEditDoctor.ProviderName = ProviderName;
-                        dbEditDoctor.ProviderId = ProviderId;
+                        dbEditDoctor.ProviderName = ProviderObj != null ? ProviderObj.EmployeeName : null;
+                        dbEditDoctor.ProviderId = ProviderObj != null ? ProviderObj.EmployeeId : null;
+                        dbEditDoctor.RequestedBy = ReferrerObj != null ? ReferrerObj.EmployeeId : null;
+                        dbEditDoctor.ModifiedBy = currentUser.EmployeeId;
+                        dbEditDoctor.ModifiedOn = DateTime.Now;
                         billingDbContext.Entry(dbEditDoctor).State = EntityState.Modified;
                     }
                     billingDbContext.SaveChanges();
+                    radioDbContext.SaveChanges();
                     responseData.Status = "OK";
                     responseData.Results = BillTxnItemId;
 
                 }
+                // radiology Edit doctors
+                else if (reqType == "UpdateDoctorafterDoctorEditRadiology")
+                {
+                    int BillTxnItemId = DanpheJSONConvert.DeserializeObject<int>(str);
+                    int RequisitionId = Convert.ToInt32(this.ReadQueryStringData("RequisitionId"));
+                    var ProviderObj = DanpheJSONConvert.DeserializeObject<EmployeeBasicDetail>(Provider);
+                    var ReferrerObj = DanpheJSONConvert.DeserializeObject<EmployeeBasicDetail>(Referrer);
+                    BillingTransactionItemModel dbEditDoctor = billingDbContext.BillingTransactionItems
+                        .Where(a => a.BillingTransactionItemId == BillTxnItemId)
+                        .FirstOrDefault<BillingTransactionItemModel>();
+
+                    using (var dbTransaction = billingDbContext.Database.BeginTransaction())
+                    {
+                        try
+                        {
+                            if (dbEditDoctor != null)
+                            {
+                                dbEditDoctor.ProviderName = ProviderObj != null ? ProviderObj.EmployeeName : null;
+                                dbEditDoctor.ProviderId = ProviderObj != null ? ProviderObj.EmployeeId : null;
+                                dbEditDoctor.RequestedBy = ReferrerObj != null ? ReferrerObj.EmployeeId : null;
+                                dbEditDoctor.ModifiedBy = currentUser.EmployeeId;
+                                dbEditDoctor.ModifiedOn = DateTime.Now;
+                                billingDbContext.Entry(dbEditDoctor).State = EntityState.Modified;
+
+                            }
+
+                            if (RequisitionId > 0)
+                            {
+                                ImagingRequisitionModel dbEditDoctorRad = radioDbContext.ImagingRequisitions
+                                   .Where(a => a.ImagingRequisitionId == RequisitionId)
+                                   .FirstOrDefault<ImagingRequisitionModel>();
+
+                                if (dbEditDoctorRad != null)
+                                {
+                                    dbEditDoctorRad.ProviderName = ReferrerObj != null ? ReferrerObj.EmployeeName : null;
+                                    dbEditDoctorRad.ProviderId = ReferrerObj != null ? ReferrerObj.EmployeeId : null;
+                                    dbEditDoctorRad.ModifiedBy = currentUser.EmployeeId;
+                                    dbEditDoctorRad.ModifiedOn = DateTime.Now;
+                                    radioDbContext.Entry(dbEditDoctorRad).State = EntityState.Modified;
+                                }
+                            }
+                            if (RequisitionId > 0)
+                            {
+
+                                ImagingReportModel dbEditDoctorRadReport = radioDbContext.ImagingReports
+                                    .Where(a => a.ImagingRequisitionId == RequisitionId)
+                                    .FirstOrDefault<ImagingReportModel>();
+                                if (dbEditDoctorRadReport != null)
+                                {
+                                    dbEditDoctorRadReport.ProviderName = ReferrerObj != null ? ReferrerObj.EmployeeName : null;
+
+                                    dbEditDoctorRadReport.ModifiedBy = currentUser.EmployeeId;
+                                    dbEditDoctorRadReport.ModifiedOn = DateTime.Now;
+                                    radioDbContext.Entry(dbEditDoctorRadReport).State = EntityState.Modified;
+                                }
+
+                            }
+
+                            billingDbContext.SaveChanges();
+                            radioDbContext.SaveChanges();
+
+
+                            dbTransaction.Commit();
+                            responseData.Status = "OK";
+                            responseData.Results = BillTxnItemId;
+                        }
+                        catch (Exception ex)
+                        {
+                            dbTransaction.Rollback();
+                            throw ex;
+                        }
+                    }
+                }
 
                 else if (reqType == "cancelInpatientBillRequest")
                 {
-                    RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
+
                     BillingTransactionItemModel txnItmFromClient = DanpheJSONConvert.DeserializeObject<BillingTransactionItemModel>(str);
 
 
@@ -2985,7 +3537,7 @@ namespace DanpheEMR.Controllers
                     billingDbContext.Entry(billItem).Property(a => a.CancelledOn).IsModified = true;
                     billingDbContext.Entry(billItem).Property(a => a.CancelRemarks).IsModified = true;
 
-                    billItem.BillStatus = "cancel";
+                    billItem.BillStatus = ENUM_BillingStatus.cancel;// "cancel";
                     billItem.CancelledBy = currentUser.EmployeeId;
                     billItem.CancelledOn = System.DateTime.Now;
                     billItem.CancelRemarks = txnItmFromClient.CancelRemarks;
@@ -2994,12 +3546,38 @@ namespace DanpheEMR.Controllers
                     responseData.Results = billItem;
                 }
 
+                else if(reqType == "cancelInpatientItemFromWard")
+                {
+                    BillingTransactionItemModel inpatientTest = DanpheJSONConvert.DeserializeObject<BillingTransactionItemModel>(str);
+                    List<SqlParameter> paramList = new List<SqlParameter>(){
+                                                    new SqlParameter("@BillingTransactionItemId", inpatientTest.BillingTransactionItemId),
+                                                    new SqlParameter("@RequisitionId", (inpatientTest.RequisitionId.HasValue? inpatientTest.RequisitionId : 0)),
+                                                    new SqlParameter("@IntegrationName", inpatientTest.ItemIntegrationName),
+                                                    new SqlParameter("@UserId", currentUser.EmployeeId),
+                                                    new SqlParameter("@Remarks", inpatientTest.CancelRemarks)
+                                                };
+
+                    DataTable cancelItem = DALFunctions.GetDataTableFromStoredProc("SP_BillItemCancellation_From_Ward", paramList, billingDbContext);
+
+                    billingDbContext.SaveChanges();
+                    responseData.Status = "OK";
+                    responseData.Results = cancelItem;
+                    
+                }
+
                 else if (reqType == "EditItemPrice_Qty_Disc_Provider")
                 {
-                    RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
-                    BillingTransactionItemModel txnItmFromClient = DanpheJSONConvert.DeserializeObject<BillingTransactionItemModel>(str);
-                    BillingTransactionBL.UpdateBillingTransactionItems(billingDbContext, txnItmFromClient);
 
+                    BillingTransactionItemModel txnItmFromClient = DanpheJSONConvert.DeserializeObject<BillingTransactionItemModel>(str);
+                    txnItmFromClient.ModifiedBy = currentUser.EmployeeId;
+                    BillingTransactionBL.UpdateBillingTransactionItems(billingDbContext, txnItmFromClient);
+                    if (txnItmFromClient.ModifiedBy != null)
+                    {
+                        var ModifiedByName = (from emp in billingDbContext.Employee
+                                              where emp.EmployeeId == txnItmFromClient.ModifiedBy
+                                              select emp.FirstName + " " + emp.LastName).FirstOrDefault();
+                        txnItmFromClient.ModifiedByName = ModifiedByName;
+                    }
                     responseData.Status = "OK";
                     responseData.Results = txnItmFromClient;
                 }
@@ -3069,10 +3647,10 @@ namespace DanpheEMR.Controllers
                 VisitDate = DateTime.Now.Date,
                 VisitTime = DateTime.Now.TimeOfDay,
                 VisitCode = visitCode,
-                VisitStatus = "initiated",
-                VisitType = "outpatient",
-                BillingStatus = "paid",
-                AppointmentType = "New",
+                VisitStatus = ENUM_VisitStatus.initiated,// "initiated",
+                VisitType = ENUM_VisitType.outpatient,// "outpatient",
+                BillingStatus = ENUM_BillingStatus.paid,// "paid",
+                AppointmentType = ENUM_AppointmentType.New,// "New",
                 IsActive = true,
                 CreatedOn = DateTime.Now,
                 CreatedBy = txnItem.CreatedBy
@@ -3080,6 +3658,13 @@ namespace DanpheEMR.Controllers
 
             return retModel;
         }
+
+    }
+
+    internal class EmployeeBasicDetail
+    {
+        public int? EmployeeId { get; set; }
+        public string EmployeeName { get; set; }
 
     }
 

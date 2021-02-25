@@ -1,10 +1,11 @@
-﻿import { Injectable } from '@angular/core';
-import { HttpClient,HttpHeaders } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { response } from '../../core/response.model'
 @Injectable()
 export class AccountingDLService {
-	public options =  {
-        headers: new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' })};
+    public options = {
+        headers: new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' })
+    };
     constructor(public http: HttpClient) {
     }
     //get information of current accounts.
@@ -22,7 +23,7 @@ export class AccountingDLService {
         } catch (ex) {
             throw ex;
         }
-    }     
+    }
     public GetLedgerList() {
         try {
             return this.http.get<any>("/api/Accounting?reqType=ledger-list");
@@ -90,9 +91,17 @@ export class AccountingDLService {
             throw ex;
         }
     }
-    public GetTransactionbyVoucher(vouchernumber: string) {
+    public GetTransactionbyVoucher(vouchernumber: string, secId, fsYearId) {
         try {
-            return this.http.get<response>('/api/Accounting?reqType=transactionbyVoucher&voucherNumber=' + vouchernumber);
+            return this.http.get<response>('/api/Accounting?reqType=transactionbyVoucher&voucherNumber=' + vouchernumber + "&sectionId=" + secId + "&FiscalYearId=" + fsYearId);
+        } catch (ex) {
+            throw ex;
+        }
+    }
+    ///get Voucher detail for manual edit 
+    public GetVoucherforedit(vouchernumber: string, secId, FsYId) {
+        try {
+            return this.http.get<response>('/api/Accounting?reqType=getVoucherforedit&voucherNumber=' + vouchernumber + "&sectionId=" + secId + "&FiscalYearId=" + FsYId);
         } catch (ex) {
             throw ex;
         }
@@ -111,34 +120,39 @@ export class AccountingDLService {
             throw ex;
         }
     }
-    public GetInventoryItemsForTransferToACC(frmDt: string, toDt: string) {
+    public GetInventoryItemsForTransferToACC(selectedDate, fiscalyearId) {
         try {
-            return this.http.get<any>("/api/Accounting?reqType=inventory-to-accounting&FromDate=" + frmDt + "&ToDate=" + toDt, this.options);
+            return this.http.get<any>("/api/Accounting?reqType=inventory-to-accounting&SelectedDate=" + selectedDate + "&FiscalYearId=" + fiscalyearId);
         } catch (exception) {
             throw exception
         };
     }
     //get all bil txn items from billing for transfer to accounting
-    public GetBilTxnItemsForTransferToACC(frmDt: string, toDt: string) {
+    public GetBilTxnItemsForTransferToACC(selectedDate, fiscalyearId) {
         try {
-            //commented sql query for get --> getting it from linq query
-            //return this.http.get<response>('/api/Accounting?reqType=bilTXNItemsForACC');
-
-            return this.http.get<any>("/api/Accounting?reqType=billing-to-accounting&FromDate=" + frmDt + "&ToDate=" + toDt);
+            // return this.http.get<any>("/api/Accounting?reqType=billing-to-accounting&FromDate=" + frmDt + "&ToDate=" + toDt);
+            return this.http.get<any>("/api/Accounting?reqType=billing-to-accounting&SelectedDate=" + selectedDate + "&FiscalYearId=" + fiscalyearId);
         } catch (exception) {
             throw exception
         };
     }
 
-        //get all pharmacy txn item for transfer to accounting
-    public GetPharmItemsForTransferToACC(frmDt: string, toDt: string) {
+    //get all pharmacy txn item for transfer to accounting
+    public GetPharmItemsForTransferToACC(selectedDate, fiscalyearId) {
         try {
-            return this.http.get<any>("/api/Accounting?reqType=pharmacy-to-accounting&FromDate=" + frmDt + "&ToDate=" + toDt);
+            return this.http.get<any>("/api/Accounting?reqType=pharmacy-to-accounting&SelectedDate=" + selectedDate + "&FiscalYearId=" + fiscalyearId);
         } catch (exception) {
             throw exception
         };
     }
-
+    //get all incentive txn item for transfer to accounting
+    public GetIncentivesForTransferToACC(selectedDate, fiscalyearId) {
+        try {
+            return this.http.get<any>("/api/Accounting?reqType=incentive-to-accounting&SelectedDate=" + selectedDate + "&FiscalYearId=" + fiscalyearId);
+        } catch (exception) {
+            throw exception
+        };
+    }
     //get ledger mapping details for  map with phrm supplier or inventory vendor
     GetLedgerMappingDetails() {
         try {
@@ -147,23 +161,46 @@ export class AccountingDLService {
             throw ex
         }
     }
-
+    LoadTxnDates(fromdate, todate, sectionId) {
+        try {
+            return this.http.get<any>("/api/Accounting?reqType=acc-get-txn-dates&FromDate=" + fromdate + "&ToDate=" + todate + "&sectionId=" + sectionId, this.options);
+        } catch (ex) {
+            throw ex
+        }
+    }
+    public GetAllActiveAccTenants() {
+        try {
+            return this.http.get<response>('/api/Accounting?reqType=getAllActiveTenants');
+        } catch (ex) {
+            throw ex;
+        }
+    }
     //START: GET Reporting DATA
 
-    //GET Accounting Balance sheet report data
-    public GetBalanceSheetReportData(fromDate, toDate) {
+    //GET:this function get all transfer rule with details
+    public GetACCTransferRule() {
         try {
-            return this.http.get<any>("/api/Accounting?reqType=balanceSheetReportData&FromDate=" + fromDate + "&ToDate=" + toDate);
+            return this.http.get<any>("/api/Accounting?reqType=accTransferRule");
         } catch (exception) {
             throw exception;
         }
     }
-    //GET:this function get all transfer rule with details
-    public GetACCTransferRule() {
+    //this method for get provisional Voucher number for curernt new created voucher
+    public GettempVoucherNumber(voucherId: number, sectionId, transactiondate) {
         try {
-            return this.http.get<any>("/api/Accounting?reqType=accTransferRule" );
-        } catch (exception) {
+            return this.http.get<any>("/api/Accounting?reqType=gettempVoucherNumber&voucherId=" + voucherId + "&sectionId=" + sectionId + "&transactiondate=" + transactiondate);
+        }
+        catch (exception) {
             throw exception;
+        }
+    }
+    //Get Provisional Ledger using ledger type and reference id
+    GetProvisionalLedger(referenceId, ledgerType) {
+        try {
+            return this.http.get<any>("/api/Accounting?reqType=get-provisional-ledger&ReferenceId=" + referenceId + "&LedgerType=" + ledgerType);
+        }
+        catch (ex) {
+            throw ex;
         }
     }
     //END: GET Reporting DATA
@@ -185,7 +222,7 @@ export class AccountingDLService {
         }
     }
 
-    PostLedgers(ledgList : string) {
+    PostLedgers(ledgList: string) {
         try {
             let data = ledgList;
             return this.http.post<any>("/api/Accounting?reqType=AddLedgersFromAcc", data);
@@ -193,7 +230,15 @@ export class AccountingDLService {
             throw (ex);
         }
     }
-
+    //create single ledger 
+    AddLedger(ledgList: string) {
+        try {
+            let data = ledgList;
+            return this.http.post<any>("/api/Accounting?reqType=create-ledger-shared-component", data);
+        } catch (ex) {
+            throw (ex);
+        }
+    }
 
     //END: POST
 
@@ -205,8 +250,20 @@ export class AccountingDLService {
         return this.http.post<any>("/api/Accounting?reqType=post-accounting-invoice-data", data);
     }
 
+    public UndoTransaction(data: string) {
+        return this.http.post<any>("/api/Accounting?reqType=post-reverse-transaction", data);
+    }
+
     //START: PUT
 
+    public PutTransaction(TransactionObjString: string) {
+        let data = TransactionObjString;
+        return this.http.put<any>("/api/Accounting?reqType=putTransaction", data);
+    }
+
+    public ActivateAccountingTenant(hospitalId: number) {
+        return this.http.put<any>("/api/Security?reqType=activateAccountingHospital&hospitalId=" + hospitalId, this.options);
+    }
     //END: PUT
 
 }

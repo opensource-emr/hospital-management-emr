@@ -342,12 +342,15 @@
     <Compile Include="HelpdeskDbContext.cs" />
     <Compile Include="AccountingDbContext.cs" />
     <Compile Include="FractionDbContext.cs" />
+    <Compile Include="IncentiveDbContext.cs" />
     <Compile Include="InventoryDbContext.cs" />
     <Compile Include="LabDbContext.cs" />
     <Compile Include="MasterDbContext.cs" />
     <Compile Include="AppointmentDbContext.cs" />
     <Compile Include="ClinicalDbContext.cs" />
+    <Compile Include="MedicalRecordsDbContext.cs" />
     <Compile Include="NotiFicationDbContext.cs" />
+    <Compile Include="PayrollDbContext.cs" />
     <Compile Include="PharmacyDbContext.cs" />
     <Compile Include="PharmacyReportingDbContext.cs" />
     <Compile Include="OrdersDbContext.cs" />
@@ -372,6 +375,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\DanpheEMR.Core\DanpheEMR.Core.csproj">
+      <Project>{60955CC2-3E42-4C29-9C75-483D93519B6D}</Project>
+      <Name>DanpheEMR.Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\DanpheEMR.Security\DanpheEMR.Security.csproj">
       <Project>{8991b666-5859-409a-a2df-396a5d54fd72}</Project>
       <Name>DanpheEMR.Security</Name>

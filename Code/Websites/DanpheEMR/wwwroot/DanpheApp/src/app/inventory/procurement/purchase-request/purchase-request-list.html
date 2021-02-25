@@ -1,0 +1,66 @@
+<style>
+
+  .bg-modal {
+    background-color: rgba(0, 0, 0, 0.8);
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    /* 
+    justify-content: center;
+    align-items: center; */
+    display: flex;
+    flex-direction: column;
+    z-index: 9999;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .modal-contents {
+    width: 600px;
+    background-color: white;
+    text-align: center;
+    padding: 20px;
+    position: relative;
+    border-radius: 4px;
+    margin: 30px auto;
+  }
+
+  .custom-round-button {
+    float: right;
+    position: relative;
+    bottom: 35px;
+    border: 1px black solid;
+    border-radius: 30px !important;
+    left: 39px;
+  }
+
+  .qr-code {
+    bottom: 14px;
+    position: relative;
+  }
+
+  .img-responsive {
+    display: block;
+    height: auto;
+  }
+
+  .img-logo {
+    max-height: 86px;
+    position: relative;
+    top: 20px;
+  }
+</style>
+<div class="row">
+  <div class="col-lg-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="PurchaseRequestColumn"
+                 [grid-data]="PurchsaeRequestListFiltered"
+                 (grid-actions)="PurchaseRequestGridAction($event)"
+                 [rangeType]="dateRange"
+                 (onDateChange)="onDateChange($event)"
+                 [show-CustomDate]="true"
+                 [NepaliDateInGridParams]="NepaliDateInGridSettings">
+    </danphe-grid>
+  </div>
+</div>

@@ -1,348 +1,234 @@
-
-
-<div class="row">
-
-    <div class="col-lg-5 col-xs-12 col-sm-12">
-        <div class="portlet light bordered">
-            <div class="portlet-title">
-                <div class="caption">
-                    <i class="icon-bar-chart font-green-haze"></i>
-                    <span class="caption-subject bold uppercase font-green-haze">Daily Bill Status</span>
-                    <span class="caption-helper"></span>
-                </div>
-
-                <div class="tools">
-                    <a href="javascript:;" class="collapse" data-original-title="" title=""> </a>
-                    <a href="javascript:;" class="fullscreen" data-original-title="" title=""> </a>
-                    <a href="javascript:;" class="remove" data-original-title="" title=""> </a>
-                </div>
-            </div>
-            <div class="portlet-body">
-                <b>Select Date</b>&nbsp;&nbsp;&nbsp;<input type="date" placeholder="date" [(ngModel)]="selectedDate" />
-                <button class="btn btn-sm blue" type="button" (click)="LoadSalesDayBook()">
-                    <i class="fa fa-search" title="Search"></i>
-                    Search
-                </button>
-
-                <div style="padding-top:15px;">
-                    <h4 class="clp clp-hd" data-toggle="collapse" data-target="#totalsales" aria-expanded="true">Total Sales</h4>
-                    <div id="totalsales" class="collapse in clp-cntnt">
-                        <div>
-                            i. Subtotal     : {{coreService.currencyUnit}} {{salesDayBook.SubTotal}}<br />
-                            ii. Discount Amount : {{coreService.currencyUnit}} {{salesDayBook.DiscountAmount}}<br />
-                        </div>
-                        <div *ngIf="showTaxLabels">
-                            <b><i style="text-decoration:underline"> Taxable Amount</i> : {{coreService.currencyUnit}} {{salesDayBook.TaxableAmount}}</b>
-                        </div>
-                        <div *ngIf="showTaxLabels">
-                            {{coreService.taxLabel}} Collection : {{coreService.currencyUnit}} {{salesDayBook.TaxAmount}}
-                        </div>
-                        <div>
-                            Returned Amount : {{coreService.currencyUnit}} {{salesDayBook.ReturnAmount}}
-                        </div>
-                       
-                        <div>
-                            <b><i style="text-decoration:underline"> Total Amount</i> : {{coreService.currencyUnit}} {{salesDayBook.TotalAmount}}</b>
-                        </div>
-                    </div>
-                </div>
-
-                <div style="padding-top:7px;">
-                    <h4 class="clp clp-hd" data-toggle="collapse" data-target="#cashsales">Cash Sales</h4>
-                    <div id="cashsales" class="collapse clp-cntnt">
-                        <div>
-                            SubTotal: {{salesDayBook.Paid_SubTotal}}
-                        </div>
-                        <div>
-                            Discount : {{salesDayBook.Paid_DiscountAmount}}
-                        </div>
-                        <div *ngIf="showTaxLabels">
-                            Taxable Amount: {{salesDayBook.Paid_TaxableAmount}}
-                        </div>
-                        <div *ngIf="showTaxLabels">
-                            {{coreService.taxLabel}}  : {{salesDayBook.Paid_TaxAmount}}
-                        </div>
-                        <div>
-                            Returned Amount : {{coreService.currencyUnit}} {{salesDayBook.CashRet_TotalAmount}}
-                        </div>
-                        <div>
-                            Total Amount :{{salesDayBook.Paid_TotalAmount}}
-                        </div>
-
-                    </div>
-                </div>
-
-                <div style="padding-top:7px;">
-                    <h4 class="clp clp-hd" data-toggle="collapse" data-target="#crdinfo">Credit Sales</h4>
-                    <div id="crdinfo" class="collapse clp-cntnt">
-                        <div>
-                            SubTotal: {{salesDayBook.CrSales_SubTotal}}
-                        </div>
-                        <div>
-                            Discount : {{salesDayBook.CrSales_DiscountAmount}}
-                        </div>
-                        <div *ngIf="showTaxLabels">
-                            Taxable Amount: {{salesDayBook.CrSales_TaxableAmount}}
-                        </div>
-                        <div *ngIf="showTaxLabels">
-                            {{coreService.taxLabel}}  : {{salesDayBook.CrSales_TaxAmount}}
-                        </div>
-                        <div>
-                            Returned Amount : {{coreService.currencyUnit}} {{salesDayBook.CrRet_TotalAmount}}
-                        </div>
-                        <div>
-                            Total Amount : {{salesDayBook.CrSales_TotalAmount}}
-                        </div>
-                    </div>
-                </div>
-
-
-
-                <div style="padding-top:7px;">
-                    <h4 class="clp clp-hd" data-toggle="collapse" data-target="#rfund">Settlement/Refund</h4>
-                    <div id="rfund" class="collapse clp-cntnt">
-                        <div>
-                            Advanced Received : {{coreService.currencyUnit}} {{salesDayBook.DepositReceived}}
-                        </div>
-                        <div>
-                            Advanced Settled : {{coreService.currencyUnit}} {{salesDayBook.DepositReturn}}
-                        </div>
-                    </div>
-                </div>
-
-
-                <div style="padding-top:7px;">
-                    <h4 class="clp clp-hd" data-toggle="collapse" data-target="#receivable">Receivable Information</h4>
-                    <div id="receivable" class="collapse clp-cntnt">
-                        <div>
-                            Credit Sales :  {{salesDayBook.CrSales_TotalAmount}}
-                        </div>
-                        <div>
-                            Credit Received :   {{salesDayBook.CrReceived_TotalAmount}}
-                        </div>
-                        <div>
-                            Due From Settlement :   {{salesDayBook.SettlDueAmount}}
-                        </div>
-                    </div>
-                </div>
-
-
-                <div style="padding-top:7px;">
-                    <h4 class="clp clp-hd" data-toggle="collapse" data-target="#discount">Discounts</h4>
-                    <div id="discount" class="collapse clp-cntnt">
-                        <div>
-                            Trade :  {{salesDayBook.DiscountAmount}}
-                        </div>
-                        <div>
-                            Cash :   {{salesDayBook.SettlDiscountAmount}}
-                        </div>
-                    </div>
-                </div>
-                <div style="padding-top:7px;">
-                    <h4 class="clp clp-hd" data-toggle="collapse" data-target="#cashColln">Net Cash Collection  &nbsp;&nbsp; <span class="blinkAmount"> ({{salesDayBook.CashCollection}})</span></h4>
-                    <div id="cashColln" class="collapse clp-cntnt">
-                        <table class="tbl-summ" border="1">
-                            <tr>
-                                <td>
-                                    Total Sales
-                                </td>
-                                <td>
-                                    {{coreService.currencyUnit}} {{salesDayBook.TotalAmount}}
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Less Credit Sales</td>
-                                <td>{{coreService.currencyUnit}} {{salesDayBook.CrSales_TotalAmount}}</td>
-                            </tr>
-                            <!--<tr>
-                                <td>Less  Returned (Cash Sales)</td>
-                                <td>{{coreService.currencyUnit}} {{salesDayBook.CashRet_TotalAmount}}</td>
-                            </tr>-->
-                            <tr>
-                                <td>Add Credit Received</td>
-                                <td>{{coreService.currencyUnit}} {{salesDayBook.CrReceived_TotalAmount}}</td>
-                            </tr>
-                            <tr>
-                                <td>Add  Deposit Received </td>
-                                <td>{{coreService.currencyUnit}} {{salesDayBook.DepositReceived}}</td>
-                            </tr>
-                            <tr>
-                                <td>Less Deposit Returned</td>
-                                <td>{{coreService.currencyUnit}} {{salesDayBook.DepositReturn}}</td>
-                            </tr>
-                            <tr>
-                                <td>Less Cash Discount</td>
-                                <td>{{coreService.currencyUnit}} {{salesDayBook.SettlDiscountAmount}}</td>
-                            </tr>
-                            <tr>
-                                <td>Less Due From Settlement</td>
-                                <td>{{coreService.currencyUnit}}{{salesDayBook.SettlDueAmount}}</td>
-                            </tr>
-                            <tr style="border: 2px solid;">
-                                <td style="font-weight:bold;">
-                                    Total Collection
-                                </td>
-                                <td style="font-weight:bold;">
-                                    {{coreService.currencyUnit}} {{salesDayBook.CashCollection}}
-                                </td>
-                            </tr>
-
-                        </table>
-
-                    </div>
-                </div>
-
-
-
-            </div>
-        </div>
-    </div>
-
-    <div class="col-lg-7 col-xs-12 col-sm-12">
-        <div class="portlet light bordered">
-            <div class="portlet-title">
-                <div class="caption">
-                    <i class="icon-bar-chart font-green-haze"></i>
-                    <span class="caption-subject bold uppercase font-green-haze">Counter/User Daily  Collection</span>
-                    <span class="caption-helper"></span>
-                </div>
-
-                <div class="tools">
-                    <a href="javascript:;" class="collapse" data-original-title="" title=""> </a>
-                    <a href="javascript:;" class="fullscreen" data-original-title="" title=""> </a>
-                    <a href="javascript:;" class="remove" data-original-title="" title=""> </a>
-                </div>
-            </div>
-            <div class="portlet-body" style="padding-top: 0px;">
-                <p style="background-color:#e7ecf1;padding-left:15px;">
-                    <b>Select Date</b>&nbsp;&nbsp;:&nbsp;&nbsp;<input type="date" placeholder="date" [(ngModel)]="counterDayDate" />
-                    <button class="btn btn-sm blue" type="button" (click)="LoadCounterDayCollection()" style="margin-left:15px;">
-                        <i class="fa fa-search"></i>
-                        Search
-                    </button>
-                </p>
-                <div class="row">
-                    <div class="col-md-6">
-                        <p>
-                            User collection on <b>{{counterDayDate}}</b>
-                        </p>
-                        <div *ngFor="let usr of userDayCollection" style="padding-top:15px; padding-bottom:10px">
-                            <h4 class="label label-success">{{usr.EmployeeName}}</h4> <b>:  {{usr.UserDayCollection}}</b>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <p>
-                            Counter collection on <b>{{counterDayDate}}</b>
-                        </p>
-                        <div *ngFor="let cntr of counterDayCollection" style="padding-top:15px; padding-bottom:10px">
-                            <h4 class="label label-success">{{cntr.CounterName}}</h4> <b>:  {{cntr.CounterDayCollection}}</b>
-                        </div>
-                    </div>
-                </div>
-
-
-
-            </div>
-        </div>
-
-        <div class="portlet light bordered">
-            <div class="portlet-title">
-                <div class="caption">
-                    <i class="icon-bar-chart font-green-haze"></i>
-                    <span class="caption-subject bold uppercase font-green-haze">Pending Bills</span>
-                    <span class="caption-helper"></span>
-                </div>
-                <div class="tools">
-                    <a href="javascript:;" class="collapse" data-original-title="" title=""> </a>
-                    <a href="javascript:;" class="fullscreen" data-original-title="" title=""> </a>
-                    <a href="javascript:;" class="remove" data-original-title="" title=""> </a>
-                </div>
-            </div>
-            <div class="portlet-body">
-                <table style="font-weight:bold;width:80%;color:#006687;">
-                    <tr>
-                        <td>PROVISIONAL ITEMS</td>
-                        <td>Rs. {{overallBills.TotalProvisional}}</td>
-                    </tr>
-                    <tr>
-                        <td style="padding-top:10px;">UNPAID CREDIT INVOICES</td>
-                        <td style="padding-top:10px;">Rs. {{overallBills.TotalCredits}} </td>
-                    </tr>
-                </table>
-            </div>
-        </div>
-
-    </div>
-
-</div>
-
-<div class="row">
+<div class="wrapper">
+  <div class="row">
     <div class="col-lg-6 col-xs-12 col-sm-12">
-        <div class="portlet light bordered">
-            <div class="portlet-title">
-                <div class="caption">
-                    <i class="icon-bar-chart font-green-haze"></i>
-                    <span class="caption-subject bold uppercase font-green-haze">Daily Revenue Trend (last 7 days)</span>
-                    <span class="caption-helper"></span>
-                </div>
-                <div class="tools">
-                    <a href="javascript:;" class="collapse" data-original-title="" title=""> </a>
-                    <a href="javascript:;" class="fullscreen" data-original-title="" title=""> </a>
-                    <a href="javascript:;" class="remove" data-original-title="" title=""> </a>
-                </div>
-            </div>
-            <div class="portlet-body">
-                <div id="dvDailyRevTrend" class="CSSAnimationChart" style="height:400px;"></div>
-            </div>
+      <div class="portlet light">
+        <div class="portlet-title">
+          <div class="caption lb-caption no-margin no-padding">
+            <h3><i class="icon-bar-chart"></i> <span class="caption-subject">Daily Bill Status</span> <span class="caption-helper"></span></h3>
+          </div>
+          <div class="tools"> <a href="javascript:;" class="collapse" data-original-title="" title=""> </a> <a href="javascript:;" class="fullscreen" data-original-title="" title=""> </a> <a href="javascript:;" class="remove" data-original-title="" title=""> </a> </div>
         </div>
+        <div class="portlet-body">
+          <div class="row" style="margin: 0 0 10px 0;">
+            <div class="col-md-2 date_label" style="padding: 0;"> <b>Select Date</b><!--&nbsp;&nbsp;&nbsp;<input type="date" placeholder="date" [(ngModel)]="selectedDate" />--> 
+            </div>
+            <div class="col-md-7">
+              <danphe-date-picker [(ngModel)]="selectedDate" ngDefaultControl [CalendarTypes]="'np,en'"> </danphe-date-picker>
+            </div>
+            <div class="col-md-3">
+              <button class="btn btn-sm blue" type="button" (click)="LoadSalesDayBook()"> <i class="fa fa-search" title="Search"></i> Search </button>
+            </div>
+          </div>
+          <div style="padding-top:15px;">
+            <h4 class="clp clp-hd" data-toggle="collapse" data-target="#totalsales" aria-expanded="true">Total Sales</h4>
+            <div id="totalsales" class="collapse in clp-cntnt">
+              <div> i. Subtotal     : {{coreService.currencyUnit}} {{salesDayBook.SubTotal}}<br />
+                ii. Discount Amount : {{coreService.currencyUnit}} {{salesDayBook.DiscountAmount}}<br />
+              </div>
+              <div *ngIf="showTaxLabels"> <b><i style="text-decoration:underline"> Taxable Amount</i> : {{coreService.currencyUnit}} {{salesDayBook.TaxableAmount}}</b> </div>
+              <div *ngIf="showTaxLabels"> {{coreService.taxLabel}} Collection : {{coreService.currencyUnit}} {{salesDayBook.TaxAmount}} </div>
+              <div> Returned Amount : {{coreService.currencyUnit}} {{salesDayBook.ReturnAmount}} </div>
+              <div> <b><i style="text-decoration:underline"> Total Amount</i> : {{coreService.currencyUnit}} {{salesDayBook.TotalAmount}}</b> </div>
+            </div>
+          </div>
+          <div style="padding-top:7px;">
+            <h4 class="clp clp-hd" data-toggle="collapse" data-target="#cashsales">Cash Sales</h4>
+            <div id="cashsales" class="collapse clp-cntnt">
+              <div> SubTotal: {{salesDayBook.Paid_SubTotal}} </div>
+              <div> Discount : {{salesDayBook.Paid_DiscountAmount}} </div>
+              <div *ngIf="showTaxLabels"> Taxable Amount: {{salesDayBook.Paid_TaxableAmount}} </div>
+              <div *ngIf="showTaxLabels"> {{coreService.taxLabel}}  : {{salesDayBook.Paid_TaxAmount}} </div>
+              <div> Returned Amount : {{coreService.currencyUnit}} {{salesDayBook.CashRet_TotalAmount}} </div>
+              <div> Total Amount :{{salesDayBook.Paid_TotalAmount}} </div>
+            </div>
+          </div>
+          <div style="padding-top:7px;">
+            <h4 class="clp clp-hd" data-toggle="collapse" data-target="#crdinfo">Credit Sales</h4>
+            <div id="crdinfo" class="collapse clp-cntnt">
+              <div> SubTotal: {{salesDayBook.CrSales_SubTotal}} </div>
+              <div> Discount : {{salesDayBook.CrSales_DiscountAmount}} </div>
+              <div *ngIf="showTaxLabels"> Taxable Amount: {{salesDayBook.CrSales_TaxableAmount}} </div>
+              <div *ngIf="showTaxLabels"> {{coreService.taxLabel}}  : {{salesDayBook.CrSales_TaxAmount}} </div>
+              <div> Returned Amount : {{coreService.currencyUnit}} {{salesDayBook.CrRet_TotalAmount}} </div>
+              <div> Total Amount : {{salesDayBook.CrSales_TotalAmount}} </div>
+            </div>
+          </div>
+          <div style="padding-top:7px;">
+            <h4 class="clp clp-hd" data-toggle="collapse" data-target="#rfund">Settlement/Refund</h4>
+            <div id="rfund" class="collapse clp-cntnt">
+              <div> Advanced Received : {{coreService.currencyUnit}} {{salesDayBook.DepositReceived}} </div>
+              <div> Advanced Settled : {{coreService.currencyUnit}} {{salesDayBook.DepositReturn}} </div>
+            </div>
+          </div>
+          <div style="padding-top:7px;">
+            <h4 class="clp clp-hd" data-toggle="collapse" data-target="#receivable">Receivable Information</h4>
+            <div id="receivable" class="collapse clp-cntnt">
+              <div> Credit Sales :  {{salesDayBook.CrSales_TotalAmount}} </div>
+              <div> Credit Received :   {{salesDayBook.CrReceived_TotalAmount}} </div>
+              <div> Due From Settlement :   {{salesDayBook.SettlDueAmount}} </div>
+            </div>
+          </div>
+          <div style="padding-top:7px;">
+            <h4 class="clp clp-hd" data-toggle="collapse" data-target="#discount">Discounts</h4>
+            <div id="discount" class="collapse clp-cntnt">
+              <div> Trade :  {{salesDayBook.DiscountAmount}} </div>
+              <div> Cash :   {{salesDayBook.SettlDiscountAmount}} </div>
+            </div>
+          </div>
+          <div style="padding-top:7px;">
+            <h4 class="clp clp-hd" data-toggle="collapse" data-target="#cashColln">Net Cash Collection  &nbsp;&nbsp; <span class="blinkAmount"> ({{salesDayBook.CashCollection}})</span></h4>
+            <div id="cashColln" class="collapse clp-cntnt">
+              <table class="tbl-summ" border="1">
+                <tr>
+                  <td> Total Sales </td>
+                  <td> {{coreService.currencyUnit}} {{salesDayBook.TotalAmount}} </td>
+                </tr>
+                <tr>
+                  <td>Less Credit Sales</td>
+                  <td>{{coreService.currencyUnit}} {{salesDayBook.CrSales_TotalAmount}}</td>
+                </tr>
+                <!--<tr>
+                  <td>Less  Returned (Cash Sales)</td>
+                  <td>{{coreService.currencyUnit}} {{salesDayBook.CashRet_TotalAmount}}</td>
+              </tr>-->
+                <tr>
+                  <td>Add Credit Received</td>
+                  <td>{{coreService.currencyUnit}} {{salesDayBook.CrReceived_TotalAmount}}</td>
+                </tr>
+                <tr>
+                  <td>Add  Deposit Received </td>
+                  <td>{{coreService.currencyUnit}} {{salesDayBook.DepositReceived}}</td>
+                </tr>
+                <tr>
+                  <td>Less Deposit Returned</td>
+                  <td>{{coreService.currencyUnit}} {{salesDayBook.DepositReturn}}</td>
+                </tr>
+                <tr>
+                  <td>Less Cash Discount</td>
+                  <td>{{coreService.currencyUnit}} {{salesDayBook.SettlDiscountAmount}}</td>
+                </tr>
+                <tr>
+                  <td>Less Due From Settlement</td>
+                  <td>{{coreService.currencyUnit}}{{salesDayBook.SettlDueAmount}}</td>
+                </tr>
+                <tr style="border: 2px solid;">
+                  <td style="font-weight:bold;"> Total Collection </td>
+                  <td style="font-weight:bold;"> {{coreService.currencyUnit}} {{salesDayBook.CashCollection}} </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="col-lg-6 col-xs-12 col-sm-12">
-        <div class="portlet light bordered">
-            <div class="portlet-title">
-                <div class="caption">
-                    <i class="icon-bar-chart font-green-haze"></i>
-                    <span class="caption-subject bold uppercase font-green-haze">monthly billing trend(last 6 months)</span>
-                    <span class="caption-helper"></span>
-                </div>
-                <div class="tools">
-                    <a href="javascript:;" class="collapse" data-original-title="" title=""> </a>
-                    <a href="javascript:;" class="fullscreen" data-original-title="" title=""> </a>
-                    <a href="javascript:;" class="remove" data-original-title="" title=""> </a>
-                </div>
-            </div>
-            <div class="portlet-body">
-                <div id="dvMonthlyBilling" class="CSSAnimationChart" style="height:400px;"></div>
-            </div>
+      <div class="portlet light">
+        <div class="portlet-title">
+          <div class="caption lb-caption no-margin no-padding">
+            <h3><i class="icon-bar-chart"></i> <span class="caption-subject">Counter/User Daily  Collection</span> <span class="caption-helper"></span> </h3>
+          </div>
+          <div class="tools"> <a href="javascript:;" class="collapse" data-original-title="" title=""> </a> <a href="javascript:;" class="fullscreen" data-original-title="" title=""> </a> <a href="javascript:;" class="remove" data-original-title="" title=""> </a> </div>
         </div>
+        <div class="portlet-body" style="padding-top: 0px;"> 
+          <!--<p style="background-color:#e7ecf1;padding-left:15px;">
+          <b>Select Date</b>&nbsp;&nbsp;:&nbsp;&nbsp;<input type="date" placeholder="date" [(ngModel)]="counterDayDate" />
+          <button class="btn btn-sm blue" type="button" (click)="LoadCounterDayCollection()" style="margin-left:15px;">
+            <i class="fa fa-search"></i>
+            Search
+          </button>
+        </p>-->
+          <div class="row" style="margin: 0 0 10px 0;">
+            <div class="col-md-2 date_label" style="padding: 0;"><b>Select Date</b><!--&nbsp;&nbsp;&nbsp;<input type="date" placeholder="date" [(ngModel)]="selectedDate" />--></div>
+            <div class="col-md-7">
+              <danphe-date-picker [(ngModel)]="counterDayDate" ngDefaultControl [CalendarTypes]="'np,en'"> </danphe-date-picker>
+            </div>
+            <div class="col-md-3">
+              <button class="btn btn-sm blue" type="button" (click)="LoadCounterDayCollection()"> <i class="fa fa-search"></i> Search </button>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <p> User collection on <b>{{counterDayDate}} ({{counterDayDate | nepaliDate}})</b> </p>
+              <div *ngFor="let usr of userDayCollection" style="padding-top:15px; padding-bottom:10px">
+                <h4 class="label label-success">{{usr.EmployeeName}}</h4>
+                <b>:  {{usr.UserDayCollection}}</b> </div>
+            </div>
+            <div class="col-md-6">
+              <p> Counter collection on <b>{{counterDayDate}} ({{counterDayDate | nepaliDate}})</b> </p>
+              <div *ngFor="let cntr of counterDayCollection" style="padding-top:15px; padding-bottom:10px">
+                <h4 class="label label-success">{{cntr.CounterName}}</h4>
+                <b>:  {{cntr.CounterDayCollection}}</b> </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="portlet light">
+        <div class="portlet-title">
+          <div class="caption"> <i class="icon-bar-chart"></i> <span class="caption-subject">Pending Bills</span> <span class="caption-helper"></span> </div>
+          <div class="tools"> <a href="javascript:;" class="collapse" data-original-title="" title=""> </a> <a href="javascript:;" class="fullscreen" data-original-title="" title=""> </a> <a href="javascript:;" class="remove" data-original-title="" title=""> </a> </div>
+        </div>
+        <div class="portlet-body">
+          <table style="font-weight:bold;width:80%;color:#006687;">
+            <tr>
+              <td>PROVISIONAL ITEMS</td>
+              <td>Rs. {{overallBills.TotalProvisional}}</td>
+            </tr>
+            <tr>
+              <td style="padding-top:10px;">UNPAID CREDIT INVOICES</td>
+              <td style="padding-top:10px;">Rs. {{overallBills.TotalCredits}} </td>
+            </tr>
+          </table>
+        </div>
+      </div>
     </div>
-</div>
-<div class="row">
+  </div>
+  <div class="row">
+    <div class="col-lg-6 col-xs-12 col-sm-12">
+      <div class="portlet light">
+        <div class="portlet-title">
+          <div class="caption lb-caption no-margin no-padding">
+            <h3><i class="icon-bar-chart"></i> <span class="caption-subject">Daily Revenue Trend (last 7 days)</span> <span class="caption-helper"></span> </h3>
+          </div>
+          <div class="tools"> <a href="javascript:;" class="collapse" data-original-title="" title=""> </a> <a href="javascript:;" class="fullscreen" data-original-title="" title=""> </a> <a href="javascript:;" class="remove" data-original-title="" title=""> </a> </div>
+        </div>
+        <div class="portlet-body">
+          <div id="dvDailyRevTrend" class="CSSAnimationChart" style="height:400px;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6 col-xs-12 col-sm-12">
+      <div class="portlet light">
+        <div class="portlet-title">
+          <div class="caption lb-caption no-margin no-padding">
+            <h3><i class="icon-bar-chart"></i> <span class="caption-subject">monthly billing trend(last 6 months)</span> <span class="caption-helper"></span></h3>
+          </div>
+          <div class="tools"> <a href="javascript:;" class="collapse" data-original-title="" title=""> </a> <a href="javascript:;" class="fullscreen" data-original-title="" title=""> </a> <a href="javascript:;" class="remove" data-original-title="" title=""> </a> </div>
+        </div>
+        <div class="portlet-body">
+          <div id="dvMonthlyBilling" class="CSSAnimationChart" style="height:400px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
     <div class="col-lg-12 col-xs-12 col-sm-12">
-        <div class="portlet light bordered">
-            <div class="portlet-title">
-                <div class="caption">
-                    <i class="icon-bar-chart font-green-haze"></i>
-                    <span class="caption-subject bold uppercase font-green-haze">Income segregation</span>
-                    <span class="caption-helper"></span>
-
-                </div>
-                <div class="tools">
-                    <a href="javascript:;" class="collapse" data-original-title="" title=""> </a>
-                    <a href="javascript:;" class="fullscreen" data-original-title="" title=""> </a>
-                    <a href="javascript:;" class="remove" data-original-title="" title=""> </a>
-                </div>
-            </div>
-            <div class="portlet-body">
-                <div>
-                    <b>From</b>&nbsp;&nbsp;:&nbsp;&nbsp;<input type="date" placeholder="date" [(ngModel)]="incomeSegFromDate" /> &nbsp;&nbsp;&nbsp;
-                    <b>To</b>&nbsp;&nbsp;:&nbsp;&nbsp;<input type="date" placeholder="date" [(ngModel)]="incomeSegToDate" />
-                    <button class="btn btn-sm blue" type="button" (click)="LoadIncomeSegregation()">
-                        <i class="fa fa-search"></i>
-                        Search
-                    </button>
-                </div>
-                <div id="dvDeptIncomeSegregation" class="CSSAnimationChart" style="height:400px;"></div>
-            </div>
+      <div class="portlet light">
+        <div class="portlet-title">
+          <div class="caption lb-caption no-margin no-padding">
+            <h3><i class="icon-bar-chart"></i> <span class="caption-subject">Income segregation</span> <span class="caption-helper"></span></h3>
+          </div>
+          <div class="tools"> <a href="javascript:;" class="collapse" data-original-title="" title=""> </a> <a href="javascript:;" class="fullscreen" data-original-title="" title=""> </a> <a href="javascript:;" class="remove" data-original-title="" title=""> </a> </div>
         </div>
+        <div class="portlet-body">
+          <div> <b>From</b>&nbsp;&nbsp;:&nbsp;&nbsp;
+            <input type="date" placeholder="date" [(ngModel)]="incomeSegFromDate" />
+            &nbsp;&nbsp;&nbsp; <b>To</b>&nbsp;&nbsp;:&nbsp;&nbsp;
+            <input type="date" placeholder="date" [(ngModel)]="incomeSegToDate" />
+            <button class="btn btn-sm blue" type="button" (click)="LoadIncomeSegregation()"> <i class="fa fa-search"></i> Search </button>
+          </div>
+          <div id="dvDeptIncomeSegregation" class="CSSAnimationChart" style="height:400px;"></div>
+        </div>
+      </div>
     </div>
+  </div>
 </div>

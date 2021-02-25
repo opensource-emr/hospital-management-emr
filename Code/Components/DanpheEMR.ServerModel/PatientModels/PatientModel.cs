@@ -5,10 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Audit.EntityFramework;
 
 namespace DanpheEMR.ServerModel
 {
-
+    [AuditInclude]
     public class PatientModel
     {
         [Key]
@@ -19,7 +20,9 @@ namespace DanpheEMR.ServerModel
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string MiddleName { get; set; }
+        //public string ShortName { get; set; }
         public string Gender { get; set; }
+        public string Age { get; set; }
         public DateTime? CreatedOn { get; set; }
         public int? CreatedBy { get; set; }
         public int? ModifiedBy { get; set; }
@@ -31,6 +34,8 @@ namespace DanpheEMR.ServerModel
         public string MaritalStatus { get; set; }
         public string Race { get; set; }
         public string PhoneNumber { get; set; }
+        public string LandLineNumber { get; set; }
+        public string PassportNumber { get; set; }
         public string Email { get; set; }
         public string IDCardType { get; set; }
         public bool? PhoneAcceptsText { get; set; }
@@ -43,23 +48,26 @@ namespace DanpheEMR.ServerModel
         public int? CountrySubDivisionId { get; set; }
         public string PatientCode { get; set; }
         public bool? IsActive { get; set; }
+        [NotMapped]
+        public string TreatmentType { get; set; }
         public bool? IsOutdoorPat { get; set; }
         public int? DialysisCode { get; set; }
-        [NotMapped]
+        //[NotMapped]
         //combination of firstname and last name for search purpose, it's not mapped with the database.
         public string ShortName
         {
-            get
-            {
-                string midName = string.IsNullOrEmpty(this.MiddleName) ? "" : this.MiddleName + " ";
+            get; set;
+            //get
+            //{
+            //    string midName = string.IsNullOrEmpty(this.MiddleName) ? "" : this.MiddleName + " ";
 
-                return this.FirstName + " " + midName + this.LastName;
-            }
+            //    return this.FirstName + " " + midName + this.LastName;
+            //}
         }
         //added : sudarshan: since many patients may not know the exact dob, so.. 
         //nullable since it's optional.
         //modified :ashim: from string from int?, since we're storing the unit of age as well i.e Y,M,D. 
-        public string Age { get; set; }
+
         //nullable since it's optional.
         public bool? IsDobVerified { get; set; }
 
@@ -99,7 +107,10 @@ namespace DanpheEMR.ServerModel
 
         [NotMapped]
         public string CountrySubDivisionName { get; set; }
-        
+
+        [NotMapped]
+        public string CountryName { get; set; }
+
         [NotMapped]
         public bool? HasFile { get; set; }
 
@@ -113,5 +124,10 @@ namespace DanpheEMR.ServerModel
         [NotMapped]
         public int BedNo { get; set; }
         public string PatientNameLocal { get; set; }
+
+        [NotMapped]
+        public string MembershipTypeName { get; set; }
+        [NotMapped]
+        public double MembershipDiscountPercent { get; set; }
     }
 }

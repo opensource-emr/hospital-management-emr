@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,5 +19,8 @@ namespace DanpheEMR.ServerModel {
         public int? DischargeCancelledBy { get; set; }
         public int? BillingTransactionId { get; set; }
         public string DischargeCancelNote { get; set; }
+
+        [NotMapped]
+        public int CounterId { get; set; }
     }
 }

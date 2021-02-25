@@ -1,0 +1,243 @@
+<br />
+<style>
+  .tem-action {
+    padding-left: 0px;
+    margin: 25px auto;
+    text-align: center;
+  }
+
+  .tem-action li {
+    list-style: none;
+    display: inline-block;
+    margin: auto 5px;
+  }
+
+  .control-label {
+    font-size: 13px;
+  }
+
+  .form-control {
+    font-size: 13px;
+  }
+
+  */
+
+  /*div.col-md-7 {
+    padding: 0px;
+  }
+
+  div.col-md-5 {
+    padding: 0px;
+  }
+
+  div.col-md-4 {
+    padding: 0px;
+  }
+
+  div.col-md-3 {
+    padding: 0px;
+  }*/
+  .mt-checkbox {
+    font-size: 13px;
+  }
+
+  div.col-xs-12 {
+    padding-left: 10px;
+    margin-left: 25px;
+    margin-right: 15px;
+  }
+
+  /*This class for background border red */
+  .bg-on {
+    font-weight: bold;
+    border: solid 1px red;
+  }
+
+  /*This class for */
+  .bg-off {
+    font-weight: bold;
+  }
+
+  #freenotesTable {
+    font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+    border-collapse: collapse;
+    background-color: #66e0ff;
+    width: 100%;
+  }
+
+  #freenotesTable th {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    text-align: left;
+    background-color: #00b3b3;
+    color: white;
+  }
+
+  #freenotesTable tr:nth-child(even) {
+    background-color: #ccffff
+  }
+
+  #freenotesTable tr:hover {
+    background-color: #e6ffff
+  }
+
+  .doc-pagecontent .btn {
+    margin: 0 0 20px 0 !important;
+  }
+
+  .right-panel {
+    padding: 15px 0;
+  }
+
+  .investigation-panel {
+    height: 100vh;
+  }
+</style>
+<button class="btn btn-primary btn-sm" (click)="BackToViewNotes()" style="margin: 0 0 20px 0 !important"> <i
+    class="fa fa-backward"></i>&nbsp;&nbsp;&nbsp;View Notes </button>
+<div class="row">
+  <div class="col-md-6">
+    <div class="form-group">
+      <div class="row">
+        <label class="control-label col-md-5">Primary Doctor<b style="float:right;">:</b></label>
+        <div class="col-md-7">
+          <input [(ngModel)]=" patVisit.ProviderName" disabled class="form-control" type="text" />
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="row">
+        <label class="control-label col-md-5">Note Type<b style="float:right;">:</b></label>
+        <div class="col-md-7">
+          <!--
+                <select class="form-control"
+                        [disabled]="editMode"
+                        [ngModelOptions]="{standalone: true}">
+                  <option *ngFor="let noteType in noteTypeList" value="noteType.NoteTypeId"> {{noteType.NoteType}} </option>
+
+                </select>
+          -->
+          <input danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)"
+            [(ngModel)]="selectedNoteType" [source]="noteTypeList" display-property-name="NoteType"
+            value-property-name="NoteType" ngModelOptions="{standalone:true}" [list-formatter]="NoteTypeFormatter"
+            placeholder="Select Note Type" style="width:100%;height:32px;" (valueChanged)="OnNoteTypeChange()" />
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="row">
+        <label class="control-label col-md-5"> Date/Time<b class="color-red">*</b><b style="float:right;">:</b> </label>
+        <div class="col-md-7">
+          <input class="form-control" type="date" maxlength="11" [(ngModel)]="notes.Date"
+            [ngModelOptions]="{standalone: true}" />
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="form-group">
+      <div class="row">
+        <label class="control-label col-md-5">Secondary Doctor<b style="float:right;">:</b></label>
+        <div class="col-md-7">
+          <input danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)"
+            [(ngModel)]="selectedSecondaryDoctor" [source]="DoctorList" placeholder="Doctor Name"
+            ngModelOptions="{standalone:true}" display-property-name="ProviderName" value-property-name="ProviderName"
+            [list-formatter]="DocListFormatter" max-num-list="15" style="width:100%;height:32px;" />
+          <!--
+                (focusout)="providersChanged()"
+                (valueChanged)="AssignSelectedSecondaryDoctor()"-->
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="row">
+        <label class="control-label col-md-5">Written By<b style="float:right;">:</b></label>
+        <div class="col-md-7">
+          <input disabled class="form-control"
+            value="{{loggedInUser.Employee.FirstName }} {{loggedInUser.Employee.LastName}}" type="text" />
+          <!-- [(ngModel)]="loggedInUser.UserName"-->
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="row">
+        <label class="control-label col-md-5">Template<b style="float:right;">:</b></label>
+        <div class="col-md-7">
+          <input danphe-auto-complete [disabled]="editMode" [(ngModel)]="selTemplateList" [source]="templateList"
+            placeholder="Select Template" [ngModelOptions]="{standalone:true}" display-property-name="TemplateName"
+            value-property-name="TemplateName" (valueChanged)="AssignSelectedTemplate($event)"
+            [list-formatter]="TemplateListFormatter" max-num-list="9" style="width:100%;height:32px;" />
+
+          <!-- previously on autocomplete:
+           onClick="this.select()"
+          (focusout)="SelectTemplate($event)"-->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="" *ngIf="showHandP">
+  <history-and-physical-note [editHpNote]="notes" (outPutHpNote)="CallBackHistoryAndPhysical($event)">
+  </history-and-physical-note>
+</div>
+<div class="" *ngIf="showFreeText">
+  <freetext [patDetail]="patVisit" [editFreeText]="notes.FreeTextNote"
+    (callback-freetextnotes)="CallBackFreeTexts($event)"> </freetext>
+</div>
+<div class="" *ngIf="showProcedureNote">
+  <procedure-notes [patDetail]="patVisit" [editProcedureNote]="notes.ProcedureNote"
+    (callback-procedurenotes)="CallBackProcedureNotes($event)"> </procedure-notes>
+</div>
+<div class="" *ngIf="showProgressNote">
+  <progress-note [patDetail]="patVisit" [editProgressNote]="notes.ProgressNote"
+    (callback-progressnotes)="CallBackProgressNotes($event)"> </progress-note>
+</div>
+<div class="" *ngIf="showEmergencyNote">
+  <emergency-note [editErNote]="notes" (outPutErNote)="CallBackEmergencyNoteTemplate($event)"> </emergency-note>
+</div>
+<div class="note-panel" *ngIf="showDischargeSummaryAdd" style="margin-top:50px !important;">
+  <discharge-summary-add [selectedDischarge]="selectedPatient" [showDischargeSummary]="showDischargeSummaryAdd"
+    [fromClinical]="true" (sendData)="CallBackDischargeTemplate($event)"> </discharge-summary-add>
+</div>
+
+<div class="" *ngIf="showPrescriptionNote">
+  <clinical-prescription-note *ngIf="showPrescriptionNote" [prescriptionNote]="notes.ClinicalPrescriptionNote"
+    [notesId]="notes.NotesId"> </clinical-prescription-note>
+  <!--[editPrescriptionNote]="notes"
+  (outPutErNote)="CallBackEmergencyNoteTemplate($event)"-->
+</div>
+<!-- discharge summary component location:
+    wwwroot\DanpheApp\src\app\discharge-summary\add-view-summary\discharge-summary-view.component.ts -->
+
+<div
+  *ngIf=" (showHandP || showPrescriptionNote || showProgressNote || showFreeText|| showDischargeSummaryAdd || showProcedureNote ||showHandP || showEmergencyNote ) &&  !editMode "
+  class="row">
+  <div class="col-md-12">
+    <ul class="tem-action">
+      <li>
+        <button class="btn blue" style=""> Start (Sign) </button>
+      </li>
+      <li>
+        <button class="btn btn-success" (click)="SubmitTemplate(1)" style=""> Submit </button>
+      </li>
+      <li>
+        <button class="btn btn-primary" (click)="SubmitTemplate(0)" style=""> Save </button>
+      </li>
+      <li>
+        <button class="btn blue" style=""> <i class="glyphicon glyphicon-print"></i> Print </button>
+      </li>
+    </ul>
+  </div>
+</div>
+<div *ngIf="editMode" class="row">
+  <div class="col-md-12">
+    <ul class="tem-action">
+      <li>
+        <button class="btn btn-success" (click)="UpdateTemplate(1)" style=""> Submit </button>
+      </li>
+      <li>
+        <button class="btn btn-primary" (click)="UpdateTemplate(0)" style=""> Save </button>
+      </li>
+    </ul>
+  </div>
+</div>

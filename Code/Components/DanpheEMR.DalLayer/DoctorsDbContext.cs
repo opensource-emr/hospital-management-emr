@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DanpheEMR.ServerModel;
+using DanpheEMR.ServerModel.ClinicalModels;
 
 namespace DanpheEMR.DalLayer
 {
@@ -17,6 +18,7 @@ namespace DanpheEMR.DalLayer
         public DbSet<DepartmentModel> Departments { get; set; }
         public DbSet<BillItemPrice> BillItemPrice { get; set; }
         public DbSet<VisitSummaryModel> VisitSummary { get; set; }
+        public DbSet<TemplateNoteModel> TemplateNotes { get; set; }
         public DoctorsDbContext(string conn) : base(conn)
         {
             this.Configuration.LazyLoadingEnabled = true;
@@ -49,6 +51,7 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<DepartmentModel>().ToTable("MST_Department");
             modelBuilder.Entity<BillItemPrice>().ToTable("BIL_CFG_BillItemPrice");
             modelBuilder.Entity<VisitSummaryModel>().ToTable("DOC_TXN_VisitSummary");
+            modelBuilder.Entity<TemplateNoteModel>().ToTable("CLN_Template");
         }
 
     }

@@ -1,4 +1,4 @@
-﻿import { Component, ChangeDetectorRef, EventEmitter, Output, OnInit, Input } from '@angular/core';
+import { Component, ChangeDetectorRef, EventEmitter, Output, OnInit, Input } from '@angular/core';
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { CoreService } from '../../core/shared/core.service';
 import { EmergencyPatientModel } from '../shared/emergency-patient.model';
@@ -13,7 +13,7 @@ import { EmergencyDischargeSummaryVM } from '../shared/emergency-discharge-summa
 import { EmergencyDischargeSummary } from '../shared/emergency-discharge-summary.model';
 
 @Component({
-    selector: 'view-discharge-summary',
+    selector: 'view-er-discharge-summary',
     templateUrl: './view-er-discharge-summary.html'
 })
 

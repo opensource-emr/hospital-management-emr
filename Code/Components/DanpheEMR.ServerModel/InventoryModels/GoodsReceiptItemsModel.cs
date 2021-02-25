@@ -39,5 +39,17 @@ namespace DanpheEMR.ServerModel
         public bool? IsTransferredToACC { get; set; }
         public int? ModifiedBy { get; set; }
         public DateTime? ModifiedOn {get; set; }
+        public DateTime? GRItemDate { get; set; }
+        [NotMapped]
+        public string ItemName { get; set; }
+        [NotMapped]
+        public string Code { get; set; }
+        [NotMapped]
+        public string UOMName { get; set; }
+        [NotMapped]
+        public bool IsEdited { get; set; }
+        public bool IsActive { get; set; }
+        public int? CancelledBy { get; set; }
+        public DateTime? CancelledOn { get; set; }
     }
 }

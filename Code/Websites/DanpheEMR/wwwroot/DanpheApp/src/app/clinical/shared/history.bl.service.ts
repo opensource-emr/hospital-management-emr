@@ -1,4 +1,4 @@
-﻿import { Injectable, Directive } from '@angular/core';
+import { Injectable, Directive } from '@angular/core';
 import { ClinicalDLService } from './clinical.dl.service';
 import { FamilyHistory } from './family-history.model';
 import { SocialHistory } from './social-history.model';
@@ -7,6 +7,8 @@ import { PatientImagesModel } from "../shared/patient-uploaded-images.model";
 import * as moment from 'moment/moment';
 
 import * as _ from 'lodash';
+import { ClinicalSubjectivePrescriptionNotes } from '../../clinical-notes/shared/subjective-note.model';
+import { ReferralSource } from '../../doctors/referral-source/referral-source.model';
 @Injectable()
 export class HistoryBLService {
 
@@ -23,7 +25,11 @@ export class HistoryBLService {
     public GetSocialHistoryList(patientId: number) {
         return this.clinicalDLService.GetSocialHistoryList(patientId)
             .map(res => res);
-    }
+  }
+  public GetReferralSourceList(patientId: number) {
+    return this.clinicalDLService.GetReferralSourceList(patientId)
+      .map(res => res);
+  }
     //surgical-history.component
     //get list of surgical history using patientId.
     public GetSurgicalHistoryList(patientId: number) {
@@ -52,7 +58,13 @@ export class HistoryBLService {
         var temp = _.omit(currentSocialHistory, ['SocialHistoryValidator']);
         return this.clinicalDLService.PostSocialHistory(temp)
             .map(res => res);
-    }
+  }
+  //post referral source 
+  public PostReferralSource(currentReferralSource: ReferralSource) {
+    var temp = _.omit(currentReferralSource, ['ReferralSourceValidator']);
+    return this.clinicalDLService.PostReferralSource(temp)
+      .map(res => res);
+     }
     //surgical-history.component
     //post surgical history
     public PostSurgicalHistory(currentSurgicalHistory: SurgicalHistory) {
@@ -84,7 +96,17 @@ export class HistoryBLService {
         let reqType = 'socialhistory';
         return this.clinicalDLService.PutClinical(data, reqType)
             .map(res => res);
-    }
+  }
+  //PutReferralSource
+  public PutReferralSource(currentReferralSource: ReferralSource) {
+    //gives json convert error in the server side if the format is not set properly.
+    currentReferralSource.CreatedOn = moment(currentReferralSource.CreatedOn).format('YYYY-MM-DD HH:mm');
+    var temp = _.omit(currentReferralSource, ['ReferralSourceValidator']);
+    let data = JSON.stringify(temp);
+    let reqType = 'referralsource';
+    return this.clinicalDLService.PutClinical(data, reqType)
+      .map(res => res);
+  }
 
     //surgical-history.component
     //update surgical history
@@ -140,5 +162,14 @@ export class HistoryBLService {
     public deactivateUploadedImage(patImageId: number) {
         return this.clinicalDLService.deactivateUploadedImage(patImageId)
             .map(res => res);
+    }
+    public GetSubjectivePrescriptionNotes(patientVisitId: number, notesId: number) {
+        return this.clinicalDLService.GetSubjectivePrescriptionNotes(patientVisitId, notesId)
+            .map(res => res);
+    }
+    public SaveNote(currentNotes: ClinicalSubjectivePrescriptionNotes) {
+        return this.clinicalDLService.SaveNote(currentNotes)
+            .map(res => res);
+
     }
 }

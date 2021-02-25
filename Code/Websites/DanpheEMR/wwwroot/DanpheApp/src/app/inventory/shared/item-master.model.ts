@@ -4,7 +4,7 @@ export class ItemMaster {
   public SubCategoryId: number = 0;
   public ItemUsageId: number = 0;
   public PackagingTypeId: number = 0;
-  public ItemName: string = null;
+  public ItemName: string = "";
   public ItemType: string = null;
   public Description: string = null;
   public ReOrderQuantity: number = null;
@@ -17,6 +17,6 @@ export class ItemMaster {
   public CreatedOn: string = null;
   public IsActive: boolean = false;
   public UnitQuantity: string = null;
-
-
+  public Code:string=null;
+  public UOMName:string=null;
 }

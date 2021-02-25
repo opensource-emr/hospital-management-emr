@@ -26,7 +26,7 @@ export class LabTest {
     public ReportTemplateId: number = null;
     public IsSelected: boolean = false;
     public IsPreference: boolean = false;
-    public IsValidSampling: boolean = true;
+    public IsValidForReporting: boolean = true;
     public CreatedOn: string = null;
     public CreatedBy: number = null;
     public ModifiedOn: string = null;
@@ -52,6 +52,7 @@ export class LabTest {
     public ReportTemplateName: string = null;
     
     public TemplateType: string = null;
+    public LabTestCategoryId: number = null;
 
     constructor() {
         var _formBuilder = new FormBuilder();

@@ -18,6 +18,7 @@ using DanpheEMR.CommonTypes;
 using DanpheEMR.Core;
 using DanpheEMR.Core.Parameters;
 using RefactorThis.GraphDiff;//for entity-update.
+using DanpheEMR.Security;
 
 // For more information on enabling Web API for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 //this is the cotroller
@@ -86,7 +87,13 @@ namespace DanpheEMR.Controllers
                 //    responseData.Results = retEngDate;
                 //}
 
-
+                else if (reqType == "get-emp-datepreference")
+                {
+                    CoreDbContext dbcontext = new CoreDbContext(connString);
+                    RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
+                    var empPrefData = dbcontext.EmployeePreferences.Where(p => p.EmployeeId == currentUser.EmployeeId && p.PreferenceName == "DatePreference").FirstOrDefault();
+                    responseData.Results = empPrefData;
+                }
 
                 responseData.Status = "OK";
 
@@ -109,7 +116,55 @@ namespace DanpheEMR.Controllers
         [HttpPost]
         public string Post()
         {
-            return null;
+            DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();//type 'object' since we have variable return types
+            CoreDbContext dbcontext = new CoreDbContext(connString);
+            try
+            {
+                AdmissionDbContext dbContext = new AdmissionDbContext(base.connString);
+                string str = this.ReadPostData();
+                string reqType = this.ReadQueryStringData("reqType");
+                RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
+                if (reqType == "post-emp-datepreference")
+                {
+                    var existData = dbcontext.EmployeePreferences.Where(p => p.EmployeeId == currentUser.EmployeeId && p.PreferenceName == "DatePreference").FirstOrDefault();
+                    EmployeePreferences empPref = new EmployeePreferences();
+                    if (existData == null)
+                    {
+                        empPref.CreatedOn = DateTime.Now;
+                        empPref.EmployeeId = currentUser.EmployeeId;
+                        empPref.CreatedBy = currentUser.EmployeeId;
+                        empPref.PreferenceValue = str;
+                        empPref.PreferenceName = "DatePreference";
+                        empPref.IsActive = true;
+                        dbcontext.EmployeePreferences.Add(empPref);
+                        dbcontext.SaveChanges();
+                        responseData.Status = "OK";
+                        responseData.Results = empPref;
+                    }
+                    else
+                    {
+                        existData.PreferenceValue = str;
+                        existData.ModifiedBy = currentUser.EmployeeId;
+                        existData.ModifiedOn = DateTime.Now;
+                        dbContext.EmployeePreferences.Attach(existData);
+                        dbContext.Entry(existData).State = EntityState.Modified;
+                        dbContext.Entry(existData).Property(x => x.CreatedOn).IsModified = true;
+                        dbContext.Entry(existData).Property(x => x.CreatedBy).IsModified = true;
+                        dbContext.Entry(existData).Property(x => x.PreferenceValue).IsModified = true;
+                        dbcontext.SaveChanges();
+                        responseData.Status = "OK";
+                        responseData.Results = existData;
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message + "exception details:" + ex.ToString();
+            }
+            return DanpheJSONConvert.SerializeObject(responseData, true);
+
         }
 
 

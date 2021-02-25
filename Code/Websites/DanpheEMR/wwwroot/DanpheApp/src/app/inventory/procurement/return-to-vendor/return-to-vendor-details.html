@@ -28,11 +28,36 @@
         margin-left: 10px;
         text-align: center;
     }
+    
+    .img-responsive{
+         position: relative;
+         top: 14px;
+    }
+
 </style>
 <div id="printpage" class="row printStyle print-border">
     <div style="text-align:center;">
       <div class="col-md-12">
-        <print-header [unit-name]="'Inventory Unit'"></print-header>
+        <div class="row" style="margin-bottom: 10px;">
+          <div class="logo" style="width: 18%;padding:0px 15px 0px 15px; float: left;">
+            <img class="img-responsive" style="max-height:70px;" src="../../../themes/theme-default/images/hams-logo.PNG" />
+          </div>
+          <div style="width: 64%;float: left;padding-bottom:  0px;">
+            <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
+              <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
+              <span style="font-size:15px;">{{headerDetail.address}}</span><br />
+              <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
+              <span style="font-size:15px;"><strong> Inventory Unit </strong></span><br />
+            </div>
+          </div>
+          <div style="float: left;">
+            <div class="qr-code" style="position: relative; left: 98px; top: 5px;">
+              <qr-code [value]="" [size]="75" [backgroundAlpha]="0"></qr-code>
+            </div>
+          </div>
+          <!-- Billing Header  -->
+          <div style="clear:left"></div>
+        </div>
         <div class="clear"></div>
         <div class="left" style="text-align:left;">
           <p>Supplier:<b> {{vendorName}}</b></p>
@@ -64,7 +89,7 @@
                 <td>{{row.ItemName}}</td>
                 <td>{{row.SupplierBillNo}}</td>
                 <td>{{row.ReturnQuantity}}</td>
-                <td>{{row.ItemRate}}</td>
+                <td>{{row.ItemRate | number : "1.2-2"}}</td>
                 <td>{{row.TotalAmount | number: '1.2-2'}}</td>
                 <td>{{row.Remarks}}</td>
               </tr>
@@ -90,13 +115,13 @@
                 </tr>
               </tbody>
             </table>
-            </div>
           </div>
-            <div class="col-md-12 pull-right">
-              <div style="text-align: left" class="col-md-6">Returned  By:&nbsp;<b>{{returnBy}}</b></div>
+        </div>
+        <div class="col-md-12 pull-right">
+          <div style="text-align: left" class="col-md-6">Returned  By:&nbsp;<b>{{returnBy}}</b></div>
 
-            </div>
-          </div>
+        </div>
+      </div>
         </div>
       </div>
 <div class="row center-style">

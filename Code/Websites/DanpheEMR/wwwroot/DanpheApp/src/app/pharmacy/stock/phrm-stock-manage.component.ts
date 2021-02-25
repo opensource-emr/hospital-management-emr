@@ -9,7 +9,7 @@ import { PHRMGoodsReceiptItemsModel } from "../shared/phrm-goods-receipt-items.m
 import { SecurityService } from "../../security/shared/security.service";
 import * as moment from 'moment/moment';
 @Component({
-    templateUrl:'../../view/pharmacy-view/Stock/PHRMStockManage.html'// "/PharmacyView/PHRMStockManage"
+    templateUrl:"./phrm-stock-manage.html"
 })
 export class PHRMStockManageComponent {
     public itemId: number = null;

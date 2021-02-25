@@ -12,9 +12,9 @@ export class AccountingReportsBLService {
 
 
     //START: GET Report Data
-    public GetBalanceSheetReportData(fromDt, toDt) {
+    public GetBalanceSheetReportData(selectedDate, fiscalYearId) {
         try {
-            return this.accountReportDlService.GetBalanceSheetReportData(fromDt, toDt)
+            return this.accountReportDlService.GetBalanceSheetReportData(selectedDate, fiscalYearId)
                 .map((responseData) => {
                     return responseData;
                 });
@@ -23,14 +23,14 @@ export class AccountingReportsBLService {
         }
     }
 
-    public GetTrailBalanceReport(fromDate: string, toDate: string) {
-        return this.accountReportDlService.GetTrailBalanceReport(fromDate, toDate).map(res => {
+    public GetTrailBalanceReport(fromDate: string, toDate: string,fiscalYearId) {
+        return this.accountReportDlService.GetTrailBalanceReport(fromDate, toDate,fiscalYearId).map(res => {
             return res;
         });
     }
 
-    public GetProfitLossReport(fromDt, toDt) {
-        return this.accountReportDlService.GetProfitLossReport(fromDt, toDt).map(res => {
+    public GetProfitLossReport(fromDt, toDt,fiscalYearId) {
+        return this.accountReportDlService.GetProfitLossReport(fromDt, toDt,fiscalYearId).map(res => {
             return res;
         });
     }
@@ -42,15 +42,28 @@ export class AccountingReportsBLService {
             );
     }
 
-    public GetVoucherReport(fromDate: string, toDate: string) {
-        return this.accountReportDlService.GetVoucherReport(fromDate, toDate)
+    public GetVoucherReport(fromDate: string, toDate: string,sectionId,fiscalYearId) {
+        return this.accountReportDlService.GetVoucherReport(fromDate, toDate,sectionId,fiscalYearId)
             .map((responseData) => {
                 return responseData;
             });
     }
     
-    public GetDayWiseVoucherReport(fromDate: string, toDate: string) {
-        return this.accountReportDlService.GetDayWiseVoucherReport(fromDate, toDate)
+    public GetSystemAuditReport(fromDate: string, toDate: string,voucherType:string,sectionId:number) {
+        return this.accountReportDlService.GetSystemAuditReport(fromDate, toDate,voucherType,sectionId)
+            .map((responseData) => {
+                return responseData;
+            });
+    }
+    
+    public GetReverseTransactionDetail(reverseTxnId:number) {
+        return this.accountReportDlService.GetReverseTransactionDetail(reverseTxnId)
+            .map((responseData) => {
+                return responseData;
+            });
+    }    
+    public GetDayWiseVoucherReport(fromDate: string, toDate: string,sectionId) {
+        return this.accountReportDlService.GetDayWiseVoucherReport(fromDate, toDate,sectionId)
             .map((responseData) => {
                 return responseData;
             });
@@ -63,15 +76,15 @@ export class AccountingReportsBLService {
                 return responseData;
             });
     }
-    public GetLedgerReport(ledgerId: number, fromDate: string, toDate: string) {
-        return this.accountReportDlService.GetLedgerReport(ledgerId, fromDate, toDate)
+    public GetLedgerReport(ledgerId: number, fromDate: string, toDate: string,fiscalYearId) {
+        return this.accountReportDlService.GetLedgerReport(ledgerId, fromDate, toDate,fiscalYearId)
             .map((responseData) => {
                 return responseData;
             });
     }
-    public GetCashFlowReportData(fromDt, toDt) {
+    public GetCashFlowReportData(fromDt, toDt,fiscalYearId) {
         try {
-            return this.accountReportDlService.GetCashFlowReportData(fromDt, toDt)
+            return this.accountReportDlService.GetCashFlowReportData(fromDt, toDt,fiscalYearId)
                 .map((responseData) => {
                     return responseData;
                 });
@@ -79,8 +92,8 @@ export class AccountingReportsBLService {
             throw exception;
         }
     }
-    public GetDailyTxnReport(frmDt: string, toDt: string) {
-        return this.accountReportDlService.GetDailyTxnReport(frmDt, toDt).map(res => {
+    public GetDailyTxnReport(frmDt: string, toDt: string,fiscalYearId) {
+        return this.accountReportDlService.GetDailyTxnReport(frmDt, toDt,fiscalYearId).map(res => {
             return res
         });
     }
@@ -90,9 +103,9 @@ export class AccountingReportsBLService {
             return res;
         });
     }
-    public GetDaywiseVoucherDetailsbyDayVoucherNo(dayVoucherNumber: number, voucherId: number) {
+    public GetDaywiseVoucherDetailsbyDayVoucherNo(dayVoucherNumber: number, voucherId: number,sectionId) {
         try {
-            return this.accountReportDlService.GetDaywiseVoucherDetailsbyDayVoucherNo(dayVoucherNumber, voucherId)
+            return this.accountReportDlService.GetDaywiseVoucherDetailsbyDayVoucherNo(dayVoucherNumber, voucherId,sectionId)
                 .map((responseData) => {
                     return responseData;
                 });

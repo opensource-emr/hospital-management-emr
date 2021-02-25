@@ -25,8 +25,8 @@ import { Visit } from "../../appointments/shared/visit.model";
 import { Appointment } from "../../appointments/shared/appointment.model";
 import { LabTestRequisition } from "../../labs/shared/lab-requisition.model";
 import { ImagingItemRequisition } from "../../radiology/shared/imaging-item-requisition.model";
-import { CountrySubdivision } from "../../settings/shared/country-subdivision.model";
-import { Admission } from '../../admission/shared/admission.model';
+import { CountrySubdivision } from "../../settings-new/shared/country-subdivision.model";
+import { Admission } from '../../adt/shared/admission.model';
 import { PatientFilesModel } from './patient-files.model';
 import { NepaliDate } from '../../shared/calendar/np/nepali-dates';
 
@@ -42,6 +42,7 @@ export class Patient {
     public Gender: string = null;
     public PreviousLastName: string = null;
     public WardName: string = "";
+    public WardId: string = "";
     public BedNo: number = 0;
     //try to hide the audit trail properties from client models..sudarshan:15July
     public CreatedOn: string = null;
@@ -49,11 +50,14 @@ export class Patient {
     public ModifiedOn: string = null;
     public ModifiedBy: number = null;
     public MaritalStatus: string = null;
+    public TreatmentType: string = null;
     public EMPI: string = null;
     //this shortname =  FirstName+' '+LastName. created for common usage purpose. 
     public ShortName: string = null;
     public Race: string = null;
-    public PhoneNumber: string = null ;
+    public PhoneNumber: string = null;
+    public PassportNumber: string = null;
+    public LandLineNumber: string = null;
     public PhoneAcceptsText: boolean = false;
     public IDCardNumber: string = null;
     public EmployerInfo: string = null;
@@ -62,6 +66,7 @@ export class Patient {
     public BloodGroup: string = null;
     public Email: string = null;
     public CountryId: number = 0;
+    public CountryName: string =  null;
     public CountrySubDivisionId: number = null;
     public Age: string = null;
     public AgeUnit: string = 'Y'; //used only in client side
@@ -139,6 +144,8 @@ export class Patient {
     public LatestVisitDate: string = null;
     public IsValidMembershipTypeName: boolean = true; //Yubraj 2019 2nd August 
     
+    public IsPoliceCase: boolean = false;
+    
     constructor() {
         var _formBuilder = new FormBuilder();
         this.PatientValidator = _formBuilder.group({
@@ -151,11 +158,13 @@ export class Patient {
             'Gender': ['', Validators.required],
             'CountrySubDivisionId': ['', Validators.required],
              'Email': ['', Validators.pattern('^[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}$')],
-            'PhoneNumber': ['', Validators.compose([Validators.required, Validators.pattern('^[0-9]{1,10}$')])],
+           'PhoneNumber': ['', Validators.compose([Validators.required, Validators.pattern('^[0-9]{1,10}$')])],
+           'PassportNumber': ['', Validators.compose([Validators.maxLength(12)])],
+           'LandLineNumber': ['', Validators.compose([Validators.pattern('^[0-9]{1,9}$')])],
             'CountryId': ['', Validators.required],
             //'Address': ['', Validators.required],
             'PANNumber': ['', Validators.compose([Validators.pattern('^[0-9]{9,9}$')])],
-            'MembershipTypeId': ['', Validators.required],
+            //'MembershipTypeId': ['', Validators.required],
         });
 
     }
@@ -249,7 +258,7 @@ export class Patient {
 
 
     //added: sud-15Jun'18-- to show in patientoverview page, use it in other places as well if required.
-    public AllergyFormatted = { Primary: "None", Secondary: "" };
+    public AllergyFormatted = { Primary: "", Secondary: "" };
 
 
     public FormatPatientAllergies() {
@@ -257,8 +266,8 @@ export class Patient {
         if (this.Allergies && this.Allergies.length > 0) {
             //First allergy will be Primary, and remaining will come as secondary allergies.
             //Priority Sequence is by type:  Allergy > AdvRec > Others.
-            let primAllerg = this.Allergies.find(alrg => alrg.AllergyType == "Allergy")
-                || this.Allergies.find(alrg => alrg.AllergyType == "AdvRec") || this.Allergies.find(alrg => alrg.AllergyType == "Others");
+            let primAllerg = this.Allergies.find(alrg => alrg.AllergyType == "Medication")
+                || this.Allergies.find(alrg => alrg.AllergyType == "Non Medication") || this.Allergies.find(alrg => alrg.AllergyType == "Others");
 
             if (primAllerg) {
                 this.AllergyFormatted.Primary = primAllerg.AllergenAdvRecName;

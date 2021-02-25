@@ -75,10 +75,15 @@ export class LabTestsResults {
   public showRangeInRangeDescription: boolean = false;
   public hospitalCode: string = '';
 
+  public labReportFormat: string = 'format1';
+  public allowOpWithProvToPrintReport: boolean = false;
+
   constructor(public labBLService: LabsBLService, public changeDetector: ChangeDetectorRef,
     public msgBoxServ: MessageboxService, public coreService: CoreService) {
     this.showRangeInRangeDescription = this.coreService.EnableRangeInRangeDescriptionStep();
+    this.allowOpWithProvToPrintReport = this.coreService.AllowOutpatientWithProvisional();
     this.hospitalCode = this.coreService.GetHospitalCode();
+    this.labReportFormat = this.coreService.GetLabReportFormat();
   }
 
   ngOnInit() {
@@ -129,7 +134,7 @@ export class LabTestsResults {
   }
 
   public MapSequence() {
-
+    this.templateReport.ValidToPrint = true;
     var dob = this.templateReport.Lookups.DOB;
     var patGender = this.templateReport.Lookups.Gender;
     var patAge = CommonFunctions.GetFormattedAge(dob);
@@ -161,10 +166,6 @@ export class LabTestsResults {
       indicator = 'child';
     }
 
-
-
-
-
     if (this.templateReport.Columns) {
       this.templateReport.Columns = JSON.parse(this.templateReport.Columns);
       //below statement can come out from templateReport level-- remove it ASAP.//remove this after columns are implemented in template level.
@@ -176,6 +177,14 @@ export class LabTestsResults {
       tmplates.TemplateColumns = tmplates.TemplateColumns ? JSON.parse(tmplates.TemplateColumns) : this.defaultColumns;
 
       tmplates.Tests.forEach(test => {
+        if (!this.allowOpWithProvToPrintReport) {
+          var visitType = this.templateReport.Lookups.VisitType;
+          var billStatus = test.BillingStatus;
+          if (visitType && visitType.toLowerCase() == "outpatient" && billStatus && billStatus.toLowerCase() == "provisional") {
+            this.templateReport.ValidToPrint = false;
+          }
+        }
+
         if (test.HasNegativeResults) {
           test.ShowNegativeCheckbox = true;
         } else {

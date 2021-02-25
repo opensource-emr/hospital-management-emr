@@ -15,6 +15,7 @@ using System.Xml;
 using Newtonsoft.Json;
 using DanpheEMR.Security;
 using DanpheEMR.Controllers.Billing;
+using DanpheEMR.Enums;
 
 namespace DanpheEMR.Controllers.Billing
 {
@@ -25,31 +26,47 @@ namespace DanpheEMR.Controllers.Billing
         public static BillingTransactionModel PostBillingTransaction(BillingDbContext dbContext,
             string connString,
             BillingTransactionModel billingTransaction,
-            int userId,
+            RbacUser currentUser,
             DateTime currentDate)
         {
             List<BillingTransactionItemModel> newTxnItems = new List<BillingTransactionItemModel>();
+            dbContext.AuditDisabled = false;
             if (billingTransaction.BillingTransactionItems != null && billingTransaction.BillingTransactionItems.Count > 0)
             {
                 foreach (var txnItem in billingTransaction.BillingTransactionItems)
                 {
-                    newTxnItems.Add(BillingTransactionItemModel.GetClone(txnItem));
+                                 
+                    BillingTransactionItemModel clonedItem = BillingTransactionItemModel.GetClone(txnItem);
+                    clonedItem.BillingTransaction = null;
+                    newTxnItems.Add(clonedItem);
                 }
                 billingTransaction.BillingTransactionItems = null;
             }
             //if paymentmode is credit, paiddate and paidamount should be null
             //handle this in client side as well. 
-            billingTransaction.CreatedBy = userId;
-            if (billingTransaction.BillStatus == "unpaid")
+            billingTransaction.CreatedBy = currentUser.EmployeeId;
+            if (billingTransaction.BillStatus == ENUM_BillingStatus.unpaid)// "unpaid")
             {
+                double? totalAmount = billingTransaction.TotalAmount;
+                int i = (int)totalAmount;
+                billingTransaction.TotalAmount = i;
+                string s = totalAmount.ToString();
+                s = s.Replace(i + "", "");
+                billingTransaction.AdjustmentTotalAmount = String.IsNullOrEmpty(s) ? 0 : Convert.ToDecimal(s);
                 billingTransaction.PaidDate = null;
                 billingTransaction.PaidAmount = null;
                 billingTransaction.PaymentReceivedBy = null;
                 billingTransaction.PaidCounterId = null;
 
             }
-            else if (billingTransaction.BillStatus == "paid")
+            else if (billingTransaction.BillStatus == ENUM_BillingStatus.paid)// "paid")
             {
+                double? totalAmount = billingTransaction.TotalAmount;
+                int i = (int)totalAmount;
+                billingTransaction.TotalAmount = i;
+                string s = totalAmount.ToString();
+                s = s.Replace(i + "", "");
+                billingTransaction.AdjustmentTotalAmount = String.IsNullOrEmpty(s)?0 : Convert.ToDecimal(s);
                 billingTransaction.PaidDate = currentDate;
                 billingTransaction.PaidCounterId = billingTransaction.CounterId;
                 billingTransaction.PaymentReceivedBy = billingTransaction.CreatedBy;
@@ -59,28 +76,35 @@ namespace DanpheEMR.Controllers.Billing
 
             //ashim: 26Aug2018: Moved from client side to server side.
             billingTransaction.CreatedOn = currentDate;
-            billingTransaction.CreatedBy = userId;
+            billingTransaction.CreatedBy = currentUser.EmployeeId;
             billingTransaction.FiscalYearId = fiscYear.FiscalYearId;
             billingTransaction.InvoiceNo = BillingBL.GetInvoiceNumber(connString);
             //billingTransaction.InvoiceCode = BillingBL.InvoiceCode;
             billingTransaction.InvoiceCode = billingTransaction.IsInsuranceBilling == true ? "INS" : BillingBL.InvoiceCode;
             dbContext.BillingTransactions.Add(billingTransaction);
+
+            dbContext.AddAuditCustomField("ChangedByUserId", currentUser.EmployeeId);           
+            dbContext.AddAuditCustomField("ChangedByUserName", currentUser.UserName);
+
             dbContext.SaveChanges();
+            dbContext.AuditDisabled = true;
 
             PostUpdateBillingTransactionItems(dbContext,
                    connString,
                    newTxnItems,
-                   userId, currentDate,
+                   currentUser, currentDate,
                    billingTransaction.BillStatus,
                    billingTransaction.CounterId,
                    billingTransaction.BillingTransactionId);
             dbContext.SaveChanges();
+            
             //step:3-- if there's deposit deduction, then add to deposit table. 
-            if (billingTransaction.PaymentMode != "credit" && billingTransaction.DepositReturnAmount != null && billingTransaction.DepositReturnAmount > 0)
+            if (billingTransaction.PaymentMode != ENUM_BillPaymentMode.credit // "credit" 
+                && billingTransaction.DepositReturnAmount != null && billingTransaction.DepositReturnAmount > 0)
             {
                 BillingDeposit dep = new BillingDeposit()
                 {
-                    DepositType = "depositdeduct",
+                    DepositType = ENUM_BillDepositType.DepositDeduct, //"depositdeduct",
                     Remarks = "Deposit used in InvoiceNo. " + billingTransaction.InvoiceCode + billingTransaction.InvoiceNo,
                     //Remarks = "depositdeduct" + " for transactionid:" + billingTransaction.BillingTransactionId,
                     IsActive = true,
@@ -100,6 +124,7 @@ namespace DanpheEMR.Controllers.Billing
                 billingTransaction.ReceiptNo = dep.ReceiptNo + 1;
                 dbContext.BillingDeposits.Add(dep);
                 dbContext.SaveChanges();
+                
             }
             billingTransaction.FiscalYear = fiscYear.FiscalYearFormatted;
             return billingTransaction;
@@ -108,7 +133,7 @@ namespace DanpheEMR.Controllers.Billing
         //post to BIL_TXN_BillingTransactionItems
         public static List<BillingTransactionItemModel> PostUpdateBillingTransactionItems(BillingDbContext dbContext, string connString,
             List<BillingTransactionItemModel> billingTransactionItems,
-            int userId,
+            RbacUser currentUser,
             DateTime currentDate,
             string billStatus,
             int? counterId,
@@ -128,11 +153,11 @@ namespace DanpheEMR.Controllers.Billing
                     if (txnItem.BillingTransactionItemId == 0)
                     {
                         txnItem.CreatedOn = currentDate;
-                        txnItem.CreatedBy = userId;
+                        txnItem.CreatedBy = currentUser.EmployeeId;
                         txnItem.RequisitionDate = currentDate;
                         txnItem.CounterId = counterId;
                         txnItem.BillingTransactionId = billingTransactionId;
-                        if (txnItem.BillStatus == "provisional")
+                        if (txnItem.BillStatus == ENUM_BillingStatus.provisional) // "provisional")
                         {
                             txnItem.ProvisionalReceiptNo = ProvisionalReceiptNo;
                             txnItem.ProvisionalFiscalYearId = fiscYear.FiscalYearId;
@@ -143,13 +168,13 @@ namespace DanpheEMR.Controllers.Billing
                         //txnItem.ProviderName = (from a in empList where a.EmployeeId == txnItem.ProviderId select a.FullName).FirstOrDefault();
                         txnItem.ServiceDepartmentName = (from b in srvDepts where b.ServiceDepartmentId == txnItem.ServiceDepartmentId select b.ServiceDepartmentName).FirstOrDefault();
 
-                        txnItem = GetBillStatusMapped(txnItem, billStatus, currentDate, userId, counterId);
-                        UpdateRequisitionItemsBillStatus(dbContext, txnItem.ServiceDepartmentName, billStatus, userId, txnItem.RequisitionId, currentDate);
+                        txnItem = GetBillStatusMapped(txnItem, billStatus, currentDate, currentUser.EmployeeId, counterId);
+                        UpdateRequisitionItemsBillStatus(dbContext, txnItem.ServiceDepartmentName, billStatus, currentUser, txnItem.RequisitionId, currentDate);
                         dbContext.BillingTransactionItems.Add(txnItem);
                     }
                     else
                     {
-                        txnItem = UpdateTxnItemBillStatus(dbContext, txnItem, billStatus, userId, currentDate, counterId, billingTransactionId);
+                        txnItem = UpdateTxnItemBillStatus(dbContext, txnItem, billStatus, currentUser, currentDate, counterId, billingTransactionId);
                     }
 
 
@@ -179,14 +204,14 @@ namespace DanpheEMR.Controllers.Billing
         public static BillingTransactionItemModel UpdateTxnItemBillStatus(BillingDbContext billingDbContext,
             BillingTransactionItemModel billItem,
             string billStatus, //provisional,paid,unpaid,returned
-            int userId,
+            RbacUser currentUser,
             DateTime? modifiedDate = null,
             int? counterId = null,
             int? billingTransactionId = null)
         {
             modifiedDate = modifiedDate != null ? modifiedDate : DateTime.Now;
 
-            billItem = GetBillStatusMapped(billItem, billStatus, modifiedDate, userId, counterId);
+            billItem = GetBillStatusMapped(billItem, billStatus, modifiedDate, currentUser.EmployeeId, counterId);
             billingDbContext.BillingTransactionItems.Attach(billItem);
             //update returnstatus and returnquantity
             if (billStatus == "paid")
@@ -248,7 +273,7 @@ namespace DanpheEMR.Controllers.Billing
             billingDbContext.Entry(billItem).Property(a => a.TaxableAmount).IsModified = true;
             billingDbContext.Entry(billItem).Property(a => a.NonTaxableAmount).IsModified = true;
 
-            UpdateRequisitionItemsBillStatus(billingDbContext, billItem.ServiceDepartmentName, billStatus, userId, billItem.RequisitionId, modifiedDate);
+            UpdateRequisitionItemsBillStatus(billingDbContext, billItem.ServiceDepartmentName, billStatus, currentUser, billItem.RequisitionId, modifiedDate);
 
             //update bill status in BillItemRequistion (Order Table)
             BillItemRequisition billItemRequisition = (from bill in billingDbContext.BillItemRequisitions
@@ -267,7 +292,7 @@ namespace DanpheEMR.Controllers.Billing
         public static void UpdateRequisitionItemsBillStatus(BillingDbContext billingDbContext,
             string serviceDepartmentName,
             string billStatus, //provisional,paid,unpaid,returned
-            int userId,
+            RbacUser currentUser,
             long? requisitionId,
             DateTime? modifiedDate)
         {
@@ -286,7 +311,7 @@ namespace DanpheEMR.Controllers.Billing
                     {
                         labItem.BillingStatus = billStatus;
                         labItem.ModifiedOn = modifiedDate;
-                        labItem.ModifiedBy = userId;
+                        labItem.ModifiedBy = currentUser.EmployeeId;
                         billingDbContext.Entry(labItem).Property(a => a.BillingStatus).IsModified = true;
                         billingDbContext.Entry(labItem).Property(a => a.ModifiedOn).IsModified = true;
                         billingDbContext.Entry(labItem).Property(a => a.ModifiedBy).IsModified = true;
@@ -301,7 +326,7 @@ namespace DanpheEMR.Controllers.Billing
                     {
                         radioItem.BillingStatus = billStatus;
                         radioItem.ModifiedOn = modifiedDate;
-                        radioItem.ModifiedBy = userId;
+                        radioItem.ModifiedBy = currentUser.EmployeeId;
                         billingDbContext.Entry(radioItem).Property(a => a.BillingStatus).IsModified = true;
                         billingDbContext.Entry(radioItem).Property(a => a.ModifiedOn).IsModified = true;
                         billingDbContext.Entry(radioItem).Property(a => a.ModifiedBy).IsModified = true;
@@ -316,12 +341,16 @@ namespace DanpheEMR.Controllers.Billing
                     {
                         visitItem.BillingStatus = billStatus;
                         visitItem.ModifiedOn = modifiedDate;
-                        visitItem.ModifiedBy = userId;
+                        visitItem.ModifiedBy = currentUser.EmployeeId;
                         billingDbContext.Entry(visitItem).Property(a => a.BillingStatus).IsModified = true;
                         billingDbContext.Entry(visitItem).Property(a => a.ModifiedOn).IsModified = true;
                         billingDbContext.Entry(visitItem).Property(a => a.ModifiedBy).IsModified = true;
                     }
                 }
+
+                billingDbContext.AddAuditCustomField("ChangedByUserId", currentUser.EmployeeId);
+                billingDbContext.AddAuditCustomField("ChangedByUserName", currentUser.UserName);
+
                 billingDbContext.SaveChanges();
             }
         }
@@ -334,29 +363,29 @@ namespace DanpheEMR.Controllers.Billing
             int userId,
             int? counterId)
         {
-            if (billStatus == "paid")
+            if (billStatus == ENUM_BillingStatus.paid) //"paid")
             {
                 billItem.PaidDate = currentDate;
-                billItem.BillStatus = "paid";
+                billItem.BillStatus = ENUM_BillingStatus.paid;// "paid";
                 billItem.PaymentReceivedBy = userId;
                 billItem.PaidCounterId = counterId;
 
             }
-            else if (billStatus == "unpaid")
+            else if (billStatus == ENUM_BillingStatus.unpaid)// "unpaid")
             {
                 billItem.PaidDate = null;
-                billItem.BillStatus = "unpaid";
+                billItem.BillStatus = ENUM_BillingStatus.unpaid;// "unpaid";
                 billItem.PaidCounterId = null;
                 billItem.PaymentReceivedBy = null;
 
             }
-            else if (billStatus == "cancel")
+            else if (billStatus == ENUM_BillingStatus.cancel)// "cancel")
             {
                 billItem.CancelledBy = userId;
-                billItem.BillStatus = "cancel";
+                billItem.BillStatus = ENUM_BillingStatus.cancel;// "cancel";
                 billItem.CancelledOn = currentDate;
             }
-            else if (billStatus == "returned")
+            else if (billStatus == ENUM_BillingStatus.returned)//"returned")
             {
                 billItem.ReturnStatus = true;
                 billItem.ReturnQuantity = billItem.Quantity;//all items will be returned            
@@ -376,13 +405,15 @@ namespace DanpheEMR.Controllers.Billing
         {
             if (txnItmFromClient != null && txnItmFromClient.BillingTransactionItemId != 0)
             {
-
+               
                 using (var dbContextTransaction = billingDbContext.Database.BeginTransaction())
                 {
                     try
                     {
+                       
                         BillingTransactionItemModel txnItmFromDb = billingDbContext.BillingTransactionItems
           .Where(itm => itm.BillingTransactionItemId == txnItmFromClient.BillingTransactionItemId).FirstOrDefault();
+                        billingDbContext.BillingTransactionItems.Attach(txnItmFromDb);
 
                         txnItmFromDb.Price = txnItmFromClient.Price;
                         txnItmFromDb.Quantity = txnItmFromClient.Quantity;
@@ -391,12 +422,13 @@ namespace DanpheEMR.Controllers.Billing
                         txnItmFromDb.DiscountAmount = txnItmFromClient.DiscountAmount;
                         txnItmFromDb.DiscountPercent = txnItmFromClient.DiscountPercent;
                         txnItmFromDb.TotalAmount = txnItmFromClient.TotalAmount;
-                        txnItmFromDb.ProviderId = txnItmFromClient.ProviderId;
+                        txnItmFromDb.ProviderId = txnItmFromClient.ProviderId;                        
                         txnItmFromDb.ProviderName = txnItmFromClient.ProviderName;
+                        txnItmFromDb.RequestedBy = txnItmFromClient.RequestedBy;
                         txnItmFromDb.DiscountPercentAgg = txnItmFromClient.DiscountPercentAgg;
                         txnItmFromDb.TaxableAmount = txnItmFromClient.TaxableAmount;
                         txnItmFromDb.NonTaxableAmount = txnItmFromClient.NonTaxableAmount;
-                        txnItmFromDb.ModifiedBy = txnItmFromClient.CreatedBy;
+                        txnItmFromDb.ModifiedBy = txnItmFromClient.ModifiedBy;
                         txnItmFromDb.ModifiedOn = DateTime.Now;
 
                         billingDbContext.Entry(txnItmFromDb).Property(a => a.Price).IsModified = true;
@@ -407,12 +439,15 @@ namespace DanpheEMR.Controllers.Billing
                         billingDbContext.Entry(txnItmFromDb).Property(a => a.DiscountPercentAgg).IsModified = true;
                         billingDbContext.Entry(txnItmFromDb).Property(a => a.TotalAmount).IsModified = true;
                         billingDbContext.Entry(txnItmFromDb).Property(a => a.ProviderId).IsModified = true;
+                        billingDbContext.Entry(txnItmFromDb).Property(a => a.RequestedBy).IsModified = true;
                         billingDbContext.Entry(txnItmFromDb).Property(a => a.ProviderName).IsModified = true;
                         billingDbContext.Entry(txnItmFromDb).Property(a => a.TaxableAmount).IsModified = true;
                         billingDbContext.Entry(txnItmFromDb).Property(a => a.NonTaxableAmount).IsModified = true;
                         billingDbContext.Entry(txnItmFromDb).Property(a => a.ModifiedBy).IsModified = true;
                         billingDbContext.Entry(txnItmFromDb).Property(a => a.ModifiedOn).IsModified = true;
-
+                        //var billingTransact = billingDbContext.BillingTransactionItems;
+                        //billingTransact.Add(txnItmFromDb);
+                        //billingDbContext.BillingTransactionItems.Add(txnItmFromDb);
                         //Salakha: commented code, After update qty, date should not be update
                         ////check if bed item was edited.
                         //BillItemPrice billItem = (from item in billingDbContext.BillItemPrice

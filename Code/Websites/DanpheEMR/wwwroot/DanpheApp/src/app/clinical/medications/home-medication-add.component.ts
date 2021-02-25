@@ -1,4 +1,4 @@
-﻿import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from "@angular/core";
+import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from "@angular/core";
 import { PatientService } from "../../patients/shared/patient.service";
 import { MedicationBLService } from '../shared/medication.bl.service';
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
@@ -29,7 +29,8 @@ export class HomeMedicationAddComponent {
     constructor(public patientService: PatientService,
         public medicationBLService: MedicationBLService,
         public changeDetector: ChangeDetectorRef,
-        public msgBoxServ: MessageboxService, public http: HttpClient) {
+        public msgBoxServ: MessageboxService,
+        public http: HttpClient) {
         this.LoadAllMedications();
 
     }

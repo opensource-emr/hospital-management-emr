@@ -1,0 +1,789 @@
+
+<table class="ef_table_top">
+  <thead>
+    <tr>
+      <th scope="col">OD</th>
+      <th scope="col">OS</th>
+    </tr>
+  </thead>
+</table>
+<div class="row em_module">
+  <div class="col-md-6 ">
+    <div class="fd_form_wrapper">
+      <div class="em_title">
+        <h4>Refraction</h4>
+      </div>
+      <FORM METHOD="POST" ACTION="">
+        <TABLE class="fd_table">
+          <TR>
+            <th width="25%">Date</th>
+            <th >Time-Point</th>
+            <th>UCVA</th>
+            <th>U-lett</th>
+            <th>NUC</th>
+            <th>Sph</th>
+            <th>Cyf</th>
+            <th>Axis</th>
+            <th>BSCVA</th>
+            <th>B-lett</th>
+            <th>DCNV</th>
+          </TR>
+          <TR *ngFor="let row of EyeMaster.RefractionOD">
+            <TD><INPUT TYPE="date" ngDefaultControl [(ngModel)]="row.Date" NAME="Date"></TD>
+            <TD><INPUT SIZE="3" TYPE="TEXT" ngDefaultControl [(ngModel)]="row.TimePoint" NAME="TimePoint"></TD>
+            <TD><INPUT SIZE="3" TYPE="TEXT" ngDefaultControl [(ngModel)]="row.UCVA" NAME="UCVA"></TD>
+            <TD><INPUT SIZE="3" TYPE="TEXT" ngDefaultControl [(ngModel)]="row.ULett" NAME="ULett"></TD>
+            <TD><INPUT SIZE="3" TYPE="TEXT" ngDefaultControl [(ngModel)]="row.NUC" NAME="NUC"></TD>
+            <TD><INPUT SIZE="3" TYPE="TEXT" ngDefaultControl [(ngModel)]="row.Sph" NAME="Sph"></TD>
+            <TD><INPUT SIZE="3" TYPE="TEXT" ngDefaultControl [(ngModel)]="row.Cyf" NAME="Cyf"></TD>
+            <TD><INPUT SIZE="3" TYPE="TEXT" ngDefaultControl [(ngModel)]="row.Axis" NAME="Axis"></TD>
+            <TD><INPUT SIZE="3" TYPE="TEXT" ngDefaultControl [(ngModel)]="row.BSCVA" NAME="BSCVA"></TD>
+            <TD><INPUT SIZE="3" TYPE="TEXT" ngDefaultControl [(ngModel)]="row.BLett" NAME="BLett"></TD>
+            <TD><INPUT SIZE="3" TYPE="TEXT" ngDefaultControl [(ngModel)]="row.DCNV" NAME="DCNV"></TD>
+          </TR>
+        </TABLE>
+      </FORM>
+    </div>
+    <div class="fd_form_wrapper">
+      <div class="em_title">
+        <h4>Operation Notes OD </h4>
+      </div>
+      <FORM METHOD="POST" ACTION="">
+        <textarea ngDefaultControl [(ngModel)]="EyeMaster.OperationNotesOD.Notes"></textarea>
+      </FORM>
+    </div>
+    <div class="fd_form_wrapper">
+      <div class="em_title">
+        <h4>Sx- Technique OD</h4>
+      </div>
+      <form action="">
+		  <div class="icheck-inline fd-radio-inline">
+		  	<label class="mt-checkbox mt-checkbox-outline">
+          <input type="radio" name="SXTechniqueOD" ngDefaultControl [(ngModel)]="EyeMaster.AblationOD.Profile" value="Lasik">
+          <span></span>LASIK </label>
+        <label class="mt-checkbox mt-checkbox-outline">
+          <input type="radio" name="SXTechniqueOD" ngDefaultControl [(ngModel)]="EyeMaster.AblationOD.Profile" value="Lift">
+          <span></span>Lift</label>
+        <label class="mt-checkbox mt-checkbox-outline">
+          <input type="radio" name="SXTechniqueOD" ngDefaultControl [(ngModel)]="EyeMaster.AblationOD.Profile" value="Smart Surf">
+          <span></span>Smart Surf</label>
+        <label class="mt-checkbox mt-checkbox-outline">
+          <input type="radio" name="SXTechniqueOD" ngDefaultControl [(ngModel)]="EyeMaster.AblationOD.Profile" value="Smart Sight">
+          <span></span>Smart Sight</label>
+		  </div>        
+      </form>
+    </div>
+    <div class="fd_form_wrapper">
+      <div class="em_title">
+        <h4>Sx. Ablation Profile OD</h4>
+      </div>
+      <FORM METHOD="POST" ACTION="">
+        <TABLE class="fd_table">
+          <TR>
+            <th>Profile</th>
+            <Th>DZP Factor</Th>
+          </TR>
+          <TR>
+            <th>{{EyeMaster.AblationOD.Profile}}</th>
+            <TD><INPUT TYPE="TEXT" NAME="DZPFactor" ngDefaultControl [(ngModel)]="EyeMaster.AblationOD.DZPFactor" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+          </TR>
+        </TABLE>
+        <div class="fd_form_wrapper">
+          <div class="em_title">
+            <h4>Sx. Ablation Profile Notes OD</h4>
+          </div>
+          <textarea ngDefaultControl [(ngModel)]="EyeMaster.AblationOD.Notes"></textarea>
+        </div>
+      </FORM>
+    </div>
+    <div class="fd_form_wrapper">
+      <div class="em_title">
+        <h4>Sx. Laser Data Entry OD</h4>
+      </div>
+      <FORM METHOD="POST" ACTION="">
+        <TABLE class="fd_table">
+          <TR>
+            <th> </th>
+            <th>Sph</th>
+            <th>Cyf</th>
+            <th>Axis</th>
+            <th>Zone</th>
+            <th>Transmis.</th>
+          </TR>
+          <TR *ngFor="let row of EyeMaster.LaserDataOD;let i = index">
+            <th>Profile {{i+1}}</th>
+            <TD><INPUT TYPE="TEXT" NAME="Sph" ngDefaultControl [(ngModel)]="row.Sph" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="Cyf" ngDefaultControl [(ngModel)]="row.Cyf" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="Axis" ngDefaultControl [(ngModel)]="row.Axis" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="Zone" ngDefaultControl [(ngModel)]="row.Zone" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="Transmission" ngDefaultControl [(ngModel)]="row.Transmission" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+          </TR>
+        </TABLE>
+      </FORM>
+    </div>
+    <div class="fd_form_wrapper">
+      <div class="em_title">
+        <h4>Pre-Op Pachymetry OD</h4>
+      </div>
+      <FORM METHOD="POST" ACTION="">
+        <TABLE class="fd_table">
+          <TR></TR>
+          <TR>
+            <th> </th>
+            <th>Pent Min</th>
+            <th>Pent Central</th>
+            <th>U/S Min </th>
+            <th>Visante Min</th>
+          </TR>
+          <TR *ngFor="let row of EyeMaster.PrePachymetryOD;let i = index">
+            <th>Profile 1</th>
+            <TD><INPUT TYPE="TEXT" NAME="PentMin" ngDefaultControl [(ngModel)]="row.PentMin" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="PentCentral" ngDefaultControl [(ngModel)]="row.PentCentral" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="USMIn" ngDefaultControl [(ngModel)]="row.USMIn" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="VisanteMin" ngDefaultControl [(ngModel)]="row.VisanteMin" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+          </TR>
+        </TABLE>
+      </FORM>
+    </div>
+    <div class="fd_form_wrapper">
+      <div class="em_title">
+        <h4>Sx. LASIK RST OD</h4>
+      </div>
+      <FORM METHOD="POST" ACTION="">
+        <TABLE class="fd_table">
+          <TR>
+            <th> </th>
+            <th>Microns</th>
+            <th>Notes </th>
+          </TR>
+          <TR>
+            <th>Pachymetry</th>
+            <TD><INPUT TYPE="TEXT" NAME="PachymetryMicrons" ngDefaultControl [(ngModel)]="EyeMaster.LasikRSTOD.PachymetryMicrons" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="PachymetryNotes" ngDefaultControl [(ngModel)]="EyeMaster.LasikRSTOD.PachymetryNotes" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+          </TR>
+          <TR>
+            <th>Flap Depth</th>
+            <TD><INPUT TYPE="TEXT" NAME="FlapDepthMicrons" ngDefaultControl [(ngModel)]="EyeMaster.LasikRSTOD.FlapDepthMicrons" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="FlapDepthNotes" ngDefaultControl [(ngModel)]="EyeMaster.LasikRSTOD.FlapDepthNotes" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+          </TR>
+          <TR>
+            <th>Ablation Depth</th>
+            <TD><INPUT TYPE="TEXT" NAME="AblationDepthMicrons" ngDefaultControl [(ngModel)]="EyeMaster.LasikRSTOD.AblationDepthMicrons" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="AblationDepthNotes" ngDefaultControl [(ngModel)]="EyeMaster.LasikRSTOD.AblationDepthNotes" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+          </TR>
+          <TR>
+            <th>Predicted RST </th>
+            <TD><INPUT TYPE="TEXT" NAME="PredictedRSTMicrons" ngDefaultControl [(ngModel)]="EyeMaster.LasikRSTOD.PredictedRSTMicrons" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="PredictedRSTNotes" ngDefaultControl [(ngModel)]="EyeMaster.LasikRSTOD.PredictedRSTNotes" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+          </TR>
+        </TABLE>
+      </FORM>
+    </div>
+    <div class="fd_form_wrapper">
+      <div class="em_title">
+        <h4>Sx. Smile Setting OD </h4>
+      </div>
+      <FORM METHOD="POST" ACTION="">
+        <TABLE class="fd_table">
+          <TR>
+            <th> </th>
+            <th>&nbsp;&nbsp; Lent</th>
+            <th>&nbsp;&nbsp; Lent Side </th>
+            <th>&nbsp;&nbsp; Cap</th>
+            <th>&nbsp;&nbsp; Cap Side</th>
+          </TR>
+          <TR>
+            <th> Spot Distance</th>
+            <TD><INPUT TYPE="TEXT" NAME="SpotDistanceLent" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOD.SpotDistanceLent" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="SpotDistanceLentSide" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOD.SpotDistanceLentSide" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="SpotDistanceCap" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOD.SpotDistanceCap" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="SpotDistanceCapSide" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOD.SpotDistanceCapSide" [ngModelOptions]="{standalone:true}"></TD>
+          </TR>
+          <TR>
+            <th>Track Distance</th>
+            <TD><INPUT TYPE="TEXT" NAME="TrackDistanceLent" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOD.TrackDistanceLent" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="TrackDistanceLentSide" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOD.TrackDistanceLentSide" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="TrackDistanceCap" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOD.TrackDistanceCap" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="TrackDistanceCapSide" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOD.TrackDistanceCapSide" [ngModelOptions]="{standalone:true}"></TD>
+          </TR>
+          <TR>
+            <th>Energy Offset</th>
+            <TD><INPUT TYPE="TEXT" NAME="EnergyOffsetLent" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOD.EnergyOffsetLent" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="EnergyOffsetLentSide" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOD.EnergyOffsetLentSide" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="EnergyOffsetCap" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOD.EnergyOffsetCap" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="EnergyOffsetCapSide" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOD.EnergyOffsetCapSide" [ngModelOptions]="{standalone:true}"></TD>
+          </TR>
+          <TR>
+            <th>Scan Direction</th>
+            <TD><INPUT TYPE="TEXT" NAME="ScanDirectionLent" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOD.ScanDirectionLent" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="ScanDirectionLentSide" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOD.ScanDirectionLentSide" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="ScanDirectionCap" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOD.ScanDirectionCap" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="ScanDirectionCapSide" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOD.ScanDirectionCapSide" [ngModelOptions]="{standalone:true}"></TD>
+          </TR>
+          <TR>
+            <th>Scan Mode</th>
+            <TD><INPUT TYPE="TEXT" NAME="ScanModeLent" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOD.ScanModeLent" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="ScanModeLentSide" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOD.ScanModeLentSide" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="ScanModeCap" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOD.ScanModeCap" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="ScanModeCapSide" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOD.ScanModeCapSide" [ngModelOptions]="{standalone:true}"></TD>
+          </TR>
+          <TR>
+            <th>Min. Thickness</th>
+            <TD><INPUT TYPE="TEXT" NAME="MinThicknessLent" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOD.MinThicknessLent" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="MinThicknessLentSide" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOD.MinThicknessLentSide" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="MinThicknessCap" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOD.MinThicknessCap" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="MinThicknessCapSide" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOD.MinThicknessCapSide" [ngModelOptions]="{standalone:true}"></TD>
+          </TR>
+          <TR>
+            <th>Sidecut</th>
+            <TD><INPUT TYPE="TEXT" NAME="SidecutLent" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOD.SidecutLent" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="SidecutLentSide" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOD.SidecutLentSide" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="SidecutCap" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOD.SidecutCap" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="SidecutCapSide" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOD.SidecutCapSide" [ngModelOptions]="{standalone:true}"></TD>
+          </TR>
+        </TABLE>
+      </FORM>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <div class="em_title">
+          <h4>Sx-PTK Performed OD</h4>
+        </div>
+		  <form action="">
+		  <div class="icheck-inline fd-radio-inline">
+		  	<label class="mt-checkbox mt-checkbox-outline">
+           <input type="radio" name="PTKPerformedforOD" ngDefaultControl [(ngModel)]="EyeMaster.AblationOD.isPTKPerformed" [ngModelOptions]="{standalone:true}" [value]='true'>
+          <span></span>Yes </label>
+        <label class="mt-checkbox mt-checkbox-outline">
+          <input type="radio" name="PTKPerformedforOD" ngDefaultControl [(ngModel)]="EyeMaster.AblationOD.isPTKPerformed" [ngModelOptions]="{standalone:true}" [value]='false'>
+          <span></span>No</label>        
+		  </div>       
+        </form>
+      </div>
+      <div class="col-md-6">
+        <div class="em_title">
+          <h4>Sx-Done OD</h4>
+        </div>
+		  
+		  <form action="">
+		  <div class="icheck-inline fd-radio-inline">
+		  	<label class="mt-checkbox mt-checkbox-outline">
+           <input type="radio" name="SXDone" ngDefaultControl [(ngModel)]="EyeMaster.AblationOD.isSXDone" [ngModelOptions]="{standalone:true}" [value]='true'>
+          <span></span>Yes </label>
+        <label class="mt-checkbox mt-checkbox-outline">
+          <input type="radio" name="SXDone" ngDefaultControl [(ngModel)]="EyeMaster.AblationOD.isSXDone" [ngModelOptions]="{standalone:true}" [value]='false'>
+          <span></span>No</label>        
+		  </div>       
+        </form>
+        
+      </div>
+    </div>
+    <div class="fd_form_wrapper">
+      <div class="em_title">
+        <h4>Pachymetry OD</h4>
+      </div>
+      <FORM METHOD="POST" ACTION="">
+        <TABLE class="fd_table">
+          <TR>
+            <th>Date</th>
+            <th>Timepoint Pre</th>
+            <th>U/S Min</th>
+            <th>Visante RST</th>
+          </TR>
+          <TR *ngFor="let row of EyeMaster.PachymetryOD">
+            <TD><INPUT TYPE="date" NAME="Date" SIZE="11" ngDefaultControl [(ngModel)]="row.Date" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="TimePointPre" SIZE="11" ngDefaultControl [(ngModel)]="row.TimePointPre" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="USMin" SIZE="11" ngDefaultControl [(ngModel)]="row.USMin" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="VisanteRST" SIZE="11" ngDefaultControl [(ngModel)]="row.VisanteRST" [ngModelOptions]="{standalone:true}"></TD>
+          </TR>
+        </TABLE>
+      </FORM>
+    </div>
+    <div class="fd_form_wrapper">
+      <div class="em_title">
+        <h4>Wavefront OD (6mm dilated)</h4>
+      </div>
+      <FORM METHOD="POST" ACTION="">
+        <TABLE class="fd_table">
+          <TR>
+            <th>Date</th>
+            <th>Timepoint Pre</th>
+            <th>Coma</th>
+            <th>Sph Ab</th>
+            <th>HO RMS</th>
+          </TR>
+          <TR *ngFor="let row of EyeMaster.WavefrontOD">
+            <TD><INPUT TYPE="date" NAME="Date" SIZE="11" ngDefaultControl [(ngModel)]="row.Date" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="Timepoint" SIZE="11" ngDefaultControl [(ngModel)]="row.Timepoint" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="Coma" SIZE="11" ngDefaultControl [(ngModel)]="row.Coma" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="SphAb" SIZE="11" ngDefaultControl [(ngModel)]="row.SphAb" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="HoRMS" SIZE="11" ngDefaultControl [(ngModel)]="row.HoRMS" [ngModelOptions]="{standalone:true}"></TD>
+          </TR>
+        </TABLE>
+      </FORM>
+    </div>
+    <div class="fd_form_wrapper">
+      <div class="em_title">
+        <h4>ORA OD (6mm dilated)</h4>
+      </div>
+      <FORM METHOD="POST" ACTION="">
+        <TABLE class="fd_table">
+          <TR>
+            <th>Date</th>
+            <th>Timepoint Pre</th>
+            <th>IOPCc</th>
+            <th>CRF</th>
+            <th>CH</th>
+          </TR>
+          <TR *ngFor="let row of EyeMaster.ORAOD">
+            <TD><INPUT TYPE="date" NAME="date" SIZE="11" ngDefaultControl [(ngModel)]="row.Date" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="date" SIZE="11" ngDefaultControl [(ngModel)]="row.Timepoint" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="date" SIZE="11" ngDefaultControl [(ngModel)]="row.IOPcc" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="date" SIZE="11" ngDefaultControl [(ngModel)]="row.CRF" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="date" SIZE="11" ngDefaultControl [(ngModel)]="row.CH" [ngModelOptions]="{standalone:true}"></TD>
+          </TR>
+        </TABLE>
+      </FORM>
+    </div>
+    <div class="fd_form_wrapper">
+      <div class="em_title">
+        <h4>Sx. Smile Incision OD</h4>
+      </div>
+      <FORM METHOD="POST" ACTION="">
+        <TABLE class="fd_table">
+          <TR>
+            <th>Pachymetry</th>
+            <th>Position</th>
+            <th>Width</th>
+          </TR>
+          <TR>
+            <th>1</th>
+            <TD><INPUT TYPE="TEXT" NAME="Position" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileIncisionOD.Position" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="Width" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileIncisionOD.Width" [ngModelOptions]="{standalone:true}"></TD>
+          </TR>
+        </TABLE>
+      </FORM>
+    </div>
+    <div class="fd_form_wrapper">
+      <div class="em_title">
+        <h4>ATOS OD</h4>
+      </div>
+      <FORM METHOD="POST" ACTION="">
+        <TABLE class="fd_table">
+          <TR>
+            <th>Thickness </th>
+            <TD><INPUT TYPE="TEXT" NAME="Thickness" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.VisumaxOD.Thickness" [ngModelOptions]="{standalone:true}"></TD>
+          </TR>
+          <TR>
+            <th>Diameter</th>
+            <TD><INPUT TYPE="TEXT" NAME="Diameter" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.VisumaxOD.Diameter" [ngModelOptions]="{standalone:true}"></TD>
+          </TR>
+          <TR>
+            <th>Hinge</th>
+            <TD><INPUT TYPE="TEXT" NAME="Hinge" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.VisumaxOD.Hinge" [ngModelOptions]="{standalone:true}"></TD>
+          </TR>
+          <TR>
+            <th>Glass</th>
+            <TD><INPUT TYPE="TEXT" NAME="Glass" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.VisumaxOD.Glass" [ngModelOptions]="{standalone:true}"></TD>
+          </TR>
+          <TR>
+            <th>Sidecut</th>
+            <TD><INPUT TYPE="TEXT" NAME="Sidecut" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.VisumaxOD.Sidecut" [ngModelOptions]="{standalone:true}"></TD>
+          </TR>
+        </TABLE>
+      </FORM>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="fd_form_wrapper">
+      <div class="em_title">
+        <h4>Refraction</h4>
+      </div>
+      <FORM METHOD="POST" ACTION="">
+        <TABLE class="fd_table">
+          <TR>
+            <th>Date</th>
+            <th>Time-Point</th>
+            <th>UCVA</th>
+            <th>U-lett</th>
+            <th>NUC</th>
+            <th>Sph</th>
+            <th>Cyf</th>
+            <th>Axis</th>
+            <th>BSCVA</th>
+            <th>B-lett</th>
+            <th>DCNV</th>
+          </TR>
+          <TR *ngFor="let row of EyeMaster.RefractionOS">
+            <TD><INPUT TYPE="date" ngDefaultControl [(ngModel)]="row.Date" NAME="Date"></TD>
+            <TD><INPUT SIZE="3" TYPE="TEXT" ngDefaultControl [(ngModel)]="row.TimePoint" NAME="TimePoint"></TD>
+            <TD><INPUT SIZE="3" TYPE="TEXT" ngDefaultControl [(ngModel)]="row.UCVA" NAME="UCVA"></TD>
+            <TD><INPUT SIZE="3" TYPE="TEXT" ngDefaultControl [(ngModel)]="row.ULett" NAME="ULett"></TD>
+            <TD><INPUT SIZE="3" TYPE="TEXT" ngDefaultControl [(ngModel)]="row.NUC" NAME="NUC"></TD>
+            <TD><INPUT SIZE="3" TYPE="TEXT" ngDefaultControl [(ngModel)]="row.Sph" NAME="Sph"></TD>
+            <TD><INPUT SIZE="3" TYPE="TEXT" ngDefaultControl [(ngModel)]="row.Cyf" NAME="Cyf"></TD>
+            <TD><INPUT SIZE="3" TYPE="TEXT" ngDefaultControl [(ngModel)]="row.Axis" NAME="Axis"></TD>
+            <TD><INPUT SIZE="3" TYPE="TEXT" ngDefaultControl [(ngModel)]="row.BSCVA" NAME="BSCVA"></TD>
+            <TD><INPUT SIZE="3" TYPE="TEXT" ngDefaultControl [(ngModel)]="row.BLett" NAME="BLett"></TD>
+            <TD><INPUT SIZE="3" TYPE="TEXT" ngDefaultControl [(ngModel)]="row.DCNV" NAME="DCNV"></TD>
+          </TR>
+        </TABLE>
+      </FORM>
+    </div>
+    <div class="fd_form_wrapper">
+      <div class="em_title">
+        <h4>Operation Notes OS</h4>
+      </div>
+      <FORM METHOD="POST" ACTION="">
+        <textarea ngDefaultControl [(ngModel)]="EyeMaster.OperationNotesOS.Notes" style="min-width: 100%"></textarea>
+      </FORM>
+    </div>
+    <div class="fd_form_wrapper">
+      <div class="em_title">
+        <h4>Sx- Technique OS</h4>
+      </div>
+      <form action="">
+		  <div class="icheck-inline fd-radio-inline">
+		  	<label class="mt-checkbox mt-checkbox-outline">
+          <input type="radio" name="SXTechniqueOS" ngDefaultControl [(ngModel)]="EyeMaster.AblationOS.Profile" value="Lasik">
+          <span></span>LASIK </label>
+        <label class="mt-checkbox mt-checkbox-outline">
+          <input type="radio" name="SXTechniqueOS" ngDefaultControl [(ngModel)]="EyeMaster.AblationOS.Profile" value="Lift">
+          <span></span>Lift</label>
+        <label class="mt-checkbox mt-checkbox-outline">
+          <input type="radio" name="SXTechniqueOS" ngDefaultControl [(ngModel)]="EyeMaster.AblationOS.Profile" value="Smart Surf">
+          <span></span>Smart Surf</label>
+        <label class="mt-checkbox mt-checkbox-outline">
+          <input type="radio" name="SXTechniqueOS" ngDefaultControl [(ngModel)]="EyeMaster.AblationOS.Profile" value="Smart Sight">
+          <span></span>Smart Sight</label>
+		  </div>      
+      </form>
+    </div>
+    <div class="fd_form_wrapper">
+      <div class="em_title">
+        <h4>Sx. Ablation Profile OS</h4>
+      </div>
+      <FORM METHOD="POST" ACTION="">
+        <TABLE class="fd_table">
+          <TR>
+            <th>Profile</th>
+            <Th>DZP Factor</Th>
+          </TR>
+          <TR>
+            <th>{{EyeMaster.AblationOS.Profile}}</th>
+            <TD><INPUT TYPE="TEXT" NAME="DZPFactor" ngDefaultControl [(ngModel)]="EyeMaster.AblationOS.DZPFactor" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+          </TR>
+        </TABLE>
+        <div class="fd_form_wrapper">
+          <div class="em_title">
+            <h4>Sx. Ablation Profile Notes OS</h4>
+          </div>
+          <textarea ngDefaultControl [(ngModel)]="EyeMaster.AblationOS.Notes" style="min-width: 100%"></textarea>
+        </div>
+      </FORM>
+    </div>
+    <div class="fd_form_wrapper">
+      <div class="em_title">
+        <h4>Sx. Laser Data Entry OS</h4>
+      </div>
+      <FORM METHOD="POST" ACTION="">
+        <TABLE class="fd_table">
+          <TR>
+            <th> </th>
+            <th>Sph</th>
+            <th>Cyf</th>
+            <th>Axis</th>
+            <th>Zone</th>
+            <th>Transmis.</th>
+          </TR>
+          <TR *ngFor="let row of EyeMaster.LaserDataOS;let i = index">
+            <th>Profile {{i+1}}</th>
+            <TD><INPUT TYPE="TEXT" NAME="Sph" ngDefaultControl [(ngModel)]="row.Sph" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="Cyf" ngDefaultControl [(ngModel)]="row.Cyf" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="Axis" ngDefaultControl [(ngModel)]="row.Axis" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="Zone" ngDefaultControl [(ngModel)]="row.Zone" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="Transmission" ngDefaultControl [(ngModel)]="row.Transmission" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+          </TR>
+        </TABLE>
+      </FORM>
+    </div>
+    <div class="fd_form_wrapper">
+      <div class="em_title">
+        <h4>Pre-Op Pachymetry OS</h4>
+      </div>
+      <FORM METHOD="POST" ACTION="">
+        <TABLE class="fd_table">
+          <TR></TR>
+          <TR>
+            <th> </th>
+            <th>Pent Min</th>
+            <th>Pent Central</th>
+            <th>U/S Min </th>
+            <th>Visante Min</th>
+          </TR>
+          <TR *ngFor="let row of EyeMaster.PrePachymetryOS;let i = index">
+            <th>Profile 1</th>
+            <TD><INPUT TYPE="TEXT" NAME="PentMin" ngDefaultControl [(ngModel)]="row.PentMin" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="PentCentral" ngDefaultControl [(ngModel)]="row.PentCentral" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="USMIn" ngDefaultControl [(ngModel)]="row.USMIn" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="VisanteMin" ngDefaultControl [(ngModel)]="row.VisanteMin" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+          </TR>
+        </TABLE>
+      </FORM>
+    </div>
+    <div class="fd_form_wrapper">
+      <div class="em_title">
+        <h4>Sx. LASIK RST OS</h4>
+      </div>
+      <FORM METHOD="POST" ACTION="">
+        <TABLE class="fd_table">
+          <TR>
+            <th> </th>
+            <th>Microns</th>
+            <th>Notes </th>
+          </TR>
+          <TR>
+            <th>Pachymetry</th>
+            <TD><INPUT TYPE="TEXT" NAME="PachymetryMicrons" ngDefaultControl [(ngModel)]="EyeMaster.LasikRSTOS.PachymetryMicrons" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="PachymetryNotes" ngDefaultControl [(ngModel)]="EyeMaster.LasikRSTOS.PachymetryNotes" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+          </TR>
+          <TR>
+            <th>Flap Depth</th>
+            <TD><INPUT TYPE="TEXT" NAME="FlapDepthMicrons" ngDefaultControl [(ngModel)]="EyeMaster.LasikRSTOS.FlapDepthMicrons" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="FlapDepthNotes" ngDefaultControl [(ngModel)]="EyeMaster.LasikRSTOS.FlapDepthNotes" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+          </TR>
+          <TR>
+            <th>Ablation Depth</th>
+            <TD><INPUT TYPE="TEXT" NAME="AblationDepthMicrons" ngDefaultControl [(ngModel)]="EyeMaster.LasikRSTOS.AblationDepthMicrons" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="AblationDepthNotes" ngDefaultControl [(ngModel)]="EyeMaster.LasikRSTOS.AblationDepthNotes" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+          </TR>
+          <TR>
+            <th>Predicted RST </th>
+            <TD><INPUT TYPE="TEXT" NAME="PredictedRSTMicrons" ngDefaultControl [(ngModel)]="EyeMaster.LasikRSTOS.PredictedRSTMicrons" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="PredictedRSTNotes" ngDefaultControl [(ngModel)]="EyeMaster.LasikRSTOS.PredictedRSTNotes" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+          </TR>
+        </TABLE>
+      </FORM>
+    </div>
+    <div class="fd_form_wrapper">
+      <div class="em_title">
+        <h4>Sx. Smile Setting OS</h4>
+      </div>
+      <FORM METHOD="POST" ACTION="">
+        <TABLE class="fd_table">
+          <TR>
+            <th> </th>
+            <th>&nbsp;&nbsp; Lent</th>
+            <th>&nbsp;&nbsp; Lent Side </th>
+            <th>&nbsp;&nbsp; Cap</th>
+            <th>&nbsp;&nbsp; Cap Side</th>
+          </TR>
+          <TR>
+            <th> Spot Distance</th>
+            <TD><INPUT TYPE="TEXT" NAME="SpotDistanceLent" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOS.SpotDistanceLent" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="SpotDistanceLentSide" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOS.SpotDistanceLentSide" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="SpotDistanceCap" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOS.SpotDistanceCap" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="SpotDistanceCapSide" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOS.SpotDistanceCapSide" [ngModelOptions]="{standalone:true}"></TD>
+          </TR>
+          <TR>
+            <th>Track Distance</th>
+            <TD><INPUT TYPE="TEXT" NAME="TrackDistanceLent" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOS.TrackDistanceLent" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="TrackDistanceLentSide" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOS.TrackDistanceLentSide" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="TrackDistanceCap" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOS.TrackDistanceCap" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="TrackDistanceCapSide" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOS.TrackDistanceCapSide" [ngModelOptions]="{standalone:true}"></TD>
+          </TR>
+          <TR>
+            <th>Energy Offset</th>
+            <TD><INPUT TYPE="TEXT" NAME="EnergyOffsetLent" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOS.EnergyOffsetLent" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="EnergyOffsetLentSide" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOS.EnergyOffsetLentSide" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="EnergyOffsetCap" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOS.EnergyOffsetCap" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="EnergyOffsetCapSide" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOS.EnergyOffsetCapSide" [ngModelOptions]="{standalone:true}"></TD>
+          </TR>
+          <TR>
+            <th>Scan Direction</th>
+            <TD><INPUT TYPE="TEXT" NAME="ScanDirectionLent" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOS.ScanDirectionLent" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="ScanDirectionLentSide" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOS.ScanDirectionLentSide" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="ScanDirectionCap" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOS.ScanDirectionCap" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="ScanDirectionCapSide" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOS.ScanDirectionCapSide" [ngModelOptions]="{standalone:true}"></TD>
+          </TR>
+          <TR>
+            <th>Scan Mode</th>
+            <TD><INPUT TYPE="TEXT" NAME="ScanModeLent" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOS.ScanModeLent" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="ScanModeLentSide" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOS.ScanModeLentSide" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="ScanModeCap" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOS.ScanModeCap" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="ScanModeCapSide" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOS.ScanModeCapSide" [ngModelOptions]="{standalone:true}"></TD>
+          </TR>
+          <TR>
+            <th>Min. Thickness</th>
+            <TD><INPUT TYPE="TEXT" NAME="MinThicknessLent" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOS.MinThicknessLent" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="MinThicknessLentSide" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOS.MinThicknessLentSide" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="MinThicknessCap" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOS.MinThicknessCap" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="MinThicknessCapSide" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOS.MinThicknessCapSide" [ngModelOptions]="{standalone:true}"></TD>
+          </TR>
+          <TR>
+            <th>Sidecut</th>
+            <TD><INPUT TYPE="TEXT" NAME="SidecutLent" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOS.SidecutLent" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="SidecutLentSide" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOS.SidecutLentSide" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="SidecutCap" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOS.SidecutCap" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="SidecutCapSide" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileSettingOS.SidecutCapSide" [ngModelOptions]="{standalone:true}"></TD>
+          </TR>
+        </TABLE>
+      </FORM>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <div class="em_title">
+          <h4>Sx-PTK Performed OS</h4>
+        </div>
+		  <form action="">
+		  <div class="icheck-inline fd-radio-inline">
+		  	<label class="mt-checkbox mt-checkbox-outline">
+           <input type="radio" name="isPTKPerformedforOS" ngDefaultControl [(ngModel)]="EyeMaster.AblationOS.isPTKPerformed"  [value]='true'>
+          <span></span>Yes </label>
+        <label class="mt-checkbox mt-checkbox-outline">
+          <input type="radio" name="isPTKPerformedforOS" ngDefaultControl [(ngModel)]="EyeMaster.AblationOS.isPTKPerformed"  [value]='false'>
+          <span></span>No</label>        
+		  </div>       
+        </form>        
+      </div>
+      <div class="col-md-6">
+		  <div class="em_title">
+          <h4>Sx-Done OS</h4>
+        </div>     
+		  <form action="">
+		  <div class="icheck-inline fd-radio-inline">
+		  	<label class="mt-checkbox mt-checkbox-outline">
+           <input type="radio" name="isSXDoneforOS" ngDefaultControl [(ngModel)]="EyeMaster.AblationOS.isSXDone"  [value]='true'>
+          <span></span>Yes </label>
+        <label class="mt-checkbox mt-checkbox-outline">
+          <input type="radio" name="isSXDoneforOS" ngDefaultControl [(ngModel)]="EyeMaster.AblationOS.isSXDone" [value]='false'>
+          <span></span>No</label>        
+		  </div>       
+        </form>        
+      </div>
+    </div>
+    <div class="fd_form_wrapper">
+      <div class="em_title">
+        <h4>Pachymetry OS</h4>
+      </div>
+      <FORM METHOD="POST" ACTION="">
+        <TABLE class="fd_table">
+          <TR>
+            <th>Date</th>
+            <th>Timepoint Pre</th>
+            <th>U/S Min</th>
+            <th>Visante RST</th>
+          </TR>
+          <TR *ngFor="let row of EyeMaster.PachymetryOS">
+            <TD><INPUT TYPE="date" NAME="Date" SIZE="11" ngDefaultControl [(ngModel)]="row.Date" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="TimePointPre" SIZE="11" ngDefaultControl [(ngModel)]="row.TimePointPre" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="USMin" SIZE="11" ngDefaultControl [(ngModel)]="row.USMin" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="VisanteRST" SIZE="11" ngDefaultControl [(ngModel)]="row.VisanteRST" [ngModelOptions]="{standalone:true}"></TD>
+          </TR>
+        </TABLE>
+      </FORM>
+    </div>
+    <div class="fd_form_wrapper">
+      <div class="em_title">
+        <h4>Wavefront OS (6mm dilated) </h4>
+      </div>
+     
+      <FORM METHOD="POST" ACTION="">
+        <TABLE class="fd_table">
+          <TR>
+            <th>Date</th>
+            <th>Timepoint Pre</th>
+            <th>Coma</th>
+            <th>Sph Ab</th>
+            <th>HO RMS</th>
+          </TR>
+          <TR *ngFor="let row of EyeMaster.WavefrontOS">
+            <TD><INPUT TYPE="date" NAME="Date" SIZE="11" ngDefaultControl [(ngModel)]="row.Date" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="Timepoint" SIZE="11" ngDefaultControl [(ngModel)]="row.Timepoint" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="Coma" SIZE="11" ngDefaultControl [(ngModel)]="row.Coma" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="SphAb" SIZE="11" ngDefaultControl [(ngModel)]="row.SphAb" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="HoRMS" SIZE="11" ngDefaultControl [(ngModel)]="row.HoRMS" [ngModelOptions]="{standalone:true}"></TD>
+          </TR>
+        </TABLE>
+      </FORM>
+    </div>
+    <div class="fd_form_wrapper">
+      <div class="em_title">
+        <h4>ORA OS (6mm dilated)</h4>
+      </div>
+      
+      <FORM METHOD="POST" ACTION="">
+        <TABLE class="fd_table">
+          <TR>
+            <th>Date</th>
+            <th>Timepoint Pre</th>
+            <th>IOPCc</th>
+            <th>CRF</th>
+            <th>CH</th>
+          </TR>
+          <TR *ngFor="let row of EyeMaster.ORAOS">
+            <TD><INPUT TYPE="date" NAME="date" SIZE="11" ngDefaultControl [(ngModel)]="row.Date" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="date" SIZE="11" ngDefaultControl [(ngModel)]="row.Timepoint" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="date" SIZE="11" ngDefaultControl [(ngModel)]="row.IOPcc" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="date" SIZE="11" ngDefaultControl [(ngModel)]="row.CRF" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="date" SIZE="11" ngDefaultControl [(ngModel)]="row.CH" [ngModelOptions]="{standalone:true}"></TD>
+          </TR>
+        </TABLE>
+      </FORM>
+    </div>
+    <div class="fd_form_wrapper">
+      <div class="em_title">
+        <h4>Sx. Smile Incision OS</h4>
+      </div>
+      <FORM METHOD="POST" ACTION="">
+        <TABLE class="fd_table">
+          <TR>
+            <th>Pachymetry</th>
+            <th>Position</th>
+            <th>Width</th>
+          </TR>
+          <TR>
+            <th>1</th>
+            <TD><INPUT TYPE="TEXT" NAME="Position" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileIncisionOS.Position" [ngModelOptions]="{standalone:true}"></TD>
+            <TD><INPUT TYPE="TEXT" NAME="Width" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.SmileIncisionOS.Width" [ngModelOptions]="{standalone:true}"></TD>
+          </TR>
+        </TABLE>
+      </FORM>
+    </div>
+    <div class="fd_form_wrapper">
+      <div class="em_title">
+        <h4>ATOS OS </h4>
+      </div>
+      <FORM METHOD="POST" ACTION="">
+        <TABLE class="fd_table">
+          <TR>
+            <th>Thickness </th>
+            <TD><INPUT TYPE="TEXT" NAME="Thickness" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.VisumaxOS.Thickness" [ngModelOptions]="{standalone:true}"></TD>
+          </TR>
+          <TR>
+            <th>Diameter</th>
+            <TD><INPUT TYPE="TEXT" NAME="Diameter" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.VisumaxOS.Diameter" [ngModelOptions]="{standalone:true}"></TD>
+          </TR>
+          <TR>
+            <th>Hinge</th>
+            <TD><INPUT TYPE="TEXT" NAME="Hinge" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.VisumaxOS.Hinge" [ngModelOptions]="{standalone:true}"></TD>
+          </TR>
+          <TR>
+            <th>Glass</th>
+            <TD><INPUT TYPE="TEXT" NAME="Glass" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.VisumaxOS.Glass" [ngModelOptions]="{standalone:true}"></TD>
+          </TR>
+          <TR>
+            <th>Sidecut</th>
+            <TD><INPUT TYPE="TEXT" NAME="Sidecut" SIZE="11" ngDefaultControl [(ngModel)]="EyeMaster.VisumaxOS.Sidecut" [ngModelOptions]="{standalone:true}"></TD>
+          </TR>
+        </TABLE>
+      </FORM>
+    </div>
+  </div>
+  <div class="clearfix"> </div>
+  <div class="col-md-12 " id="saveallbutton">
+    <button *ngIf="!update" (click)="SaveAll()" class="btn btn-flickr primary-btn">Save All</button>
+    <button *ngIf="update" (click)="Update()" class="btn btn-flickr primary-btn">Update</button>
+  </div>
+  <div class="clearfix"> </div>
+</div>

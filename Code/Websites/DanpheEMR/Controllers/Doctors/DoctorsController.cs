@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Http.Features;
 using DanpheEMR.CommonTypes;
 using DanpheEMR.Security;
+using DanpheEMR.Enums;
 // For more information on enabling Web API for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 //this is the cotroller
 namespace DanpheEMR.Controllers
@@ -30,8 +31,6 @@ namespace DanpheEMR.Controllers
         {
 
         }
-
-
 
 
         [HttpGet]
@@ -67,8 +66,8 @@ namespace DanpheEMR.Controllers
                     //this will remove all other orders from past and only orders which matches visit-id will be shown (lab order / imaging order)
                     if (patientModel != null && patientModel.Visits != null && patientModel.Visits.Count > 0)
                     {
-                        patientModel.LabRequisitions = patientModel.LabRequisitions.Where(a => a.PatientVisitId == patientVisitId && a.BillingStatus != "returned").ToList();
-                        patientModel.ImagingItemRequisitions = patientModel.ImagingItemRequisitions.Where(a => a.PatientVisitId == patientVisitId && a.BillingStatus != "returned").ToList();
+                        patientModel.LabRequisitions = patientModel.LabRequisitions.Where(a => a.PatientVisitId == patientVisitId && a.BillingStatus != "returned" && a.BillingStatus != "cancel").ToList();
+                        patientModel.ImagingItemRequisitions = patientModel.ImagingItemRequisitions.Where(a => a.PatientVisitId == patientVisitId && a.BillingStatus != "returned" && a.BillingStatus != "cancel").ToList();
                     }
 
                     //add vitals to patient
@@ -83,12 +82,23 @@ namespace DanpheEMR.Controllers
                     //add profilePic info to patient                    
                     if (patientModel != null && patientModel.UploadedFiles != null && patientModel.PatientId == patientId)
                     {
+                        var location = (from dbc in patDbContext.CFGParameters
+                                        where dbc.ParameterGroupName.ToLower() == "patient" && dbc.ParameterName == "PatientProfilePicImageUploadLocation"
+                                        select dbc.ParameterValue
+                                ).FirstOrDefault();
+                        
                         patientModel.ProfilePic = (from p in patientModel.UploadedFiles
                                                    where p.IsActive == true && p.FileType == "profile-pic"
                                                    select p).FirstOrDefault();
+
+                       
+
                         if (patientModel.ProfilePic != null)
                         {
-                            patientModel.ProfilePic.FileBase64String = Convert.ToBase64String(patientModel.ProfilePic.FileBinaryData);
+                            var fullPath = location + patientModel.ProfilePic.FileName;
+                            byte[] imageArray = System.IO.File.ReadAllBytes(fullPath);
+                            patientModel.ProfilePic.FileBase64String = Convert.ToBase64String(imageArray);
+                            //patientModel.ProfilePic.FileBase64String = Convert.ToBase64String(patientModel.ProfilePic.FileBinaryData);
                         }
 
                     }
@@ -179,7 +189,6 @@ namespace DanpheEMR.Controllers
 
                     responseData.Results = patientModel;
                 }
-
                 else if (reqType == "otherRequestsOfPatient")
                 {
                     BillingDbContext billingDbContext = new BillingDbContext(base.connString);
@@ -202,12 +211,16 @@ namespace DanpheEMR.Controllers
                         int providerId = currentUser.EmployeeId;//check if we've to pass userid or employeeid--sudarshan 15mar'17
                         var today = DateTime.Today;
                         //show only today's visits for the provider.. and if the visittype is inpatient then  the addmission status shouled be admitted ..Dharam 9th Sept 2017..
-                        var visitList = (from visit in dbContext.Visits.Include("Admission").Include("Patient")
+                        var visitList = (from visit in dbContext.Visits.Include("Admission").Include("Patient").Include("Department")
                                          where visit.VisitStatus == status
                                          && (DbFunctions.TruncateTime(visit.VisitDate) == DbFunctions.TruncateTime(today) || visit.Admission.AdmissionStatus == "admitted")
-                                         && visit.ProviderId == providerId && visit.BillingStatus != "returned"
-                                         select visit).ToList()
-                                       .OrderBy(v => v.VisitDate).ThenBy(v => v.VisitTime).ToList();
+                                         && visit.ProviderId == providerId && visit.BillingStatus != ENUM_BillingStatus.returned // "returned"
+                                         select visit)
+                                         .ToList()
+                                         .OrderBy(v => v.VisitDate).ThenBy(v => v.VisitTime)
+                                         .ToList();
+
+                                                
                         responseData.Results = visitList;
                     }
                     else // visit records according to selected Date
@@ -216,11 +229,13 @@ namespace DanpheEMR.Controllers
                         int providerId = currentUser.EmployeeId;//check if we've to pass userid or employeeid--sudarshan 15mar'17
                         var departmentId = dbContext.Employees.Where(a => a.EmployeeId == providerId).Select(a => a).FirstOrDefault();
                         //show only today's visits for the provider.. and if the visittype is inpatient then  the addmission status shouled be admitted ..Dharam 9th Sept 2017..
-                        var visitList = (from visit in dbContext.Visits.Include("Admission").Include("Patient")
+                        var visitList = (from visit in dbContext.Visits.Include("Admission").Include("Patient").Include("Department")
+                                             //join depart in dbContext.Departments on visit.DepartmentId equals depart.DepartmentId
                                          where DbFunctions.TruncateTime(visit.VisitDate) == DbFunctions.TruncateTime(toDate) && // visit.VisitStatus == status &&
                                        (DbFunctions.TruncateTime(visit.VisitDate) == DbFunctions.TruncateTime(toDate) || visit.Admission.AdmissionStatus == "admitted")
-                                         && visit.DepartmentId == departmentId.DepartmentId && visit.BillingStatus != "returned"
-                                         select visit).ToList()
+                                         && visit.DepartmentId == departmentId.DepartmentId && visit.BillingStatus != ENUM_BillingStatus.returned // "returned"
+                                         select visit)
+                                         .ToList()
                                         .OrderBy(v => v.VisitDate).ThenBy(v => v.VisitTime).ToList().GroupBy(a => a.ProviderName)
                                         .Select(v => new { ProviderName = v.Select(p => p.ProviderName).FirstOrDefault(), visit = v }).ToList();
 
@@ -234,11 +249,11 @@ namespace DanpheEMR.Controllers
                     int providerId = currentUser.EmployeeId;//check if we've to pass userid or employeeid--sudarshan 15mar'17
                     var departmentId = dbContext.Employees.Where(a => a.EmployeeId == providerId).Select(a => a).FirstOrDefault();
                     //gets all visits earlier than today for this provider.. and if the visittype is inpatient then  the addmission status shouled be discharged ..Dharam 9th Sept 2017..
-                    var visitList = (from visit in dbContext.Visits.Include("Admission").Include("Patient")
+                    var visitList = (from visit in dbContext.Visits.Include("Admission").Include("Patient").Include("Department")
                                      where visit.DepartmentId == departmentId.DepartmentId
                                      //&& (visit.Admission == null || visit.Admission.AdmissionStatus == "discharged")
                                      select visit).ToList()
-                                 .Where(v => v.VisitDate.Date >= fromDate && v.VisitDate <= toDate && v.BillingStatus != "returned")
+                                 .Where(v => v.VisitDate.Date >= fromDate && v.VisitDate <= toDate && v.BillingStatus != ENUM_BillingStatus.returned ) //"returned")
                                  .OrderByDescending(v => v.VisitDate).ThenByDescending(v => v.VisitTime).ToList();
                     responseData.Results = visitList;
                 }
@@ -291,8 +306,8 @@ namespace DanpheEMR.Controllers
 
                 else
                 {
-                    responseData.Status = "Failed";
-                    responseData.ErrorMessage = "invalid patient id";
+                    responseData.Status = "OK";
+                    //responseData.ErrorMessage = " ";
                 }
 
             }

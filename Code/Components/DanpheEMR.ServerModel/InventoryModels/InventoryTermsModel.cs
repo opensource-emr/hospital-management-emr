@@ -19,5 +19,6 @@ namespace DanpheEMR.ServerModel
         public bool IsActive { get; set; }
         public int? CreatedBy { get; set; }
         public DateTime? CreatedOn { get; set; }
+        public int TermsApplicationEnumId { get; set; }
     }
 }

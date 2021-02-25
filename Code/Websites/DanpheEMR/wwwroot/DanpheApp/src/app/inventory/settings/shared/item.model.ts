@@ -18,7 +18,7 @@ export class ItemModel {
 
   public ItemCategoryId: number = null;
   public SubCategoryId: number = null;
-  public AccountHeadId: number = null;
+  //public AccountHeadId: number = null;
   public PackagingTypeId: number = null;
   public UnitOfMeasurementId: number = null;
   public Code: string = null;
@@ -34,11 +34,15 @@ export class ItemModel {
   public UnitQuantity: number = 0;
   public CreatedBy: number = null;
   public CreatedOn: string = null;
+  public ModifiedBy: number = null;
+  public ModifiedOn: string = null;
   public IsActive: boolean = true;
+  public UOMName: string = ''; //sanjit: 24 Mar'20
+  public IsVATApplicable: boolean = false; //ramesh:2 Apr'20
 
   public ItemCategory: Array<ItemCategoryModel> = new Array<ItemCategoryModel>();
   public ItemSubCategory: Array<ItemSubCategoryModel> = new Array<ItemSubCategoryModel>();
-  public AccountHead: Array<AccountHeadModel> = new Array<AccountHeadModel>();
+  //public AccountHead: Array<AccountHeadModel> = new Array<AccountHeadModel>();
   public PackagingType: Array<PackagingTypeModel> = new Array<PackagingTypeModel>();
   public UnitOfMeasurement: Array<UnitOfMeasurementModel> = new Array<UnitOfMeasurementModel>();
 
@@ -51,15 +55,16 @@ export class ItemModel {
 
       'ItemName': ['', Validators.compose([Validators.required, Validators.maxLength(200)])],
       //'ItemType': ['', Validators.compose([Validators.required, Validators.maxLength(200)])],
-      //'ItemCategoryId': ['', Validators.compose([Validators.required])],
-      'AccountHeadId': ['', Validators.compose([Validators.required])],
+      'ItemCategoryId': ['', Validators.compose([Validators.required])],
+      //'AccountHeadId': ['', Validators.compose([Validators.required])],
       //'PackagingTypeId': ['', Validators.compose([Validators.required])],
-      'ReOrderQuantity': ['', Validators.compose([Validators.required])],
-      //'UnitOfMeasurementId': ['', Validators.compose([Validators.required])],
+      //'ReOrderQuantity': ['', Validators.compose([Validators.required])],
+      'UnitOfMeasurementId': ['', Validators.compose([Validators.required])],
       'MinStockQuantity': ['', Validators.compose([Validators.required])],
       //'BudgetedQuantity': ['', Validators.compose([Validators.required])],
       //'StandardRate': ['', Validators.compose([Validators.required])],
       //'VAT': ['', Validators.compose([Validators.required])],
+      'SubCategoryId': ['', Validators.compose([Validators.required])],
     });
   }
 

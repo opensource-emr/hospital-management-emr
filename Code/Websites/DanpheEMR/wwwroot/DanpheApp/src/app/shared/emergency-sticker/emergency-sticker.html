@@ -1,4 +1,4 @@
-﻿<div *ngIf="showSticker">
+<div *ngIf="showSticker">
     <div id="EmergencySticker" style="width: 400px;height: 170px;border: 1px dotted black;padding: 10px;">
         <div id="emergencyStickerPrint" style="width:370px; height:180px;margin:0px;display:block;font-family:sans-serif;">
             <div style="width:100%;">
@@ -43,7 +43,7 @@
                             </div>
                         </div>
                     </div>
-                    <div style="font-size:14px;">
+                    <div style="width: 80%;font-size:14px;display: inline-block;">
                         <div>
                             Address&nbsp;:&nbsp;{{stickerDetail.Address}}, {{stickerDetail.CountrySubDivisionName}}
                         </div>
@@ -55,6 +55,9 @@
                                 {{stickerDetail.User}}
                             </span>
                         </div>
+                    </div>
+                    <div style="width: 20%; display: inline-block;">
+                      <qr-code *ngIf="showQrCode" [value]="patientQRCodeInfo" [size]="75"></qr-code>
                     </div>
                 </div>
             </div>

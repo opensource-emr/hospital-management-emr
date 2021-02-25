@@ -1,153 +1,133 @@
-﻿<div class="row">
+<div class="wrapper">
+  <div class="row">
     <form [formGroup]="currentModel.BillDeptSummaryValidator" class="form-horizontal">
-        <div class="form-body">
-            <div class="col-md-12">
-                <div class="caption">
-                    <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
-                    <span class="caption-subject font-red-sunglo bold uppercase">DEPARTMENT SUMMARY REPORT</span>
-
-                </div>
-                <div class="col-md-5 col-xs-12">
-                    <div class="form-group">
-                        <label class="control-label col-md-5">From Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
-                        <div class="col-md-7">
-                            <danphe-date-picker [(ngModel)]="currentModel.fromDate" ngDefaultControl [CalendarTypes]="calType" formControlName="fromDate">
-                            </danphe-date-picker>
-                            <span class="color-red font-sm" *ngIf="currentModel.IsDirty('fromDate')" [hidden]="currentModel.IsValidCheck('fromDate','required')"> From Date is required</span><br />
-                            <span class="color-red font-sm" *ngIf="currentModel.IsDirty('fromDate')" [hidden]="currentModel.IsValidCheck('fromDate','wrongDate')"> Enter Valid Date</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-5 col-xs-12">
-                    <div class="form-group">
-                        <label class="control-label col-md-4">To Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
-                        <div class="col-md-8">
-                            <danphe-date-picker [(ngModel)]="currentModel.toDate" ngDefaultControl [CalendarTypes]="calType" formControlName="toDate">
-                            </danphe-date-picker>
-                            <span class="color-red font-sm" *ngIf="currentModel.IsDirty('toDate')" [hidden]="currentModel.IsValidCheck('toDate','required')"> To Date is required</span><br />
-                            <span class="color-red font-sm" *ngIf="currentModel.IsDirty('toDate')" [hidden]="currentModel.IsValidCheck('toDate','wrongDate')"> Can't select future date</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-2 col-xs-12">
-                    <div class="form-group">
-                        <button class="btn blue" type="button" (click)="Load()" [disabled]="!(currentModel.IsValid())">
-                            <i class="fa fa-search"></i>
-                            Show Report
-                        </button>
-                    </div>
-                </div>
+      <div class="form-body">
+        <div class="col-md-12">
+          <div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">DEPARTMENT SUMMARY REPORT</span> </div>
+          <!--<div class="col-md-5 col-xs-12">
+            <div class="form-group">
+              <label class="control-label col-md-3">From Date<b class="color-red"> *</b><b style="float:right;">:</b></label>
+              <div class="col-md-9">
+                <danphe-date-picker [(ngModel)]="currentModel.fromDate" ngDefaultControl [CalendarTypes]="calType" formControlName="fromDate"> </danphe-date-picker>
+                <span class="color-red font-sm" *ngIf="currentModel.IsDirty('fromDate')" [hidden]="currentModel.IsValidCheck('fromDate','required')"> From Date is required</span><br />
+                <span class="color-red font-sm" *ngIf="currentModel.IsDirty('fromDate')" [hidden]="currentModel.IsValidCheck('fromDate','wrongDate')"> Enter Valid Date</span> </div>
             </div>
-            <div class="col-md-12">
-                <div class="col-md-5 col-xs-12">
-                    <div class="form-group">
-                        <label class="control-label col-md-5">Department:<b style="float:right;">:</b></label>
-                        <div class="col-md-7">
-                            <input class="form-control" danphe-auto-complete
-                                   [(ngModel)]="selServDept"
-                                   [ngModelOptions]="{standalone: true}"
-                                   [list-formatter]="myListFormatter"
-                                   [source]="servDeptsList"
-                                   placeholder="Enter Service Department Name"
-                                   display-property-name="ServiceDepartmentName"
-                                   value-property-name=null
-                                   (focusout)="ServDeptChanged()"
-                                   max-num-list="10" />
-                        </div>
-                    </div>
-                </div>
+          </div>
+          <div class="col-md-5 col-xs-12">
+            <div class="form-group">
+              <label class="control-label col-md-3">To Date<b class="color-red"> *</b><b style="float:right;">:</b></label>
+              <div class="col-md-9">
+                <danphe-date-picker [(ngModel)]="currentModel.toDate" ngDefaultControl [CalendarTypes]="calType" formControlName="toDate"> </danphe-date-picker>
+                <span class="color-red font-sm" *ngIf="currentModel.IsDirty('toDate')" [hidden]="currentModel.IsValidCheck('toDate','required')"> To Date is required</span><br />
+                <span class="color-red font-sm" *ngIf="currentModel.IsDirty('toDate')" [hidden]="currentModel.IsValidCheck('toDate','wrongDate')"> Can't select future date</span> </div>
             </div>
+          </div>-->
+          <div class="row">
+            <div class="col-md-6 col-xs-12">
+              <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'"> </from-to-date-select>
+            </div>
+            <div class="col-md-4 col-xs-12">
+              <div class="form-group">
+                <label class="control-label col-md-5">Department Name<b style="float:right;">:</b></label>
+                <div class="col-md-7">
+                  <input class="form-control" danphe-auto-complete
+						   [(ngModel)]="selServDept"
+						   [ngModelOptions]="{standalone: true}"
+						   [list-formatter]="myListFormatter"
+						   [source]="servDeptsList"
+						   placeholder="Enter Service Department Name"
+						   display-property-name="ServiceDepartmentName"
+						   value-property-name=null
+						   (focusout)="ServDeptChanged()"
+						   max-num-list="10" />
+                </div>
+              </div>
+            </div>
+            <div class="col-md-2 col-xs-12">
+              <div class="form-group">
+                <button class="btn blue" type="button" (click)="Load()"> <i class="fa fa-search"></i> Show Report </button>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
     </form>
-</div>
-<div class="row" id="printPage">
+  </div>
+  <div class="row" id="printPage">
     <div class="col-md-12" *ngIf="showAllDeptSummary">
-        <button class="blue btn right non-printable" type="button" (click)="ExportToExcelBilDeptSummary()">
-            <i class="fa fa-file-excel-o"></i>
-            Excel
-        </button>
+      <button class="blue btn right non-printable" type="button" (click)="ExportToExcelBilDeptSummary()"> <i class="fa fa-file-excel-o"></i> Excel </button>
     </div>
     <div class="col-md-12" style="display:none;padding:0px" id="headerForPrint">
-        <div class="text-center bill-head col-md-12" style="text-align:center;font-family:sans-serif;padding-top: 5px;">
-            <span style="font-size:20px;"><strong>{{headerDetails.hospitalName}}</strong></span><br />
-            <span style="font-size:14px;">{{headerDetails.address}}</span><br />
-        </div>
+      <div class="text-center bill-head col-md-12" style="text-align:center;font-family:sans-serif;padding-top: 5px;"> <span style="font-size:20px;"><strong>{{headerDetails.hospitalName}}</strong></span><br />
+        <span style="font-size:14px;">{{headerDetails.address}}</span><br />
+      </div>
     </div>
     <div class="col-md-12" *ngIf="showAllDeptSummary">
-        <div class="col-md-12">
-            <div class="col-md-12" style="padding:0px">
-                <span class="col-md-2 left" style="padding:0px">From Date: {{selectedModel.fromDate}}<br />ToDate: {{selectedModel.toDate}}<br /></span>
-                <span class="col-md-8" style="text-align:center;padding:0px;font-size:20px">
-                    Department Summary Report
-                </span>
-
-                <span class="col-md-2 right" style="padding:0px">Print Date: {{currentDate}}</span>
-            </div>
-        </div>
-        <table class="table-striped table-hover table-bordered" style="background-color:initial;margin-top:10px;width:100%">
-            <thead>
-                <tr>
-                    <td style="text-align:center"><b>Sr No.</b></td>
-                    <td><b>Service Department</b></td>
-                    <td style="text-align:center"><b>Quantity</b></td>
-                    <td style="text-align:center"><b>Gross Total</b></td>
-                    <td style="text-align:center"><b>Discount </b></td>
-                    <td style="text-align:center"><b>Total Amount</b></td>
-                    <td style="text-align:center"><b>Net Return Amt.</b></td>
-                    <td style="text-align:center"><b>Net Sales</b></td>
-               </tr>
-            </thead>
-            <tbody>
-                <tr *ngFor="let row of reportData;let i=index">
-                    <td style="text-align:center">{{i+1}}</td>
-                    <td><a style="font-weight:bold" (click)="LoadDeptItems(row)">{{row.ServiceDepartment}}</a></td>
-                    <td style="text-align:right">{{row.Quantity}}</td>
-                    <td style="text-align:right">{{row.SubTotal}}</td>
-                    <td style="text-align:right">{{row.DiscountAmount}}</td>
-                    <td style="text-align:right">{{row.TotalAmount}}</td>
-                    <td style="text-align:right">{{row.ReturnAmount}}</td>
-                    <td style="text-align:right">{{row.NetSales}}</td>
-                </tr>
-            </tbody>
-        </table>
-      
-
-        <table class="table table-striped table-hover table-responsive" style="margin-top:10px">
-                <tr>
-                    <th>Gross Total:</th>
-                    <td>{{summary.tot_SubTotal}}</td>
-                    <th>Discount Amount:</th>
-                    <td>{{summary.tot_Discount}}</td>
-                    <th>Net Return Amount:</th>
-                    <td>{{summary.tot_Refund}}</td>
-                    <th>Net Sales:</th>
-                    <td>{{summary.tot_NetTotal}}</td>
-                </tr>
-                <tr>
-                    <!--<th>Total Sales:</th>
+      <div class="col-md-12">
+        <div class="col-md-12" style="padding:0px"> <span class="col-md-2 left" style="padding:0px"> From Date: {{selectedModel.fromDate}}<br />
+          ToDate: {{selectedModel.toDate}}<br />
+          </span> <span class="col-md-8" style="text-align:center;padding:0px;font-size:20px"> Department Summary Report </span> <span class="col-md-2 right" style="padding:0px">Print Date: {{currentDate}}</span> </div>
+      </div>
+      <table class="table-striped table-hover table-bordered" style="background-color:initial;margin-top:10px;width:100%">
+        <thead>
+          <tr>
+            <td style="text-align:center"><b>Sr No.</b></td>
+            <td><b>Service Department</b></td>
+            <td style="text-align:center"><b>Quantity</b></td>
+            <td style="text-align:center"><b>Gross Total</b></td>
+            <td style="text-align:center"><b>Discount </b></td>
+            <td style="text-align:center"><b>Total Amount</b></td>
+            <td style="text-align:center"><b>Net Return Amt.</b></td>
+            <td style="text-align:center"><b>Net Sales</b></td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of reportData;let i=index">
+            <td style="text-align:center">{{i+1}}</td>
+            <td><a style="font-weight:bold" (click)="LoadDeptItems(row)">{{row.ServiceDepartment}}</a></td>
+            <td style="text-align:right">{{row.Quantity}}</td>
+            <td style="text-align:right">{{row.SubTotal}}</td>
+            <td style="text-align:right">{{row.DiscountAmount}}</td>
+            <td style="text-align:right">{{row.TotalAmount}}</td>
+            <td style="text-align:right">{{row.ReturnAmount}}</td>
+            <td style="text-align:right">{{row.NetSales}}</td>
+          </tr>
+        </tbody>
+      </table>
+      <table class="table table-striped table-hover table-responsive" style="margin-top:10px">
+        <tr>
+          <th>Gross Total:</th>
+          <td>{{summary.tot_SubTotal}}</td>
+          <th>Discount Amount:</th>
+          <td>{{summary.tot_Discount}}</td>
+          <th>Net Return Amount:</th>
+          <td>{{summary.tot_Refund}}</td>
+          <th>Net Sales:</th>
+          <td>{{summary.tot_NetTotal}}</td>
+        </tr>
+        <tr> 
+          <!--<th>Total Sales:</th>
                 <td>{{summary.tot_SalesTotal}}</td>-->
-                    <th>Deposit Received:</th>
-                    <td>{{summary.tot_DepositReceived}}</td>
-                    <th>Deposit Refund:</th>
-                    <td>{{summary.tot_DepositRefund}}</td>
-                    <th>Cash Collection:</th>
-                    <td>{{summary.tot_CashCollection}}</td>
-                </tr>
-                <tr>
-                    <th>Provisional Amount:</th>
-                    <td>{{summary.tot_Provisional}}</td>
-                    <th>Cancel Amount:</th>
-                    <td>{{summary.tot_Cancel}}</td>
-                    <th>Credit Amount:</th>
-                    <td>{{summary.tot_Credit}}</td>
-                    <th>Collection From Receivables:</th>
-                    <td>{{summary.tot_CreditReceived}}</td>
-                </tr>
-    
-            </table>
-    
-    
-            <!-- @*<table class="table table-striped table-hover table-responsive" style="margin-top:10px">
+          <th>Deposit Received:</th>
+          <td>{{summary.tot_DepositReceived}}</td>
+          <th>Deposit Refund:</th>
+          <td>{{summary.tot_DepositRefund}}</td>
+          <th>Cash Collection:</th>
+          <td>{{summary.tot_CashCollection}}</td>
+        </tr>
+        <tr>
+          <th>Provisional Amount:</th>
+          <td>{{summary.tot_Provisional}}</td>
+          <th>Cancel Amount:</th>
+          <td>{{summary.tot_Cancel}}</td>
+          <th>Credit Amount:</th>
+          <td>{{summary.tot_Credit}}</td>
+          <th>Collection From Receivables:</th>
+          <td>{{summary.tot_CreditReceived}}</td>
+        </tr>
+      </table>
+      
+      <!-- @*<table class="table table-striped table-hover table-responsive" style="margin-top:10px">
                 <tr>
                     <th>Gross Total:</th>
                     <td>{{summary.tot_SubTotal}}</td>
@@ -170,7 +150,7 @@
                     <th>Total Sales:</th>
                     <td>{{summary.tot_SalesTotal}}</td>
                 </tr>
-            </table>*@ -->
+            </table>*@ --> 
     </div>
     <rpt-bill-dept-item-summary *ngIf="showDeptSummary"
                                 [showBackButton]="showBackBtn"
@@ -178,16 +158,11 @@
                                 [toDate]="selectedModel.toDate"
                                 [serviceDepartment]="selectedModel.ServiceDepartmentName"
                                 [showDeptItemSummary]="showDeptSummary"
-                                (callBackDepts)="CallBackFromDeptItem()">
-    </rpt-bill-dept-item-summary>
-</div>
-<sub style="text-align:center;color:orange">
-   Note **: This report is generated for the purpose to show the revenues from the different departments according to the hospital
-    tariff provided
-</sub>
-<div class="row col-md-10" style="text-align:center;" *ngIf="showAllDeptSummary || showDeptSummary">
-    <button class="blue btn" type="button" (click)="Print()">
-        <i class="fa fa-print"></i>
-        Print
-    </button>
+                                (callBackDepts)="CallBackFromDeptItem()"> </rpt-bill-dept-item-summary>
+  </div>
+  <sub style="text-align:center;color:orange"> Note **: This report is generated for the purpose to show the revenues from the different departments according to the hospital
+  tariff provided </sub>
+  <div class="row col-md-10" style="text-align:center;" *ngIf="showAllDeptSummary || showDeptSummary">
+    <button class="blue btn" type="button" (click)="Print()"> <i class="fa fa-print"></i> Print </button>
+  </div>
 </div>

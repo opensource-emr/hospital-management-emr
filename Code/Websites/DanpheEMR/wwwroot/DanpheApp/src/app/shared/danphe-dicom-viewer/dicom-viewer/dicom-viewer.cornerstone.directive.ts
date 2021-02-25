@@ -164,7 +164,7 @@ export class CornerstoneDirective implements OnInit {
     // Activate mouse clicks, mouse wheel and touch
     cornerstoneTools.mouseInput.enable(this.element);
     cornerstoneTools.mouseWheelInput.enable(this.element);
-    cornerstoneTools.touchInput.enable(this.element);
+    // cornerstoneTools.touchInput.enable(this.element);
     cornerstoneTools.keyboardInput.enable(this.element);
 
     // Enable all tools we want to use with this element

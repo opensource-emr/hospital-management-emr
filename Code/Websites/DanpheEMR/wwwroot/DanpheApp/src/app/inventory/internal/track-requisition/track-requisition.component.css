@@ -1,0 +1,243 @@
+.tr-container {
+  position: absolute;
+  top: 25%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px;
+  height: 300px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+  .tr-container .tr-box--container {
+    width: 50%;
+    height: 80%;
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    animation: rotate 1s ease infinite;
+  }
+
+    .tr-container .tr-box--container .tr-box {
+      /* background: #fff; */
+      /* overflow: hidden; */
+      position: relative;
+    }
+
+      .tr-container .tr-box--container .tr-box .tr-circle {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        height: 20px;
+        width: 20px;
+        background: #222;
+        border-radius: 50% !important;
+      }
+
+      .tr-container .tr-box--container .tr-box .tr-circle--1 {
+        animation: tr-circle--1 ease 1200ms infinite;
+        /* animation: rotate 1s ease infinite; */
+      }
+
+      .tr-container .tr-box--container .tr-box .tr-circle--2 {
+        background: #0c87da;
+        animation: tr-circle--2 ease 1200ms infinite;
+      }
+
+@keyframes tr-circle--1 {
+  0% {
+    top: 50%;
+  }
+
+  50% {
+    top: 120%;
+  }
+
+  100% {
+    top: 50%;
+  }
+}
+
+@keyframes tr-circle--2 {
+  0% {
+    top: 50%;
+  }
+
+  50% {
+    top: -50%;
+  }
+
+  100% {
+    top: 50%;
+  }
+}
+
+@keyframes rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+
+
+
+.rq-info {
+  background-color: forestgreen;
+  margin-bottom: 50px;
+}
+
+  .rq-info .rq-head {
+    text-align: center;
+    background-color: #8fc5d5;
+  }
+
+    .rq-info .rq-head h3 {
+      font-weight: bolder;
+    }
+
+  .rq-info .rq-body {
+    height: 125px;
+    text-align: center;
+    background-color: #d9eaef
+  }
+
+    .rq-info .rq-body div {
+      margin-top: 10px
+    }
+
+
+.rq-container {
+  /* border: 1px solid #a5ccd8;
+  border-radius: 20px !important;
+  margin: 10px; */
+}
+
+.rq-progress li {
+  display: inline-block;
+  color: #999;
+  font-weight: bold;
+  font-size: 16px !important;
+  width: 16.67%;
+  margin: 0;
+  text-align: center;
+  line-height: normal;
+  position: relative;
+}
+.rq-progress li:before {
+  content: counter(step);
+  counter-increment: step;
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  display: block;
+  text-align: center;
+  margin: 0 auto;
+  z-index: 9;
+  position: relative;
+  background-color: #fff;
+   
+}
+.rq-progress li.active:before {
+  content: "\f00c";
+  font-family: FontAwesome;
+  background-color: #0773bc;
+  border: 2px solid #045992;
+  color: #fff;
+  line-height: 37px;
+}
+.rq-progress li:after {
+  content: '';
+  position: absolute;
+  height: 2px;
+  width: 100%;
+  background: #ddd;
+  top: 50%;
+  margin-top: -17px;
+  left: -50%;
+  z-index: 1;
+}
+.rq-progress li.active + li:after {
+  background-color: #0773bc;
+}
+.rq-progress li:first-child:after {
+  content: none;  
+}
+.rq-progress li span.tooltip {
+  width: 40px;
+  height: 40px;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  margin-left: -20px;
+}
+  /* .rq-progress li.active {
+    color: #3a3a3a;
+  } */
+
+  .rq-progress li .tooltip .tooltiptext.ttptextdown {
+    top: 100%;
+  }
+  .rq-progress li .tooltip .tooltiptext {
+    margin: 0 0 0 -70px;
+  }
+ul.rq-progress {
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: row;
+  align-content: space-between;
+  justify-content: center;
+  position: relative;
+  counter-reset: step;
+}
+
+/* .rq-progress li.active.warning span {
+  background: #143540;
+} */
+
+/* .rq-progress li.active span {
+  border: 1px solid #8fc5d5;
+  background: #006687;
+} */
+
+/*.rq-progress li:not(.active) span.verifier {
+  cursor: pointer
+}*/
+
+.rq-progress li span span.dispatch {
+  cursor: pointer;
+}
+
+/* .rq-progress li span {
+  height: 50px;
+  width: 50px;
+  display: block;
+  border: 1px solid #ddd;
+  border-radius: 100% !important;
+  align-content: space-between;
+  text-align: center;
+  margin: auto;
+  z-index: 999;
+  position: relative;
+  background: #fff;
+} */
+
+.rq-progress li label {
+  display: block;
+  margin-top:10px;
+}
+
+/* .rq-progress li.active:before {
+  background: #71aabccf;
+} */
+
+
+
+/* .rq-progress li:nth-last-child(1):before {
+  display: none;
+} */
+
+

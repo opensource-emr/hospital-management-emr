@@ -14,6 +14,7 @@ namespace DanpheEMR.ServerModel
         public int TransactionId { get; set; }
 
         public int? WardId { get; set; }
+        public int? StoreId { get; set; }
 
         public int ItemId { get; set; }
         
@@ -24,6 +25,8 @@ namespace DanpheEMR.ServerModel
 
         public string TransactionType { get; set; }
 
+        public decimal? Price { get; set; }
+
         public string CreatedBy { get; set; }
 
         public DateTime CreatedOn { get; set; }
@@ -33,6 +36,9 @@ namespace DanpheEMR.ServerModel
         public Boolean IsWard { get; set; }
 
         public int newWardId { get; set; }
+        public string ReceivedBy { get; set; }
+
+        public string InOut { get; set; }
     }
 }
 

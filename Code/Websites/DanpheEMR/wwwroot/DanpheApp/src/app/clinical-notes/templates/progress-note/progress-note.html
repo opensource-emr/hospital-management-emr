@@ -1,0 +1,66 @@
+<style>
+  textarea {
+    resize: vertical;
+  }
+
+  .clp.clp-hd {
+    margin-bottom: 0px !important;
+  }
+
+  .each-card {
+    background: #fbfbfb;
+  }
+</style>
+<div class="row">
+  <div class="col-md-12">
+    <form  class="form-horizontal">
+      <div class="form-body">
+
+        <h3 class="text-head" style="text-align:center">Progress Note</h3>
+
+
+        <div class="form-group">
+          <label class="control-label col-md-4">Subjective Notes<b style="float:right;">:</b></label>
+
+          <div class="col-md-8">
+            <textarea class="form-control" (focusout)="Focusit()" [(ngModel)]="progressNote.SubjectiveNotes" [ngModelOptions]="{standalone: true}" maxlength="2000" rows="5" cols="80"></textarea>
+
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="control-label col-md-4">Objective Notes<b style="float:right;">:</b></label>
+
+          <div class="col-md-8">
+            <textarea class="form-control" (focusout)="Focusit()" [(ngModel)]="progressNote.ObjectiveNotes" [ngModelOptions]="{standalone: true}" maxlength="2000" rows="5" cols="80"></textarea>
+
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="control-label col-md-4">Assessment/Plan<b style="float:right;">:</b></label>
+
+          <div class="col-md-8">
+            <textarea class="form-control" (focusout)="Focusit()" [(ngModel)]="progressNote.AssessmentPlan" [ngModelOptions]="{standalone: true}" maxlength="2000" rows="5" cols="80"></textarea>
+
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="control-label col-md-4">Instructions<b style="float:right;">:</b></label>
+
+          <div class="col-md-8">
+            <textarea class="form-control" (focusout)="Focusit()" [(ngModel)]="progressNote.Instructions" [ngModelOptions]="{standalone: true}" maxlength="2000" rows="5" cols="80"></textarea>
+
+          </div>
+        </div>
+      </div>
+
+    </form>
+  
+  </div>
+</div>
+
+
+
+
+

@@ -13,6 +13,7 @@ namespace DanpheEMR.Security
         public int RoleId { get; set; }
         public string RoleName { get; set; }
         public string RoleDescription { get; set; }
+        public string RoleType { get; set; }
         public int? ApplicationId { get; set; }
         public bool IsSysAdmin { get; set; }
         public bool IsActive { get; set; }

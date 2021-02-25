@@ -18,6 +18,7 @@ using DanpheEMR.ServerModel;
 using DanpheEMR.DalLayer;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace DanpheEMR.Controllers
 {
@@ -43,8 +44,8 @@ namespace DanpheEMR.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        [AuditApi(EventTypeName = "Login",
-        IncludeHeaders = true, IncludeResponseHeaders = true, IncludeResponseBody = true, IncludeRequestBody = true, IncludeModelState = true)]
+        //[AuditApi(EventTypeName = "Login",
+        //IncludeHeaders = true, IncludeResponseHeaders = true, IncludeResponseBody = true, IncludeRequestBody = true, IncludeModelState = true)]
         public IActionResult Login(string returnUrl = null)
         {
             DateTime centuryBegin = new DateTime(2001, 1, 1);
@@ -65,64 +66,6 @@ namespace DanpheEMR.Controllers
             string msgDigest = ComputeSha256Hash(GuidString);
 
 
-            //start: sud:16Jul'19-- If One user is already logged in - (check from session) - Load home index page directly. 
-            RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
-            if (currentUser != null && currentUser.UserId != 0)
-            {
-                return RedirectToAction("Index", "Home");
-            }
-            //end: sud:16Jul'19-- If One user is already logged in - (check from session) - Load home index page directly.
-            
-
-            if (!string.IsNullOrEmpty(Request.Cookies["uRef"]))
-            {
-                SystemAdminDbContext adminDbContext = new SystemAdminDbContext(connStringAdmin);
-
-                var selector = Convert.ToInt64(Request.Cookies["uRef"]);
-                var validatorWithSalt = Request.Cookies["uData"] + Request.Cookies["uRef"];
-                var hashedValidator = ComputeSha256Hash(validatorWithSalt);
-
-                //To make sure that only one UserId will be selected at a time
-                var userIdList = (from sysAuthInfo in adminDbContext.CookieInformation
-                                           where sysAuthInfo.Selector == selector
-                                           && sysAuthInfo.HashedToken == hashedValidator
-                                           select sysAuthInfo.UserId).ToList();
-
-
-                if (userIdList.Count == 1)
-                {                    
-                    RbacUser validUser = RBAC.GetUser(userIdList[0]);
-                    LoginViewModel model = new LoginViewModel();
-                    model.UserName = validUser.UserName;
-
-                    //seting session for current valid user
-                    if (validUser != null)
-                    {
-                        //Check user status is Active or not, If user is InActive then return to login page
-                        if (validUser.IsActive == false)
-                        {
-                            RemoveRememberMeCookie();
-                            RemoveSessionValues();
-                            ViewData["status"] = "user-inactive";
-                            return View(model);
-                        }
-
-                        validUser.Password = "";
-
-                        UpdateRememberMeCookie(selector);
-                        SetSessionVariable(validUser);
-                        return RedirectToAction("Index", "Home");
-                    }
-                }
-                else
-                {
-                    RemoveRememberMeCookie();
-                    RemoveSessionValues();
-                    return View();
-                }
-            }
-
-            
             CoreDbContext coreDbContext = new CoreDbContext(connString);
 
             ParameterModel licenseParam = coreDbContext.Parameters.Where(p => p.ParameterGroupName == "TenantMgnt" && p.ParameterName == "SoftwareLicense")
@@ -164,6 +107,67 @@ namespace DanpheEMR.Controllers
                 return RedirectToAction("LicenseExpired", "Account");
             }
 
+
+            //start: sud:16Jul'19-- If One user is already logged in - (check from session) - Load home index page directly. 
+            RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
+            if (currentUser != null && currentUser.UserId != 0)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+            //end: sud:16Jul'19-- If One user is already logged in - (check from session) - Load home index page directly.
+
+
+            if (!string.IsNullOrEmpty(Request.Cookies["uRef"]))
+            {
+                SystemAdminDbContext adminDbContext = new SystemAdminDbContext(connStringAdmin);
+
+                var selector = Convert.ToInt64(Request.Cookies["uRef"]);
+                var validatorWithSalt = Request.Cookies["uData"] + Request.Cookies["uRef"];
+                var hashedValidator = ComputeSha256Hash(validatorWithSalt);
+
+                //To make sure that only one UserId will be selected at a time
+                var userIdList = (from sysAuthInfo in adminDbContext.CookieInformation
+                                  where sysAuthInfo.Selector == selector
+                                  && sysAuthInfo.HashedToken == hashedValidator
+                                  select sysAuthInfo.UserId).ToList();
+
+
+                if (userIdList.Count == 1)
+                {
+                    RbacUser validUser = RBAC.GetUser(userIdList[0]);
+                    LoginViewModel model = new LoginViewModel();
+                    model.UserName = validUser.UserName;
+
+                    //seting session for current valid user
+                    if (validUser != null)
+                    {
+                        //Check user status is Active or not, If user is InActive then return to login page
+                        if (validUser.IsActive == false)
+                        {
+                            RemoveRememberMeCookie();
+                            RemoveSessionValues();
+                            ViewData["status"] = "user-inactive";
+                            return View(model);
+                        }
+
+                        validUser.Password = "";
+
+                        UpdateRememberMeCookie(selector);
+                        SetSessionVariable(validUser);
+                        return RedirectToAction("Index", "Home");
+                    }
+                }
+                else
+                {
+                    RemoveRememberMeCookie();
+                    RemoveSessionValues();
+                    return View();
+                }
+            }
+
+
+
+
             ViewData["ReturnUrl"] = returnUrl;
             return View();
         }
@@ -172,12 +176,9 @@ namespace DanpheEMR.Controllers
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
         [AuditApi(EventTypeName = "Login",
-        IncludeHeaders = true, IncludeResponseHeaders = true, IncludeResponseBody = true, 
-            IncludeRequestBody = true, IncludeModelState = true)]
+        IncludeHeaders = true, IncludeResponseHeaders = true, IncludeResponseBody = true, IncludeRequestBody = true, IncludeModelState = true)]
         public IActionResult Login(LoginViewModel model, string returnUrl = null)
         {
-            
-
             if (ModelState.IsValid)
             {
 
@@ -213,10 +214,23 @@ namespace DanpheEMR.Controllers
                         DateTime centuryBegin = new DateTime(2001, 1, 1);
                         DateTime currentDate = DateTime.Now;
                         //Generate unique tick to make it a selector
-                        long ticksElapsed = currentDate.Ticks - centuryBegin.Ticks;                        
+                        long ticksElapsed = currentDate.Ticks - centuryBegin.Ticks;
 
                         SetRememberMeCookieVariable(ticksElapsed, validUser.UserId);
-                    } 
+                    }
+                    var auditScope = this.GetCurrentAuditScope();
+                    if(auditScope != null)
+                    {
+                        // password = ""
+                        ((DanpheEMR.Security.LoginViewModel)((Audit.WebApi.AuditEventWebApi)auditScope.Event).Action.ActionParameters["model"]).Password = "";
+                        // formvariable = null
+                        ((Audit.WebApi.AuditEventWebApi)auditScope.Event).Action.FormVariables = null;
+                        // request body URL, replace password with *****
+                        var url = ((Audit.WebApi.AuditEventWebApi)auditScope.Event).Action.RequestBody.Value;
+                        Regex yourRegex = new Regex(@"password=([^\&]+)");
+                        string replacedURL = yourRegex.Replace(url.ToString(), "password=*****");
+                        ((Audit.WebApi.AuditEventWebApi)auditScope.Event).Action.RequestBody.Value = replacedURL;
+                    }
                     return RedirectToAction("Index", "Home");
                 }
                 else
@@ -241,8 +255,8 @@ namespace DanpheEMR.Controllers
         //[HttpPost]
         //[AllowAnonymous]
         //[ValidateAntiForgeryToken]
-        [AuditApi(EventTypeName = "Logout",
-        IncludeHeaders = true, IncludeResponseHeaders = true, IncludeResponseBody = true, IncludeRequestBody = true, IncludeModelState = true)]
+        //[AuditApi(EventTypeName = "Logout",
+        //IncludeHeaders = true, IncludeResponseHeaders = true, IncludeResponseBody = true, IncludeRequestBody = true, IncludeModelState = true)]
         public IActionResult Logout(string returnUrl = null)
         {
             //HttpContext.Session.Set<RbacUser>("currentuser", null);   
@@ -312,8 +326,8 @@ namespace DanpheEMR.Controllers
                 currentUser.NeedsPasswordUpdate = false;
                 HttpContext.Session.Set<RbacUser>("currentuser", currentUser);
 
-                RemoveRememberMeCookie();
-                RemoveSessionValues();
+                //RemoveRememberMeCookie();
+                //RemoveSessionValues();
                 responseData.Status = "OK";
                 responseData.Results = null; ////Assigning Result to NULL because we Don't have to Show Password of User in Client side (i.e Client Debugging Side)
                 var s = Json(DanpheJSONConvert.SerializeObject(responseData, true));
@@ -345,7 +359,7 @@ namespace DanpheEMR.Controllers
             try
             {
                 //set currentuser 
-                HttpContext.Session.Set<RbacUser>("currentuser", currentValidUser);                
+                HttpContext.Session.Set<RbacUser>("currentuser", currentValidUser);
                 RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
                 if (currentUser != null)
                 {
@@ -449,7 +463,7 @@ namespace DanpheEMR.Controllers
         public void UpdateRememberMeCookie(long selector)
         {
             SystemAdminDbContext sysDbContext = new SystemAdminDbContext(connStringAdmin);
-           
+
             CookieAuthInfoModel authModel = (from sysAuthInfo in sysDbContext.CookieInformation
                                              where sysAuthInfo.Selector == selector
                                              select sysAuthInfo).FirstOrDefault();
@@ -467,7 +481,7 @@ namespace DanpheEMR.Controllers
 
             //generate Hash of the Validator, that can be used as a token
             string msgDigest = ComputeSha256Hash(GuidStrWithSalt);
-            
+
             authModel.HashedToken = msgDigest;
 
             sysDbContext.Entry(authModel).Property(x => x.HashedToken).IsModified = true;
@@ -479,7 +493,7 @@ namespace DanpheEMR.Controllers
             });
 
             sysDbContext.SaveChanges();
-            
+
         }
         #endregion
 

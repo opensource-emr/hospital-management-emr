@@ -13,7 +13,7 @@ import * as moment from 'moment/moment';
 import { CoreService } from "../../core/shared/core.service";
 
 @Component({
-  templateUrl: "../../view/pharmacy-view/Accounting/PHRMSupplierList.html" // "/PharmacyView/PHRMSuppliersList"
+  templateUrl: "./phrm-acc-supplier-list.html"
 })
 export class PHRMSuppliersListComponent {
   public currentGRdetails: PHRMACCSuppliersModel = new PHRMACCSuppliersModel();
@@ -137,6 +137,8 @@ export class PHRMSuppliersListComponent {
     switch ($event.Action) {
       case "view": {
         if ($event.Data != null) {
+          this.currentGRdetails.InvoiceNo = $event.Data.InvoiceNo;
+          this.currentGRdetails.GoodReceiptDate = $event.Data.GoodReceiptDate ;
           this.innerGRdetails = $event.Data;
           this.ShowGRItemsbyGRId(this.innerGRdetails.GoodReceiptId);
           this.showGRIListofSupplier = false;
@@ -226,9 +228,11 @@ export class PHRMSuppliersListComponent {
 
   Close() {
     this.showGRItemsbyGRId = false;
+    this.showGRIListofSupplier = true;
+  }
+  CloseGRIListOfSupplier(){
     this.showGRIListofSupplier = false;
   }
-
   printGoodReciept() {
     let popupWinindow;
     var printContents = document.getElementById("print-good-reciept").innerHTML;

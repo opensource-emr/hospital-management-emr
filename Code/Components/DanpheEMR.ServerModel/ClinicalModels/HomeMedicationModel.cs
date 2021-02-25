@@ -22,6 +22,7 @@ namespace DanpheEMR.ServerModel
         public int Frequency { get; set; }
         public DateTime LastTaken { get; set; }
         public string Comments { get; set; }
+        public string MedicationType { get; set; }
 
         public int? CreatedBy { get; set; }
         public int? ModifiedBy { get; set; }

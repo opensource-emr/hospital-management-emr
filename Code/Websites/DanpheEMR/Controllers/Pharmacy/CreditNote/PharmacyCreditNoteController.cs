@@ -40,7 +40,7 @@ namespace DanpheEMR.Controllers.Pharmacy.CreditNote
                    ItemName =i.FirstOrDefault().ItemName,
                    GRItemPrice= i.FirstOrDefault().GRItemPrice,
                    GoodReceiptId=i.FirstOrDefault().GoodReceiptId,
-                    AvailableQuantity=i.Sum(a=>a.ReceivedQuantity+ a.FreeQuantity),
+                    AvailableQuantity=i.Sum(a=>a.ReceivedQuantity+ a.FreeQuantity)
                });
                 //var wOGoodreceipt = phrmDbContext.PHRMStockTransactionItems.Where(a => a.TransactionType == null && a.InOut=="in" && a.ReferenceNo==null);
                 //var availableQty= phrmDbContext.phrm

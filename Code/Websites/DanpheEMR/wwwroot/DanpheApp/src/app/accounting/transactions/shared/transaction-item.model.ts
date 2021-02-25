@@ -36,9 +36,11 @@ export class TransactionItem {
     public LedgerDr: number = 0;
     public LedgerCr: number = 0;
     public Description: string = "";
+    public selLedger:any;
  //   public PatientId: number = null;
     //added for transaction details
     public IsTxnDetails: boolean = false;
+    public Code:string="";
     constructor() {
         var _formBuilder = new FormBuilder();
         this.TransactionItemValidator = _formBuilder.group({

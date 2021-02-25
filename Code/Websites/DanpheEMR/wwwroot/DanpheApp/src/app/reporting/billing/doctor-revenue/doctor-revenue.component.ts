@@ -5,14 +5,15 @@ import { DLService } from "../../../shared/dl.service"
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
 import * as moment from 'moment/moment';
+import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from '../../../shared/danphe-grid/NepaliColGridSettingsModel';
 
 @Component({
   templateUrl: "./doctor-revenue.html"
 })
 
 export class RPT_BIL_DoctorRevenueComponent {
-  public fromDate: Date = null;
-  public toDate: Date = null;
+  public fromDate: string = null;
+  public toDate: string = null;
   public selProvider: any = null;
   public doctorList: any;
   DoctorRevenueColumns: Array<any> = null;
@@ -20,6 +21,7 @@ export class RPT_BIL_DoctorRevenueComponent {
   public currentdoctorrevenuereport: RPT_BIL_DoctorRevenue = new RPT_BIL_DoctorRevenue();
   dlService: DLService = null;
   public DoctorsList: Array<any> = [];
+  public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
 
   constructor(
     _dlService: DLService,
@@ -29,6 +31,7 @@ export class RPT_BIL_DoctorRevenueComponent {
     this.dlService = _dlService;
     this.currentdoctorrevenuereport.fromDate = moment().format('YYYY-MM-DD');
     this.currentdoctorrevenuereport.toDate = moment().format('YYYY-MM-DD');
+    //this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail("Date", false));
     this.loadDoctorsList();
   }
 
@@ -108,6 +111,15 @@ export class RPT_BIL_DoctorRevenueComponent {
 
   providerChanged() {
     this.currentdoctorrevenuereport.ProviderName = this.selProvider ? this.selProvider.FirstName + ' ' + this.selProvider.LastName : "";
+  }
+
+  //Anjana:10June'20--reusable From-ToDate-In Reports..
+  OnFromToDateChange($event) {
+    this.fromDate = $event ? $event.fromDate : this.fromDate;
+    this.toDate = $event ? $event.toDate : this.toDate;
+
+    this.currentdoctorrevenuereport.fromDate = this.fromDate;
+    this.currentdoctorrevenuereport.toDate = this.toDate;
   }
 }
 

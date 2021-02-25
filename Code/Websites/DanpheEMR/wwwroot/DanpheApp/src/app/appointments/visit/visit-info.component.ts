@@ -18,11 +18,16 @@ import { Visit } from "../shared/visit.model";
 import { VisitBLService } from "../shared/visit.bl.service";
 import { MessageboxService } from "../../shared/messagebox/messagebox.service";
 import { CoreService } from "../../core/shared/core.service";
-import { Department } from "../../settings/shared/department.model";
+import { Department } from "../../settings-new/shared/department.model";
 import { VisitBillItemVM } from "../shared/quick-visit-view.model";
 import { AppointmentService } from "../shared/appointment.service";
 import { VisitService } from "../shared/visit.service";
 import { Subscription } from "rxjs";
+import { ENUM_VisitType } from "../../shared/shared-enums";
+import { SettingsBLService } from "../../settings-new/shared/settings.bl.service";
+import { Employee } from "../../employee/shared/employee.model";
+import { BillingTransaction } from "../../billing/shared/billing-transaction.model";
+import { DanpheHTTPResponse } from "../../shared/common-models";
 
 @Component({
   selector: "visit-info",
@@ -45,13 +50,19 @@ export class VisitInfoComponent implements OnInit {
   enableDepartmentLevelAppointment: boolean;
   public priceCategoryChanged: Subscription;
   public showDocMandatory: boolean = false; //this is used to show either doctor is mandatory or not// it is used only in case of EHS price selection --Yubraj 23rd 2019
+
+
+
   constructor(public visitBLService: VisitBLService,
     public msgBoxServ: MessageboxService,
     public coreService: CoreService,
     public appointmentService: AppointmentService,
-    public visitService: VisitService) {
+    public visitService: VisitService,
+    public settingsBlService: SettingsBLService) {
     this.GetVisitDoctors();
     this.GetDepartments();
+
+    this.LoadReferrerSettings();
 
     let paramValue = this.coreService.EnableDepartmentLevelAppointment();
     if (paramValue) {
@@ -92,7 +103,7 @@ export class VisitInfoComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.AssignAppoinementDetails();
+
     if (this.visitService.appointmentType.toLowerCase() == "transfer") {
       this.visit.ParentVisitId = this.visitService.ParentVisitInfo.PatientVisitId;
       this.visit.TransferredProviderId = this.visitService.ParentVisitInfo.ProviderId;
@@ -124,8 +135,6 @@ export class VisitInfoComponent implements OnInit {
         this.selectedDoctor.ProviderName = this.visitService.ParentVisitInfo.ProviderName;
         this.selectedDoctor.ProviderId = this.visitService.ParentVisitInfo.ProviderId;
       }
-     
-       
     }
 
     this.enableDepartmentLevelAppointment = this.coreService.EnableDepartmentLevelAppointment();
@@ -138,6 +147,8 @@ export class VisitInfoComponent implements OnInit {
       this.visit.UpdateValidator("on", "Doctor", "required");
     }
 
+    this.AssignAppointmentDetails();
+
   }
 
   //needed for Bill-Change events..
@@ -147,7 +158,7 @@ export class VisitInfoComponent implements OnInit {
   }
 
 
-  AssignAppoinementDetails() {
+  AssignAppointmentDetails() {
     if (this.appointmentService.getGlobal().AppointmentId) {
       let appointment = this.appointmentService.getGlobal();
 
@@ -157,15 +168,38 @@ export class VisitInfoComponent implements OnInit {
           this.visit[property] = appointment[property];
         }
       });
-      this.selectedDoctor.ProviderName = this.visit.ProviderName;
-      this.selectedDoctor.ProviderId = this.visit.ProviderId;
+
+      //assign provider and department information if it was filled during appointment.
+      if (this.visit.ProviderName) {
+        this.selectedDoctor.ProviderName = this.visit.ProviderName;
+        this.selectedDoctor.ProviderId = this.visit.ProviderId;
+      }
+      if (this.visit.DepartmentId) {
+        this.selectedDepartment.DepartmentId = this.visit.DepartmentId;
+        let dep = this.departmentList.find(a => a.DepartmentId == this.visit.DepartmentId);
+        if (dep) {
+          this.selectedDepartment.DepartmentName = dep.DepartmentName;
+        }
+      }
+
+
+
+      ////EMR-999: If doctor was set from Appointment page, then assign the price etc for him/her.-sud:25Oct'19
+      //if (this.selectedDoctor && this.selectedDoctor.ProviderId) {
+      //  this.AssignSelectedDoctor();
+      //}
+
     }
   }
 
 
 
   GetDepartments() {
-    this.departmentList = this.visitService.ApptApplicableDepartmentList;
+    this.visitBLService.GetDepartment()
+      .subscribe(res => {
+        if(res.Status == "OK")
+        this.departmentList = res.Results;
+      });
   }
 
   GetVisitDoctors() {
@@ -257,10 +291,10 @@ export class VisitInfoComponent implements OnInit {
           let erdeptname = erdeptnameparam.ParameterValue.toLowerCase();
           //temporary solution for : er-visit based on departmentname. yubaraj:20june'19-- get these from server side or from configuration for proper solution.
           if (department.DepartmentName.toLowerCase() == erdeptname) {
-            this.visit.VisitType = "emergency";
+            this.visit.VisitType = ENUM_VisitType.emergency;// "emergency";
           }
           else {
-            this.visit.VisitType = "outpatient";
+            this.visit.VisitType = ENUM_VisitType.outpatient;// "outpatient";
           }
         }
         this.visitService.TriggerBillChangedEvent({ ChangeType: "Department", SelectedDepartment: this.selectedDepartment });
@@ -292,5 +326,33 @@ export class VisitInfoComponent implements OnInit {
     return html;
   }
 
+
+  //prat: 13sep2019 for internal and external referrer 
+  public defaultExtRef: boolean = true;
+  selectedRefId: number = null;
+
+  OnReferrerChanged($event) {
+    this.selectedRefId = $event.ReferrerId; //EmployeeId comes as ReferrerId from select referrer component.
+    if (this.selectedRefId) {
+      //assign referredByProviderId if any one is selecteed from Referred By Dropdown.
+      this.visit.ReferredByProviderId = this.selectedRefId;
+      this.visitService.TriggerBillChangedEvent({ ChangeType: "Referral", ReferredBy: this.selectedRefId });
+    }
+    else {
+      this.visitService.TriggerBillChangedEvent({ ChangeType: "Referral", ReferredBy: null });
+    }
+  }
+
+
+  public ExtRefSettings = { EnableExternal: true, DefaultExternal: true };
+
+  public LoadReferrerSettings() {
+    var currParam = this.coreService.Parameters.find(a => a.ParameterGroupName == "Appointment" && a.ParameterName == "ExternalReferralSettings");
+    if (currParam && currParam.ParameterValue) {
+      this.ExtRefSettings = JSON.parse(currParam.ParameterValue);
+    }
+  }
+
+  //end: Pratik: 12Sept'19--For External Referrals
 
 }

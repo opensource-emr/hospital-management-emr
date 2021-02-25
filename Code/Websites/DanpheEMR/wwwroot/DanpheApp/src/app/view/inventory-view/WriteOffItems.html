@@ -1,4 +1,4 @@
-﻿
+
 <style>
     /*This class for background border red */
     .bg-on {
@@ -20,9 +20,9 @@
 
 <div class="row">
     <div class="col-md-12">
-        <div class="caption">
-            <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
-            <span class="caption-subject font-blue-sharp bold uppercase">Write-Off Goods</span>
+        <div class="caption lb-caption">
+            <!-- <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i> -->
+            <span class="caption-subject">Write-Off Goods</span>
         </div>
     </div>
 </div>
@@ -30,28 +30,29 @@
 <div class="row">
     <div class="col-md-12">
         <div class="table-responsive">
-            <table class="table table-striped table-hover" style="background-color:initial;margin-top:10px">
+            <table class="table table-striped table-hover inv_table table-bordered">
                 <thead>
                     <tr>
                         <th></th>
-                        <th><b>Item Name</b></th>
-                        <th><b>Batch Number</b></th>
-                        <th><b>Available Qty</b></th>
-                        <th><b>Write-Off Qty</b></th>
-                        <th><b>Write-Off Date</b></th>
-                        <th><b>Remark</b></th>
+                        <th>Item Name</th>
+                        <th>Code</th>
+                        <th>Batch No.</th>
+                        <th>Available Qty</th>
+                        <th>Write-Off Qty</th>
+                        <th>Write-Off Date</th>
+                        <th>Remark</th>
                         <th></th>
-                        <th><b>Item Rate</b></th>
-                        <th><b>Sub Total</b></th>
-                        <th><b>VAT %</b></th>
-                        <th><b>Total Amount</b></th>
+                        <th>Item Rate</th>
+                        <th>Sub Total</th>
+                        <th>VAT %</th>
+                        <th>Total Amount</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr *ngFor="let row of WOItems; let i = index">
 
-                        <td><a (click)="DeleteRow(i)"><i class="btn btn-danger fa">X</i></a></td>
-                        <td style="width:150px">
+                        <td><a (click)="DeleteRow(i)"><i class="btn btn-danger fa fa-times"></i></a></td>
+                        <td>
                             <form [formGroup]="row.WriteOffItemValidator">
                                 <input danphe-auto-complete class="form-control"
                                        [(ngModel)]="row.SelectedItem"
@@ -73,8 +74,11 @@
                             </form>
                         </td>
                         <td>
+                            <input class="form-control" [(ngModel)]="row.Code" disabled [ngModelOptions]="{standalone: true}" style="width:80px ; "name="code" value="">
+                        </td>
+                        <td>
                             <form [formGroup]="row.WriteOffItemValidator">
-                                <select class="form-control" [(ngModel)]="row.BatchNo" style="width:50px" title="{{row.BatchNo}}"
+                                <select class="form-control" [(ngModel)]="row.BatchNo" style="width:100px" title="{{row.BatchNo}}"
                                         formControlName="BatchNo"
                                         (ngModelChange)="SelectBatchNo(row.BatchNo,i);">
                                     <option *ngFor="let BatchNo of row.BatchNoList" value="{{BatchNo.BatchNo}}">
@@ -86,7 +90,7 @@
                         </td>
                         <td>
                             <input class="form-control" [(ngModel)]="row.AvailableQty" disabled
-                                   [ngModelOptions]="{standalone: true}" style="width:50px ; "
+                                   [ngModelOptions]="{standalone: true}" style="width:100px ; "
                                    min="0" [disabled]="disableTextBox" name="availableqty" type="number" value="">
                         </td>
                         <td>
@@ -144,50 +148,57 @@
     </div>
 </div>
 
-<div class="row">
-    <div class="col-md-12">
-        <div class="table-responsive">
-            <table class="col-sm-offset-4 col-sm-5" style="margin-top:10px">
-                <tr class="form-group">
-                    <td class="col-sm-offset-6 col-sm-3"></td>
-                    <td> SubTotal: </td>
+  <div class="row">
+    <div class="col-md-4 col-md-offset-8">
+        <div class="mt20 t-wrap">
+            <table class="inv_table">
+                <tr>    
+                    <td class="text-right"><b>SubTotal:</b></td>                
                     <td>
-                        <input class="form-control" [ngModelOptions]="{standalone: true}" [(ngModel)]="SubTotal"
+                        <div class="form-group">
+                            <input class="form-control" [ngModelOptions]="{standalone: true}" [(ngModel)]="SubTotal"
                                disabled id="subtotal" name="subtotal" type="number">
-                    </td>
+                        </div>
+                    </td>                    
                 </tr>
-                <tr class="form-group">
-                    <td class="col-sm-offset-8 col-sm-2"></td>
-                    <td>VAT</td>
-                    <td>
-                        <input [(ngModel)]="VAT" [ngModelOptions]="{standalone: true}"
+                <tr>
+                    <td class="text-right"><b>VAT:</b></td>
+                    <td>  
+                        <div class="form-group">
+                            <input [(ngModel)]="VAT" [ngModelOptions]="{standalone: true}"
                                disabled class="form-control" name="vat" type="number">
-                    </td>
+                        </div>
+                    </td>    
                 </tr>
-                <tr class="form-group">
-                    <td class="col-sm-offset-8 col-sm-2"></td>
-                    <td>Total Amount: </td>
-                    <td>
-                        <input [(ngModel)]="TotalAmount" [ngModelOptions]="{standalone: true}"
+                <tr>
+                    <td class="text-right"><b>Total Amount:</b></td>
+                    <td>  
+                        <div class="form-group">
+                            <input [(ngModel)]="TotalAmount" [ngModelOptions]="{standalone: true}"
                                disabled class="form-control" name="totalamount" type="number">
-                    </td>
+                        </div>
+                    </td>    
                 </tr>
                 <tr class="dot">
-                    <td colspan="3" class="text-capitalize">In Words : <b>{{TotalAmount | NumberInWords}} </b>Only. <br /><br /></td>
+                    <td colspan="2" class="text-capitalize text-right"><b>In Words :</b>{{TotalAmount | NumberInWords}} Only. </td>                    
                 </tr>
-                <tr></tr>
+                
 
             </table>
+            <div class="form-group clearfix">
+                <div class="text-right mt20 ">
+                    <input type="button" class="btn btn-success" value="Write-Off Request" (click)="AddWriteOffItems()" [disabled]="loading" />
+                    <span></span>
+                    <input type="button" class="btn btn-danger" (click)="Cancel()" value="Cancel">
+                    <span></span>
+                </div>
+            </div>
         </div>
+        
     </div>
-    <div class="form-group">
-        <div class="col-sm-offset-5 col-sm-5">
-            <input type="button" class="btn btn-success" value="Write-Off Request" (click)="AddWriteOffItems()" [disabled]="loading" />
-            <span></span>
-            <input type="button" class="btn btn-danger" (click)="Cancel()" value="Cancel">
-            <span></span>
-        </div>
-    </div>
-</div>
+    
+</div>  
+
+
 
 

@@ -7,6 +7,7 @@ import { SecurityService } from '../../security/shared/security.service';
 import * as moment from 'moment/moment';
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { PhrmRackService } from "../shared/rack/phrm-rack.service";
+import { ENUM_StockLocations } from "../../shared/shared-enums";
 
 
 @Component({
@@ -18,14 +19,21 @@ export class PhrmRackAddComponent {
     @Input("selected-rack")
     public CurrentRack: PhrmRackModel;
     public ParentRackList: any;
+    public ParentRackListFiltered: any;
     public showAddPage: boolean = false;
-
+    public LocationList;
+    @Input("selectedLocation")
+    public selectedLocation;
     @Output("callback-add")
     callbackAdd: EventEmitter<Object> = new EventEmitter<Object>();
 
     constructor(public phrmRackService: PhrmRackService, public securityService: SecurityService,
         public msgBoxServ: MessageboxService) {
         this.GetParentList();
+        this.GetLocationList();
+    }
+    public GetLocationList() {
+        this.LocationList = Object.keys(ENUM_StockLocations).filter(p => isNaN(p as any));
     }
 
     @Input('showAddPage')
@@ -35,23 +43,27 @@ export class PhrmRackAddComponent {
             if (this.CurrentRack && this.CurrentRack.RackId) {
                 let rack = new PhrmRackModel();
                 this.CurrentRack = Object.assign(rack, this.CurrentRack);
+                this.ParentRackListFiltered = this.ParentRackList.filter(rack => rack.LocationId == this.CurrentRack.LocationId && rack.RackId != this.CurrentRack.RackId);
             }
             else {
                 this.CurrentRack = new PhrmRackModel();
+                this.ParentRackListFiltered = this.ParentRackList
             }
         }
-
     }
     GetParentList() {
         this.phrmRackService.GetParentRackList()
             .subscribe(res => {
                 this.ParentRackList = res;
+                this.ParentRackListFiltered = res;
             });
     }
 
 
     //adding new rack
     AddRack() {
+        this.CurrentRack.CreatedOn = new Date();
+        this.CurrentRack.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
         //for checking validations, marking all the fields as dirty and checking the validity.
         for (var i in this.CurrentRack.RackValidator.controls) {
             this.CurrentRack.RackValidator.controls[i].markAsDirty();
@@ -107,4 +119,12 @@ export class PhrmRackAddComponent {
         console.log(err);
     }
 
+    ViewValue(){
+        this.CurrentRack.LocationId = +this.selectedLocation + 1;
+    }
+    AssignLocationFromParent() {
+        this.CurrentRack.ParentId = +this.CurrentRack.ParentId;
+        this.CurrentRack.LocationId = this.ParentRackList.find(PR => PR.RackId == this.CurrentRack.ParentId).LocationId;
+        this.selectedLocation = (this.CurrentRack.LocationId - 1).toString();
+    }
 }

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.28307.645
+VisualStudioVersion = 15.0.28010.2048
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5141BD3B-8895-41D2-81EA-0A09C9D44822}"
 	ProjectSection(SolutionItems) = preProject
@@ -68,35 +68,5 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {EE515FDC-1D29-4CB9-A3F6-F7E5FF989C06}
-	EndGlobalSection
-	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 5
-		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = https://danphehealth.visualstudio.com/
-		SccProjectUniqueName0 = ..\\Components\\DanpheEMR.DalLayer\\DanpheEMR.DalLayer.csproj
-		SccProjectName0 = ../Components/DanpheEMR.DalLayer
-		SccAuxPath0 = https://danphehealth.visualstudio.com
-		SccLocalPath0 = ..\\Components\\DanpheEMR.DalLayer
-		SccProvider0 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccProjectUniqueName1 = ..\\Components\\DanpheEMR.ServerModel\\DanpheEMR.ServerModel.csproj
-		SccProjectName1 = ../Components/DanpheEMR.ServerModel
-		SccAuxPath1 = https://danphehealth.visualstudio.com
-		SccLocalPath1 = ..\\Components\\DanpheEMR.ServerModel
-		SccProvider1 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccProjectUniqueName2 = ..\\Components\\DanpheEMR.Security\\DanpheEMR.Security.csproj
-		SccProjectName2 = ../Components/DanpheEMR.Security
-		SccAuxPath2 = https://danphehealth.visualstudio.com
-		SccLocalPath2 = ..\\Components\\DanpheEMR.Security
-		SccProvider2 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccProjectUniqueName3 = ..\\Components\\DanpheEMR.Core\\DanpheEMR.Core.csproj
-		SccProjectName3 = ../Components/DanpheEMR.Core
-		SccAuxPath3 = https://danphehealth.visualstudio.com
-		SccLocalPath3 = ..\\Components\\DanpheEMR.Core
-		SccProvider3 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccProjectUniqueName4 = ..\\Websites\\DanpheEMR\\DanpheEMR.csproj
-		SccProjectName4 = ../Websites/DanpheEMR
-		SccAuxPath4 = https://danphehealth.visualstudio.com
-		SccLocalPath4 = ..\\Websites\\DanpheEMR
-		SccProvider4 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 	EndGlobalSection
 EndGlobal

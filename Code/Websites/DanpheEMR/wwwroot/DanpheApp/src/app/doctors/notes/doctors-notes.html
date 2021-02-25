@@ -1,1 +1,269 @@
-﻿
+<!--<style>
+    table.info-table tr td {
+        line-height: 2.5;
+        font-weight: 700;
+    }
+
+    .vital-info ul li {
+        line-height: 2;
+    }
+
+    .label-name {
+        float: left;
+        margin-right: 15px;
+    }
+
+    .txt-box-holder {
+        width: 40%;
+        float: left;
+        margin-right: 5px;
+    }
+
+    .unit-holder {
+        float: left;
+    }
+</style>-->
+
+<style>
+    .tick-box {
+      width: 35px;
+      height: 25px;
+      display: inline-block;
+      border-bottom-left-radius: 50% 50% !important;
+      border-bottom-right-radius: 50% 50% !important;
+      border-top-left-radius: 50% 50% !important;
+      border-top-right-radius: 50% 50% !important;
+      border-color: purple;
+      vertical-align: -webkit-baseline-middle !important;
+    }
+  </style>
+  
+  
+  <div class="col-md-12">
+    <div class="row" style="margin-top: 15px;">
+      <a class="btn btn-primary" style="margin-right: 15px;" (click)="print()">Print</a>
+      <a class="btn btn-primary" (click)="showAddVitals()">Add Vitals</a>
+    </div>
+  </div>
+  
+  <div class="col-md-12">
+  
+    <div class="row" id="printpage">
+  
+      <!--  @*Print Format for May Metro*@-->
+      <div *ngIf="hospitalName == 'mayametro'" class="note-holder {{hospitalName}}" style="width: 100%;margin-top: 200px;">
+        <div style="width: 20%;padding: 0px 15px;float: left;border-right: 1px solid;min-height: 275px;">
+          <h3 style="margin-top: 0; font-weight: 700;">VITALS</h3>
+          <div style="padding-top: 15px;">
+            <p>BP<span></span></p>
+            <p>Pulse</p>
+            <p>Ht........... cm</p>
+            <p>Wt........... kg</p>
+            <p>Temp</p>
+            <p>R/R</p>
+            <p>SPO<sub>2</sub></p>
+            <p>Pain</p>
+            <p>Allergy, if any</p>
+          </div>
+          <h3 style="font-weight: 700;">Investigations</h3>
+        </div>
+  
+        <div style="width: 80%;padding: 0px 15px;float: right;">
+          <div style="width: 100%;">
+            <p style="display: inline-block;padding: 0px 20px;"><span style="font-weight: 700;">Hospital No:</span> {{pat.PatientCode}}</p>
+            <p style="display: inline-block;padding: 0px 20px;"><span style="font-weight: 700;">Patient Name:</span> {{pat.ShortName}}</p>
+            <p style="display: inline-block;padding: 0px 20px;"><span style="font-weight: 700;">Age/Sex:</span> {{pat.Age}} / {{pat.Gender}}</p>
+          </div>
+  
+          <div style="width: 100%;">
+            <p style="display: inline-block;padding: 0px 20px;"><span style="font-weight: 700;">Address:</span> {{pat.Address}}</p>
+            <p style="display: inline-block;padding: 0px 20px;"><span style="font-weight: 700;">Contact Number:</span> {{pat.PhoneNumber}}</p>
+          </div>
+  
+          <div style="width: 100%;">
+            <p style="display: inline-block;padding: 0px 20px;"><span style="font-weight: 700;">Referred By:</span> {{patVisit.ProviderName}}</p>
+            <p style="display: inline-block;padding: 0px 20px;"><span style="font-weight: 700;">Date:</span> {{date}}</p>
+          </div>
+  
+        </div>
+      </div>
+      <!-- @*Print Format for MIKC*@ -->
+      <div *ngIf="hospitalName == 'mikc'" class="note-holder {{hospitalName}}" style="width: 100%;margin-top: 150px;">
+        <div style="width: 100%;float: left;">
+          <div style="white-space: pre-line;">{{this.doctorsignature}} </div>
+          <div style="width: 20%;float: right;">
+            <label style="display: inline-block;padding: 0px 10px;line-height: 1.8;"><span style="font-weight: 700;">Time:</span> {{date | date:'shortTime'}}</label>
+          </div>
+          <div style="width: 30%;float: right;">
+            <label style="display: inline-block;padding: 0px 10px;line-height: 1.8;"><span style="font-weight: 700;">Date:</span> {{date | date}}</label>
+          </div>
+        </div>
+        <hr />
+        <div style="width: 100%;float: left;">
+          <!-- length of line reduction request from mikc -->
+          <div style="width: 22%;float: left;border-right: 1px solid;min-height: 685px;">
+            <h3 style="margin-top: 0; font-weight: 700;">VITALS</h3>
+  
+            <div style="padding-top: 15px;">
+              <p>BP  : <span *ngIf="vitals.BPSystolic">{{vitals.BPSystolic}}/{{vitals.BPDiastolic}}</span></p>
+              <p>Pulse  : {{vitals.Pulse}} <span></span></p>
+              <p>Temp  : <span *ngIf="vitals.Temperature"> {{vitals.Temperature}} {{vitals.TemperatureUnit}}</span></p>
+              <p>Wt : <span *ngIf="vitals.Weight"> {{vitals.Weight}} {{vitals.WeightUnit}}</span></p>
+              <p>Ht  : <span *ngIf="vitals.Height"> {{vitals.Height}} {{vitals.HeightUnit}}</span></p>
+              <p>BMI  :  <span> {{vitals.BMI}} </span></p>
+              <p>SPO<sub>2 </sub> : <span>{{vitals.SpO2}}</span></p>
+            </div>
+            <h3 style="font-weight: 700;">Investigations</h3>
+          </div>
+  
+          <div style="width: 78%;padding: 0px 15px;float: left;">
+            <div style="width: 60%;float: left;">
+              <label style="display: inline-block;padding: 0px 10px;line-height: 1.8;"><span style="font-weight: 700;">Hospital No:</span> {{pat.PatientCode}}</label>
+              <label style="display: inline-block;padding: 0px 10px;line-height: 1.8;"><span style="font-weight: 700;">Patient Name:</span> {{pat.ShortName}}</label>
+  
+              <label style="display: inline-block;padding: 0px 10px;line-height: 1.8;"><span style="font-weight: 700;">Age/Sex:</span> {{pat.Age}} / {{pat.Gender}}</label>
+            </div>
+  
+            <div style="width: 40%;float: left;">
+              <h3 style="margin-top: 0; font-weight: 700;margin-bottom: 8px;">Previous History:</h3>
+  
+              <div style="width: 100%;">
+                <p style="font-weight: 700;width: auto;display: inline-block;margin: 0px 0px 8px;padding-right: 8px;vertical-align: -webkit-baseline-middle;">
+                  <span style="vertical-align: -webkit-baseline-middle;">DM: </span>
+                  <span class="tick-box"></span>
+                </p>
+                <p style="font-weight: 700;width: auto;display: inline-block;margin: 0px 0px 8px;padding-right: 8px;vertical-align: -webkit-baseline-middle;">
+                  <span style="vertical-align: -webkit-baseline-middle;">HTN: </span>
+                  <span class="tick-box"></span>
+                </p>
+                <p style="font-weight: 700;width: auto;display: inline-block;margin: 0px 0px 8px;padding-right: 8px;vertical-align: -webkit-baseline-middle;">
+                  <span style="vertical-align: -webkit-baseline-middle;">F/H Kidney Disease: </span>
+                  <span class="tick-box"></span>
+                </p>
+              </div>
+  
+            </div>
+  
+  
+          </div>
+          <hr />
+        </div>
+      </div>
+      <!-- --------Print Format for Matrika EYE Centre---------------------- -->
+       <div *ngIf="hospitalName == 'mec'" class="note-holder {{hospitalName}}" style="width: 100%;margin-top: 150px;">
+          <div style="width: 100%;float: left;">
+            <div style="white-space: pre-line;">{{this.doctorsignature}} </div>
+            <div style="width: 20%;float: right;">
+              <label style="display: inline-block;padding: 0px 10px;line-height: 1.8;"><span style="font-weight: 700;">Time:</span> {{date | date:'shortTime'}}</label>
+            </div>
+            <div style="width: 30%;float: right;">
+              <label style="display: inline-block;padding: 0px 10px;line-height: 1.8;"><span style="font-weight: 700;">Date:</span> {{date | date}}</label>
+            </div>
+          </div>
+          <hr />
+          <div style="width: 100%;float: left;">
+            <div style="width: 22%;float: left;border-right: 1px solid;min-height: 685px;">
+              <h3 style="margin-top: 0; font-weight: 700;">VITALS</h3>
+    
+              <div style="padding-top: 15px;">
+                <p>BP  : <span *ngIf="vitals.BPSystolic">{{vitals.BPSystolic}}/{{vitals.BPDiastolic}}</span></p>
+                <p>Pulse  : {{vitals.Pulse}} <span></span></p>
+                <p>Temp  : <span *ngIf="vitals.Temperature"> {{vitals.Temperature}} {{vitals.TemperatureUnit}}</span></p>
+                <p>Wt : <span *ngIf="vitals.Weight"> {{vitals.Weight}} {{vitals.WeightUnit}}</span></p>
+                <p>Ht  : <span *ngIf="vitals.Height"> {{vitals.Height}} {{vitals.HeightUnit}}</span></p>
+                <p>BMI  :  <span> {{vitals.BMI}} </span></p>
+                <p>SPO<sub>2 </sub> : <span>{{vitals.SpO2}}</span></p>
+              </div>
+              <h3 style="font-weight: 700;">Investigations</h3>
+            </div>
+    
+            <div style="width: 78%;padding: 0px 15px;float: left;">
+              <div style="width: 60%;float: left;">
+                <label style="display: inline-block;padding: 0px 10px;line-height: 1.8;"><span style="font-weight: 700;">Hospital No:</span> {{pat.PatientCode}}</label>
+                <label style="display: inline-block;padding: 0px 10px;line-height: 1.8;"><span style="font-weight: 700;">Patient Name:</span> {{pat.ShortName}}</label>
+    
+                <label style="display: inline-block;padding: 0px 10px;line-height: 1.8;"><span style="font-weight: 700;">Age/Sex:</span> {{pat.Age}} / {{pat.Gender}}</label>
+              </div>
+    
+              <div style="width: 40%;float: left;">
+                <label style="display: inline-block;padding: 0px 10px;line-height: 1.8;"><span style="font-weight: 700;">Address:</span> {{pat.Address}}</label>
+                <!-- <label style="margin-top: 0; font-weight: 700;margin-bottom: 8px;">Address:{{pat.Address}}</label> -->
+    
+                <div style="width: 100%;">
+                  <label style="display: inline-block;padding: 0px 10px;line-height: 1.8;"><span style="font-weight: 700;">Phone Number:</span> {{pat.PhoneNumber}}</label>
+                  
+                 
+                </div>
+    
+              </div>
+    
+    
+            </div>
+            <hr />
+          </div>
+        </div>
+      <!-- --------Print Format for Matrika EYE Centre---------------------- -->
+  
+      <!--  @*Print Format for Hams*@-->
+      <div *ngIf="hospitalName == 'hams'" class="note-holder {{hospitalName}}" style="width: 100%; float: left; margin-top: 120px;">
+        <style>
+          .first-row div span, .sec-row div span {
+            visibility: hidden;
+          }
+        </style>
+  
+        <div style="width: 100%;float: left;padding: 0px 15px;min-height: 400px;">
+          <div class="first-row" style="width: 100%;float: left;">
+            <p style="float: right;padding: 0; margin: 0;">Date: {{date}}</p>
+            <p style="float: left;margin-top: 26px;margin-bottom: 7px;">HIS No: {{pat.PatientCode}}</p>
+          </div>
+  
+          <div class="first-row" style="width: 100%;float: left;">
+            <div style="width: 52%;float: left;"><span>Patient Name:</span>{{pat.ShortName}}</div>
+            <div style="width: 13%;float: left;"><span>Age.......:</span>{{pat.Age}}</div>
+            <div style="width: 13%;float: left;"><span>Sex.......</span>{{pat.Gender}}</div>
+            <div style="width: 11%;float: left;"><span>Ht.......</span>{{pat.Height}}</div>
+            <div style="width: 11%;float: left;"><span>Wt.....</span>{{pat.Weight}}</div>
+          </div>
+  
+          <div class="sec-row" style="width: 100%;float: left; margin-top: 20px;">
+            <div style="width: 22%;float: left;"><span>Pulse............:</span>&nbsp;{{vitals.Pulse}}</div>
+            <div style="width: 22%;float: left;"><span>B/P.:</span>{{vitals.BPSystolic}}<span style="visibility: inherit !important;">/</span>{{vitals.BPDiastolic}}</div>
+            <div style="width: 20%;float: left;"><span>Temp......:</span>{{vitals.Temperature}} {{vitals.TemperatureUnit}}  </div>
+            <div style="width: 18%;float: left;"><span>Resp. rate.....:</span>{{vitals.RespiratoryRatePerMin}} </div>
+            <!--@* | HasValue:'percent'*@-->
+            <div style="width: 18%;float: left;"><span>SPO2..:</span> {{vitals.SpO2}} <span style="visibility: inherit !important;">%</span> </div>
+          </div>
+  
+  
+          <div class="sec-row" style="width: 100%;float: left; margin-top: 20px;">
+            <div style="width: 50%;float: left;"><span>Allergies(If Any):....</span></div>
+            <div style="width: 50%;float: left;">
+              <div style="float: left;"><span>Doctor's Name(Provider):</span></div>
+              <div style="display: inline-block;">
+                <div>
+                  <span style="visibility: visible !important; display: block;"><b>{{patVisit.ProviderName}}</b></span>
+                </div>
+              </div>
+            </div>
+  
+  
+          </div>
+  
+  
+        </div>
+  
+      </div>
+  
+    </div>
+  
+  
+  
+  </div>
+  
+  <div class="popp-upp">
+    <div class="col-md-5 quick-add-vital" style="left: 31%;">
+      <vitals-add *ngIf="showAddVital" (callback-add)="CallBackAdd($event)"></vitals-add>
+    </div>
+  </div>
+  

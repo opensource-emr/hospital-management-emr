@@ -39,6 +39,8 @@ export class PHRMWriteOffItemModel {
     public DiscountedAmount: number = 0;
     public BatchNoList: any = [];
     public TempBatchNoList: any = [];
+    public UserName: string = null; // only for diplay in client side
+    public VATAmount: number = null; // only for use in client side
     public SelectedGRItems: Array<PHRMGoodsReceiptItemsModel> = new Array<PHRMGoodsReceiptItemsModel>();
     constructor() {
         var _formBuilder = new FormBuilder();

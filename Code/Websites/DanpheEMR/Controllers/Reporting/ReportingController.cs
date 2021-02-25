@@ -12,6 +12,8 @@ using DanpheEMR.Utilities;
 using DanpheEMR.Security;
 using System.Data;
 using DanpheEMR.ServerModel;
+using DanpheEMR.Enums;
+using System.Data.SqlClient;
 
 namespace DanpheEMR.Controllers.Reporting
 {
@@ -49,7 +51,7 @@ namespace DanpheEMR.Controllers.Reporting
             return View("BillingMain");
         }
         #endregion
-       
+
         #region AppointmentMain Reporting
         [DanpheViewFilter("reports-appointmentmain-view")]
         public IActionResult AppointmentMain()
@@ -78,11 +80,11 @@ namespace DanpheEMR.Controllers.Reporting
             return View("DoctorsMain");
         }
         #endregion
-       
-       
-    
-       
-       
+
+
+
+
+
 
         #region Patient Bill History
         //Department wise Sales Daybook report
@@ -112,13 +114,13 @@ namespace DanpheEMR.Controllers.Reporting
         #endregion
         #region Total Admitted Patient
         //Total Admitted Patient
-        public string TotalAdmittedPatient()
+        public string TotalAdmittedPatient(DateTime FromDate, DateTime ToDate)
         {
             DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
             try
             {
                 ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
-                DataTable deptsalesdaybook = reportingDbContext.TotalAdmittedPatient();
+                DataTable deptsalesdaybook = reportingDbContext.TotalAdmittedPatient(FromDate, ToDate);
                 responseData.Status = "OK";
                 responseData.Results = deptsalesdaybook;
             }
@@ -144,7 +146,7 @@ namespace DanpheEMR.Controllers.Reporting
             try
             {
                 ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
-                DataTable dischargepatient = reportingDbContext.DischargedPatient(FromDate, ToDate);
+                DataTable dischargepatient = reportingDbContext.DischargedPatient(FromDate, ToDate); 
                 responseData.Status = "OK";
                 responseData.Results = dischargepatient;
             }
@@ -156,6 +158,102 @@ namespace DanpheEMR.Controllers.Reporting
             }
             return DanpheJSONConvert.SerializeObject(responseData);
         }
+        
+        public string AllWardCountDetail(DateTime FromDate, DateTime ToDate)
+        {
+            DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
+            try
+            {
+                ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
+
+                DataSet ds = DALFunctions.GetDatasetFromStoredProc("SP_Report_ADT_PatientInOutReport",
+                   new List<SqlParameter>() { new SqlParameter("@FromDate", FromDate),
+                   new SqlParameter("@ToDate", ToDate)},
+                   reportingDbContext);
+
+                var allWards = ds.Tables[0];
+                var admissionAndTransferredIn = ds.Tables[1];
+                var dischargedAndTransferredOut = ds.Tables[2];
+                var currentInBed = ds.Tables[3];
+
+                //Create dictionary
+                Dictionary<string, ADTInpatientCensusSummary> allData = new Dictionary<string, ADTInpatientCensusSummary>();
+
+                //Initialize all Keys, these Keys are WardName which are always Unique
+                foreach (DataRow row in allWards.Rows)
+                {
+                    var wardName = row["WardName"].ToString();
+                    var singleObj = new ADTInpatientCensusSummary();
+                    singleObj.Ward = wardName;
+                    allData[wardName] = singleObj;
+                }
+
+                //Loop through for Admission and TransferredIn count
+                foreach (DataRow row in admissionAndTransferredIn.Rows)
+                {
+                    var wardName = row["WardName"].ToString();
+                    var action = row["Action"].ToString();
+                    int totalCount = Convert.ToInt32(row["TotalCount"]);
+
+                    if (action == "admission")
+                    {
+                        allData[wardName].NewAdmission = allData[wardName].NewAdmission + totalCount;
+                    }
+                    else if (action == "transfer")
+                    {
+                        allData[wardName].TransIn = allData[wardName].TransIn + totalCount;
+                    }
+
+                }
+
+                //Loop through for Discharged and TransferredOut count
+                foreach (DataRow row in dischargedAndTransferredOut.Rows)
+                {
+                    var wardName = row["WardName"].ToString();
+                    var action = row["OutAction"].ToString();
+                    var totalCount = Convert.ToInt32(row["TotalCount"]);
+
+                    if (action == "discharged")
+                    {
+                        allData[wardName].Discharged = allData[wardName].Discharged + totalCount;
+                    }
+                    else if (action == "transfer")
+                    {
+                        allData[wardName].TransOut = allData[wardName].TransOut + totalCount;
+                    }
+
+                }
+
+                //Loop through for InBed count
+                foreach (DataRow row in currentInBed.Rows)
+                {
+                    var wardName = row["WardName"].ToString();
+                    int totalCount = Convert.ToInt32(row["TotalCount"]);
+                    allData[wardName].InBed = allData[wardName].InBed + totalCount;
+                }
+
+                var allWardDataCount = allData.Values.ToList();
+
+                //Loop through all wards to get the Total Count
+                foreach (var val in allWardDataCount)
+                {
+                    val.Total = val.InBed + val.NewAdmission + val.TransIn - val.TransOut - val.Discharged;
+                }
+
+
+                responseData.Status = "OK";
+                responseData.Results = allWardDataCount;
+            }
+            catch (Exception ex)
+            {
+                //Insert exception details into database table.
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+            
+        }
+
         [DanpheViewFilter("reports-billingmain-dischargedpatient-view")]
         public IActionResult DischargedPatientView()
         {
@@ -215,7 +313,7 @@ namespace DanpheEMR.Controllers.Reporting
         }
         #endregion
         #region Daily Appointment Report
-        //Daily Sales Report
+        //Daily Appointment Report
         public string DailyAppointmentReport(DateTime FromDate, DateTime ToDate, string Doctor_Name, string AppointmentType)
         {
             //DanpheHTTPResponse<List<DailyAppointmentReport>> responseData = new DanpheHTTPResponse<List<DailyAppointmentReport>>();
@@ -241,6 +339,63 @@ namespace DanpheEMR.Controllers.Reporting
             return View("DailyAppointmentReport");
         }
         #endregion
+
+
+        #region Phone Book Appointment Report
+        //Phone Book Appointment Report
+        public string PhoneBookAppointmentReport(DateTime FromDate, DateTime ToDate, string Doctor_Name, string AppointmentStatus)
+        {
+            //DanpheHTTPResponse<List<DailyAppointmentReport>> responseData = new DanpheHTTPResponse<List<DailyAppointmentReport>>();
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+            try
+            {
+                ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
+                DataTable phonebookappointment = reportingDbContext.PhoneBookAppointmentReport(FromDate, ToDate, Doctor_Name, AppointmentStatus);
+
+                responseData.Status = "OK";
+                responseData.Results = phonebookappointment;
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
+        [DanpheViewFilter("reports-appointmentmain-phonebookappointmentreport-view")]
+        public IActionResult PhoneBookAppointmentReportView()
+        {
+            return View("PhoneBookAppointmentReport");
+        }
+        #endregion
+        #region DiagnosisWise Patient Report
+        //DiagnosisWise Patient Report
+        public string DiagnosisWisePatientReport(DateTime FromDate, DateTime ToDate, string Diagnosis)
+        {
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+            try
+            {
+                ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
+                DataTable diagnosiswisepatientreport = reportingDbContext.DiagnosisWisePatientReport(FromDate, ToDate, Diagnosis);
+
+                responseData.Status = "OK";
+                responseData.Results = diagnosiswisepatientreport;
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
+        [DanpheViewFilter("reports-admissionmain-diagnosiswisepatientreport-view")]
+        public IActionResult DIagnosisWisePatientReportView()
+        {
+            return View("DiagnosisWisePatientReport");
+        }
+        #endregion
+
+
         #region DistrictWise Report 
         //DistrictWise Report
         public string DistrictWiseAppointmentReport(DateTime FromDate, DateTime ToDate, string CountrySubDivisionName)
@@ -296,22 +451,41 @@ namespace DanpheEMR.Controllers.Reporting
         #region Category Wise Lab Report
         public string CategoryWiseLabReport(DateTime FromDate, DateTime ToDate)
         {
-            DanpheHTTPResponse<DynamicReport> responseData1 = new DanpheHTTPResponse<DynamicReport>();
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
             try
             {
                 ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
-                DynamicReport categorywiselabreport = reportingDbContext.CategoryWiseLabReport(FromDate, ToDate);
-                responseData1.Status = "OK";
-                responseData1.Results = categorywiselabreport;
+                DataTable categorywiselabreport = reportingDbContext.CategoryWiseLabReport(FromDate, ToDate);
+                responseData.Status = "OK";
+                responseData.Results = categorywiselabreport;
             }
             catch (Exception ex)
             {
                 //Insert exception details into database table.
-                responseData1.Status = "Failed";
-                responseData1.ErrorMessage = ex.Message;
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
             }
-            return DanpheJSONConvert.SerializeObject(responseData1);
+            return DanpheJSONConvert.SerializeObject(responseData);
         }
+
+        //public string CategoryWiseLabReport(DateTime FromDate, DateTime ToDate)
+        //{
+        //    DanpheHTTPResponse<DynamicReport> responseData1 = new DanpheHTTPResponse<DynamicReport>();
+        //    try
+        //    {
+        //        ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
+        //        DynamicReport categorywiselabreport = reportingDbContext.CategoryWiseLabReport(FromDate, ToDate);
+        //        responseData1.Status = "OK";
+        //        responseData1.Results = categorywiselabreport;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        //Insert exception details into database table.
+        //        responseData1.Status = "Failed";
+        //        responseData1.ErrorMessage = ex.Message;
+        //    }
+        //    return DanpheJSONConvert.SerializeObject(responseData1);
+        //}
         [DanpheViewFilter("reports-labmain-categorywiselabreport-view")]
         public IActionResult CategoryWiseLabReportView()
         {
@@ -319,7 +493,92 @@ namespace DanpheEMR.Controllers.Reporting
         }
         #endregion
 
-       
+        #region Category Wise Lab Report
+        public string DoctorWisePatientCountLabReport(DateTime FromDate, DateTime ToDate)
+        {
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+            try
+            {
+                ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
+                DataTable doctorwiselabreport = reportingDbContext.DoctorWisePatientCountLabReport(FromDate, ToDate);
+                responseData.Status = "OK";
+                responseData.Results = doctorwiselabreport;
+            }
+            catch (Exception ex)
+            {
+                //Insert exception details into database table.
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
+        [DanpheViewFilter("reports-labmain-categorywiselabreport-view")]
+        public IActionResult DoctorWiseLabReportView()
+        {
+            return View("CategoryWiseLabReport");
+        }
+        #endregion
+
+        #region Category wise total Item Count Lab Report
+        public string CategoryWiseLabItemCountLabReport(DateTime FromDate, DateTime ToDate)
+        {
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+            try
+            {
+                ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
+                DataTable catWiseLabItemReport = reportingDbContext.CategoryWiseLabItemCountLabReport(FromDate, ToDate);
+                responseData.Status = "OK";
+                responseData.Results = catWiseLabItemReport;
+            }
+            catch (Exception ex)
+            {
+                //Insert exception details into database table.
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
+        #endregion
+
+        #region Item wise total Count Lab Report
+        public string ItemWiseLabItemCountLabReport(DateTime FromDate, DateTime ToDate, int? categoryId)
+        {
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+            try
+            {
+                ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
+                DataTable itemWiseCountReport = reportingDbContext.ItemWiseLabItemCountLabReport(FromDate, ToDate, categoryId);
+                responseData.Status = "OK";
+                responseData.Results = itemWiseCountReport;
+            }
+            catch (Exception ex)
+            {
+                //Insert exception details into database table.
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
+        #endregion
+
+        #region Test Status Detail Report lab
+        public string TestStatusDetailReport(DateTime FromDate, DateTime ToDate)
+        {
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+            try
+            {
+                ReportingDbContext reportingDBContext = new ReportingDbContext(connString);
+                DataTable statusWiseCountReport = reportingDBContext.TestStatusDetailReport(FromDate, ToDate);
+                responseData.Status = "OK";
+                responseData.Results = statusWiseCountReport;
+            }catch(Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
+        #endregion
 
         #region PatientCensusReport
         public string PatientCensusReport(DateTime FromDate, DateTime ToDate, int? ProviderId, int? DepartmentId)
@@ -345,7 +604,7 @@ namespace DanpheEMR.Controllers.Reporting
             return View("PatientCensusReport");
         }
         #endregion
- 
+
         #region Doctorwise OutPatient Report
         public string DoctorwiseOutPatientReport(DateTime FromDate, DateTime ToDate)
         {
@@ -370,7 +629,7 @@ namespace DanpheEMR.Controllers.Reporting
             return View("DoctorwiseOutPatient");
         }
         #endregion
-      
+
         #region DepartmentSummaryReport
         public string BillDepartmentSummary(DateTime FromDate, DateTime ToDate)
         {
@@ -395,8 +654,8 @@ namespace DanpheEMR.Controllers.Reporting
             return View("BillDepartmentSummary");
         }
         #endregion
-      
-      
+
+
         #region Service Department Names (list of srvDeptNames from Function)
         public string LoadDeptListFromFN()
         {
@@ -416,7 +675,7 @@ namespace DanpheEMR.Controllers.Reporting
             return DanpheJSONConvert.SerializeObject(responseData);
         }
         #endregion
-     
+
 
         #region Sales/Purchase Trained Companion Graph in Pharmacy Dashboard  
         //DistrictWise Report
@@ -448,7 +707,7 @@ namespace DanpheEMR.Controllers.Reporting
 
         #endregion
 
-      
+
 
 
 
@@ -476,6 +735,32 @@ namespace DanpheEMR.Controllers.Reporting
             return View("TotalRevenueFromLab");
         }
         #endregion
+
+        #region ItemWise From Lab Report
+        public string ItemWiseFromLab(DateTime FromDate, DateTime ToDate)
+        {
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+            try
+            {
+                ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
+                DataTable itemwiselab = reportingDbContext.ItemWiseFromLab(FromDate, ToDate);
+                responseData.Status = "OK";
+                responseData.Results = itemwiselab;
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
+        [DanpheViewFilter("reports-lab-itemwiselabreport-view")]
+        public IActionResult ItemWiseFromLabView()
+        {
+            return View("ItemWiseFromLab");
+        }
+        #endregion
+
         #region DoctorWise Patient Report 
         //DistrictWise Report
         public string DoctorWisePatientReport(DateTime FromDate, DateTime ToDate, string ProviderName)
@@ -528,7 +813,7 @@ namespace DanpheEMR.Controllers.Reporting
             return View("DepartmentWiseAppointmentReport");
         }
         #endregion
-      
+
         #region Patient Wise Collection Report 
         //DistrictWise Report
         public string PatientCreditBillSummary(DateTime FromDate, DateTime ToDate)
@@ -590,7 +875,7 @@ namespace DanpheEMR.Controllers.Reporting
             //return null;
         }
         #endregion
-       
+
         #region Doctor Summary Report
         // GET: /<controller>/
         //used in doctor's module.
@@ -650,7 +935,32 @@ namespace DanpheEMR.Controllers.Reporting
             return DanpheJSONConvert.SerializeObject(responseData);
         }
         #endregion
+        #region Diagnosis List
+        public string GetDiagnosisList()
+        {
+            DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
+            try
+            {
+                //MasterDbContext masterDb = new MasterDbContext(connString);
+                AdmissionDbContext DischargeSummary = new AdmissionDbContext(connString);
 
+                var diagnosisList = (from diagnosis in DischargeSummary.DischargeSummary 
+                                     group diagnosis by new {diagnosis.Diagnosis } into p
+                                               
+                                               select new {  Diagnosis = p.Key.Diagnosis}).OrderBy(a=>a.Diagnosis).Distinct().ToList();
+
+
+                responseData.Status = "OK";
+                responseData.Results = diagnosisList;
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message + " exception details:" + ex.ToString();
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
+        #endregion
         #region Appointment Type List
         public string GetAppointmentTypeList()
         {
@@ -658,7 +968,7 @@ namespace DanpheEMR.Controllers.Reporting
             try
             {
                 PatientDbContext patientDb = new PatientDbContext(connString);
-                var patientdetail = patientDb.Appointments.Select(s=>s.AppointmentType).Distinct().ToList();
+                var patientdetail = patientDb.Appointments.Select(s => s.AppointmentType).Distinct().ToList();
 
                 responseData.Status = "OK";
                 responseData.Results = patientdetail;
@@ -825,13 +1135,18 @@ namespace DanpheEMR.Controllers.Reporting
                 BillingDbContext bilDbContext = new BillingDbContext(connString);
                 //added: sud: 31May'18-- to show in dashboard
                 double? provisionalTot = bilDbContext.BillingTransactionItems
-                     .Where(itm => itm.BillStatus == "provisional").Sum(itm => itm.TotalAmount);
+                     .Where(itm => itm.BillStatus == ENUM_BillingStatus.provisional // "provisional"
+                     ).Sum(itm => itm.TotalAmount);
 
                 double? creditTotAmt = bilDbContext.BillingTransactions
-                     .Where(txn => txn.BillStatus == "unpaid").Sum(txn => txn.TotalAmount);
+                     .Where(txn => txn.BillStatus == ENUM_BillingStatus.unpaid // "unpaid"
+                     ).Sum(txn => txn.TotalAmount);
 
-                double? totalDeposit = bilDbContext.BillingDeposits.Where(dep => dep.DepositType.ToLower() == "deposit").Sum(dep => dep.Amount);
-                double? totalDeduct = bilDbContext.BillingDeposits.Where(dep => dep.DepositType.ToLower() == "depositdeduct").Sum(dep => dep.Amount);
+                double? totalDeposit = bilDbContext.BillingDeposits.Where(dep => dep.DepositType.ToLower() == ENUM_BillDepositType.Deposit.ToLower()).Sum(dep => dep.Amount);
+                double? totalDeduct = bilDbContext.BillingDeposits.Where(dep => dep.DepositType.ToLower() == ENUM_BillDepositType.DepositDeduct.ToLower()).Sum(dep => dep.Amount);
+                //double? totalDeposit = bilDbContext.BillingDeposits.Where(dep => dep.DepositType.ToLower() == "deposit").Sum(dep => dep.Amount);
+                //double? totalDeduct = bilDbContext.BillingDeposits.Where(dep => dep.DepositType.ToLower() == "depositdeduct").Sum(dep => dep.Amount);
+
                 //make values zero if null.
                 totalDeposit = totalDeposit != null ? totalDeposit : 0;
                 totalDeduct = totalDeduct != null ? totalDeduct : 0;
@@ -873,23 +1188,23 @@ namespace DanpheEMR.Controllers.Reporting
             return DanpheJSONConvert.SerializeObject(responseData);
         }
 
-        //public string PatientZoneMap()
-        //{
-        //    DanpheHTTPResponse<DynamicReport> responseData = new DanpheHTTPResponse<DynamicReport>();
-        //    try
-        //    {
-        //        ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
-        //        DynamicReport patZoneMap = reportingDbContext.Home_PatientZoneMap();
-        //        responseData.Status = "OK";
-        //        responseData.Results = patZoneMap;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        responseData.Status = "Failed";
-        //        responseData.ErrorMessage = ex.Message;
-        //    }
-        //    return DanpheJSONConvert.SerializeObject(responseData);
-        //}
+        public string PatientZoneMap()
+        {
+            DanpheHTTPResponse<DynamicReport> responseData = new DanpheHTTPResponse<DynamicReport>();
+            try
+            {
+                ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
+                DynamicReport patZoneMap = reportingDbContext.Home_PatientZoneMap();
+                responseData.Status = "OK";
+                responseData.Results = patZoneMap;
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
 
         public string DepartmentAppointmentsTotal()
         {
@@ -1046,6 +1361,44 @@ namespace DanpheEMR.Controllers.Reporting
         #endregion
 
 
+        //PatientRegistrationReport
+        public string PatientRegistrationReport(DateTime FromDate, DateTime ToDate, string Gender, string Country)
+        {
+            //DanpheHTTPResponse<List<DailyAppointmentReport>> responseData = new DanpheHTTPResponse<List<DailyAppointmentReport>>();
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+            try
+            {
+                ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
+                DataTable patientregreport = reportingDbContext.PatientRegistrationReport(FromDate, ToDate, Gender, Country);
 
+                responseData.Status = "OK";
+                responseData.Results = patientregreport;
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
+
+        public string PoliceCaseReport(DateTime FromDate, DateTime ToDate)
+        {
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+
+            try
+            {
+                ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
+                DataTable policecasereport = reportingDbContext.PoliceCaseReport(FromDate, ToDate);
+                responseData.Status = "OK";
+                responseData.Results = policecasereport;
+            }catch(Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
     }
 }

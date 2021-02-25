@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DanpheEMR.ServerModel.RadiologyModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,6 +15,7 @@ namespace DanpheEMR.ServerModel
         public string HtmlContent { get; set; }
         public string PdfBase64 { get; set; }
         public string AttachmentFileName { get; set; }
+        public List<ImageAttachmentModel> ImageAttachments { get; set; }
         public string SenderEmailAddress { get; set; }
         public string SenderTitle { get; set; }
         public bool SendPdf { get; set; }

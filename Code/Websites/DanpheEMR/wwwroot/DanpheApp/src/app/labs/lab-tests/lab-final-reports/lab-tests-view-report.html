@@ -1,590 +1,1137 @@
-<div class="row" *ngIf="showReport &&templateReport!=null" style="margin-top: 2px;">
-
-  <div>
-    <button *ngIf="!showSignatoriesEdit && templateReport.ReportId && templateReport.ValidToPrint && !verificationRequired" class="btn btn-primary" style="display: inline-block;float: right; margin-right: 15px;cursor: pointer;" (click)="loading=true;Export('print')">
-      Print
-      <i class="fa fa-print"></i>
-    </button>
-  </div>
-
-  <div #exportContent id="lab-report" class="padding-15-hr margin-50-tp">
-    <div class="lab-rpt-container" id="lab-report-main">
-      <div class="rpt-curholder">
-
-        <div class="rep-containr" [ngClass]="hospitalCode">
-          <div *ngIf="showPrintInfo" class="no-print margin-5-bt">
-            <div class="flex-container txt-left">
-              <div class="single-head">
-                <div *ngIf="templateReport.PrintedBy" class="display-blk margin-7-hr">
-                  <strong>Last Printed By</strong> : {{templateReport.PrintedByName}} , &nbsp;
-                </div>
-                <div *ngIf="templateReport.PrintCount" class="display-blk">
-                  <div>
-                    <strong>Print Count</strong> : {{templateReport.PrintCount}}
+<div class="wrapper">
+  <div
+    class="row"
+    *ngIf="showReport &&templateReport!=null"
+    style="margin-top: 2px;"
+  >
+    <div>
+      <button
+        *ngIf="!showSignatoriesEdit && templateReport.ReportId && templateReport.ValidToPrint && !verificationRequired"
+        class="btn btn-primary"
+        style="
+          display: inline-block;
+          float: right;
+          margin-right: 15px;
+          cursor: pointer;
+        "
+        (click)="loading=true;Export('print')"
+      >
+        Print <i class="fa fa-print"></i>
+      </button>
+    </div>
+    <div #exportContent id="lab-report" class="padding-15-hr margin-50-tp">
+      <div class="lab-rpt-container lab-pr-container" id="lab-report-main">
+        <div class="rpt-curholder">
+          <div class="rep-containr" [ngClass]="hospitalCode">
+            <div *ngIf="showPrintInfo" class="no-print margin-5-bt">
+              <div class="flex-container txt-left">
+                <div class="single-head">
+                  <div
+                    *ngIf="templateReport.PrintedBy"
+                    class="display-blk margin-7-hr"
+                  >
+                    <strong>Last Printed By</strong> :
+                    {{templateReport.PrintedByName}} , &nbsp;
+                  </div>
+                  <div *ngIf="templateReport.PrintCount" class="display-blk">
+                    <div>
+                      <strong>Print Count</strong> :
+                      {{templateReport.PrintCount}}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+            <table class="patient-info-tabl lab-report-tbl">
+              <thead class="show-gap">
+                <tr>
+                  <td colspan="2">
+                    <!--<img src="blackWallPaper.jpg" alt="photo"/>-->
+                    <!--Note that if the Gap in the thead is greater than 254px, then we cannot get the heading on each page-->
 
-          <table class="patient-info-tabl lab-report-tbl">
-            <thead class="show-gap">
-              <tr>
-                <td colspan="2">
-                  <!--<img src="blackWallPaper.jpg" alt="photo"/>-->
-                  <!--Note that if the Gap in the thead is greater than 254px, then we cannot get the heading on each page-->
-                  <div *ngIf="showHeader" class="display-header">
-                    <img class="headerimage" id="headerImg" src="../../../themes/theme-default/images/mnk-customer-header-2.jpg" />
-                  </div>
-
-                  <div *ngIf="!showHeader" class="lab-header-gap">
-
-                  </div>
-
-                </td>
-              </tr>
-              <tr>
-                <td colspan="2">
-                  <div class="patient-info-box">
-                    <div class="flex-container flex-align-center justify-sp-around">
-                      <div class="single-head">
-                        <div class="left-col-data">
-                          <strong>Name</strong> : {{templateReport.Lookups.PatientName}}
+                    <div *ngIf="showHeader" class="display-header">
+                      <img
+                        class="headerimage"
+                        id="headerImg"
+                        src="../../../themes/theme-default/images/mnk-customer-header-2.jpg"
+                        alt=""
+                      />
+                    </div>
+                    <div
+                      *ngIf="!showHeader"
+                      class="lab-header-gap"
+                      [ngClass]="'labhdr' + hospitalCode"
+                    ></div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="prelim-sig-holder" colspan="2">
+                    <div
+                      [ngClass]="'headerinfo-' + hospitalCode"
+                      class="patient-info-box"
+                    >
+                      <div
+                        class="flex-container flex-align-center justify-sp-around"
+                      >
+                        <div class="single-head">
+                          <div class="left-col-data">
+                            <strong>Name</strong> :
+                            {{templateReport.Lookups.PatientName}}
+                          </div>
                         </div>
-                      </div>
-                      <div class="single-head">
-                        <div class="right-col-data">
-                          <div [ngClass]="showBarCode ? 'right-hdrwith-barcode right-hdr':'right-hdr'" style="position: relative;">
-                            <div *ngIf="showBarCode" class="lab-barcode-holder" style="position: absolute; right: 2px; top: -2px;">
-                              <danphe-bar-code [barcode-number]="templateReport.BarCodeNumber" [width]="1.5" [height]="24" [barcode-margin]="2" [text-margin]="0">
-                              </danphe-bar-code>
+                        <div class="single-head">
+                          <div class="right-col-data">
+                            <div
+                              [ngClass]="showBarCode ? 'right-hdrwith-barcode right-hdr':'right-hdr'"
+                              style="position: relative;"
+                            >
+                              <div
+                                *ngIf="showBarCode"
+                                class="lab-barcode-holder"
+                                style="
+                                  position: absolute;
+                                  right: 2px;
+                                  top: -2px;
+                                "
+                              >
+                                <danphe-bar-code
+                                  [barcode-number]="templateReport.BarCodeNumber"
+                                  [width]="1.5"
+                                  [height]="24"
+                                  [barcode-margin]="2"
+                                  [text-margin]="0"
+                                >
+                                </danphe-bar-code>
+                              </div>
+                              <strong>Patient No.</strong> :
+                              {{templateReport.Lookups.PatientCode}}
+                              (<b>{{templateReport.Lookups.VisitTypeCode}}</b>)
+                              <b *ngIf="hasInsurance"> / (Insurance)</b>
                             </div>
-                            <strong>Patient No.</strong> : {{templateReport.Lookups.PatientCode}} (<b>{{templateReport.Lookups.VisitTypeCode}}</b>) <b *ngIf="hasInsurance"> / (Insurance)</b>
+                          </div>
+                        </div>
+                      </div>
+                      <div
+                        class="flex-container flex-align-center justify-sp-around"
+                      >
+                        <div class="single-head">
+                          <div class="left-col-data">
+                            <strong>Address</strong> :
+                            {{templateReport.Lookups.Address}}
+                          </div>
+                        </div>
+                        <div class="single-head">
+                          <div class="right-col-data">
+                            <div
+                              [ngClass]="showBarCode ? 'right-hdrwith-barcode right-hdr':'right-hdr'"
+                            >
+                              <strong>Age/Sex</strong> :
+                              {{templateReport.Lookups.DOB |
+                              DanpheDateTime:'age'}}
+                              /{{templateReport.Lookups.Gender}}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div
+                        class="flex-container flex-align-center justify-sp-around"
+                      >
+                        <div class="referredby single-head">
+                          <!--removed white-space: nowrap;-->
+                          <div class="left-col-data">
+                            <!--<strong>Referred By :  </strong>
+              <input *ngIf="enableDrEdit" onkeypress="this.style.width = ((this.value.length + 1) * 8) + 'px';" id="docNameTextBox" type="text" [(ngModel)]="templateReport.Lookups.ReferredBy" (focusout)="makeDoctorEdit()" autofocus />
+              <span (click)="makeDoctorEdit()" *ngIf="!enableDrEdit">{{templateReport.Lookups.ReferredBy}}</span>-->
+
+                            <strong>Referred By : </strong
+                            ><span>{{templateReport.Lookups.ReferredBy}}</span>
+                            <div class="tooltip no-print">
+                              <span (click)="openPopUpBox()">
+                                <i class="fa fa-edit edit-ic"></i>
+                              </span>
+                              <p class="tooltiptext ttptextdown no-print">
+                                Click to Change Referred By Dr.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="single-head">
+                          <div class="right-col-data">
+                            <div
+                              [ngClass]="showBarCode ? 'right-hdrwith-barcode right-hdr':'right-hdr'"
+                            >
+                              <strong>Receiving Date</strong> :
+                              {{templateReport.Lookups.ReceivingDate |
+                              DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'}}
+                              ({{templateReport.Lookups.ReceivingDate |
+                              nepaliDate }})
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div
+                        class="flex-container flex-align-center justify-sp-around"
+                      >
+                        <div class="single-head">
+                          <div class="left-col-data">
+                            <strong>Lab No</strong> :
+                            {{templateReport.Lookups.SampleCodeFormatted}}
+                            <div class="tooltip no-print">
+                              <span (click)="ConfirmChangeRunNumber()">
+                                <i class="fa fa-edit edit-ic"></i>
+                              </span>
+                              <p class="tooltiptext ttptextdown">
+                                Click to Change Run Number.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="single-head">
+                          <div class="right-col-data">
+                            <div
+                              [ngClass]="showBarCode ? 'right-hdrwith-barcode right-hdr':'right-hdr'"
+                            >
+                              <strong>Reporting Date</strong> :
+                              {{templateReport.Lookups.ReportingDate |
+                              DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'}}
+                              ({{templateReport.Lookups.ReportingDate |
+                              nepaliDate }})
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
-
-                    <div class="flex-container flex-align-center justify-sp-around">
-                      <div class="single-head">
-                        <div class="left-col-data">
-                          <strong>Address</strong> : {{templateReport.Lookups.Address}}
-                        </div>
-                      </div>
-                      <div class="single-head">
-                        <div class="right-col-data">
-                          <div [ngClass]="showBarCode ? 'right-hdrwith-barcode right-hdr':'right-hdr'">
-                            <strong>Age/Sex</strong> : {{templateReport.Lookups.DOB | DanpheDateTime:'age'}} /{{templateReport.Lookups.Gender}}
-
+                    <div
+                      *ngIf="templateReport.ReportId && verificationRequired && preliminarySignature && preliminarySignature.length > 0"
+                      class="txt-prelim"
+                    >
+                      {{preliminarySignature}}
+                    </div>
+                  </td>
+                </tr>
+              </thead>
+              <tfoot style="display: table-footer-group;">
+                <tr>
+                  <td colspan="2">
+                    <div
+                      id="signatureList"
+                      class="lab-rpt-sign"
+                      *ngIf="templateReport.Signatories && showSignatories"
+                    >
+                      <div
+                        class="flex-container justify-sp-between all-signatures"
+                        style="align-items: flex-end;"
+                      >
+                        <ng-container *ngIf="templateReport.Signatories.length">
+                          <div
+                            class="signature-item"
+                            *ngFor="let emp of templateReport.Signatories; let i=index;"
+                          >
+                            <div
+                              class="signature-image-holder"
+                              *ngIf="showDigitalSignature && emp.SignatoryImageName && emp.SignatoryImageName.trim() != ''"
+                            >
+                              <div class="all-signature-images">
+                                <button
+                                  id="hideSignImage{{i}}"
+                                  [style.display]="emp.Show ? 'inline-block':'none'"
+                                  (click)="ShowHideDigitalImage(emp)"
+                                  class="close-btn no-print signature-image-remove"
+                                >
+                                  X
+                                </button>
+                                <button
+                                  id="showSignImage{{i}}"
+                                  [style.display]="emp.Show ? 'none':'inline-block'"
+                                  (click)="ShowHideDigitalImage(emp)"
+                                  class="signature-image-show no-print"
+                                >
+                                  Show ESignature
+                                </button>
+                                <img
+                                  class="labsignature-image"
+                                  id="signImage{{i}}"
+                                  [style.display]="emp.Show ? 'inline-block':'none'"
+                                  src="../../../../../../fileuploads/EmployeeSignatures/{{emp.SignatoryImageName}}"
+                                  alt="{{emp.EmployeeFullName}} Signature"
+                                />
+                              </div>
+                            </div>
+                            <div
+                              class="signature-item-inside"
+                              [ngClass]="i>2 ? 'martop' : ''"
+                            >
+                              <div
+                                class="main-signature"
+                                *ngIf="emp.Signature"
+                                [innerHTML]="emp.Signature"
+                              ></div>
+                            </div>
+                          </div>
+                        </ng-container>
+                        <ng-container
+                          *ngIf="verifierSignatureList && verifierSignatureList.length"
+                        >
+                          <div
+                            class="signature-item"
+                            *ngFor="let emp of verifierSignatureList; let i=index;"
+                          >
+                            <div
+                              class="signature-image-holder"
+                              *ngIf="emp.SignatoryImageName && emp.SignatoryImageName.trim() != ''"
+                            >
+                              <div class="all-signature-images">
+                                <img
+                                  class="labsignature-image"
+                                  src="../../../../../../fileuploads/EmployeeSignatures/{{emp.SignatoryImageName}}"
+                                  alt="{{emp.EmployeeFullName}} Signature"
+                                />
+                              </div>
+                            </div>
+                            <div
+                              class="signature-item-inside"
+                              [ngClass]="templateReport.Signatories.length > 2 ? 'martop' : ''"
+                            >
+                              <div
+                                class="main-signature"
+                                *ngIf="emp.Signature"
+                                [innerHTML]="emp.Signature"
+                              ></div>
+                            </div>
+                          </div>
+                        </ng-container>
+                        <div
+                          *ngIf="showReportDispatcherSignatory && CreatedByUser.LabSignature"
+                          class="signature-item"
+                        >
+                          <div
+                            class="signature-image-holder"
+                            *ngIf="showDigitalSignature && CreatedByUser.SignatoryImageName && CreatedByUser.SignatoryImageName.trim() != ''"
+                          >
+                            <div class="all-signature-images">
+                              <button
+                                id="hideCurrUserSignImage"
+                                [style.display]="CreatedByUser.Show ? 'inline-block':'none'"
+                                [ngStyle]="{'display':'inline-block'}"
+                                (click)="ShowHideDigitalImage(CreatedByUser)"
+                                class="close-btn no-print signature-image-remove"
+                              >
+                                X
+                              </button>
+                              <button
+                                id="showCurrUserSignImage"
+                                [style.display]="CreatedByUser.Show ? 'none':'inline-block'"
+                                (click)="ShowHideDigitalImage(CreatedByUser)"
+                                class="signature-image-show no-print"
+                              >
+                                Show ESignature
+                              </button>
+                              <img
+                                class="labsignature-image"
+                                id="currUserSignImage"
+                                [style.display]="CreatedByUser.Show ? 'inline-block':'none'"
+                                src="../../../../../../fileuploads/EmployeeSignatures/{{CreatedByUser.SignatoryImageName}}"
+                                alt="{{CreatedByUser.FullName}} Signature"
+                              />
+                            </div>
+                          </div>
+                          <div
+                            class="signature-item-inside"
+                            [ngClass]="templateReport.Signatories && templateReport.Signatories.length>2 ? 'martop' : ''"
+                          >
+                            <div
+                              class="main-signature"
+                              [innerHTML]="CreatedByUser.LabSignature"
+                            ></div>
                           </div>
                         </div>
                       </div>
                     </div>
-                    <div class="flex-container flex-align-center justify-sp-around">
-                      <div class="referredby single-head">
-                        <!--removed white-space: nowrap;-->
-                        <div class="left-col-data">
-                          <strong>Referred By :  </strong> <input *ngIf="enableDrEdit" onkeypress="this.style.width = ((this.value.length + 1) * 8) + 'px';" id="docNameTextBox" type="text" [(ngModel)]="templateReport.Lookups.ReferredBy" (focusout)="makeDoctorEdit()" autofocus /> <span (click)="makeDoctorEdit()" *ngIf="!enableDrEdit">{{templateReport.Lookups.ReferredBy}}</span>
-                          <div class="tooltip no-print">
-                            <span (click)="openPopUpBox()">
-                              <i class="fa fa-edit edit-ic"></i>
-                            </span>
-                            <p class="tooltiptext ttptextdown no-print">Click to Change Referred By Dr.</p>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="single-head">
-                        <div class="right-col-data">
-                          <div [ngClass]="showBarCode ? 'right-hdrwith-barcode right-hdr':'right-hdr'">
-                            <strong>Receiving Date</strong> : {{templateReport.Lookups.ReceivingDate | DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'}} ({{templateReport.Lookups.ReceivingDate | nepaliDate }})
-                          </div>
-                        </div>
-                      </div>
+                    <div
+                      *ngIf="templateReport.ReportId && verificationRequired"
+                      class="prelim-note"
+                    >
+                      <p *ngIf="preliminaryText && preliminaryText.length > 0">
+                        <em><strong>Note: </strong>{{preliminaryText}}</em>
+                      </p>
                     </div>
-                    <div class="flex-container flex-align-center justify-sp-around">
-                      <div class="single-head">
-                        <div class="left-col-data ">
-                          <strong>Lab No</strong> : {{templateReport.Lookups.SampleCodeFormatted}}
-                          <div class="tooltip  no-print">
-                            <span (click)="ConfirmChangeRunNumber()">
-                              <i class="fa fa-edit edit-ic"></i>
-                            </span>
-                            <p class="tooltiptext ttptextdown">Click to Change Run Number.</p>
+                  </td>
+                </tr>
+              </tfoot>
+              <ng-container *ngIf="templateReport.TemplateType != 'html'">
+                <ng-container
+                  *ngFor="let tmplate of templateReport.Templates; let i=index;"
+                >
+                  <tbody>
+                    <tr>
+                      <td colspan="2" style="padding: 0;">
+                        <!--Template Type != "Html"-->
+
+                        <div class="table-holder">
+                          <div [ngClass]="'lab-body' + hospitalCode">
+                            <div
+                              class="flex-container"
+                              *ngIf="tmplate.TemplateType=='normal'"
+                            >
+                              <!--Table of a particular template-->
+                              <table
+                                class="single-tempate-table lab-report-tbl tbl-format1"
+                                [ngClass]="tmplate.Print ? 'showInPrint' : 'tempate-table dontShowInPrint'"
+                              >
+                                <thead>
+                                  <tr>
+                                    <th [attr.colspan]="tmplate.ColCount">
+                                      {{tmplate.HeaderText}}
+                                    </th>
+                                  </tr>
+                                  <tr>
+                                    <th *ngIf="tmplate.TemplateColumns.Name">
+                                      Test(s)
+                                    </th>
+                                    <th *ngIf="tmplate.TemplateColumns.Result">
+                                      Finding(s)
+                                    </th>
+                                    <th
+                                      *ngIf="showHideHighLowNormalFlag && tmplate.TemplateType=='normal'"
+                                    >
+                                      Flag
+                                    </th>
+                                    <th *ngIf="tmplate.TemplateColumns.Unit">
+                                      Unit
+                                    </th>
+                                    <th *ngIf="tmplate.TemplateColumns.Range">
+                                      Ref. Range
+                                    </th>
+                                    <th *ngIf="tmplate.TemplateColumns.Method">
+                                      Method
+                                    </th>
+                                    <th *ngIf="tmplate.TemplateColumns.Remarks">
+                                      Remarks
+                                    </th>
+                                  </tr>
+                                </thead>
+
+                                <!--Contains all the tests of the template-->
+                                <tbody>
+                                  <ng-container
+                                    *ngFor="let res of tmplate.Tests; let rnum = index"
+                                  >
+                                    <tr
+                                      class="test-reportname-row"
+                                      [ngClass]="res.Print ? 'showInPrint' : 'dontShowInPrint'"
+                                      *ngIf="res.Components.length > 1 || res.Components[0].IsNegativeResult"
+                                    >
+                                      <th *ngIf="tmplate.TemplateColumns.Name">
+                                        <label
+                                          class="mt-checkbox mt-checkbox-outline"
+                                          for="{{res.ReportingName+rnum}}"
+                                        >
+                                          <input
+                                            id="{{res.ReportingName+rnum}}"
+                                            class="dontShowInPrint outer-select"
+                                            type="checkbox"
+                                            [(ngModel)]="res.Print"
+                                            name="showHideInPrint"
+                                            (change)="ShowHidePrintForTestsWithComp(tmplate, res)"
+                                            title="unchecked test will not be printed"
+                                          />
+                                          <span></span
+                                          ><b>{{res.ReportingName}}</b></label
+                                        >
+
+                                        <!--
+                                      <label class="margin-0-vr" for="{{res.ReportingName+rnum}}"><b>{{res.ReportingName}}</b></label>
+                                      <input id="{{res.ReportingName+rnum}}" class="dontShowInPrint outer-select" type="checkbox" [(ngModel)]="res.Print" name="showHideInPrint" (change)="ShowHidePrintForTestsWithComp(tmplate, res)" title="unchecked test will not be printed" />
+-->
+                                      </th>
+                                      <th
+                                        *ngIf="tmplate.TemplateColumns.Result"
+                                      ></th>
+                                      <th
+                                        *ngIf="showHideHighLowNormalFlag && tmplate.TemplateType=='normal'"
+                                      ></th>
+                                      <th
+                                        *ngIf="tmplate.TemplateColumns.Unit"
+                                      ></th>
+                                      <th
+                                        *ngIf="tmplate.TemplateColumns.Range"
+                                      ></th>
+                                      <th
+                                        *ngIf="tmplate.TemplateColumns.Method"
+                                      ></th>
+                                      <th
+                                        *ngIf="tmplate.TemplateColumns.Remarks"
+                                      ></th>
+                                    </tr>
+
+                                    <!--Main result data addition work goes here-->
+                                    <ng-container
+                                      *ngIf="!res.Components[0].IsNegativeResult"
+                                    >
+                                      <ng-container
+                                        *ngFor="let cmp of res.Components; let idx = index;"
+                                      >
+                                        <tr
+                                          class="res-positive-rw"
+                                          [ngClass]="cmp.Print ? 'showInPrint' : 'dontShowInPrint'"
+                                        >
+                                          <td
+                                            class="compname"
+                                            *ngIf="tmplate.TemplateColumns.Name && cmp.ControlType == 'Label'"
+                                            [style.padding-left]="7 + cmp.IndentationCount*7 + 'px'"
+                                          >
+                                            <label
+                                              class="mt-checkbox mt-checkbox-outline margin-0-vr"
+                                              for="{{cmp.ComponentName+idx}}"
+                                            >
+                                              <input
+                                                id="{{cmp.ComponentName+idx}}"
+                                                class="dontShowInPrint inner-select"
+                                                name="showHideInPrint"
+                                                type="checkbox"
+                                                [(ngModel)]="cmp.Print"
+                                                (change)="ShowHidePrintForTestsWithoutComp(tmplate,res, res.Components.length)"
+                                                value=""
+                                                title="unchecked test will not be printed"
+                                              />
+                                              <span></span
+                                              ><b
+                                                >{{cmp.ComponentName}}</b
+                                              ></label
+                                            >
+
+                                            <!--
+                                          <label class="margin-0-vr" for="{{cmp.ComponentName+idx}}"><b> {{cmp.ComponentName}}</b></label>
+                                          <input id="{{cmp.ComponentName+idx}}" class="dontShowInPrint inner-select" name="showHideInPrint" type="checkbox" [(ngModel)]="cmp.Print" (change)="ShowHidePrintForTestsWithoutComp(tmplate,res, res.Components.length)" value="" title="unchecked test will not be printed" />
+-->
+                                          </td>
+                                          <td
+                                            class="compname"
+                                            *ngIf="tmplate.TemplateColumns.Name && cmp.ControlType != 'Label'"
+                                            [style.padding-left]="7 + cmp.IndentationCount*7 + 'px'"
+                                          >
+                                            <label
+                                              class="mt-checkbox mt-checkbox-outline margin-0-vr"
+                                              for="{{cmp.ComponentName+idx}}"
+                                            >
+                                              <input
+                                                id="{{cmp.ComponentName+idx}}"
+                                                [className]="res.Components.length == 1 ? 'dontShowInPrint outer-select':'dontShowInPrint inner-select'"
+                                                class=""
+                                                name="showHideInPrint"
+                                                type="checkbox"
+                                                [(ngModel)]="cmp.Print"
+                                                (change)="ShowHidePrintForTestsWithoutComp(tmplate,res, res.Components.length)"
+                                                value=""
+                                                title="unchecked test will not be printed"
+                                              />
+                                              <span></span
+                                              >{{cmp.ComponentName}}</label
+                                            >
+
+                                            <!--
+                                          <label class="margin-0-vr" for="{{cmp.ComponentName+idx}}">{{cmp.ComponentName}}</label>
+                                          <input id="{{cmp.ComponentName+idx}}" [className]="res.Components.length == 1 ? 'dontShowInPrint outer-select':'dontShowInPrint inner-select'" class="" name="showHideInPrint" type="checkbox" [(ngModel)]="cmp.Print" (change)="ShowHidePrintForTestsWithoutComp(tmplate,res, res.Components.length)" value="" title="unchecked test will not be printed" />
+-->
+                                          </td>
+                                          <td
+                                            class="test-data-pstv result"
+                                            *ngIf="tmplate.TemplateColumns.Result"
+                                          >
+                                            <span *ngIf="!cmp.IsAbnormal"
+                                              >{{cmp.Value}}</span
+                                            >
+                                            <span *ngIf="cmp.IsAbnormal"
+                                              ><strong
+                                                >{{cmp.Value}}</strong
+                                              ></span
+                                            >
+                                          </td>
+                                          <td
+                                            class="test-data-pstv flag"
+                                            *ngIf="showHideHighLowNormalFlag && tmplate.TemplateType=='normal'"
+                                          >
+                                            <span
+                                              *ngIf="cmp.AbnormalType && cmp.AbnormalType=='low'"
+                                              >L</span
+                                            >
+                                            <span
+                                              *ngIf="cmp.AbnormalType && cmp.AbnormalType=='high'"
+                                              >H</span
+                                            >
+                                            <span
+                                              *ngIf="cmp.AbnormalType && cmp.AbnormalType=='normal'"
+                                              >N</span
+                                            >
+                                          </td>
+                                          <td
+                                            class="test-data-pstv unit"
+                                            *ngIf="tmplate.TemplateColumns.Unit"
+                                          >
+                                            {{cmp.Unit}}
+                                          </td>
+
+                                          <!--We need to use InnerHTML and white-space:pre-line; to maintain the line Breaks, -->
+                                          <td
+                                            class="test-data-pstv range"
+                                            *ngIf="tmplate.TemplateColumns.Range"
+                                            [innerHTML]="cmp.RangeDescription"
+                                          ></td>
+                                          <td
+                                            class="test-data-pstv method"
+                                            *ngIf="tmplate.TemplateColumns.Method"
+                                          >
+                                            {{cmp.Method}}
+                                          </td>
+                                          <td
+                                            class="test-data-pstv remarks"
+                                            *ngIf="tmplate.TemplateColumns.Remarks"
+                                          >
+                                            {{cmp.Remarks}}
+                                          </td>
+                                        </tr>
+                                      </ng-container>
+                                      <ng-container>
+                                        <!--to show Interpretation-->
+                                        <tr
+                                          [className]="res.PrintInterpretation ? 'showInPrint' : 'dontShowInPrint'"
+                                          *ngIf="res.Interpretation != null && res.Interpretation != '' && res.Interpretation != undefined"
+                                        >
+                                          <td [attr.colspan]="tmplate.ColCount">
+                                            <div class="margin-15-vr">
+                                              <div class="padding-7-hr">
+                                                <input
+                                                  id="{{'interpretationTxt' + idx}}"
+                                                  class="dontShowInPrint outer-select"
+                                                  type="checkbox"
+                                                  [(ngModel)]="res.PrintInterpretation"
+                                                  name="showHideInPrint"
+                                                  (change)="ShowHideInterpretationToPrint(res)"
+                                                  title="unchecked Interpretation will not be printed"
+                                                />
+                                                <label
+                                                  for="{{'interpretationTxt' + idx}}"
+                                                >
+                                                  <b
+                                                    >Interpretation({{res.TestName}}):</b
+                                                  >
+                                                </label>
+                                                <div
+                                                  class="interpretation-txt-holder"
+                                                  [innerHTML]="res.Interpretation"
+                                                ></div>
+                                              </div>
+                                            </div>
+                                          </td>
+                                        </tr>
+                                      </ng-container>
+                                    </ng-container>
+                                    <ng-container
+                                      *ngIf="res.Components[0].IsNegativeResult"
+                                    >
+                                      <ng-container
+                                        *ngFor="let cmp of res.Components"
+                                      >
+                                        <tr
+                                          class="res-negative-rw"
+                                          [ngClass]="cmp.Print ? 'showInPrint' : 'dontShowInPrint'"
+                                        >
+                                          <td
+                                            *ngIf="tmplate.TemplateColumns.Name"
+                                            class="padding-15-hr"
+                                          >
+                                            Result
+                                          </td>
+                                          <td
+                                            *ngIf="tmplate.TemplateColumns.Result"
+                                            class="padding-15-hr text-center"
+                                          >
+                                            {{cmp.Remarks}}
+                                          </td>
+                                          <td
+                                            class="neg-data neg-unit"
+                                            *ngIf="tmplate.TemplateColumns.Unit"
+                                          ></td>
+                                          <td
+                                            class="neg-data neg-range"
+                                            *ngIf="tmplate.TemplateColumns.Range"
+                                          ></td>
+                                          <td
+                                            class="neg-data neg-method"
+                                            *ngIf="tmplate.TemplateColumns.Method"
+                                            style="
+                                              border-right: 1px solid black;
+                                            "
+                                          ></td>
+                                          <td
+                                            class="neg-data neg-remarks"
+                                            *ngIf="tmplate.TemplateColumns.Remarks"
+                                          ></td>
+                                        </tr>
+                                      </ng-container>
+                                      <ng-container>
+                                        <!--to show Interpretation-->
+                                        <tr
+                                          [className]="res.PrintInterpretation ? 'showInPrint' : 'dontShowInPrint'"
+                                          *ngIf="res.Interpretation != null && res.Interpretation != '' && res.Interpretation != undefined"
+                                        >
+                                          <td [attr.colspan]="tmplate.ColCount">
+                                            <div class="margin-15-vr">
+                                              <div class="padding-7-hr">
+                                                <input
+                                                  id="{{'interpretationTxt' + idx}}"
+                                                  class="dontShowInPrint outer-select"
+                                                  type="checkbox"
+                                                  [(ngModel)]="res.PrintInterpretation"
+                                                  name="showHideInPrint"
+                                                  (change)="ShowHideInterpretationToPrint(res)"
+                                                  title="unchecked Interpretation will not be printed"
+                                                />
+                                                <label
+                                                  for="{{'interpretationTxt' + idx}}"
+                                                >
+                                                  <b
+                                                    >Interpretation({{res.TestName}}):</b
+                                                  >
+                                                </label>
+                                                <div
+                                                  class="interpretation-txt-holder"
+                                                  [innerHTML]="res.Interpretation"
+                                                ></div>
+                                              </div>
+                                            </div>
+                                          </td>
+                                        </tr>
+                                      </ng-container>
+                                    </ng-container>
+
+                                    <!--<tr *ngIf="res.HasNegativeResults" style="border: 1px solid #1f1e1e; text-align: left;">
+                                      <td style="padding: 0px 15px;">Result</td>
+                                      <td style="padding: 0px 5px;">{{res.Components[0].Remarks}}</td>
+                                  </tr>-->
+                                  </ng-container>
+                                </tbody>
+                              </table>
+                            </div>
+                            <div
+                              class="flex-container"
+                              *ngIf="tmplate.TemplateType=='culture' && isCultureRptLoaded"
+                            >
+                              <table
+                                class="culture-holder-table lab-report-tbl culture-fotmat1"
+                                [ngClass]="tmplate.Print ? 'showInPrint' : 'dontShowInPrint'"
+                              >
+                                <thead>
+                                  <tr class="culture-header">
+                                    <th colspan="3">{{tmplate.HeaderText}}</th>
+                                  </tr>
+                                  <tr class="culture-heading-col">
+                                    <th *ngIf="tmplate.TemplateColumns.Name">
+                                      Test(s)
+                                    </th>
+                                    <th
+                                      colspan="2"
+                                      *ngIf="tmplate.TemplateColumns.Result"
+                                    >
+                                      Finding(s)
+                                    </th>
+                                    <!--<th *ngIf="tmplate.TemplateColumns.Range" style="padding: 0px 5px;text-align: center;">Ref. Range</th>-->
+                                  </tr>
+                                </thead>
+                                <ng-container
+                                  *ngFor="let tst of tmplate.Tests; let crindex = index;"
+                                >
+                                  <tbody
+                                    [ngClass]="tst.Print ? 'showInPrint' : 'dontShowInPrint'"
+                                    class="culture-positive-testres"
+                                    *ngIf="!tst.IsNegativeResult"
+                                  >
+                                    <tr class="row-brdr">
+                                      <td colspan="3" style="padding: 0px 7px;">
+                                        <label
+                                          class="mt-checkbox mt-checkbox-outline margin-0-vr"
+                                          for="{{tst.ReportingName+i+crindex}}"
+                                        >
+                                          <input
+                                            id="{{tst.ReportingName+i+crindex}}"
+                                            class="dontShowInPrint outer-select"
+                                            type="checkbox"
+                                            [(ngModel)]="tst.Print"
+                                            namie="showHideInPrint"
+                                            (change)="ShowHidePrintForTestsWithComp(tmplate, tst)"
+                                            title="unchecked test will not be printed"
+                                          />
+                                          <span></span
+                                          ><b>{{tst.ReportingName}}</b>
+                                        </label>
+                                      </td>
+                                    </tr>
+                                    <tr class="row-brdr">
+                                      <td colspan="3" style="padding: 0px 7px;">
+                                        <!--below is temporary solution until we get proper sample from server side: sud:5Sept'18-->
+                                        Specimen:
+                                        <input
+                                          type="text"
+                                          [(ngModel)]="tst.Specimen"
+                                          (focusout)="UpdateSpecimen(tst)"
+                                          class="no-print"
+                                        />
+                                        <span class="hidden"
+                                          >{{tst.Specimen}}</span
+                                        >
+                                      </td>
+                                    </tr>
+
+                                    <ng-container
+                                      *ngFor="let culRepFormatted of tst.ResultFormattedForCulture; let c =index;"
+                                    >
+                                      <tr class="row-brdr" *ngIf="c > 0">
+                                        <td colspan="3">
+                                          <div
+                                            class="ht-culture-grp-separation"
+                                          ></div>
+                                        </td>
+                                      </tr>
+                                      <tr class="row-brdr">
+                                        <td style="padding: 0px 7px;">
+                                          <b>Result</b>
+                                        </td>
+                                        <td class="cs-result" colspan="2">
+                                          <b
+                                            >{{culRepFormatted.IsolatedOrganism}}
+                                          </b>
+                                        </td>
+                                      </tr>
+                                      <tr
+                                        *ngIf="culRepFormatted.ColonyCount.length > 0"
+                                        class="row-brdr not-bdr-cltr"
+                                      >
+                                        <td
+                                          colspan="3"
+                                          style="padding: 0px 7px;"
+                                        >
+                                          Colony Count:
+                                          <span
+                                            >{{culRepFormatted.ColonyCount}}</span
+                                          >
+                                        </td>
+                                      </tr>
+
+                                      <ng-container
+                                        *ngIf="culRepFormatted.MaxLenArray && culRepFormatted.MaxLenArray.length > 0"
+                                      >
+                                        <tr class="row-brdr">
+                                          <td
+                                            style="
+                                              padding: 0px 7px;
+                                              text-align: center;
+                                            "
+                                            colspan="3"
+                                          >
+                                            <b>Antibiotics Result</b>
+                                          </td>
+                                        </tr>
+                                        <tr class="sensitiv-rst-hd">
+                                          <td><b>Sensitive</b></td>
+                                          <td
+                                            *ngIf="showIntermediateInCultureRpt"
+                                          >
+                                            <b>Intermediate</b>
+                                          </td>
+                                          <td><b>Resistant</b></td>
+                                        </tr>
+                                        <tr
+                                          class="sensitiv-rst-data"
+                                          style="
+                                            page-break-inside: avoid;
+                                            page-break-after: auto;
+                                          "
+                                          *ngFor="let itm of culRepFormatted.MaxLenArray; let i=index;"
+                                        >
+                                          <td>
+                                            <span
+                                              *ngIf="culRepFormatted.Sensitive.length>i"
+                                            >
+                                              {{culRepFormatted.Sensitive[i]}}
+                                            </span>
+                                          </td>
+                                          <td
+                                            *ngIf="showIntermediateInCultureRpt"
+                                          >
+                                            <span
+                                              *ngIf="culRepFormatted.Intermediate.length>i"
+                                            >
+                                              {{culRepFormatted.Intermediate[i]}}
+                                            </span>
+                                          </td>
+                                          <td>
+                                            <span
+                                              *ngIf="culRepFormatted.Resistant.length>i"
+                                            >
+                                              {{culRepFormatted.Resistant[i]}}
+                                            </span>
+                                          </td>
+                                          <!--<td *ngIf="culRepFormatted.HasOthersFields">
+                                              <span *ngIf="culRepFormatted.Others.length>i">
+                                                  {{culRepFormatted.Others[i]}}
+                                              </span>
+                                          </td>-->
+                                        </tr>
+                                      </ng-container>
+                                    </ng-container>
+                                  </tbody>
+                                  <tbody
+                                    [ngClass]="tst.Print ? 'showInPrint' : 'dontShowInPrint'"
+                                    class="culture-negative-testres"
+                                    *ngIf="tst.IsNegativeResult"
+                                  >
+                                    <tr style="text-align: left;">
+                                      <td colspan="3">
+                                        <b> {{tst.ReportingName}} </b>
+                                        <input
+                                          class="dontShowInPrint outer-select"
+                                          type="checkbox"
+                                          [(ngModel)]="tst.Print"
+                                          name="showHideInPrint"
+                                          (change)="ShowHidePrintForTestsWithComp(tmplate, tst)"
+                                          title="unchecked test will not be printed"
+                                        />
+                                      </td>
+                                    </tr>
+                                    <tr>
+                                      <td colspan="3">
+                                        <!--below is temporary solution until we get proper sample from server side: sud:5Sept'18-->
+                                        Specimen:
+                                        <input
+                                          type="text"
+                                          [(ngModel)]="tst.Specimen"
+                                          (focusout)="UpdateSpecimen(tst)"
+                                          class="no-print"
+                                        />
+                                        <span class="hidden">
+                                          {{tst.Specimen}}
+                                        </span>
+                                      </td>
+                                    </tr>
+                                    <tr>
+                                      <td *ngIf="tmplate.TemplateColumns.Name">
+                                        <b> Result </b>
+                                      </td>
+                                      <td class="text-center" colspan="2">
+                                        <b> {{tst.NegativeResultText}} </b>
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </ng-container>
+                              </table>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <div class="single-head">
-                        <div class="right-col-data">
-                          <div [ngClass]="showBarCode ? 'right-hdrwith-barcode right-hdr':'right-hdr'">
-                            <strong>Reporting Date</strong> : {{templateReport.Lookups.ReportingDate | DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'}} ({{templateReport.Lookups.ReportingDate | nepaliDate }})
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                  </div>
-                </td>
-              </tr>
-            </thead>
-
-            <tfoot style="display:table-footer-group;">
-              <tr>
-                <td colspan="2">
-                  <div id="signatureList" class="lab-rpt-sign" *ngIf="templateReport.Signatories && showSignatories">
-                    <div *ngIf="templateReport.Signatories.length" class="flex-container justify-sp-between all-signatures">
-                      <div class="signature-item" *ngFor="let emp of templateReport.Signatories; let i=index;">
-                        <div class="signature-item-inside" [ngClass]="i>2 ? 'martop' : ''">
-                          <div class="main-signature" *ngIf="emp.Signature" [innerHTML]="emp.Signature">
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-            </tfoot>
-
-
-            <ng-container *ngIf="templateReport.TemplateType != 'html'">
-              <ng-container *ngFor="let tmplate of templateReport.Templates; let i=index;">
+                      </td>
+                    </tr>
+                  </tbody>
+                </ng-container>
                 <tbody>
                   <tr>
                     <td colspan="2" style="padding: 0;">
-                      <!--Template Type != "Html"-->
-                      <div class="table-holder">
-                        <div>
-                          <div class="flex-container" *ngIf="tmplate.TemplateType=='normal'">
-                            <!--Table of a particular template-->
-                            <table class="single-tempate-table lab-report-tbl tbl-format1" [ngClass]="tmplate.Print ? 'showInPrint' : 'tempate-table dontShowInPrint'">
-                              <thead>
-                                <tr>
-                                  <th [attr.colspan]="tmplate.ColCount">{{tmplate.HeaderText}}</th>
-                                </tr>
-                                <tr>
-                                  <th *ngIf="tmplate.TemplateColumns.Name">Test(s)</th>
-                                  <th *ngIf="tmplate.TemplateColumns.Result">Finding(s)</th>
-                                  <th *ngIf="showHideHighLowNormalFlag && tmplate.TemplateType=='normal'">Flag</th>
-                                  <th *ngIf="tmplate.TemplateColumns.Unit">Unit</th>
-                                  <th *ngIf="tmplate.TemplateColumns.Range">Ref. Range</th>
-                                  <th *ngIf="tmplate.TemplateColumns.Method">Method</th>
-                                  <th *ngIf="tmplate.TemplateColumns.Remarks">Remarks</th>
-                                </tr>
-                              </thead>
+                      <div *ngIf="showSignatoriesEdit">
+                        <p class="dontShowInPrint"><b>Comments: </b></p>
+                        <textarea
+                          [(ngModel)]="templateReport.Comments"
+                          rows="4"
+                        ></textarea>
+                      </div>
+                      <div
+                        *ngIf="!showSignatoriesEdit && templateReport.Comments"
+                        style="width: 95%;"
+                      >
+                        <p style="font-weight: bold; margin: 0;">Comments:</p>
+                        <p
+                          style="white-space: pre-line; margin: 0;"
+                          [innerHTML]="templateReport.Comments"
+                        ></p>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </ng-container>
+              <ng-container *ngIf="templateReport.TemplateType == 'html'">
+                <tbody>
+                  <tr>
+                    <td colspan="2" style="padding: 0;">
+                      <!--Template Type == "Html"-->
 
-                              <!--Contains all the tests of the template-->
-                              <tbody>
-                                <ng-container *ngFor="let res of tmplate.Tests; let rnum = index">
-                                  <tr class="test-reportname-row" [ngClass]="res.Print ? 'showInPrint' : 'dontShowInPrint'" *ngIf="res.Components.length > 1 || res.Components[0].IsNegativeResult">
-                                    <th *ngIf="tmplate.TemplateColumns.Name">
-                                      <label class="margin-0-vr" for="{{res.ReportingName+rnum}}"><b>{{res.ReportingName}}</b></label>
-                                      <input id="{{res.ReportingName+rnum}}" class="dontShowInPrint outer-select" type="checkbox" [(ngModel)]="res.Print" name="showHideInPrint" (change)="ShowHidePrintForTestsWithComp(tmplate, res)" title="unchecked test will not be printed" />
-                                    </th>
-                                    <th *ngIf="tmplate.TemplateColumns.Result">
-
-                                    </th>
-                                    <th *ngIf="showHideHighLowNormalFlag && tmplate.TemplateType=='normal'">
-
-                                    </th>
-                                    <th *ngIf="tmplate.TemplateColumns.Unit">
-
-                                    </th>
-                                    <th *ngIf="tmplate.TemplateColumns.Range">
-
-                                    </th>
-                                    <th *ngIf="tmplate.TemplateColumns.Method">
-
-                                    </th>
-                                    <th *ngIf="tmplate.TemplateColumns.Remarks">
-
-                                    </th>
-                                  </tr>
-
-
-                                  <!--Main result data addition work goes here-->
-                                  <ng-container *ngIf="!res.Components[0].IsNegativeResult">
-                                    <ng-container *ngFor="let cmp of res.Components; let idx = index;">
-                                      <tr class="res-positive-rw" [ngClass]="cmp.Print ? 'showInPrint' : 'dontShowInPrint'">
-                                        <td class="compname" *ngIf="tmplate.TemplateColumns.Name && cmp.ControlType == 'Label'" [style.padding-left]="7 + cmp.IndentationCount*7 + 'px'">
-                                          <label class="margin-0-vr" for="{{cmp.ComponentName+idx}}"><b> {{cmp.ComponentName}}</b></label>
-                                          <input id="{{cmp.ComponentName+idx}}" class="dontShowInPrint inner-select" name="showHideInPrint" type="checkbox" [(ngModel)]="cmp.Print" (change)="ShowHidePrintForTestsWithoutComp(tmplate,res, res.Components.length)" value="" title="unchecked test will not be printed" />
-                                        </td>
-                                        <td class="compname" *ngIf="tmplate.TemplateColumns.Name && cmp.ControlType != 'Label'" [style.padding-left]="7 + cmp.IndentationCount*7 + 'px'">
-                                          <label class="margin-0-vr" for="{{cmp.ComponentName+idx}}">{{cmp.ComponentName}}</label>
-                                          <input id="{{cmp.ComponentName+idx}}" [className]="res.Components.length == 1 ? 'dontShowInPrint outer-select':'dontShowInPrint inner-select'" class="" name="showHideInPrint" type="checkbox" [(ngModel)]="cmp.Print" (change)="ShowHidePrintForTestsWithoutComp(tmplate,res, res.Components.length)" value="" title="unchecked test will not be printed" />
-                                        </td>
-                                        <td class="test-data-pstv result" *ngIf="tmplate.TemplateColumns.Result">
-                                          <span *ngIf="!cmp.IsAbnormal">{{cmp.Value}}</span>
-                                          <span *ngIf="cmp.IsAbnormal"><strong>{{cmp.Value}}</strong></span>
-                                        </td>
-                                        <td class="test-data-pstv flag" *ngIf="showHideHighLowNormalFlag && tmplate.TemplateType=='normal'">
-                                          <span *ngIf="cmp.AbnormalType && cmp.AbnormalType=='low'">L</span>
-                                          <span *ngIf="cmp.AbnormalType && cmp.AbnormalType=='high'">H</span>
-                                          <span *ngIf="cmp.AbnormalType && cmp.AbnormalType=='normal'">N</span>
-                                        </td>
-                                        <td class="test-data-pstv unit" *ngIf="tmplate.TemplateColumns.Unit">
-                                          {{cmp.Unit}}
-                                        </td>
-
-                                        <!--We need to use InnerHTML and white-space:pre-line; to maintain the line Breaks, -->
-                                        <td class="test-data-pstv range" *ngIf="tmplate.TemplateColumns.Range" [innerHTML]="cmp.RangeDescription"></td>
-
-
-                                        <td class="test-data-pstv method" *ngIf="tmplate.TemplateColumns.Method">
-                                          {{cmp.Method}}
-                                        </td>
-                                        <td class="test-data-pstv remarks" *ngIf="tmplate.TemplateColumns.Remarks">
-                                          {{cmp.Remarks}}
-                                        </td>
-                                      </tr>
-
-                                    </ng-container>
-                                    <ng-container>
-                                      <!--to show Interpretation-->
-                                      <tr [className]="res.PrintInterpretation ? 'showInPrint' : 'dontShowInPrint'" *ngIf="res.Interpretation != null && res.Interpretation != '' && res.Interpretation != undefined">
-                                        <td [attr.colspan]="tmplate.ColCount">
-                                          <div class="margin-15-vr">
-                                            <div class="padding-7-hr">
-                                              <input id="{{'interpretationTxt' + idx}}" class="dontShowInPrint outer-select" type="checkbox" [(ngModel)]="res.PrintInterpretation" name="showHideInPrint" (change)="ShowHideInterpretationToPrint(res)" title="unchecked Interpretation will not be printed" />
-                                              <label for="{{'interpretationTxt' + idx}}">
-                                                <b>Interpretation({{res.TestName}}):</b>
-                                              </label>
-                                              <div class="interpretation-txt-holder" [innerHTML]="res.Interpretation"></div>
-                                            </div>
-                                          </div>
-                                        </td>
-                                      </tr>
-                                    </ng-container>
-                                  </ng-container>
-
-                                  <ng-container *ngIf="res.Components[0].IsNegativeResult">
-                                    <ng-container *ngFor="let cmp of res.Components">
-                                      <tr class="res-negative-rw" [ngClass]="cmp.Print ? 'showInPrint' : 'dontShowInPrint'">
-                                        <td *ngIf="tmplate.TemplateColumns.Name" class="padding-15-hr">Result</td>
-                                        <td *ngIf="tmplate.TemplateColumns.Result" class="padding-15-hr text-center">
-                                          {{cmp.Remarks}}
-                                        </td>
-                                        <td class="neg-data neg-unit" *ngIf="tmplate.TemplateColumns.Unit"></td>
-                                        <td class="neg-data neg-range" *ngIf="tmplate.TemplateColumns.Range"></td>
-                                        <td class="neg-data neg-method" *ngIf="tmplate.TemplateColumns.Method" style="border-right:1px solid black;"></td>
-                                        <td class="neg-data neg-remarks" *ngIf="tmplate.TemplateColumns.Remarks"></td>
-                                      </tr>
-                                    </ng-container>
-                                    <ng-container>
-                                      <!--to show Interpretation-->
-                                      <tr [className]="res.PrintInterpretation ? 'showInPrint' : 'dontShowInPrint'" *ngIf="res.Interpretation != null && res.Interpretation != '' && res.Interpretation != undefined">
-                                        <td [attr.colspan]="tmplate.ColCount">
-                                          <div class="margin-15-vr">
-                                            <div class="padding-7-hr">
-                                              <input id="{{'interpretationTxt' + idx}}" class="dontShowInPrint outer-select" type="checkbox" [(ngModel)]="res.PrintInterpretation" name="showHideInPrint" (change)="ShowHideInterpretationToPrint(res)" title="unchecked Interpretation will not be printed" />
-                                              <label for="{{'interpretationTxt' + idx}}">
-                                                <b>Interpretation({{res.TestName}}):</b>
-                                              </label>
-                                              <div class="interpretation-txt-holder" [innerHTML]="res.Interpretation"></div>
-                                            </div>
-                                          </div>
-                                        </td>
-                                      </tr>
-                                    </ng-container>
-                                  </ng-container>
-
-
-                                  <!--<tr *ngIf="res.HasNegativeResults" style="border: 1px solid #1f1e1e; text-align: left;">
-                              <td style="padding: 0px 15px;">Result</td>
-                              <td style="padding: 0px 5px;">{{res.Components[0].Remarks}}</td>
-                          </tr>-->
-
-                                </ng-container>
-                              </tbody>
-
-                            </table>
-
-                          </div>
-
-                          <div class="flex-container" *ngIf="tmplate.TemplateType=='culture' && isCultureRptLoaded">
-                            <table class="culture-holder-table lab-report-tbl culture-fotmat1" [ngClass]="tmplate.Print ? 'showInPrint' : 'dontShowInPrint'">
-                              <thead>
-                                <tr class="culture-header">
-                                  <th colspan="3">
-                                    {{tmplate.HeaderText}}
-                                  </th>
-                                </tr>
-                                <tr class="culture-heading-col">
-                                  <th *ngIf="tmplate.TemplateColumns.Name">Test(s)</th>
-                                  <th colspan="2" *ngIf="tmplate.TemplateColumns.Result">Finding(s)</th>
-                                  <!--<th *ngIf="tmplate.TemplateColumns.Range" style="padding: 0px 5px;text-align: center;">Ref. Range</th>-->
-                                </tr>
-                              </thead>
-
-                              <ng-container *ngFor="let tst of tmplate.Tests">
-
-                                <tbody [ngClass]="tst.Print ? 'showInPrint' : 'dontShowInPrint'" class="culture-positive-testres" *ngIf="!tst.IsNegativeResult">
-                                  <tr class="row-brdr">
-                                    <td colspan="3" style="padding:0px 7px;">
-                                      <b>{{tst.ReportingName}}</b>
-                                      <input class="dontShowInPrint outer-select" type="checkbox" [(ngModel)]="tst.Print" name="showHideInPrint" (change)="ShowHidePrintForTestsWithComp(tmplate, tst)" title="unchecked test will not be printed" />
-                                    </td>
-                                  </tr>
-
-                                  <tr class="row-brdr">
-                                    <td colspan="3" style="padding:0px 7px;">
-                                      <!--below is temporary solution until we get proper sample from server side: sud:5Sept'18-->
-                                      Specimen: <input type="text" [(ngModel)]="tst.Specimen" (focusout)="UpdateSpecimen(tst)" class="no-print" />
-                                      <span class="hidden">{{tst.Specimen}}</span>
-                                    </td>
-
-                                  </tr>
-                                  <tr class="row-brdr">
-                                    <td style="padding:0px 7px;">
-                                      <b>Result</b>
-                                    </td>
-
-                                    <td colspan="2">
-                                      <b>{{tst.ResultFormattedForCulture.IsolatedOrganism}} </b>
-                                    </td>
-                                  </tr>
-
-                                  <ng-container *ngIf="tst.ResultFormattedForCulture.MaxLenArray && tst.ResultFormattedForCulture.MaxLenArray.length > 0">
-
-                                    <tr class="row-brdr">
-                                      <td style="padding: 0px 7px; text-align:center" colspan="3">
-                                        <b>Antibiotics Result</b>
-                                      </td>
-                                    </tr>
-                                    <tr class="sensitiv-rst-hd">
-
-                                      <td> <b>Sensitive</b></td>
-                                      <td *ngIf="showIntermediateInCultureRpt">
-                                        <b>Intermediate</b>
-                                      </td>
-                                      <td>
-                                        <b>Resistant</b>
-                                      </td>
-
-
-                                    </tr>
-
-
-                                    <tr class="sensitiv-rst-data" style="page-break-inside:avoid; page-break-after:auto ;" *ngFor="let itm of tst.ResultFormattedForCulture.MaxLenArray; let i=index;">
-                                      <td>
-                                        <span *ngIf="tst.ResultFormattedForCulture.Sensitive.length>i">
-                                          {{tst.ResultFormattedForCulture.Sensitive[i]}}
-                                        </span>
-                                      </td>
-                                      <td *ngIf="showIntermediateInCultureRpt">
-                                        <span *ngIf="tst.ResultFormattedForCulture.Intermediate.length>i">
-                                          {{tst.ResultFormattedForCulture.Intermediate[i]}}
-                                        </span>
-                                      </td>
-                                      <td>
-                                        <span *ngIf="tst.ResultFormattedForCulture.Resistant.length>i">
-                                          {{tst.ResultFormattedForCulture.Resistant[i]}}
-
-
-                                        </span>
-                                      </td>
-                                      <!--<td *ngIf="tst.ResultFormattedForCulture.HasOthersFields">
-                                  <span *ngIf="tst.ResultFormattedForCulture.Others.length>i">
-                                      {{tst.ResultFormattedForCulture.Others[i]}}
-                                  </span>
-                              </td>-->
-                                    </tr>
-
-
-                                  </ng-container>
-                                </tbody>
-
-
-                                <tbody [ngClass]="tst.Print ? 'showInPrint' : 'dontShowInPrint'" class="culture-negative-testres" *ngIf="tst.IsNegativeResult">
-                                  <tr style="text-align:left;">
-                                    <td colspan="3">
-                                      <b>
-                                        {{tst.ReportingName}}
-                                      </b>
-                                      <input class="dontShowInPrint outer-select" type="checkbox" [(ngModel)]="tst.Print" name="showHideInPrint" (change)="ShowHidePrintForTestsWithComp(tmplate, tst)" title="unchecked test will not be printed" />
-                                    </td>
-
-                                  </tr>
-
-
-                                  <tr>
-                                    <td colspan="3">
-                                      <!--below is temporary solution until we get proper sample from server side: sud:5Sept'18-->
-                                      Specimen:
-                                      <input type="text" [(ngModel)]="tst.Specimen" (focusout)="UpdateSpecimen(tst)" class="no-print" />
-                                      <span class="hidden">
-                                        {{tst.Specimen}}
-                                      </span>
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td *ngIf="tmplate.TemplateColumns.Name">
-                                      <b>
-                                        Result
-                                      </b>
-                                    </td>
-                                    <td class="text-center" colspan="2">
-                                      <b>
-                                        {{tst.NegativeResultText}}
-                                      </b>
-                                    </td>
-                                  </tr>
-                                </tbody>
-
-
-                              </ng-container>
-
-
-
-                            </table>
-
+                      <div>
+                        <div *ngFor="let template of templateReport.Templates;">
+                          <div *ngFor="let test of template.Tests">
+                            <div *ngFor="let comp of test.Components;">
+                              <div
+                                style="text-align: justify;"
+                                class="htmlholder"
+                                *ngIf="comp.ValueHtml"
+                                [innerHTML]="comp.ValueHtml"
+                              ></div>
+                            </div>
                           </div>
                         </div>
-
                       </div>
                     </td>
                   </tr>
                 </tbody>
               </ng-container>
 
-              <tbody>
-                <tr>
-                  <td colspan="2" style="padding: 0;">
-                    <div *ngIf="showSignatoriesEdit" style="width: 95%">
-                      <p class="dontShowInPrint"><b>Comments: </b> </p>
-                      <textarea [(ngModel)]="templateReport.Comments" rows="4" style="width: 100%;"></textarea>
-                    </div>
+              <!--<tbody>
+              <tr>
+                <td>
 
-                    <div *ngIf="!showSignatoriesEdit && templateReport.Comments" style="width: 95%">
-                      <p style="font-weight:bold;margin: 0;">Comments:</p>
-                      <p style="white-space: pre-line;margin: 0;" [innerHTML]="templateReport.Comments"></p>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
+                  <div class="interpretation-text avoid-inside-page-brk flex-container">
+                    <div class="full-width" *ngFor="let template of templateReport.Templates">
 
-            </ng-container>
+                      <div *ngFor="let tst of template.Tests; let intindx = index;">
 
-            <ng-container *ngIf="templateReport.TemplateType == 'html'">
-              <tbody>
-                <tr>
-                  <td colspan="2" style="padding: 0;">
-                    <!--Template Type == "Html"-->
-                    <div>
-                      <div *ngFor="let template of templateReport.Templates;">
-                        <div *ngFor="let test of template.Tests">
-                          <div *ngFor="let comp of test.Components;">
-                            <div style="text-align: justify;" class="htmlholder" *ngIf="comp.ValueHtml" [innerHTML]="comp.ValueHtml">
-                            </div>
+                        <div [className]="tst.PrintInterpretation ? 'showInPrint' : 'dontShowInPrint'" *ngIf="tst.Interpretation != null && tst.Interpretation != '' && tst.Interpretation != undefined">
+                          <div class="margin-15-vr">
+                            <input id="{{'interpretationTxt' + intindx}}" class="dontShowInPrint outer-select" type="checkbox" [(ngModel)]="tst.PrintInterpretation" name="showHideInPrint" (change)="ShowHideInterpretationToPrint(tst)" title="unchecked Interpretation will not be printed" />
+                            <label for="{{'interpretationTxt' + intindx}}">
+                              <b>Interpretation({{tst.TestName}}):</b>
+                            </label>
+                            <div class="interpretation-txt-holder" [innerHTML]="tst.Interpretation"></div>
                           </div>
                         </div>
                       </div>
+
                     </div>
-                  </td>
-                </tr>
-              </tbody>
-            </ng-container>
-
-            <!--<tbody>
-      <tr>
-        <td>
-
-          <div class="interpretation-text avoid-inside-page-brk flex-container">
-            <div class="full-width" *ngFor="let template of templateReport.Templates">
-
-              <div *ngFor="let tst of template.Tests; let intindx = index;">
-
-                <div [className]="tst.PrintInterpretation ? 'showInPrint' : 'dontShowInPrint'" *ngIf="tst.Interpretation != null && tst.Interpretation != '' && tst.Interpretation != undefined">
-                  <div class="margin-15-vr">
-                    <input id="{{'interpretationTxt' + intindx}}" class="dontShowInPrint outer-select" type="checkbox" [(ngModel)]="tst.PrintInterpretation" name="showHideInPrint" (change)="ShowHideInterpretationToPrint(tst)" title="unchecked Interpretation will not be printed" />
-                    <label for="{{'interpretationTxt' + intindx}}">
-                      <b>Interpretation({{tst.TestName}}):</b>
-                    </label>
-                    <div class="interpretation-txt-holder" [innerHTML]="tst.Interpretation"></div>
                   </div>
-                </div>
-              </div>
-
+                </td>
+              </tr>
+            </tbody>-->
+            </table>
+            <div
+              *ngIf="templateReport.FooterText && templateReport.FooterText != ''"
+              [className]="templateReport.PrintFooterText ? 'showInPrint' : 'dontShowInPrint'"
+            >
+              <label
+                for="footerTxt"
+                class="lab-footer-text"
+                style="font-size: 10px; margin: 2px 0px; font-weight: 700;"
+                [innerHTML]="templateReport.FooterText"
+              >
+                <input
+                  class="dontShowInPrint outer-select"
+                  id="footerTxt"
+                  type="checkbox"
+                  [(ngModel)]="templateReport.PrintFooterText"
+                />
+              </label>
+            </div>
+            <div *ngIf="showPrintInfo" class="report-print-info">
+              Printed By: {{CreatedByUser.FullName}} on {{CurrentDateTime |
+              DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'}}
             </div>
           </div>
-        </td>
-      </tr>
-    </tbody>-->
-
-
-
-          </table>
-
-          <div *ngIf="templateReport.FooterText && templateReport.FooterText != ''" [className]="templateReport.PrintFooterText ? 'showInPrint' : 'dontShowInPrint'">
-            <input class="dontShowInPrint outer-select" id="footerTxt" type="checkbox" [(ngModel)]="templateReport.PrintFooterText" />
-            <label for="footerTxt" class="lab-footer-text" style="font-size: 10px;margin: 2px 0px;font-weight: 700;" [innerHTML]="templateReport.FooterText"></label>
-          </div>
-
-
-          <div *ngIf="showPrintInfo" class="report-print-info">
-            Printed By: {{CreatedByUser.FullName}} on {{CurrentDateTime | DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'}}
-          </div>
-
-
         </div>
-
-        
-
-
       </div>
     </div>
 
-  </div>
-
-
-  <!--<div style="width: 90%; display:table ;padding: 15px;margin: 0 auto;">
+    <!--<div style="width: 90%; display:table ;padding: 15px;margin: 0 auto;">
       <input id="showInterPret" style="float: left;margin-right: 5px;" type="checkbox" [(ngModel)]="showInterpretation" />
       <label style="cursor: pointer;font-weight: 700;" for="showInterPret">Show Interpretation</label>
   </div>-->
 
-  <div *ngIf="templateReport && enableEdit" style="margin-top:10px;padding-bottom: 50px;width: 100%;float: left;">
-    <div class="lab-rpt-sign" *ngIf="showSignatoriesEdit" style="display: table;">
-      <danphe-signatories ngDefaultControl [(ngModel)]="signatories" [defaultEmployeeIdList]="defaultSigEmpIdList" [displayMode]="'edit'" [departmentName]="'lab'">
-      </danphe-signatories>
+    <div
+      *ngIf="templateReport && enableEdit"
+      style="margin-top: 10px; padding-bottom: 50px; width: 100%; float: left;"
+    >
+      <div
+        class="lab-rpt-sign"
+        *ngIf="showSignatoriesEdit"
+        style="display: table;"
+      >
+        <danphe-signatories
+          ngDefaultControl
+          [(ngModel)]="signatories"
+          [defaultEmployeeIdList]="defaultSigEmpIdList"
+          [displayMode]="'edit'"
+          [departmentName]="'lab'"
+        >
+        </danphe-signatories>
+      </div>
+      <div class="margin-20-tp">
+        <div class="text-center" *ngIf="showSignatoriesEdit">
+          <button
+            class="btn primary-btn margin-7-hr"
+            (click)="SubmitLabReport()"
+          >
+            Update Signatories {{ templateReport.ReportId ? '' : 'and Print'}}
+            <i class="fa fa-print"></i>
+          </button>
+        </div>
+        <div
+          class="text-center"
+          *ngIf="!showSignatoriesEdit && templateReport.ReportId"
+        >
+          <button
+            *ngIf="verificationRequired"
+            [disabled]="loading"
+            class="btn btn-primary margin-7-hr"
+            (click)="Verify()"
+            [rbac-permission]="{'name':'lab-verifier','actionOnInvalid':'remove'}"
+          >
+            Verify <i class="fa fa-check"></i>
+          </button>
+          <button
+            [disabled]="loading"
+            *ngIf="templateReport.ValidToPrint && !verificationRequired"
+            class="btn btn-primary margin-7-hr"
+            (click)="loading=true;printLabReport()"
+          >
+            Print <i class="fa fa-print"></i>
+          </button>
+          <button
+            [disabled]="loading"
+            *ngIf="templateReport.ReportId && verificationRequired"
+            class="btn btn-primary margin-7-hr"
+            (click)="loading=true;printLabReport('preliminary')"
+          >
+            Print Preliminary Report <i class="fa fa-print"></i>
+          </button>
+          <button
+            [disabled]="loading"
+            class="btn btn-cancel margin-7-hr"
+            (click)="EditSignatories()"
+          >
+            Edit Signatories <i class="fa fa-edit"></i>
+          </button>
+        </div>
+      </div>
     </div>
-    <div class="margin-20-tp">
-      <div class="text-center" *ngIf="showSignatoriesEdit">
-        <button class="btn  btn-primary margin-7-hr" (click)="SubmitLabReport()">
-          Update Signatories {{ templateReport.ReportId ? '' : 'and Print'}}
-          <i class="fa fa-print"></i>
+    <div
+      *ngIf="templateReport && !enableEdit"
+      style="margin-top: 10px; padding-bottom: 50px; width: 100%;"
+    >
+      <div class="margin-20-tp text-center">
+        <button
+          [disabled]="loading"
+          *ngIf="templateReport.ValidToPrint && !verificationRequired"
+          class="btn btn-primary margin-7-hr"
+          (click)="loading=true;printLabReport()"
+        >
+          Print <i class="fa fa-print"></i>
         </button>
       </div>
-      <div class="text-center" *ngIf="!showSignatoriesEdit && templateReport.ReportId">
-
-        <button [disabled]="loading" *ngIf="verificationRequired" class="btn btn-primary margin-7-hr" (click)="Verify()">
-          Verify
-          <i class="fa fa-check"></i>
-        </button>
-
-        <button [disabled]="loading" *ngIf="templateReport.ValidToPrint && !verificationRequired" class="btn btn-primary margin-7-hr" (click)="loading=true;printLabReport()">
-          Print
-          <i class="fa fa-print"></i>
-        </button>
-
-        <button [disabled]="loading" class="btn btn-cancel margin-7-hr" (click)="showSignatoriesEdit=true">
-          Edit Signatories
-          <i class="fa fa-edit"></i>
-        </button>
-
-      </div>
-
-
     </div>
-  </div>
-
-  <div class="col-md-12" *ngIf="!showSignatoriesEdit && templateReport.ReportId"
-       style="text-align:center;margin-top: 10px;padding-bottom: 80px;">
-    <!--<div style="display: inline-block;">
+    <div
+      class="col-md-12"
+      *ngIf="!showSignatoriesEdit && templateReport.ReportId"
+      style="text-align: center; margin-top: 10px; padding-bottom: 80px;"
+    >
+      <!--<div style="display: inline-block;">
         <button class="btn blue" style="float:right" (click)="Export('print')">
             Print
             <i class="fa fa-print"></i>
         </button>
     </div>-->
-    <!--<div class="dropdown" style="display: inline-block;vertical-align: top;">
+      <!--<div class="dropdown" style="display: inline-block;vertical-align: top;">
         <button href="javascript:;" class="dropdown-toggle btn blue" data-toggle="dropdown" data-hover="dropdown"
                 data-close-others="true" title="Export">
             <i class="fa fa-angle-down"></i>
@@ -603,177 +1150,241 @@
 
         </ul>
     </div>-->
+    </div>
   </div>
+  <div class="popup-static portlet box portlet-fullscreen" *ngIf="showPopUp">
+    <div class="portlet-body form">
+      <div class="col-md-6 col-md-offset-3">
+        <div class="modelbox-div">
+          <div class="modelbox-header">
+            <h4 class="margin-0-vr">
+              <strong>Change Referred By doctor</strong>
+            </h4>
+          </div>
+          <div class="modelbox-body">
+            <div class="row margin-15-vr">
+              <div class="col-md-3">
+                <label class="ref-label" for="refDoctor"
+                  ><strong>Select Referrer</strong></label
+                >
+              </div>
+              <div class="col-md-8">
+                <!--<input class="form-control" danphe-auto-complete
+              id="refDoctor"
+              [(ngModel)]="doctorSelected"
+              [source]="doctorsList"
+              [list-formatter]="AssignedToDocListFormatter"
+              placeholder="Enter Doctor Name"
+              display-property-name="FullName"
+              value-property-name=null
+              match-formatted="true"
+              onClick="this.select();"
+              max-num-list="10" />-->
 
-</div>
-
-
-<div class="popup-static portlet box portlet-fullscreen" *ngIf="showPopUp">
-  <div class="portlet-body form">
-    <div class="col-md-4 col-md-offset-4">
-      <div class="modelbox-div">
-        <div class="modelbox-header">
-          <h4 class="margin-0-vr"><strong>Change Referred By doctor</strong></h4>
-        </div>
-
-        <div class="modelbox-body">
-          <div class="row margin-15-vr">
-            <div class="col-md-4"><label class="ref-label" for="refDoctor"><strong>Select Doctor</strong></label></div>
-            <div class="col-md-8">
-              <input class="form-control" danphe-auto-complete
-                     id="refDoctor"
-                     [(ngModel)]="doctorSelected"
-                     [source]="doctorsList"
-                     [list-formatter]="AssignedToDocListFormatter"
-                     placeholder="Enter Doctor Name"
-                     display-property-name="FullName"
-                     value-property-name=null
-                     match-formatted="true"
-                     onClick="this.select();"
-                     max-num-list="10" />
+                <select-referrer
+                  [selected-ref-id]="selectedRefId"
+                  [allow-external]="ExtRefSettings.EnableExternal"
+                  [allow-free-text]="ExtRefSettings.AllowFreeText"
+                  [default-external]="ExtRefSettings.DefaultExternal"
+                  [display-property-name]="'LongSignature'"
+                  (on-referrer-change)="OnReferrerChanged($event)"
+                >
+                </select-referrer>
+              </div>
             </div>
           </div>
-        </div>
-
-        <div class="modelbox-footer">
-          <div class="all-buttons text-right">
-            <button type="button" class="btn btn-primary btn-sm margin-7-hr" (click)="AssignSelectedDoctor()">
-              Change
-            </button>
-            <button type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="closePopUpBox()">
-              Cancel
-            </button>
+          <div class="modelbox-footer">
+            <div class="all-buttons text-right">
+              <button
+                type="button"
+                class="btn btn-primary btn-sm margin-7-hr"
+                (click)="AssignSelectedDoctor()"
+              >
+                Change
+              </button>
+              <button
+                type="button"
+                class="btn btn-cancel btn-sm margin-7-hr"
+                (click)="closePopUpBox()"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+          <div class="close-modelbox">
+            <button class="btn btn-danger" (click)="closePopUpBox()">X</button>
           </div>
         </div>
-
-        <div class="close-modelbox">
-          <button class="btn btn-danger" (click)="closePopUpBox()">X</button>
-        </div>
-
       </div>
     </div>
   </div>
-</div>
-
-
-
-<div class="popup-static portlet box portlet-fullscreen" *ngIf="showChangeSample">
-  <div class="portlet-body form">
-    <div class="col-md-6 col-md-offset-3">
-      <div class="modelbox-div">
-        <div class="modelbox-header">
-          <h4 class="margin-0-vr"><strong>Change Run Number</strong></h4>
-        </div>
-
-        <div class="modelbox-body">
-          <div class="row">
-            <div class="col-md-5">Sample Collection Date</div>
-            <div class="col-md-7">
-              <danphe-date-picker [(ngModel)]="sampleCode.SampleCreatedOn" ngDefaultControl [CalendarTypes]="'np'" (ngModelChange)="SampleDateChanged()"></danphe-date-picker>
-            </div>
+  <div
+    class="popup-static portlet box portlet-fullscreen"
+    *ngIf="showChangeSample"
+  >
+    <div class="portlet-body form">
+      <div class="col-md-6 col-md-offset-3">
+        <div class="modelbox-div">
+          <div class="modelbox-header">
+            <h4 class="margin-0-vr"><strong>Change Run Number</strong></h4>
           </div>
-          <div class="row margin-15-tp">
-            <div class="col-md-5 text-capitalize">{{RunNumberType}} ({{visitType}}) Run Number</div>
-            <div class="col-md-7">
-              <input [(ngModel)]="sampleCode.RunNumber"
-                     style="width: 100px;height: 31px;font-size: 20px;font-weight: 700;text-align: center;display:inline-block;"
-                     min="1"
-                     class="form-control cstm-form-control "
-                     name="Run Number"
-                     type="number">
-              <span style="font-size: 20px;font-weight: 700;text-align: center;">&nbsp;&nbsp;/&nbsp;&nbsp;</span>
-              <input [(ngModel)]="sampleCode.SampleCode"
+          <div class="modelbox-body">
+            <div class="row">
+              <div class="col-md-5">Sample Collection Date</div>
+              <div class="col-md-7">
+                <danphe-date-picker
+                  [(ngModel)]="sampleCode.SampleCreatedOn"
+                  ngDefaultControl
+                  [CalendarTypes]="'np'"
+                  (ngModelChange)="SampleDateChanged()"
+                ></danphe-date-picker>
+              </div>
+            </div>
+            <div class="row margin-15-tp">
+              <div class="col-md-5 text-capitalize">
+                {{RunNumberType}} ({{visitType}}) Run Number
+              </div>
+              <div class="col-md-7">
+                <input
+                  [(ngModel)]="sampleCode.RunNumber"
+                  style="
+                    width: 100px;
+                    height: 31px;
+                    font-size: 20px;
+                    font-weight: 700;
+                    text-align: center;
+                    display: inline-block;
+                  "
+                  min="1"
+                  class="form-control cstm-form-control"
+                  name="Run Number"
+                  type="number"
+                />
+                <!--<span style="font-size: 20px;font-weight: 700;text-align: center;">&nbsp;&nbsp;/&nbsp;&nbsp;</span>-->
+                <!--<input [(ngModel)]="sampleCode.SampleCode"
                      disabled
                      style="width: 80px;height: 31px;font-size: 20px;font-weight: 700;text-align: center;display:inline-block;"
                      min="0"
                      class="form-control cstm-form-control "
                      name="Sample Created On"
-                     type="text">
+                     type="text">-->
+              </div>
             </div>
           </div>
-        </div>
-
-        <div class="modelbox-footer">
-          <div class="all-buttons text-right">
-            <button type="button" class="btn btn-primary btn-sm margin-7-hr" (click)="CheckIfSampleCodeExist()">
-              Update
-            </button>
-            <button type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="showChangeSample=false;">
-              Close
+          <div class="modelbox-footer">
+            <div class="all-buttons text-right">
+              <button
+                type="button"
+                class="btn btn-primary btn-sm margin-7-hr"
+                (click)="CheckIfSampleCodeExist()"
+              >
+                Update
+              </button>
+              <button
+                type="button"
+                class="btn btn-cancel btn-sm margin-7-hr"
+                (click)="showChangeSample=false;"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+          <div class="close-modelbox">
+            <button class="btn btn-danger" (click)="showChangeSample=false;">
+              X
             </button>
           </div>
         </div>
-
-        <div class="close-modelbox">
-          <button class="btn btn-danger" (click)="showChangeSample=false;">X</button>
+      </div>
+    </div>
+  </div>
+  <div
+    class="popup-static portlet box portlet-fullscreen"
+    *ngIf="showConfirmationBox"
+  >
+    <div class="portlet-body form">
+      <div class="col-md-6 col-md-offset-3">
+        <div class="modelbox-div">
+          <div class="modelbox-header text-center">
+            <h4 class="margin-0-vr text-danger"><strong>Alert !!!</strong></h4>
+          </div>
+          <div class="modelbox-body">
+            <div
+              *ngIf="templateReport.Lookups.PatientId != sampleCodeExistingDetail.PatientId"
+            >
+              <div>
+                <p *ngIf="visitType && visitType.toLowerCase()=='outpatient'">
+                  <span style="text-transform: capitalize;">{{visitType}}</span>
+                  Run Number
+                  <b>{{sampleCode.RunNumber}} / {{sampleCode.SampleCode}}</b> is
+                  already used for patient
+                  <b>{{sampleCodeExistingDetail.PatientName}}</b>
+                </p>
+                <p *ngIf="visitType && visitType.toLowerCase()==='inpatient'">
+                  <span style="text-transform: capitalize;">{{visitType}}</span>
+                  Run Number <b>{{sampleCode.RunNumber}}</b> is already used for
+                  patient <b>{{sampleCodeExistingDetail.PatientName}}</b>
+                </p>
+                <p>Please select another run number.</p>
+              </div>
+              <div class="modelbox-footer">
+                <div class="all-buttons text-right">
+                  <button
+                    type="button"
+                    class="btn btn-cancel btn-sm margin-7-hr"
+                    (click)="showConfirmationBox=false"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div
+              *ngIf="templateReport.Lookups.PatientId == sampleCodeExistingDetail.PatientId"
+            >
+              <div>
+                <p *ngIf="visitType && visitType.toLowerCase()=='outpatient'">
+                  {{visitType}} Run Number
+                  <b>{{sampleCode.RunNumber}} / {{sampleCode.SampleCode}}</b> is
+                  already used for another test for the same patient<b
+                    >({{sampleCodeExistingDetail.PatientName}})</b
+                  >
+                </p>
+                <p *ngIf="visitType && visitType.toLowerCase()=='inpatient'">
+                  {{visitType}} Run Number <b>{{sampleCode.RunNumber}}</b> is
+                  already used for another test for the same patient<b
+                    >({{sampleCodeExistingDetail.PatientName}})</b
+                  >
+                </p>
+                <p>Do you want to continue with the same run number?</p>
+              </div>
+              <div class="modelbox-footer">
+                <div class="all-buttons text-right">
+                  <button
+                    type="button"
+                    class="btn btn-primary btn-sm margin-7-hr"
+                    (click)="UpdateSampleCode()"
+                  >
+                    Continue
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-cancel btn-sm margin-7-hr"
+                    (click)="showConfirmationBox=false"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="close-modelbox">
+            <button class="btn btn-danger" (click)="showConfirmationBox=false;">
+              X
+            </button>
+          </div>
         </div>
-
       </div>
     </div>
   </div>
 </div>
-
-
-<div class="popup-static portlet box portlet-fullscreen" *ngIf="showConfirmationBox">
-  <div class="portlet-body form">
-    <div class="col-md-6 col-md-offset-3">
-      <div class="modelbox-div">
-        <div class="modelbox-header text-center">
-          <h4 class="margin-0-vr text-danger"><strong>Alert !!!</strong></h4>
-        </div>
-
-        <div class="modelbox-body">
-
-          <div *ngIf="templateReport.Lookups.PatientId != sampleCodeExistingDetail.PatientId">
-            <div>
-              <p *ngIf="visitType && visitType.toLowerCase()=='outpatient'"><span style="text-transform:capitalize;">{{visitType}}</span> Run Number <b>{{sampleCode.RunNumber}} / {{sampleCode.SampleCode}}</b> is already used for patient <b>{{sampleCodeExistingDetail.PatientName}}</b></p>
-              <p *ngIf="visitType && visitType.toLowerCase()==='inpatient'"><span style="text-transform:capitalize;">{{visitType}}</span> Run Number <b>{{sampleCode.RunNumber}}</b> is already used for patient <b>{{sampleCodeExistingDetail.PatientName}}</b></p>
-              <p> Please select another run number.</p>
-            </div>
-            <div class="modelbox-footer">
-              <div class="all-buttons text-right">
-                <button type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="showConfirmationBox=false">Close</button>
-              </div>
-            </div>
-          </div>
-          <div *ngIf="templateReport.Lookups.PatientId == sampleCodeExistingDetail.PatientId">
-            <div>
-              <p *ngIf="visitType && visitType.toLowerCase()=='outpatient'">{{visitType}} Run Number <b>{{sampleCode.RunNumber}} / {{sampleCode.SampleCode}}</b> is already used for another test for the same patient<b>({{sampleCodeExistingDetail.PatientName}})</b></p>
-              <p *ngIf="visitType && visitType.toLowerCase()=='inpatient'">{{visitType}} Run Number <b>{{sampleCode.RunNumber}}</b> is already used for another test for the same patient<b>({{sampleCodeExistingDetail.PatientName}})</b></p>
-              <p>Do you want to continue with the same run number?</p>
-            </div>
-            <div class="modelbox-footer">
-              <div class="all-buttons text-right">
-                <button type="button" class="btn btn-primary btn-sm margin-7-hr" (click)="UpdateSampleCode()">Continue</button>
-                <button type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="showConfirmationBox=false">Cancel</button>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <div class="modelbox-footer">
-          <div class="all-buttons text-right">
-            <button type="button" class="btn btn-primary btn-sm margin-7-hr" (click)="UpdateSampleCode()">
-              Update
-            </button>
-            <button type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="showConfirmationBox=false;">
-              Close
-            </button>
-          </div>
-        </div>
-
-        <div class="close-modelbox">
-          <button class="btn btn-danger" (click)="showConfirmationBox=false;">X</button>
-        </div>
-
-      </div>
-    </div>
-  </div>
-</div>
-
-
-
-
-
-

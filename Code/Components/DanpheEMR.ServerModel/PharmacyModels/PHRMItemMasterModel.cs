@@ -24,6 +24,7 @@ namespace DanpheEMR.ServerModel
         public double? BudgetedQuantity { get; set; }
         public double? VATPercentage { get; set; }
         public bool IsVATApplicable { get; set; }
+        public int? PackingTypeId { get; set; }
         public bool IsInternationalBrand { get; set; }
         public int? CreatedBy { get; set; }
         public DateTime? CreatedOn { get; set; }
@@ -36,8 +37,10 @@ namespace DanpheEMR.ServerModel
         public int? GenericId { get; set; }
         public string ABCCategory { get; set; }
         public int? Rack { get; set; }
+        public int? StoreRackId { get; set; }
         public int? SalesCategoryId { get; set; }
         public string VED { get; set; }
-
+        public double? CCCharge { get; set; }
+        public bool IsNarcotic { get; set; }
     }
 }

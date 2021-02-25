@@ -1,4 +1,4 @@
-﻿import { Component, ChangeDetectorRef } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { CoreService } from '../../core/shared/core.service';
 import { EmergencyPatientModel } from '../shared/emergency-patient.model';
@@ -157,6 +157,7 @@ export class ERPatientListComponent {
         this.selectedERPatientToEdit = new EmergencyPatientModel();
 
         this.selectedERPatientToEdit.EnableControl("FirstName", false);
+        this.selectedERPatientToEdit.EnableControl("LastName", false); 
         this.selectedERPatientToEdit.EnableControl("Gender", false);
         this.selectedERPatientToEdit.FirstName = this.selectedExistingPatient.FirstName;
         this.selectedERPatientToEdit.LastName = this.selectedExistingPatient.LastName;
@@ -179,7 +180,7 @@ export class ERPatientListComponent {
 
     
     patientListFormatter(data: any): string {
-        let html = data["ShortName"] + ' [ ' + data['PatientCode'] + ' ]' + ' - ' + data['Age'] + ' - ' + ' ' + data['Gender'];
+      let html = data["ShortName"] + ' [ ' + data['PatientCode'] + ' ]' + ' - ' + data['Age'] + ' - ' + ' ' + data['Gender'] + ' - ' + ' ' + data['PhoneNumber'];
         return html;
     }
 

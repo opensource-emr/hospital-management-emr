@@ -1,0 +1,91 @@
+/*CSS form MR-Add page Starts*/
+.margin-8-tp {
+  margin-top: 8px;
+}
+.margin-8-bt{
+  margin-bottom: 8px;
+}
+.actionbtn {
+  padding: 4px 8px;
+}
+.lbl-text {
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 700;
+}
+select, option, .cstm-field-ip {
+  font-size: 12px;
+}
+.cstm-field-ip, .cstm-field-sel {
+  width: 100%;
+  padding: 3px 5px;
+}
+input[type=text]:focus, input[type=number]:focus, input[type=tel]:focus, select:focus {
+  border: 1px solid #43c1b5 !important;
+}
+.lbl-text-data {
+  margin-top: 6px;
+  font-size: 12px;
+}
+.rad-btn-aligned{margin-top: 9px;}
+.board {
+  background: #dddde0;
+}
+.patient-hdr-label{font-size: 12px;}
+.pos-rel{
+  width: 100%;
+  position: relative;
+}
+.removeicd {
+  padding: 3px 5px;
+  line-height: 1;
+  position: absolute;
+  right: 0;
+}
+.bg-light {
+  background: #d6d6d6;
+}
+.hdr-bg {
+  background: #dddde0;
+}
+.brth-detail-holder tr th, .brth-detail-holder tr td{font-size: 12px; padding: 5px 3px;}
+.brth-detail-holder, .brth-detail-holder > tbody > tr > td,
+.brth-detail-holder > tbody > tr > th, .brth-detail-holder > tfoot > tr > td,
+.brth-detail-holder > tfoot > tr > th, .brth-detail-holder > thead > tr > td,
+.brth-detail-holder > thead > tr > th {
+  border: 1px solid #989898;
+}
+p.large-header{font-weight: 700;}
+.tbl-action-edit, .tbl-action-del {
+  font-size: 14px;
+}
+.tbl-action-del {
+  color: #e80d2b;
+}
+.btn-pd {
+  width: 100%;
+  padding: 4px 15px;
+}
+.add-cert {
+  background: #337ab7;
+  color: #fff;
+}
+.cancel-cert {
+  background: #e80d2b;
+  color: #fff;
+}
+.birth-cert-form-holder {
+  border: 1px solid #c7bfbf;
+  padding: 5px 15px 15px;
+}
+.brth-detail-holder thead tr th {
+  font-weight: 700;
+}
+.font-sm {
+  font-size: 11px;
+}
+h2.mr-cert-head {
+  text-decoration: underline;
+  font-size: 20px;
+}
+/*CSS form MR-Add page Ends*/

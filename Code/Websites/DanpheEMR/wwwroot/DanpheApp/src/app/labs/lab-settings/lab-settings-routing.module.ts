@@ -7,6 +7,8 @@ import { EditSignatoriesComponent } from "./signatories/edit-signatories.compone
 import { LabTestCompComponent } from "./lab-test-component/labTestComp.component";
 import { LabVendorListComponent } from "../external-labs/vendors-settings/lab-vendor-list.component";
 import { LabLookUpComponent } from "./lab-lookups/lookups-list.component";
+import { LabCategoryComponent } from "./lab-category/lab-category.component";
+import { MapGovernmentItemsComponent } from "./map-lab-test-components/map-government-items-component";
 
 @NgModule({
   imports: [
@@ -21,7 +23,9 @@ import { LabLookUpComponent } from "./lab-lookups/lookups-list.component";
           { path: 'ReportTemplate', component: ReportTemplateComponent },
           { path: 'Signatories', component: EditSignatoriesComponent },
           { path: 'Vendors', component: LabVendorListComponent },
-          { path: 'LookUps', component: LabLookUpComponent }
+          { path: 'LookUps', component: LabLookUpComponent },
+          { path: 'LabCategories', component: LabCategoryComponent },
+          { path: 'MapGovernmentItems', component: MapGovernmentItemsComponent }
         ]
       }
     ])

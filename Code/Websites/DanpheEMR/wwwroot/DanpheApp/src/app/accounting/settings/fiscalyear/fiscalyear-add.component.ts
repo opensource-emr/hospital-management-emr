@@ -1,4 +1,4 @@
-﻿import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from "@angular/core";
+import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from "@angular/core";
 import { AccountingSettingsBLService } from '../shared/accounting-settings.bl.service';
 import { CoreService } from '../../../core/shared/core.service';
 import { FiscalYearModel } from '../shared/fiscalyear.model';
@@ -168,7 +168,7 @@ export class FiscalYearAddComponent {
             let npFinalEndYearDate = this.nepaliCalendarService.ConvertEngToNepDate(engFinalEndYearDate);
             ////Set End Year Date Month is Asar 31st (month=Asar and Day=31st)
             npFinalEndYearDate.Month = 3;
-            let days = this.nepaliCalendarService.GetDaysOfMonth(npFinalEndYearDate.Year, npFinalEndYearDate.Month);
+            let days = this.nepaliCalendarService.GetDaysOfMonthBS(npFinalEndYearDate.Year, npFinalEndYearDate.Month);
             let len = days.length; ////Total no of Days in Month of Selected Year
             npFinalEndYearDate.Day = len;
             let tempEndYearDate = moment(this.nepaliCalendarService.ConvertNepToEngDate(npFinalEndYearDate)).format("YYYY-MM-DD");

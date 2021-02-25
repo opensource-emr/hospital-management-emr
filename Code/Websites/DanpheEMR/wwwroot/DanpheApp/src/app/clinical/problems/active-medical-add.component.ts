@@ -38,6 +38,7 @@ export class ActiveMedicalAddComponent {
         public problemsBLService: ProblemsBLService,
         public changeDetector: ChangeDetectorRef,
         public msgBoxServ: MessageboxService) {
+        this.CurrentProblem.OffNoteValidator("Note");    
         this.GetICDList();
         this.Initialize();
     }

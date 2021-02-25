@@ -1,4 +1,4 @@
-﻿import { Component, ChangeDetectorRef, EventEmitter, Output, OnInit, Input } from '@angular/core';
+import { Component, ChangeDetectorRef, EventEmitter, Output, OnInit, Input } from '@angular/core';
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { CoreService } from '../../core/shared/core.service';
 import { EmergencyPatientModel } from '../shared/emergency-patient.model';
@@ -44,11 +44,11 @@ export class ERLamaComponent {
                     .subscribe((res: DanpheHTTPResponse) => {
                         if (res.Status == "OK") {
                             this.sendERPatientData.emit({ submit: true, callBackFrom: 'lama', ERPatient: res.Results });
-                            this.msgBoxServ.showMessage("success", [this.ERPatient.FullName + 'is successfully Leaved Against Medical Advice']);
+                          this.msgBoxServ.showMessage("success", [this.ERPatient.FullName + 'is successfully' + res.Results.FinalizedStatus]);
                             this.loading = false;
                         } else {
                             this.sendERPatientData.emit({ submit: false, ERPatient: null });
-                            this.msgBoxServ.showMessage("failed", ['Cannot update your Medical Advice now. Please Try again Later']);
+                            this.msgBoxServ.showMessage("failed", ['Cannot update your Medical Request now. Please Try again Later']);
                             this.loading = false;
                         }
                     });

@@ -17,6 +17,7 @@ import { SecurityService } from '../../security/shared/security.service';
 import { RouteFromService } from '../../shared/routefrom.service';
 import { BillingService } from '../../billing/shared/billing.service';
 import { PatientsDLService } from '../../patients/shared/patients.dl.service';
+import { ENUM_AppointmentType, ENUM_BillingStatus, ENUM_VisitType, ENUM_OrderStatus } from '../../shared/shared-enums';
 
 @Component({
   selector: "danphe-followup-visit",
@@ -93,7 +94,7 @@ export class FollowUpVisitComponent {
       this.LoadPatientsTodaysVisitListIntoService(this.parentVisit.PatientId);
 
     }
-   
+
   }
 
   GetPatientById() {
@@ -116,6 +117,7 @@ export class FollowUpVisitComponent {
     //assign patient's details to global variable. so that it can be used in visit main component.
     let currPat = this.patientService.getGlobal();
     currPat = Object.assign(currPat, this.parentVisit.Patient);
+    this.newBillTxn.PatientId = currPat.PatientId;//sud:29Sept'19 -- there's some calculation based on this field in billing info page.
 
     //this.router.navigate(['/Appointment/Visit']);
     this.changeProvider = true;
@@ -148,9 +150,7 @@ export class FollowUpVisitComponent {
         isPaidFollowup = false;
       }
 
-
       let valSummary = this.CheckValidations(isPaidFollowup);
-
 
       if (valSummary.isValid) {
         if (isPaidFollowup) {
@@ -163,8 +163,6 @@ export class FollowUpVisitComponent {
       else {
         this.msgBoxServ.showMessage("Failed", valSummary.message);
       }
-
-
 
     }
 
@@ -194,8 +192,8 @@ export class FollowUpVisitComponent {
     retVal.DateOfBirth = this.parentVisit.DateOfBirth;
     retVal.Gender = this.parentVisit.Gender;
     retVal.VisitType = this.parentVisit.VisitType;
-    retVal.AppointmentType = "followup";
-    retVal.BillStatus = "paid";
+    retVal.AppointmentType = ENUM_AppointmentType.followup;
+    retVal.BillStatus = ENUM_BillingStatus.paid;//  "paid";
     retVal.Patient = this.parentVisit.Patient;
 
     return retVal;
@@ -230,9 +228,12 @@ export class FollowUpVisitComponent {
 
     qckVisit_Fwup.BillingTransaction = this.newBillTxn;
     qckVisit_Fwup.Visit = this.visitService.globalVisit;
-    qckVisit_Fwup.Visit.AppointmentType = "followup";
-    qckVisit_Fwup.Visit.VisitType = "outpatient";
+    qckVisit_Fwup.Visit.AppointmentType = ENUM_AppointmentType.followup;// "followup";
+    qckVisit_Fwup.Visit.VisitType = ENUM_VisitType.outpatient;// "outpatient";
 
+    qckVisit_Fwup.BillingTransaction.BillingTransactionItems.forEach(a => {
+      a.OrderStatus = ENUM_OrderStatus.Active;
+    });
 
     this.visitBLService.PostPaidFollowupVisit(qckVisit_Fwup)
       .subscribe((res: DanpheHTTPResponse) => {

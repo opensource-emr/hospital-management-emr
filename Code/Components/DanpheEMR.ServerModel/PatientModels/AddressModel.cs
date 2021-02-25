@@ -5,9 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Audit.EntityFramework;
 
 namespace DanpheEMR.ServerModel
 {
+    [AuditInclude]
     public class AddressModel
     {
         [Key]

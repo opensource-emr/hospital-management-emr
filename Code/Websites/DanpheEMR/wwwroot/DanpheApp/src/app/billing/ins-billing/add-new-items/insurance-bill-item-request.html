@@ -1,24 +1,21 @@
 
 <style>
-  .table thead tr th {
-    font-size: 13px;
-  }
-
-  .delBtn {
-    padding: 1px 7px;
-    margin-top: 1px;
-    margin-right: 0px;
-  }
-
-  table.billing-table tr td {
-    padding: 8px 4px;
-  }
+.table thead tr th {
+	font-size: 13px;
+}
+.delBtn {
+	padding: 1px 7px;
+	margin-top: 1px;
+	margin-right: 0px;
+}
+table.billing-table tr td {
+	padding: 8px 4px;
+}
 </style>
 <div class="popup-static portlet box portlet-fullscreen">
   <div class="portlet-body form">
     <div class="modelbox-div" style="margin-left:5%;margin-right:5%;margin-top:1%;min-height:630px;height: auto;padding-bottom: 30px;">
-      <div style="margin-left:30px">
-        <i class="btn btn-danger" style="float: right;margin-right:15px;margin-top:5px" (click)="CloseInsuranceRequestsPage()">X</i>
+      <div style="margin-left:30px"> <i class="btn btn-danger" style="float: right;margin-right:15px;margin-top:5px" (click)="CloseInsuranceRequestsPage()">X</i>
         <label style="margin-left:40%;margin-top:20px;font-size:20px"> <b>{{patientInfo.ShortName}}({{patientInfo.PatientCode}})</b></label>
         <div class="row">
           <div class="col-md-12">
@@ -40,15 +37,9 @@
                   </tr>
                 </thead>
                 <tbody>
-
-
                   <tr *ngFor="let row of billingTransaction.BillingTransactionItems; let i = index">
-
-                    <td style="padding: 7px 0px 0px 0px;">
-                      <a class="btn btn-danger delBtn" (click)="deleteRow(i)" title="Click to remove this item"><i class=" fa fa-cross">X</i></a>
-                    </td>
-                    <td>
-                      <form [formGroup]="row.BillingTransactionItemValidator" class="autocomplete-item">
+                    <td style="padding: 7px 0px 0px 0px;"><a class="btn btn-danger delBtn" (click)="deleteRow(i)" title="Click to remove this item"><i class=" fa fa-cross">X</i></a></td>
+                    <td><form [formGroup]="row.BillingTransactionItemValidator" class="autocomplete-item">
                         <input class="form-control cstm-form-control" danphe-auto-complete
                                title="{{row.ServiceDepartmentName}}"
                                formControlName="ServiceDepartmentId"
@@ -63,10 +54,8 @@
                                onClick="this.select();"
                                max-num-list="10" />
                         <div class="color-red font-sm" *ngIf="row.IsDirty('ServiceDepartmentId')" [hidden]="row.IsValidSelDepartment">Select Department from the list.</div>
-                      </form>
-                    </td>
-                    <td>
-                      <form [formGroup]="row.BillingTransactionItemValidator" class="autocomplete-item">
+                      </form></td>
+                    <td><form [formGroup]="row.BillingTransactionItemValidator" class="autocomplete-item">
                         <input [disabled]="disableTextBox" class="form-control cstm-form-control " danphe-auto-complete
                                [(ngModel)]="selectedRequestedByDr[i]"
                                formControlName="RequestedBy"
@@ -81,10 +70,8 @@
                                onClick="this.select();"
                                max-num-list="10" />
                         <div class="color-red font-sm" *ngIf="row.IsDirty('RequestedBy')" [hidden]="row.IsValidCheck('RequestedBy','required')">Requesting Dr is mandatory.</div>
-                      </form>
-                    </td>
-                    <td>
-                      <form [formGroup]="row.BillingTransactionItemValidator" class="autocomplete-item">
+                      </form></td>
+                    <td><form [formGroup]="row.BillingTransactionItemValidator" class="autocomplete-item">
                         <input [disabled]="disableTextBox" class="form-control cstm-form-control" danphe-auto-complete
                                formControlName="ProviderId"
                                [ngClass]="{'border-red': row.IsDirty('ProviderId') && !row.IsValidCheck('ProviderId','required'), 'border-red': !row.IsValidSelAssignedToDr }"
@@ -99,13 +86,9 @@
                                onClick="this.select();"
                                max-num-list="10" />
                         <div class="color-red font-sm" *ngIf="row.IsDirty('ProviderId')" [hidden]="row.IsValidCheck('ProviderId','required')">Assigned Doctor is mandatory</div>
-                      </form>
-                    </td>
-                    <td style="padding: 7px 0px 0px 0px;">
-                      <a class="btn btn-success delBtn" (click)="AddNewBillTxnItemRow(i)" title="Click to add new item"><i class="fa fa-plus"></i></a>
-                    </td>
-                    <td>
-                      <form [formGroup]="row.BillingTransactionItemValidator" class="autocomplete-item">
+                      </form></td>
+                    <td style="padding: 7px 0px 0px 0px;"><a class="btn btn-success delBtn" (click)="AddNewBillTxnItemRow(i)" title="Click to add new item"><i class="fa fa-plus"></i></a></td>
+                    <td><form [formGroup]="row.BillingTransactionItemValidator" class="autocomplete-item">
                         <input (keyup.enter)="AddNewBillTxnItemRow(i)" class="form-control cstm-form-control" danphe-auto-complete title="{{row.ItemName}}" autocomplete="off"
                                formControlName="ItemName"
                                [ngClass]="{'border-red': row.IsDirty('ItemName') && !row.IsValidCheck('ItemName','required'), 'border-red': !row.IsValidSelItemName}"
@@ -121,27 +104,21 @@
                                max-num-list="20"
                                onClick="this.select();"
                                id="{{ 'items-box'+i }}" />
-
                         <div class="color-red font-sm" *ngIf="row.IsDuplicateItem">Duplicate Item not allowed</div>
                         <div class="color-red font-sm" *ngIf="row.IsDirty('ItemName')" [hidden]="row.IsValidCheck('ItemName','required')"> Item Name is required</div>
-                      </form>
-                    </td>
-
-                    <td>
-                      <form [formGroup]="row.BillingTransactionItemValidator">
+                      </form></td>
+                    <td><form [formGroup]="row.BillingTransactionItemValidator">
                         <input [(ngModel)]="row.Quantity"
                                style="width:62px" min="0"
                                (ngModelChange)="Calculationforall() "
                                class="form-control cstm-form-control "
                                name="quantity"
                                type="number"
-                               onClick="this.select();"
-                               formControlName="Quantity">
+                               onClick="this.select();" formControlName="Quantity"
+                               (wheel)="coreService.PreventNumberChangeOnScroll($event)">
                         <div class="color-red font-sm" *ngIf="row.IsDirty('Quantity')" [hidden]="row.IsValidCheck('Quantity','invalidNumber')">Enter valid number.</div>
-                      </form>
-                    </td>
-                    <td>
-                      <form [formGroup]="row.BillingTransactionItemValidator">
+                      </form></td>
+                    <td><form [formGroup]="row.BillingTransactionItemValidator">
                         <input [(ngModel)]="row.Price"
                                style="width:62px"
                                min="0"
@@ -149,11 +126,10 @@
                                (ngModelChange)="Calculationforall() "
                                onClick="this.select();"
                                class="form-control cstm-form-control" name="price"
-                               type="number"
-                               value="row.Price">
+                               type="number" value="row.Price"
+                               (wheel)="coreService.PreventNumberChangeOnScroll($event)">
                         <div class="color-red font-sm" *ngIf="row.IsDirty('Price')" [hidden]="row.IsValidCheck('Price','invalidNumber')">Enter valid number.</div>
-                      </form>
-                    </td>
+                      </form></td>
                     <!--<td>
                       <form [formGroup]="row.BillingTransactionItemValidator">
                         <input [(ngModel)]="row.DiscountPercent"
@@ -176,9 +152,7 @@
                              name="Taxamount"
                              type="number">
                     </td>-->
-                    <td>
-                      <input [(ngModel)]="row.TotalAmount" style="width:90px" disabled class="form-control cstm-form-control" name="total" type="number">
-                    </td>
+                    <td><input [(ngModel)]="row.TotalAmount" style="width:90px" disabled class="form-control cstm-form-control" name="total" type="number"></td>
                   </tr>
                   <tr>
                     <th></th>
@@ -215,7 +189,7 @@
                   <td>
                     <input [(ngModel)]="groupDiscountPercent" min="0" max="100" (ngModelChange)="ItemGroupDiscount()" class="form-control" name="DiscountPercent" type="number">
                   </td>
-                </tr>-->
+                </tr>--> 
                 <!--<tr class="form-group">
                   <td></td>
                   <td> Discount Amt: </td>
@@ -226,13 +200,10 @@
                   <td>Total Amount: </td>
                   <td><input [(ngModel)]="billingTransaction.TotalAmount" disabled class="form-control" name="TotalAmount" type="number"></td>
                 </tr>
-
                 <tr class="form-group">
                   <td></td>
                   <td>Remarks: </td>
-
                   <td><input [(ngModel)]="billingTransaction.Remarks" class="form-control" name="Remarks" type="text"></td>
-
                 </tr>
                 <tr class="dot">
                   <td colspan="3" class="text-capitalize">In Words : <b>{{billingTransaction.TotalAmount | NumberInWords}} </b>Only. </td>
@@ -242,12 +213,12 @@
             </div>
           </div>
         </div>
-
         <div class="form-group">
           <div class="col-sm-offset-5 col-sm-5">
-            <input type="submit" class="btn btn-success" [disabled]="loading" value="Request" (click)="loading=true;PostSuccessBool=false;SubmitBillingTransaction();" />&nbsp; &nbsp;
-            <!--<input *ngIf="'EnableBillRequestSlip' | booleanParameter : 'Billing'" type="submit" class="btn blue" [disabled]="loading" value="Print Insurance Provisional Slip" (click)="loading=true;PostSuccessBool=true;SubmitBillingTransaction();" />-->
-
+            <input type="submit" class="btn btn-success" [disabled]="loading" value="Request" (click)="loading=true;PostSuccessBool=false;SubmitBillingTransaction();" />
+            &nbsp; &nbsp; 
+            <!--<input *ngIf="'EnableBillRequestSlip' | booleanParameter : 'Billing'" type="submit" class="btn blue" [disabled]="loading" value="Print Insurance Provisional Slip" (click)="loading=true;PostSuccessBool=true;SubmitBillingTransaction();" />--> 
+            
           </div>
         </div>
       </div>
@@ -265,4 +236,4 @@
       </div>
     </div>
   </div>
-</div>-->
+</div>--> 

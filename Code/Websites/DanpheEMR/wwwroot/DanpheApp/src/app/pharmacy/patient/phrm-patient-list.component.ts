@@ -1,4 +1,4 @@
-﻿
+
 import { Component, Injectable, ChangeDetectorRef } from '@angular/core';
 import { RouterOutlet, RouterModule, Router } from '@angular/router';
 import * as moment from 'moment/moment';
@@ -14,32 +14,69 @@ import { Patient } from "../../patients/shared/patient.model";
 import { Guarantor } from "../../patients/shared/guarantor.model";
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { APIsByType } from '../../shared/search.service';
+import { SecurityService } from '../../security/shared/security.service';
+import { CallbackService } from '../../shared/callback.service';
+import { RouteFromService } from '../../shared/routefrom.service';
+import { CoreService } from '../../core/shared/core.service';
 
 @Component({
-    templateUrl: "../../view/pharmacy-view/Patient/PHRMPatientList.html" // "/PharmacyView/PHRMPatientList"
+    templateUrl: "./phrm-patient-list.html"
 })
 
 export class PHRMPatientListComponent {
     patients: Array<Patient> = new Array<Patient>();
     patient: Patient = new Patient();
+    public currentCounterId: number = null;
+    public currentCounterName: string = null;
     patientGridColumns: Array<any> = null;
     public ShowDepositAdd: boolean = false;
     public selectedPatientData: Patient = new Patient();
-    public patGirdDataApi:string="";
+    public patGirdDataApi: string = "";
+    searchText: string = '';
+    public enableServerSideSearch: boolean = false;
     constructor(
         public router: Router,
         public patientService: PatientService,
         public pharmacyBLService: PharmacyBLService,
         public msgBoxServ: MessageboxService,
-        public changeDetector: ChangeDetectorRef
+        public changeDetector: ChangeDetectorRef,
+        public securityService: SecurityService,
+        public callBackService: CallbackService,
+        public routeFromService: RouteFromService,
+        public messageboxService: MessageboxService, public coreService: CoreService
     ) {
-        this.Load();
-        this.patientGridColumns = PHRMGridColumns.PHRMPatientList;
-        this.patGirdDataApi=APIsByType.PatByName;
+        try {
+
+            this.currentCounterId = this.securityService.getPHRMLoggedInCounter().CounterId;
+            this.currentCounterName = this.securityService.getPHRMLoggedInCounter().CounterName;
+
+            if (this.currentCounterId < 1) {
+                this.callBackService.CallbackRoute = '/Pharmacy/Patient/List'
+                this.router.navigate(['/Pharmacy/ActivateCounter']);
+            }
+            else {
+                this.getParamter();
+                this.Load("");
+                this.patientGridColumns = PHRMGridColumns.PHRMPatientList;
+                this.patGirdDataApi = APIsByType.PatByName;
+            }
+        }
+        catch (exception) {
+            this.ShowCatchErrMessage(exception);
+        }
+    }
+    serverSearchTxt(searchTxt) {
+        this.searchText = searchTxt;
+        this.Load(this.searchText);
+    }
+    getParamter() {
+        let parameterData = this.coreService.Parameters.find(p => p.ParameterGroupName == "Common" && p.ParameterName == "ServerSideSearchComponent").ParameterValue;
+        var data = JSON.parse(parameterData);
+        this.enableServerSideSearch = data["PatientSearchPatient"];
     }
     //Load patients
-    Load(): void {
-        this.pharmacyBLService.GetPatients()
+    Load(searchTxt): void {
+        this.pharmacyBLService.GetPatients(searchTxt)
             .subscribe(res => {
                 if (res.Status == 'OK') {
                     this.patients = res.Results;
@@ -48,10 +85,10 @@ export class PHRMPatientListComponent {
                     this.msgBoxServ.showMessage("error", [res.ErrorMessage]);
                 }
             },
-            err => {
-                this.msgBoxServ.showMessage("error", ["failed to get  patients"]);
+                err => {
+                    this.msgBoxServ.showMessage("error", ["failed to get  patients"]);
 
-            });
+                });
     }
     logError(err: any) {
         this.msgBoxServ.showMessage("error", [err]);
@@ -105,8 +142,18 @@ export class PHRMPatientListComponent {
     //Method for navigate to New outdoor patient registration page
     public RegisterNewPatient() {
         this.router.navigate(["/Pharmacy/Patient/New"]);
-    }   
+    }
     DepositAdd() {
         this.ShowDepositAdd = false;
+    }
+    ShowCatchErrMessage(exception) {
+        if (exception) {
+            let ex: Error = exception;
+            this.routeFromService.RouteFrom = null;
+            this.messageboxService.showMessage("error", ["Check error in Console log !"]);
+            console.log("Error Messsage =>  " + ex.message);
+            console.log("Stack Details =>   " + ex.stack);
+            //this.messageboxService.showMessage("error", [ex.message + "     " + ex.stack]);
+        }
     }
 }

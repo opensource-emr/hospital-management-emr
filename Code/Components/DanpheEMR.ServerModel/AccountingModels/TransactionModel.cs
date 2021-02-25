@@ -36,6 +36,23 @@ namespace DanpheEMR.ServerModel
         public string TransactionType { get; set; }
         public int? TUId { get; set; }
         public int? DayVoucherNumber { get; set; }
+        public bool? IsCustomVoucher { get; set; }
+        public bool? IsReverseTxnAllow { get; set; }
+        public bool? IsEditable { get; set; }
+        public DateTime? ModifiedOn { get; set; }
+        public int? ModifiedBy { get; set; }
+        public bool? IsGroupTxn { get; set; }
+
+        //sud-nagesh: 20June'20-- for Acc-Hospital Separation.
+        public int? HospitalId { get; set; }
+        [NotMapped]
+        public string Reason { get; set; }
+        public int? VoucherSerialNo { get; set; }
+        public bool? IsAllowReverseVoucher { get; set; }
+        [NotMapped]
+        public bool? IsReverseVoucher { get; set; }
+        [NotMapped]
+        public int? PrevTransactionId { get; set; }
     }
 
 }

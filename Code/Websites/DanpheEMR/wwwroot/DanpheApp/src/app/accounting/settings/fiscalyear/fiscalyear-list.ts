@@ -1,4 +1,4 @@
-﻿
+
 import { Component, ChangeDetectorRef } from "@angular/core";
 
 import { FiscalYearModel } from '../shared/fiscalyear.model';
@@ -8,7 +8,8 @@ import GridColumnSettings from '../../../shared/danphe-grid/grid-column-settings
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 import * as moment from 'moment/moment';
-
+import { CoreService } from '../../../core/shared/core.service'
+import { SecurityService } from "../../../security/shared/security.service";
 @Component({
     selector: 'fiscalyear-list',
     templateUrl: './fiscalyear-list.html',
@@ -20,29 +21,27 @@ export class FiscalYearListComponent {
     public showAddPage: boolean = false;
     public selectedFiscalYear: FiscalYearModel;
     public index: number;
-
+    public showpopup:boolean=false;
+    public showerror:boolean=false;
+    public Remark:string= "";
     constructor(
         public accountingSettingsBLService: AccountingSettingsBLService,
         public msgBox: MessageboxService,
-        public changeDetector: ChangeDetectorRef) {
-        this.fiscalYearGridColumns = GridColumnSettings.FiscalYearList;
+        public changeDetector: ChangeDetectorRef, private coreService: CoreService,public securityService:SecurityService) {
+        this.getFiscalYearList();
+    }
+    ngOnInit(){
         this.getFiscalYearList();
     }
     public getFiscalYearList() {
-        this.accountingSettingsBLService.GetFiscalYearList()
-            .subscribe(res => {
-                if (res.Status == "OK") {
-                    this.fiscalYearList = res.Results;
-                    for (var i = 0; i < this.fiscalYearList.length; i++) {
-                        this.fiscalYearList[i].StartDate = moment(this.fiscalYearList[i].StartDate).format("YYYY-MM-DD");
-                        this.fiscalYearList[i].EndDate = moment(this.fiscalYearList[i].EndDate).format("YYYY-MM-DD");
-                    }
-                    this.showFiscalYearList = true;
-                }
-                else {
-                    alert("Failed ! " + res.ErrorMessage);
-                }
-            });
+        var gridcolumns = new GridColumnSettings(this.securityService);
+        this.fiscalYearGridColumns = gridcolumns.FiscalYearList;
+        this.fiscalYearList = this.coreService.accFiscalYearList;
+        for (var i = 0; i < this.fiscalYearList.length; i++) {
+            this.fiscalYearList[i].StartDate = moment(this.fiscalYearList[i].StartDate).format("YYYY-MM-DD");
+            this.fiscalYearList[i].EndDate = moment(this.fiscalYearList[i].EndDate).format("YYYY-MM-DD");
+        }
+        this.showFiscalYearList = true;
     }
 
     AddNewFiscalYear() {
@@ -72,6 +71,10 @@ export class FiscalYearListComponent {
                 this.DeactivateFiscalYearStatus(this.selectedFiscalYear)
                 this.showFiscalYearList = true;
             }
+            case "edit": {
+                this.selectedFiscalYear = $event.Data;
+                this.showpopup =true;
+            }
             default:
                 break;
         }
@@ -87,26 +90,96 @@ export class FiscalYearListComponent {
                 //we want to update the ISActive property in table there for this call is necessry
                 this.accountingSettingsBLService.UpdateFiscalYearStatus(selecttedFiscalYr)
                     .subscribe(
+                        res => {
+                            if (res.Status == "OK") {
+                                let responseMessage = res.Results.IsActive ? "is now activated." : "is now Deactivated.";
+                                this.msgBox.showMessage("success", [res.Results.FiscalYearName + ' ' + responseMessage]);
+                                //This for send to callbackadd function to update data in list
+                                this.getFiscalYearList();
+                            }
+                            else {
+                                this.msgBox.showMessage("error", ['Something wrong' + res.ErrorMessage]);
+                            }
+                        },
+                        err => {
+                            this.logError(err);
+                        });
+            }
+        }
+    }
+    ActivateFiscalYearStatus(selecttedFiscalYr: FiscalYearModel) {
+        if (selecttedFiscalYr != null) {
+            if (confirm("Are you Sure want to start " + selecttedFiscalYr.FiscalYearName + ' ?')) {
+                selecttedFiscalYr.IsActive = true;
+                //we want to update the ISActive property in table there for this call is necessry
+                this.accountingSettingsBLService.UpdateFiscalYearStatus(selecttedFiscalYr)
+                    .subscribe(
+                        res => {
+                            if (res.Status == "OK") {
+                                let responseMessage = res.Results.IsActive ? "is now activated." : "is now Deactivated.";
+                                this.msgBox.showMessage("Success", [res.Results.FiscalYearName + ' ' + responseMessage]);
+                                //This for send to callbackadd function to update data in list
+                                this.getFiscalYearList();
+                            }
+                            else {
+                                this.msgBox.showMessage("error", ['Something wrong' + res.ErrorMessage]);
+                            }
+                        },
+                        err => {
+                            this.logError(err);
+                        });
+            }
+        }
+    }
+    logError(err: any) {
+        console.log(err);
+    }
+
+    ReopenFiscalYear(){
+        if (this.selectedFiscalYear != null) {
+            if(this.Remark !=""){
+                this.showerror = false;
+                this.selectedFiscalYear.Remark = this.Remark;
+                this.accountingSettingsBLService.PutReopenFiscalYear(this.selectedFiscalYear)
+                .subscribe(
                     res => {
                         if (res.Status == "OK") {
-                            let responseMessage = res.Results.IsActive ? "is now activated." : "is now Deactivated.";
-                            this.msgBox.showMessage("success", [res.Results.FiscalYearName + ' ' + responseMessage]);
-                            //This for send to callbackadd function to update data in list
-                            this.getFiscalYearList();
+                            // get updated Fiscal Year list
+                            this.coreService.GetFiscalYearList().subscribe(res => {
+                                this.coreService.SetFiscalYearList(res);
+                                this.fiscalYearList = res.Results;
+                                for (var i = 0; i < this.fiscalYearList.length; i++) {
+                                    this.fiscalYearList[i].StartDate = moment(this.fiscalYearList[i].StartDate).format("YYYY-MM-DD");
+                                    this.fiscalYearList[i].EndDate = moment(this.fiscalYearList[i].EndDate).format("YYYY-MM-DD");
+                                  
+                                }
+                            });
+                            this.securityService.AccHospitalInfo.FiscalYearList.forEach(fy=>{
+                                if(fy.FiscalYearId==this.selectedFiscalYear.FiscalYearId){
+                                    fy.IsClosed=false;
+                                }
+                            });
+                            if(this.securityService.AccHospitalInfo.CurrFiscalYear.FiscalYearId==this.selectedFiscalYear.FiscalYearId){
+                                this.securityService.AccHospitalInfo.CurrFiscalYear.IsClosed=false;
+                            }
+                            this.msgBox.showMessage("Success", [this.selectedFiscalYear.FiscalYearName + ' open now.']);
+                            this.closepopup();
+                           
                         }
                         else {
-                            this.msgBox.showMessage("error", ['Something wrong' + res.ErrorMessage]);
+                            this.msgBox.showMessage("Error", ['Something wrong' + res.ErrorMessage]);
                         }
                     },
                     err => {
                         this.logError(err);
                     });
             }
+            else{
+                this.showerror = true;
+            }
         }
     }
-
-    logError(err: any) {
-        console.log(err);
+    closepopup(){
+        this.showpopup =false;
     }
-
 }

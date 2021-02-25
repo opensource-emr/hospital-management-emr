@@ -1,0 +1,34 @@
+﻿<div>
+    <div class="col-md-12">
+        <div class="caption custom-caption pt10">
+            <h3><span>Manage Tax</span></h3>
+        </div>
+        <hr />
+        <label class="control-label col-md-2">Select Tax<b style="float:right;">:</b></label>
+        <div class="col-md-10">
+            <div class="input-group">
+                <div class="icheck-inline">
+                    <label class="mt-checkbox mt-checkbox-outline">
+                        <input name="salutation" type="radio" value='{"TaxId":"2","TaxName":"VAT","TaxPercent":"13","TaxLabel":"VAT (13%)"}' [(ngModel)]="taxInfo">
+                        <span></span>VAT @13%
+                    </label>
+
+                    <label class="mt-checkbox mt-checkbox-outline">
+                        <input name="salutation" type="radio" value='{"TaxId":"1","TaxName":"HST","TaxPercent":"5","TaxLabel":"HST (5%)"}' [(ngModel)]="taxInfo">
+                        <span></span>HST @5%
+                    </label>
+                    <label class="mt-checkbox mt-checkbox-outline">
+                        <input name="salutation" type="radio" value='{"TaxId":"3","TaxName":"None","TaxPercent":"0","TaxLabel":"None (0%)"}' [(ngModel)]="taxInfo">
+                        <span></span>None @0%
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-12" style="padding-bottom: 18px;">
+        <div class="form-actions">
+            <input type="button" class="btn btn-primary" (click)="UpdateTaxInfo()" value="Update" />
+        </div>
+    </div>
+</div>
+

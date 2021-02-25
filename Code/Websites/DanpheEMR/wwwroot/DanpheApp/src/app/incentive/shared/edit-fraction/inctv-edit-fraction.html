@@ -1,0 +1,167 @@
+<style>
+  .frc-removed {
+    color: red;
+  }
+
+
+  .tbl-hdr-info {
+    background: #def2ff !important;
+    border-radius: 3px !important;
+    margin-bottom: 0px !important;
+    border: none;
+  }
+
+    .tbl-hdr-info > tbody > tr > td {
+      padding: 10px;
+      border: none;
+    }
+
+
+  .btn-save-frc {
+    float: right;
+    margin-right: 10px;
+  }
+
+  /* .btn-save-frc:focus {
+    zoom: 1.1;
+  } */
+
+  /* .btn-add-new-row:focus {
+    zoom: 1.1;
+  } */
+</style>
+<div class="row">
+  <div class="col-md-12">
+
+    <div class="row">
+      <div class="col-md-12">
+        <table class="table tbl-hdr-info" *ngIf="selTxnItem">
+          <tr *ngIf="showInvoiceHeaderInfo">
+            <td colspan="2">
+              <span>Patient:</span>
+              <span style="margin-left: 10px;font-weight: bold;">
+                {{selTxnItem.PatientName}}({{selTxnItem.PatientCode}})
+              </span>
+            </td>
+          </tr>
+          <tr *ngIf="showInvoiceHeaderInfo">
+            <td style="width: 60%;">
+              <span>Invoice No: {{selTxnItem.InvoiceNo}}</span>
+            </td>
+            <td>
+              <span>
+                Date:
+                {{selTxnItem.TransactionDate | DanpheDateTime:'format':'YYYY-MM-DD'}}
+                <i>({{selTxnItem.TransactionDate | nepaliDate:'format':'YYYY-MM-DD'}} B.S)</i>
+              </span>
+            </td>
+          </tr>
+          <tr>
+            <td style="width: 60%;">
+              <span>Item Name: {{selTxnItem.ItemName}}</span>
+            </td>
+            <td>
+              <span>Amount:{{selTxnItem.TotalAmount}}</span>
+            </td>
+          </tr>
+        </table>
+
+
+
+      </div>
+      <!-- <div class="col-md-12">
+        <input id="chkAdjustment" name="adjustment" type="checkbox" value="" [(ngModel)]="allowAdjustment"
+          (change)="EnableDisableAdjustment()" style="zoom:1.5;"><label for="chkAdjustment"
+          style="vertical-align: middle;">Show Adjustment?</label>
+      </div> -->
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <table class="table table-hover custom_table padLess_table table-bordered light_bg_table">
+          <thead>
+            <tr>
+              <th style="width:80px;">Type</th>
+              <th style="width:150px;">Employee</th>
+              <th style="width:60px;">Percent</th>
+              <th style="width:100px;">Incentive Amt.</th>
+              <th style="width:80px;">
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngIf="selTxnItem && fractionItems">
+              <tr *ngFor="let frcItm of fractionItems;let indx = index" [ngClass]="{'frc-removed': frcItm.IsRemoved}">
+                <td>
+                  <select style="width:100px;" [disabled]="frcItm.IsRemoved || frcItm.IsTransferToAcc"
+                          [(ngModel)]="frcItm.IncentiveType" (ngModelChange)="IncentiveTypeChange(frcItm)">
+                    <option *ngFor="let incTyp of inctvTypeArray" value="{{incTyp.value}}">{{incTyp.text}}</option>
+                  </select>
+                </td>
+                <td>
+                  <input danphe-auto-complete [(ngModel)]="frcItm.DocObj" [list-formatter]="EmployeeListFormatter"
+                         [source]="allEmpList" placeholder="Search Doctor Name" display-property-name="FullName"
+                         value-property-name=null onclick="this.select()"
+                         [disabled]="frcItm.IsRemoved || frcItm.IsTransferToAcc" max-num-list="10"
+                         (ngModelChange)="ChangeDoctor(frcItm)" id="empIp_{{indx}}"
+                         (keyup.enter)="GoToNextInput('percentip'+indx)" />
+                </td>
+                <td>
+                  <input id="percentip{{indx}}" type="number" style="width:60px;"
+                         (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                         [disabled]="frcItm.IsRemoved || frcItm.IsTransferToAcc" [(ngModel)]="frcItm.IncentivePercent"
+                         (change)="OnIncentivePercentChange(frcItm)" onClick="this.select();"
+                         (keyup.enter)="SetFocusOnButton('btn_SaveFraction')" />
+                </td>
+                <td>
+                  <input style="width:100px;" disabled type="number" [(ngModel)]="frcItm.IncentiveAmount" />
+                </td>
+                <!--<td>
+                  <input style="width:60px;" disabled type="number" [(ngModel)]="frcItm.TDSPercentage" />
+                </td>-->
+                <td style="text-align: center;">
+                  <button *ngIf="frcItm.IsRemoved" class="btn blue btn-sm" title="undo delete"
+                          (click)="UndoRemove_FractionItem_Single(frcItm)">
+                    <i class="fa fa-rotate-left "></i>
+                  </button>
+                  <button *ngIf="!frcItm.IsRemoved" class="" title="Remove this"
+                          (click)="RemoveFractionItem_Single(frcItm,indx)">
+                    <i class="btn btn-danger btn-sm fa fa-times"></i>
+                  </button>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>   
+        </table>
+      </div>
+
+      <div class="col-md-12">
+        <div class="row">
+          <div class="col-md-6">
+            <button class="btn green primary-btn btn-add-new-row" title="Click To Add New"
+                    (click)="AddNewRow_FractionItem()" [disabled]="fractionItems[0] && fractionItems[0].IsTransferToAcc"
+                    id="btn_AddNewRow">
+              <i class="glyphicon glyphicon-plus" style="margin-right: 0px;"></i>
+            </button>
+          </div>
+          <div class="col-md-6">
+            <button class="btn green btn-success btn-save-frc" (click)="SaveFractionItems()"
+                    [disabled]="fractionItems[0] && fractionItems[0].IsTransferToAcc" id="btn_SaveFraction">
+              <i class="fa fa-save"></i>
+              SAVE Fractions
+            </button>
+
+          </div>
+          <!-- <div *ngIf="showMsgLabel" class="col-md-12"
+            style="text-align: center;background-color: #dcd3d3d1;margin-top: 10px;;">
+            <span>{{msgLabelText}}</span>
+          </div> -->
+
+        </div>
+      </div>
+
+
+    </div>
+
+  </div>
+</div>

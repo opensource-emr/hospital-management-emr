@@ -1,0 +1,29 @@
+
+
+
+<div *ngIf="showGrid" class="row">
+  <div class="col-md-12 col-xs-12 col-sm-12">
+    <a class="btn blue bordered " name="name" (click)="AddRole()">
+      <i class="fa fa-plus"></i>&nbsp;Add Role
+    </a>
+
+    <role-add *ngIf="showAddPage"
+              [roleList]="roleList"
+              [application-perm-list]="applicationList"
+              [selectedItem]="selectedItem"
+              (callback-add)="CallBackAdd($event)"></role-add>
+
+    <danphe-grid [grid-colDefaults]="roleGridColumns" [grid-data]="roleList" (grid-actions)="RoleGridActions($event)"
+                 [show-print-button]="false">
+    </danphe-grid>
+  </div>
+</div>
+
+<div *ngIf="showManagePermission" class="row">
+  <div class="col-md-12 col-xs-12 col-sm-12">
+    <input type="button" class="btn btn-primary" (click)="HidePermissionManage()" value="Back" />
+    <permission-manage *ngIf="showManagePermission" [selectedRole]="selectedItem"
+                       [application-perm-list]="applicationList"
+                       (callback-manageRole)="HidePermissionManage($event)"></permission-manage>
+  </div>
+</div>

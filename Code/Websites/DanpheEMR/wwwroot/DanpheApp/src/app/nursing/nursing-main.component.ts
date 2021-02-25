@@ -1,4 +1,4 @@
-﻿import { Component } from '@angular/core'
+import { Component } from '@angular/core'
 import { RouterOutlet, RouterModule } from '@angular/router';
 //Security Service for Loading Child Route from Security Service
 import { SecurityService } from "../security/shared/security.service"

@@ -27,6 +27,7 @@ export class Visit {
   public VisitStatus: string = null;
   public VisitTime: string = moment().add(5, 'minutes').format('HH:mm');
   public VisitDuration: number = 0;
+  // public Patient: Patient = new Patient();
   public Patient: Patient = null;
   public AppointmentId: number = null;
   public BillingStatus: string = null;
@@ -41,6 +42,7 @@ export class Visit {
   public ModifiedBy: number = null;
   public ModifiedOn: string = null;
   public Remarks: string = null;
+  public QueueNo: number = 0;
 
   public VisitValidator: FormGroup = null;
   //used only in client side
@@ -53,6 +55,7 @@ export class Visit {
   public CurrentCounterId: number = null;
   //used for conclude visit
   public ConcludeDate: string = null;
+  public ERTabName: string = null;
 
   public IsDirty(fieldname): boolean {
     if (fieldname == undefined) {
@@ -94,6 +97,11 @@ export class Visit {
     },
       { validator: this.DateTimeValueValidator('VisitDate', 'VisitTime') } //Hom 19 April 2019
     );
+    //to increment the time as the system time passes
+    setInterval(() => {
+      if (!this.IsDirty("VisitTime"))
+        this.VisitTime = moment().add(5, 'minutes').format('HH:mm');
+    }, 1000)
   }
   public DateValidator(control: FormControl): { [key: string]: boolean } {
     if (control) {
@@ -147,6 +155,9 @@ export class Visit {
 
 
     };
+  }
+  ngOnDestroy() {
+    clearInterval();
   }
 }
 

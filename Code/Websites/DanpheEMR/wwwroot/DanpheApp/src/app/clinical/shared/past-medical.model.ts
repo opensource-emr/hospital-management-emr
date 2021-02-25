@@ -22,7 +22,7 @@ export class PastMedical {
     public ModifiedOn: string = null;
     public Note: string = null;
     public PastMedicalValidator: FormGroup = null;
-
+    public PrincipleProblem: boolean = false;
     constructor() {
         var _formBuilder = new FormBuilder();
         this.PastMedicalValidator = _formBuilder.group({

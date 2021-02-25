@@ -1,0 +1,73 @@
+﻿<!--Model Box Starting Here-->
+<div class="popup-static portlet box portlet-fullscreen inv_modal"  *ngIf="currentStock">
+  <div class="portlet-body form">
+    <!--Model Box Body Start-->
+    <div class="row">
+      <div class="col-md-4 col-md-offset-4">
+        <div class="modelbox-div clearfix">
+          <div class="caption lb-caption">
+            <h3>Update Expiry Date and Batch No</h3>
+            <a class="btn btn-danger"
+              (click)="Close()"
+              title="Cancel">X</a>
+          </div>
+          <form class="form-horizontal hm-form">
+            <div class="form-body">
+              <div class="form-group">
+                <label class="control-label col-md-5">Enter New Expiry Date<sup>*</sup><b>:</b></label>
+                <div class="col-md-7">
+                  <input class="form-control"
+                    type="date"
+                    maxlength="50"
+                    [ngModelOptions]="{standalone: true}"
+                    [(ngModel)]="currentStock.ExpiryDate"
+                    value=""
+                    placeholder="Enter new valid ExpiryDate" />
+                  <span class="color-red font-sm"
+                    *ngIf="CheckExpirtyDateandBatchNoValidation() == false">required, valid MRP only
+                  </span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Old Expiry Date<b>:</b></label>
+                <div class="col-md-7">
+                  <b>{{oldExpiryDate}}</b>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="control-label col-md-5">Enter New BatchNo<sup>*</sup><b>:</b></label>
+                <div class="col-md-7">
+                  <input class="form-control"
+                    
+                    maxlength="50"
+                    [ngModelOptions]="{standalone: true}"
+                    [(ngModel)]="currentStock.BatchNo"
+                    value=""
+                    placeholder="Enter new valid BatchNo" />
+                  <span class="color-red font-sm"
+                    *ngIf="CheckExpirtyDateandBatchNoValidation() == false">required, valid Batch No. only
+                  </span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Old Batch No<b>:</b></label>
+                <div class="col-md-7">
+                  <b>{{oldBatchNo}}</b>
+                </div>
+              </div>
+              <div class="form-actions">
+                <input type="button"
+                  class="btn btn-primary"
+                  (click)="Update()"
+                  value="Update" />
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <!--</form>-->
+    <!--Model Box Body End-->
+  </div>
+</div>

@@ -1,0 +1,24 @@
+.mx-160{
+    max-width: 160px;
+}
+.mar-lft-5{
+    margin-left: 5px;
+}
+.mar-lft-15 {
+  margin-left: 15px;
+}
+.label-frm-to{
+    display: flex;
+    align-items: center;
+    margin-left: 15px;
+}
+.text-red {
+  color: red;
+  font-size: 11px;
+}
+.pd-tp-5{
+    padding-top: 5px;
+}
+.pd-btm-5{
+    padding-bottom: 5px;
+}

@@ -7,6 +7,8 @@ import {
     ReactiveFormsModule
 } from '@angular/forms'
 import * as moment from 'moment/moment';
+import { PHRMItemMasterModel } from './phrm-item-master.model';
+import { PHRMPackingTypeModel } from './phrm-packing-type.model';
 
 export class PHRMGoodsReceiptItemsModel {
 
@@ -18,9 +20,12 @@ export class PHRMGoodsReceiptItemsModel {
     public ItemId: number = 0;
     public ItemName: string = null;
     public BatchNo: string = "";
+    public update: boolean;
     //public ExpiryDate: Date = null;
     public ExpiryDate: string = "";
     //public ManufactureDate: string = "";
+    public PackingQty: number = 0;
+    public ItemQTy: number = 0;
     public ReceivedQuantity: number = 0;
     public FreeQuantity: number = 0;
     public RejectedQuantity: number = 0;
@@ -35,6 +40,8 @@ export class PHRMGoodsReceiptItemsModel {
     public TotalAmount: number = 0;
     public CreatedBy: number = 0;
     public CreatedOn: Date = null;
+    public ModifiedBy: number = 0;
+    public ModifiedOn: Date = null;
     public MRP: number = 0;
     public AvailableQuantity: number = 0;
     ///
@@ -46,28 +53,41 @@ export class PHRMGoodsReceiptItemsModel {
     public GoodReceiptItemValidator: FormGroup = null;
     public SelectedItem: any;
     public CounterId: number = 0;
+    public GrTotalDisAmt: number = 0;
     //for local use only
     public Margin: number = 0;
-    VATAmount: any;
-    DiscountAmount: any;
+    public VATAmount: any;
+    public DiscountAmount: any;
+    public PackingName: any;
+    public StripRate: number = 0;
+    public StripQty:number = 0;
+    public StripMRP:number = 0;
+    public FreeStripQuantity:number = 0;
+    public IndexOnEdit: number;
+    public IsPacking:boolean;
+    public IsItemDiscountApplicable:boolean;
+    public Packing: PHRMPackingTypeModel = null;
+    public PackingTypeId:number = 0;
 
     constructor() {
 
         var _formBuilder = new FormBuilder();
         this.GoodReceiptItemValidator = _formBuilder.group({
             'ItemName': ['', Validators.compose([Validators.required])],
-            'ReceivedQuantity': ['', Validators.compose([Validators.required, this.positiveValueRequired])],
+            //'PackingQuantity': ['', Validators.compose([Validators.required])],
+            //'ItemQTy': ['', Validators.compose([this.positiveValueRequired, this.wholeNumberRequired])],
+            //'ReceivedQuantity': ['', Validators.compose([Validators.required, this.positiveValueRequired, this.wholeNumberRequired])],
             //'ManufactureDate': ['', Validators.compose([Validators.required, this.pastDateValidator])],
             'ExpiryDate': ['', Validators.compose([Validators.required, this.dateValidator])],
             'FreeQuantity': ['', Validators.compose([Validators.required])],
-            'GRItemPrice': ['', Validators.compose([Validators.required,this.positiveValueRequired])],
-            'MRP': ['', Validators.compose([Validators.required])], 
+            //'GRItemPrice': ['', Validators.compose([Validators.required, this.positiveValueRequired])],
+            'MRP': ['', Validators.compose([Validators.required])],
             'BatchNo': ['', Validators.compose([Validators.required])],
             'Margin': ['', Validators.compose([Validators.required])]
         });
     }
 
-    
+
     public IsDirty(fieldName): boolean {
         if (fieldName == undefined)
             return this.GoodReceiptItemValidator.dirty;
@@ -76,7 +96,8 @@ export class PHRMGoodsReceiptItemsModel {
     }
 
 
-    public IsValid():boolean{if(this.GoodReceiptItemValidator.valid){return true;}else{return false;}} public IsValidCheck(fieldName, validator): boolean {
+    public IsValid(): boolean { if (this.GoodReceiptItemValidator.valid) { return true; } else { return false; } }
+    public IsValidCheck(fieldName, validator): boolean {
         if (fieldName == undefined) {
             return this.GoodReceiptItemValidator.valid;
         }
@@ -85,12 +106,20 @@ export class PHRMGoodsReceiptItemsModel {
     }
     positiveValueRequired(control: FormControl): { [key: string]: boolean } {
         if (control.value) {
-            if (control.value <0)
-            return { 'wrongValue': true };
+            if (control.value < 0) {
+                return { 'wrongValue': true };
+            }
         }
         //else {
         //    return { 'wrongValue': true };
         //}
+    }
+    wholeNumberRequired(control: FormControl): { [key: string]: boolean } {
+        if (control.value) {
+            if (control.value % 1 != 0) return { 'wrongDecimalValue': true };
+        }
+        else
+            return { 'wrongDecimalValue': true };
     }
     dateValidator(control: FormControl): { [key: string]: boolean } {
         //get current date, month and time
@@ -127,5 +156,6 @@ export class PHRMGoodsReceiptItemsModel {
             return true;
         } else { return false; }
     }
+
 
 }

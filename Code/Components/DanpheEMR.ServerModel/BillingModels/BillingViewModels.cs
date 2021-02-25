@@ -14,6 +14,7 @@ namespace DanpheEMR.ServerModel
         public double? ItemPrice { get; set; }
         public double? NormalPrice { get; set; } //added by Yubraj : 16th May '19
         public double? SAARCCitizenPrice { get; set; }
+        public double? InsForeignerPrice { get; set; }
         public double? ForeignerPrice { get; set; }
         public int ItemId { get; set; }
         public bool? TaxApplicable { get; set; }
@@ -36,7 +37,7 @@ namespace DanpheEMR.ServerModel
         public int InsuranceProviderId { get; set; }
         public double InitialBalance { get; set; }
         public double CurrentBalance { get; set; }
-        public double? InsuranceProvisionalAmount{ get; set; } //For insurance Provisional Amount --Yubraj: 9th July '19
+        public double? InsuranceProvisionalAmount { get; set; } //For insurance Provisional Amount --Yubraj: 9th July '19
         public string InsuranceProviderName { get; set; }
         public string IMISCode { get; set; }
         public string InsuranceNumber { get; set; }
@@ -99,6 +100,7 @@ namespace DanpheEMR.ServerModel
         public DateTime? DateOfBirth { get; set; }
         public string ContactNo { get; set; }
         public string Gender { get; set; }
+        public string PANNumber { get; set; } // sud: 4Nov'19--needed for IpBilling Receipt.
     }
     public class BillingTransactionDetailVM
     {
@@ -113,6 +115,8 @@ namespace DanpheEMR.ServerModel
         public double? TotalAmount { get; set; }
         public double? SubTotal { get; set; }
         public double? Quantity { get; set; }
+        public double? Tender { get; set; }//pratik: 3march'20--  For ip billing recipt
+        public double? Change { get; set; }//pratik: 3march'20--  For ip billing recipt
         public int? CreatedBy { get; set; }
         public string User { get; set; }
         public string Remarks { get; set; }
@@ -122,7 +126,7 @@ namespace DanpheEMR.ServerModel
         //Yubraj: 22nd April '19 for credit organization 
         public int? OrganizationId { get; set; }
         public string OrganizationName { get; set; }
-        public int? ExchangeRate { get; set; } //sanjit: 5-17-2019 for foreign exchange
+        public double? ExchangeRate { get; set; } //sanjit: 5-17-2019 for foreign exchange
     }
 
     public class BillItemVM

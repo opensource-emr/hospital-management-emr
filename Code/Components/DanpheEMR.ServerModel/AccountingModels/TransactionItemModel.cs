@@ -30,5 +30,8 @@ namespace DanpheEMR.ServerModel
         [NotMapped]
         public int? SupplierId { get; set; }
         public string Description { get; set; }
+
+        //sud-nagesh: 20June'20-- for Acc-Hospital Separation.
+        public int? HospitalId { get; set; }
     }
 }

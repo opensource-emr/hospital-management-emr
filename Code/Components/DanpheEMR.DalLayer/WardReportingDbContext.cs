@@ -24,9 +24,9 @@ namespace DanpheEMR.DalLayer
         }
 
         #region WARD Stock Items Report        
-        public DataTable WARDStockItemsReport(int ItemId)
+        public DataTable WARDStockItemsReport(int ItemId,int StoreId)
         {
-            List<SqlParameter> paramList = new List<SqlParameter>() { new SqlParameter("@ItemId", ItemId) };
+            List<SqlParameter> paramList = new List<SqlParameter>() { new SqlParameter("@ItemId", ItemId),new SqlParameter("@StoreId", StoreId) };
             foreach (SqlParameter parameter in paramList)
             {
                 if (parameter.Value == null)
@@ -41,11 +41,13 @@ namespace DanpheEMR.DalLayer
         #endregion
 
         #region WARD Requisition DataTable
-        public DataTable WARDRequisitionReport(DateTime FromDate, DateTime ToDate)
+        public DataTable WARDRequisitionReport(DateTime FromDate, DateTime ToDate,int StoreId)
         {
             List<SqlParameter> paramList = new List<SqlParameter>() {
                 new SqlParameter("@FromDate", FromDate),
-                 new SqlParameter("@ToDate", ToDate)
+                 new SqlParameter("@ToDate", ToDate),
+                 new SqlParameter("@StoreId", StoreId)
+
             };
 
             foreach (SqlParameter parameter in paramList)
@@ -62,11 +64,12 @@ namespace DanpheEMR.DalLayer
         #endregion
 
         #region WARD Breakage DataTable
-        public DataTable WARDBreakageReport(DateTime FromDate, DateTime ToDate)
+        public DataTable WARDBreakageReport(DateTime FromDate, DateTime ToDate,int StoreId)
         {
             List<SqlParameter> paramList = new List<SqlParameter>() {
                 new SqlParameter("@FromDate", FromDate),
-                 new SqlParameter("@ToDate", ToDate)
+                 new SqlParameter("@ToDate", ToDate),
+                 new SqlParameter("@StoreId", StoreId)
             };
 
             foreach (SqlParameter parameter in paramList)
@@ -83,11 +86,12 @@ namespace DanpheEMR.DalLayer
         #endregion
 
         #region WARD Consumption DataTable
-        public DataTable WARDConsumptionReport(DateTime FromDate, DateTime ToDate)
+        public DataTable WARDConsumptionReport(DateTime FromDate, DateTime ToDate,int StoreId)
         {
             List<SqlParameter> paramList = new List<SqlParameter>() {
                 new SqlParameter("@FromDate", FromDate),
-                 new SqlParameter("@ToDate", ToDate)
+                 new SqlParameter("@ToDate", ToDate),
+                 new SqlParameter("@StoreId", StoreId)
             };
 
             foreach (SqlParameter parameter in paramList)
@@ -103,13 +107,37 @@ namespace DanpheEMR.DalLayer
         }
         #endregion
 
+
+
+        #region WARD Internal Consumption DataTable
+        public DataTable WARDInteranlConsumptionReport(DateTime FromDate, DateTime ToDate, int StoreId)
+        {
+            List<SqlParameter> paramList = new List<SqlParameter>() {
+                new SqlParameter("@FromDate", FromDate),
+                 new SqlParameter("@ToDate", ToDate),
+                 new SqlParameter("@StoreId", StoreId)
+            };
+
+            foreach (SqlParameter parameter in paramList)
+            {
+                if (parameter.Value == null)
+                {
+                    parameter.Value = "";
+
+                }
+            }
+            DataTable stockItems = DALFunctions.GetDataTableFromStoredProc("SP_WardReport_InternalConsumptionReport", paramList, this);
+            return stockItems;
+        }
+        #endregion
+
         #region WARD Transfer DataTable
-        public DataTable WARDTransferReport(DateTime FromDate, DateTime ToDate, int Status)
+        public DataTable WARDTransferReport(DateTime FromDate, DateTime ToDate,int StoreId)
         {
             List<SqlParameter> paramList = new List<SqlParameter>() {
                  new SqlParameter("@FromDate", FromDate),
                  new SqlParameter("@ToDate", ToDate),
-                 new SqlParameter("@Status", Status)
+                 new SqlParameter("@StoreId", StoreId)
             };
 
             foreach (SqlParameter parameter in paramList)
@@ -127,11 +155,12 @@ namespace DanpheEMR.DalLayer
 
         ///WARD INVENTORY REPORT
         #region WARD Inventory Requisition and Dispatch Report
-        public DataTable RequisitionDispatchReport(DateTime FromDate, DateTime ToDate)
+        public DataTable RequisitionDispatchReport(DateTime FromDate, DateTime ToDate,int StoreId)
         {
             List<SqlParameter> paramList = new List<SqlParameter>() {
                 new SqlParameter("@FromDate", FromDate),
-                 new SqlParameter("@ToDate", ToDate)
+                 new SqlParameter("@ToDate", ToDate),
+                 new SqlParameter("@StoreId", StoreId)
             };
 
             foreach (SqlParameter parameter in paramList)
@@ -148,11 +177,12 @@ namespace DanpheEMR.DalLayer
         #endregion
 
         #region WARD Inventory Transfer Report
-        public DataTable TransferReport(DateTime FromDate, DateTime ToDate)
+        public DataTable TransferReport(DateTime FromDate, DateTime ToDate,int StoreId)
         {
             List<SqlParameter> paramList = new List<SqlParameter>() {
                 new SqlParameter("@FromDate", FromDate),
-                 new SqlParameter("@ToDate", ToDate)
+                 new SqlParameter("@ToDate", ToDate),
+                 new SqlParameter("@StoreId", StoreId)
             };
 
             foreach (SqlParameter parameter in paramList)
@@ -169,11 +199,12 @@ namespace DanpheEMR.DalLayer
         #endregion
 
         #region WARD Inventory Consumption Report
-        public DataTable ConsumptionReport(DateTime FromDate, DateTime ToDate)
+        public DataTable ConsumptionReport(DateTime FromDate, DateTime ToDate, int StoreId)
         {
             List<SqlParameter> paramList = new List<SqlParameter>() {
                 new SqlParameter("@FromDate", FromDate),
-                 new SqlParameter("@ToDate", ToDate)
+                 new SqlParameter("@ToDate", ToDate),
+                 new SqlParameter("@StoreId", StoreId)
             };
 
             foreach (SqlParameter parameter in paramList)
