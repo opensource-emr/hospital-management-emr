@@ -1,7 +1,6 @@
 import { Component, Input, Output, EventEmitter } from "@angular/core";
 import { Patient } from "../shared/patient.model";
 import * as moment from 'moment/moment';
-import { PatientService } from "../shared/patient.service";
 
 
 @Component({
@@ -25,14 +24,15 @@ export class PatientDuplicateWarningBox {
   @Output("emit-close-action")
   emitCloseAction: EventEmitter<Object> = new EventEmitter<Object>();
 
+  @Input("byPassClientCheck")
+  public byPassClientCheck: boolean = false;;
+
   loading: boolean = false;
 
-  constructor(public patientService: PatientService) {
-    this.patientService;
+  constructor() {
   }
 
   ngOnInit() {
-    this.patientService;
     this.Patient;
     this.matchedPatResult;
     this.setMatchingPatientLists();
@@ -42,22 +42,26 @@ export class PatientDuplicateWarningBox {
     if (this.matchedPatResult) {
       this.matchedPatientList = new Array<Patient>();
 
-      var nowYear: number = Number(moment().format("YYYY"));
-      var patYear: number = Number(this.Patient.Age);
+      if (!this.byPassClientCheck) {
+        var nowYear: number = Number(moment().format("YYYY"));
+        var patYear: number = Number(this.Patient.Age);
 
-      if (this.Patient.AgeUnit == 'Y') {
-        this.matchedPatResult.forEach(patient => {
-          var originalYear: number = Number(moment(patient.DateOfBirth).format("YYYY"));
-          var diff: number = (nowYear - originalYear - patYear)
-          if ((diff > -3 && diff < 3) || (this.Patient.PhoneNumber == patient.PhoneNumber)) {
-            this.matchedPatientList.push(patient);
-            return true;
-          } else {
-            return false;
-          }
-        });
-      }
-      else {
+        if (this.Patient.AgeUnit == 'Y') {
+          this.matchedPatResult.forEach(patient => {
+            var originalYear: number = Number(moment(patient.DateOfBirth).format("YYYY"));
+            var diff: number = (nowYear - originalYear - patYear)
+            if ((diff > -3 && diff < 3) || (this.Patient.PhoneNumber == patient.PhoneNumber)) {
+              this.matchedPatientList.push(patient);
+              return true;
+            } else {
+              return false;
+            }
+          });
+        }
+        else {
+          this.matchedPatientList = this.matchedPatResult;
+        }
+      } else {
         this.matchedPatientList = this.matchedPatResult;
       }
 
@@ -67,7 +71,6 @@ export class PatientDuplicateWarningBox {
         this.matchedPatientList.forEach(a => {
           if (a.FullName.toLowerCase() == PatientFullName.toLowerCase()) {
             a["NameExists"] = true;
-
           } else {
             a["NameExists"] = false;
           }
@@ -80,6 +83,8 @@ export class PatientDuplicateWarningBox {
         })
       }
     }
+
+    console.log(this.matchedPatientList);
 
   }
 

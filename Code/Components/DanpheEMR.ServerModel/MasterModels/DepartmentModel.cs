@@ -25,6 +25,10 @@ namespace DanpheEMR.ServerModel
         public int? ParentDepartmentId { get; set; }
 
         [NotMapped]
+        public List<BillItemPrice> ServiceItemsList { get; set; }
+
+
+        [NotMapped]
         //combination of firstname and last name for search purpose, it's not mapped with the database.
         public string ParentDepartmentName { get; set; }
 

@@ -27,6 +27,13 @@ import { WardInventoryReportComponent } from './inventory-wardsupply/reports/war
 import { RequisitionDispatchReportComponent } from './inventory-wardsupply/reports/requisition-dispatch-report.component';
 import { TransferReportComponent } from './inventory-wardsupply/reports/transfer-report.component';
 import { ConsumptionReportComponent } from './inventory-wardsupply/reports/consumption-report.component';
+import { InternalConsumptionComponent } from './internal-consumption.component';
+import { InternalConsumptionListComponent } from './internal-consumption-list.component';
+import { InternalConsumptionDetailsComponent } from './internal-consumption-details.component';
+import { WardInternalConsumptionReportComponent } from './reports/internal-consumption-report.component';
+import { InventoryWardReceiveStockComponent } from './inventory-wardsupply/requisition/inventory-ward-receive-stock/inventory-ward-receive-stock.component';
+import { PageNotFound } from '../404-error/404-not-found.component';
+
 
 @NgModule({
   imports: [
@@ -35,40 +42,55 @@ import { ConsumptionReportComponent } from './inventory-wardsupply/reports/consu
         path: '',//this is : '/Inventory'
         component: WardSupplyMainComponent, canActivate: [AuthGuardService],
         children: [
-
-          { path: '', redirectTo: 'Pharmacy', pathMatch: 'full' },
           {
             path: 'Pharmacy', component: PharmacyWardComponent, canActivate: [AuthGuardService],
             children: [
-              { path: '', redirectTo: 'Requisition', pathMatch: 'full' },
+              { path: '', redirectTo: 'Stock', pathMatch: 'full' },
               { path: 'Requisition', component: RequisitionComponent },
               { path: 'Stock', component: WardPharmacyStockComponent },
               { path: 'Consumption', component: ConsumptionListComponent },
               { path: 'ConsumptionItem', component: ConsumptionComponent },
+              //{ path: 'ConsumptionDetails', component: ConsumptionDetailsComponent },
+              { path: 'InternalConsumption', component: InternalConsumptionComponent },
+              { path: 'InternalConsumptionList', component: InternalConsumptionListComponent },
+              { path: 'InternalConsumptionDetails', component: InternalConsumptionDetailsComponent },
               { path: 'PharmacyTransfer', component: PharmacyTransferComponent },
               { path: 'Reports', component: WardReportComponent },
               { path: 'Reports/StockReport', component: WardStockReportComponent },
               { path: 'Reports/RequisitionReport', component: WardRequisitionReportComponent },
               { path: 'Reports/DispatchReport', component: WardDispatchReportComponent },
               { path: 'Reports/ConsumptionReport', component: WardConsumptionReportComponent },
+              { path: 'Reports/InternalConsumptionReport', component: WardInternalConsumptionReportComponent },
               { path: 'Reports/BreakageReport', component: WardBreakageReportComponent },
               { path: 'Reports/TransferReport', component: WardTransferReportComponent },
+              { path: "**", component: PageNotFound }
+
             ]
           },
           {
             path: 'Inventory', component: InventoryWardComponent, canActivate: [AuthGuardService],
             children: [
-              { path: '', redirectTo: 'InventoryRequisitionList', pathMatch: 'full' },
+              { path: '', redirectTo: 'Stock', pathMatch: 'full' },
               { path: 'InventoryRequisitionList', component: InventoryRequisitionListComponent },
               { path: 'InventoryRequisitionItem', component: InventoryWardRequisitionItemComponent },
               { path: 'InventoryRequisitionDetails', component: InventoryRequisitionDetailsComponent },
+              { path: 'ReceiveStock', component: InventoryWardReceiveStockComponent },
               { path: 'Stock', component: WardInventoryStockComponent },
-              { path: 'Consumption', component: InventoryConsumptionListComponent },
-              { path: 'ConsumptionItem', component: InventoryConsumptionComponent },
+              {
+                path: 'Consumption', children: [
+                  { path: 'ConsumptionList', component: InventoryConsumptionListComponent },
+                  { path: 'ConsumptionAdd', component: InventoryConsumptionComponent },
+                  { path: '', redirectTo: 'ConsumptionList', pathMatch: 'full' },
+                  { path: "**", component: PageNotFound }
+                ]
+              },
               { path: 'Reports', component: WardInventoryReportComponent },
               { path: 'Reports/RequisitionDispatchReport', component: RequisitionDispatchReportComponent },
               { path: 'Reports/TransferReport', component: TransferReportComponent },
               { path: 'Reports/ConsumptionReport', component: ConsumptionReportComponent },
+              { path: "**", component: PageNotFound }
+
+
               // { path: 'PharmacyTransfer', component: PharmacyTransferComponent },
               // { path: 'Reports', component: WardReportComponent },
               // { path: 'Reports/StockReport', component: WardStockReportComponent },
@@ -80,7 +102,9 @@ import { ConsumptionReportComponent } from './inventory-wardsupply/reports/consu
             ]
           },
         ]
-      }
+      },
+      { path: "**", component: PageNotFound }
+
     ])
   ],
   exports: [

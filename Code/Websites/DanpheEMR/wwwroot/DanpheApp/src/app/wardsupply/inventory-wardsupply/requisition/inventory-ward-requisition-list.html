@@ -1,34 +1,40 @@
-<div style="padding:2px 0px">
-    <input type="button" class="btn btn-primary" (click)="CreateRequisition()" value="Create Requisition" />
-</div>
-<div>
- 
-    <div class="col-md-6" style="position: absolute;margin-left: 370px;z-index: 2;padding-top: 11px;">
-        <div class="input-group">
-            <div class="icheck-inline">
-                <label class="mt-checkbox mt-checkbox-outline" style="font-weight: bold;color: green;">
-                    <input checked="checked" (change)="LoadDeptwiseList('all')" name="name" style="width:15px;height:15px" type="radio" class="ng-untouched ng-pristine ng-valid">
-                    <span></span>ALL
-                </label>
-                <label class="mt-checkbox mt-checkbox-outline" style="font-weight: bold;color: green;">
-                    <input name="name" (change)="LoadDeptwiseList('complete')" style="width:15px;height:15px" type="radio" class="ng-untouched ng-pristine ng-valid">
-                    <span></span>Completed
-                </label>
-                <label class="mt-checkbox mt-checkbox-outline" style="font-weight: bold;color: green;">
-                    <input name="name" (change)="LoadDeptwiseList('pending')" style="width:15px;height:15px" type="radio" class="ng-untouched ng-pristine ng-valid">
-                    <span></span>Pending
-                </label>
-            </div>
-        </div>
-    </div>
 
-   <!-- @*-----All Item Requisition List-----*@-->
-  
-    <div>      
-        <div class="row">
-            <div class="col-lg-12 col-sm-12">
-                <danphe-grid [grid-colDefaults]="deptwiseGridColumns" [grid-data]="deptRequisitionList" (grid-actions)="DeptGridAction($event)"></danphe-grid>
-            </div>
-        </div>
+<div class="row">
+  <div class="col-md-3">
+    <input type="button" class="btn btn-primary" (click)="CreateRequisition()" value="Create Requisition" />
+  </div>
+  <div class="col-md-9">
+    <div class="input-group pull-right padding-15-tp">
+      <div class="icheck-inline"> List by Requisition Status: &nbsp;
+        <label class="mt-radio mt-radio-outline">
+          <input type="radio" (change)="LoadRequisitionListByStatus()" checked name="RequisitionStatusFilter"
+                        [(ngModel)]="RequisitionStatusFilter" value="pending" style="width:15px;height:15px" />
+          <span></span>Pending </label>
+        <label class="mt-radio mt-radio-outline">
+          <input type="radio" (change)="LoadRequisitionListByStatus()" name="RequisitionStatusFilter"
+                        [(ngModel)]="RequisitionStatusFilter" value="complete" style="width:15px;height:15px" />
+          <span></span>Complete </label>
+        <label class="mt-radio mt-radio-outline">
+          <input type="radio" (change)="LoadRequisitionListByStatus()" name="RequisitionStatusFilter"
+                        [(ngModel)]="RequisitionStatusFilter" value="cancelled" style="width:15px;height:15px" />
+          <span></span>Cancelled </label>
+        <label class="mt-radio mt-radio-outline">
+          <input type="radio" (change)="LoadRequisitionListByStatus()" name="RequisitionStatusFilter"
+                        [(ngModel)]="RequisitionStatusFilter" value="withdrawn" style="width:15px;height:15px" />
+          <span></span>Withdrawn </label>
+        <label class="mt-radio mt-radio-outline">
+          <input type="radio" (change)="LoadRequisitionListByStatus()" name="RequisitionStatusFilter"
+                        [(ngModel)]="RequisitionStatusFilter" value="all" style="width:15px;height:15px" />
+          <span></span>All </label>
+      </div>
     </div>
+  </div>
+  <!-- @*-----All Item Requisition List-----*@--> 
+</div>
+<div class="row">
+  <div class="col-lg-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="deptwiseGridColumns" [grid-data]="RequisitionGridDataFiltered"
+                    [show-CustomDate]="true" [rangeType]="dateRange" [NepaliDateInGridParams]="NepaliDateInGridSettings"
+                    (grid-actions)="RequisitionGridAction($event)" (onDateChange)="onDateChange($event)"> </danphe-grid>
+  </div>
 </div>

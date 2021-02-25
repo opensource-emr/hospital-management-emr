@@ -7,7 +7,7 @@ import { CoreService } from "../../core/shared/core.service";
 import { Patient } from "../../patients/shared/patient.model";
 import { DanpheHTTPResponse } from '../../shared/common-models';
 import { HttpClient } from '@angular/common/http';
-import * as html2canvas from 'html2canvas';
+import html2canvas from 'html2canvas';
 import { DomSanitizer } from '@angular/platform-browser';
 import { HealthCard } from '../shared/health-card.model';
 import { SecurityService } from '../../security/shared/security.service';

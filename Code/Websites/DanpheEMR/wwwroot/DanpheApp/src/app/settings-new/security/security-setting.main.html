@@ -1,0 +1,23 @@
+<!--<div class="sub-navtab">
+    <ul class="nav nav-tabs">
+        <li>  <a [ngClass]="{'a-tab-active': showUserList==true}" (click)="updateView(0)">Manage User</a></li>
+        <li>  <a [ngClass]="{'a-tab-active': showRoleList==true}" (click)="updateView(1)">Manage Role</a></li>
+    </ul>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <user-list *ngIf="showUserList"></user-list>
+        <role-list *ngIf="showRoleList"></role-list>
+    </div>
+</div>-->
+
+<div class="sub-navtab">
+  <ul class="nav nav-tabs" *ngIf="validRoutes != undefined">
+    <li *ngFor="let route of validRoutes">
+      <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'a-tab-active'">{{route.DisplayName}}<i class="{{route.Css}}"></i></a>
+    </li>
+  </ul>
+</div>
+<router-outlet>
+
+</router-outlet>

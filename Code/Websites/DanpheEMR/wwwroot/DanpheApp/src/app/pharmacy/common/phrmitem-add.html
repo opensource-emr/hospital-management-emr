@@ -1,4 +1,4 @@
-﻿<!--Model Box Starting Here-->
+<!--Model Box Starting Here-->
 <div class="popup-static portlet box portlet-fullscreen" *ngIf="showAddPage">
     <div class="portlet-body form" style="background-color:white">
         <!--Model Box Body Start-->
@@ -18,128 +18,146 @@
                         </div>
                         <br />
                         <div class="col-md-12">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="control-label col-md-4">Item Name<b class="color-red">  *</b><b style="float:right;">:</b></label>
-                                    <div class="col-md-8">
-                                        <input class="form-control" type="text" maxlength="50"
-                                               [(ngModel)]="CurrentItem.ItemName"
-                                               value=""
-                                               formControlName="ItemName"
-                                               placeholder="Enter name of Item" />
-                                        <span class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('ItemName','required') || !(CurrentItem.IsDirty('ItemName'))">name of item is required</span>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="control-label col-md-4">Item Code<b style="float:right;">:</b></label>
-                                    <div class="col-md-8">
-                                        <input class="form-control" type="text" maxlength="50"
-                                               [(ngModel)]="CurrentItem.ItemCode" [ngModelOptions]="{standalone: true}"
-                                               value=""
-                                               placeholder="Enter code of Item" />
-                                    </div>
-                                </div>
+                          <div class="col-md-6">
+                            <div class="form-group">
+                              <label class="control-label col-md-4">Select Sales Category<b class="color-red">*</b><b style="float:right;">:</b></label>
+                              <div class="col-md-8">
+                                <input danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)"
+                                       [(ngModel)]="selCategory"
+                                       [source]="categoryList"
+                                       placeholder="Category Type"
+                                       formControlName="SalesCategoryId"
+                                       display-property-name="Name"
+                                       value-property-name="Name"
+                                       (valueChanged)="AssignSelectedCategory()"
+                                       [list-formatter]="SalesCategoryListFormatter"
+                                       max-num-list="15"
+                                       style="width:100%;height:32px;" />
 
-                                <div class="form-group">
-                                    <label class="control-label col-md-4">Select Company<b class="color-red">*</b><b style="float:right;">:</b></label>
-                                    <div class="col-md-8">
-                                        <input danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)"
-                                               [(ngModel)]="selCompany"
-                                               [source]="companyList"
-                                               placeholder="Company Name"
-                                               formControlName="CompanyId"
-                                               display-property-name="CompanyName"
-                                               value-property-name="CompanyName"
-                                               (valueChanged)="AssignSelectedCompany()"
-                                               [list-formatter]="CompaniesListFormatter"
-                                               max-num-list="15"
-                                               style="width:100%;height:32px;" />
-                                        <div class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('CompanyId','required') || !(CurrentItem.IsDirty('CompanyId'))">company is required</div>
-                                    </div>
-                                </div>
-                                <span style="vertical-align:middle;width:20px">
-                                    <a *ngIf="!selCompany || !selCompany.CompanyId" (click)="AddCompanyPopUp(i)" title="Unable to find item ? Click to add to Master">New Company</a>
-                                </span>
-                                <div class="form-group">
-                                    <label class="control-label col-md-4">Item Type<b class="color-red">*</b><b style="float:right;">:</b></label>
-                                    <div class="col-md-8">
-                                        <input danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)"
-                                               [(ngModel)]="selItemType"
-                                               [source]="itemtypeList"
-                                               placeholder="Item Type"
-                                               formControlName="ItemTypeId"
-                                               display-property-name="ItemTypeName"
-                                               value-property-name="ItemTypeName"
-                                               (valueChanged)="AssignSelectedItemType()"
-                                               [list-formatter]="ItemTypesListFormatter"
-                                               max-num-list="15"
-                                               style="width:100%;height:32px;" />
-                                        <div class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('ItemTypeId','required') || !(CurrentItem.IsDirty('ItemTypeId'))">Item type is required</div>
-                                    </div>
-                                </div>
-
-                                <div class="form-group">
-                                    <label class="control-label col-md-4">Select Unit<b class="color-red">*</b><b style="float:right;">:</b></label>
-                                    <div class="col-md-8">
-                                        <select class="form-control" [(ngModel)]="CurrentItem.UOMId"
-                                                formControlName="UOMId">
-                                            <option *ngFor="let unit of uomList"
-                                                    value="{{unit.UOMId}}">
-                                                {{unit.UOMName}}
-                                            </option>
-                                        </select>
-                                        <span class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('UOMId','required') || !(CurrentItem.IsDirty('UOMId'))">Unit is required</span>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="control-label col-md-4">Generic Name<b class="color-red">*</b><b style="float:right;">:</b></label>
-                                    <div class="col-md-8">
-                                        <input danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)"
-                                               [(ngModel)]="selGenName"
-                                               [source]="genericList"
-                                               placeholder="Generic Name"
-                                               display-property-name="GenericName"
-                                               value-property-name="GenericId"
-                                               (valueChanged)="AssignSelectedGenName()"
-                                               (blur)="CheckProperSelectedGenName(selGenName)"
-                                               [list-formatter]="GenNamesListFormatter"
-                                               max-num-list="15"
-                                               style="width:100%;height:32px;"
-                                               formControlName="GenericId" />
-                                        <span class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('GenericId','required') || (CurrentItem.IsDirty('GenericId'))">Generic Name is required</span>
-                                    </div>
-                                </div>
-
-
-
-
-                                <div class="form-group">
-                                    <label class="control-label col-md-4">Is Active<b style="float:right;">:</b></label>
-                                    <div class="col-md-7">
-                                        <div class="input-group">
-                                            <div class="icheck-inline">
-                                                <label class="mt-checkbox mt-checkbox-outline">
-                                                    <input name="IsActive" type="checkbox" value="IsActive" [(ngModel)]="CurrentItem.IsActive" [ngModelOptions]="{standalone: true}">
-                                                    <span></span>
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="control-label col-md-4">Is International Brand<b style="float:right;">:</b></label>
-                                    <div class="col-md-7">
-                                        <div class="input-group">
-                                            <div class="icheck-inline">
-                                                <label class="mt-checkbox mt-checkbox-outline">
-                                                    <input name="IsActive" type="checkbox" value="IsActive" [(ngModel)]="CurrentItem.IsInternationalBrand" [ngModelOptions]="{standalone: true}">
-                                                    <span></span>
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                                <div class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('SalesCategoryId','required') || !(CurrentItem.IsDirty('SalesCategoryId'))">Category is required</div>
+                              </div>
                             </div>
+                            <div class="form-group">
+                              <label class="control-label col-md-4">Item Name<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                              <div class="col-md-8">
+                                <input class="form-control" type="text" maxlength="50"
+                                       [(ngModel)]="CurrentItem.ItemName"
+                                       value=""
+                                       formControlName="ItemName"
+                                       placeholder="Enter name of Item" />
+                                <span class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('ItemName','required') || !(CurrentItem.IsDirty('ItemName'))">name of item is required</span>
+                              </div>
+                            </div>
+                            <div class="form-group">
+                              <label class="control-label col-md-4">Item Code<b style="float:right;">:</b></label>
+                              <div class="col-md-8">
+                                <input class="form-control" type="text" maxlength="50"
+                                       [(ngModel)]="CurrentItem.ItemCode" [ngModelOptions]="{standalone: true}"
+                                       value=""
+                                       placeholder="Enter code of Item" />
+                              </div>
+                            </div>
+
+                            <div class="form-group">
+                              <label class="control-label col-md-4">Select Company<b class="color-red">*</b><b style="float:right;">:</b></label>
+                              <div class="col-md-8">
+                                <input danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)"
+                                       [(ngModel)]="selCompany"
+                                       [source]="companyList"
+                                       placeholder="Company Name"
+                                       formControlName="CompanyId"
+                                       display-property-name="CompanyName"
+                                       value-property-name="CompanyName"
+                                       (valueChanged)="AssignSelectedCompany()"
+                                       [list-formatter]="CompaniesListFormatter"
+                                       max-num-list="15"
+                                       style="width:100%;height:32px;" />
+                                <div class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('CompanyId','required') || !(CurrentItem.IsDirty('CompanyId'))">company is required</div>
+                              </div>
+                            </div>
+                            <span style="vertical-align:middle;width:20px">
+                              <a *ngIf="!selCompany || !selCompany.CompanyId" (click)="AddCompanyPopUp(i)" title="Unable to find item ? Click to add to Master">New Company</a>
+                            </span>
+                            <div class="form-group">
+                              <label class="control-label col-md-4">Item Type<b class="color-red">*</b><b style="float:right;">:</b></label>
+                              <div class="col-md-8">
+                                <input danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)"
+                                       [(ngModel)]="selItemType"
+                                       [source]="itemtypeList"
+                                       placeholder="Item Type"
+                                       formControlName="ItemTypeId"
+                                       display-property-name="ItemTypeName"
+                                       value-property-name="ItemTypeName"
+                                       (valueChanged)="AssignSelectedItemType()"
+                                       [list-formatter]="ItemTypesListFormatter"
+                                       max-num-list="15"
+                                       style="width:100%;height:32px;" />
+                                <div class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('ItemTypeId','required') || !(CurrentItem.IsDirty('ItemTypeId'))">Item type is required</div>
+                              </div>
+                            </div>
+
+                            <div class="form-group">
+                              <label class="control-label col-md-4">Select Unit<b class="color-red">*</b><b style="float:right;">:</b></label>
+                              <div class="col-md-8">
+                                <select class="form-control" [(ngModel)]="CurrentItem.UOMId"
+                                        formControlName="UOMId">
+                                  <option *ngFor="let unit of uomList"
+                                          value="{{unit.UOMId}}">
+                                    {{unit.UOMName}}
+                                  </option>
+                                </select>
+                                <span class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('UOMId','required') || !(CurrentItem.IsDirty('UOMId'))">Unit is required</span>
+                              </div>
+                            </div>
+                            <div class="form-group">
+                              <label class="control-label col-md-4">Generic Name<b class="color-red">*</b><b style="float:right;">:</b></label>
+                              <div class="col-md-8">
+                                <input danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)"
+                                       [(ngModel)]="selGenName"
+                                       [source]="genericList"
+                                       placeholder="Generic Name"
+                                       display-property-name="GenericName"
+                                       value-property-name="GenericId"
+                                       (valueChanged)="AssignSelectedGenName()"
+                                       (blur)="CheckProperSelectedGenName(selGenName)"
+                                       [list-formatter]="GenNamesListFormatter"
+                                       max-num-list="15"
+                                       style="width:100%;height:32px;"
+                                       formControlName="GenericId" />
+                                <span class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('GenericId','required') || (CurrentItem.IsDirty('GenericId'))">Generic Name is required</span>
+                              </div>
+                            </div>
+
+
+
+
+                            <div class="form-group">
+                              <label class="control-label col-md-4">Is Active<b style="float:right;">:</b></label>
+                              <div class="col-md-7">
+                                <div class="input-group">
+                                  <div class="icheck-inline">
+                                    <label class="mt-checkbox mt-checkbox-outline">
+                                      <input name="IsActive" type="checkbox" value="IsActive" [(ngModel)]="CurrentItem.IsActive" [ngModelOptions]="{standalone: true}">
+                                      <span></span>
+                                    </label>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="form-group">
+                              <label class="control-label col-md-4">Is International Brand<b style="float:right;">:</b></label>
+                              <div class="col-md-7">
+                                <div class="input-group">
+                                  <div class="icheck-inline">
+                                    <label class="mt-checkbox mt-checkbox-outline">
+                                      <input name="IsActive" type="checkbox" value="IsActive" [(ngModel)]="CurrentItem.IsInternationalBrand" [ngModelOptions]="{standalone: true}">
+                                      <span></span>
+                                    </label>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="control-label col-md-4">Re-Order<b class="color-red">*</b><b style="float:right;">:</b><br />Quantity</label>

@@ -4,6 +4,7 @@ import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { BillingBLService } from '../shared/billing.bl.service';
 import { DanpheHTTPResponse } from '../../shared/common-models';
 import { CommonFunctions } from '../../shared/common.functions';
+import { ENUM_PriceCategory } from '../../shared/shared-enums';
 
 
 @Component({
@@ -124,16 +125,16 @@ export class EditBillItemDocPriceComponent {
 
     OnPriceCategoryChange() {
 
-        if (this.itemToEdit.PriceCategory == "EHS") {
+      if (this.itemToEdit.PriceCategory == ENUM_PriceCategory.EHS) {// "EHS"
             this.itemToEdit.Price = this.currItemFromMaster.EHSPrice;
         }
-        else if (this.itemToEdit.PriceCategory == "Foreigner") {
+      else if (this.itemToEdit.PriceCategory == ENUM_PriceCategory.Foreigner ) {//"Foreigner"
             this.itemToEdit.Price = this.currItemFromMaster.ForeignerPrice;
         }
-        else if (this.itemToEdit.PriceCategory == "SAARCCitizen") {
+      else if (this.itemToEdit.PriceCategory == ENUM_PriceCategory.SAARCCitizen ) {//"SAARCCitizen"
             this.itemToEdit.Price = this.currItemFromMaster.SAARCCitizenPrice;
         }
-        else if (this.itemToEdit.PriceCategory == "Normal") {
+      else if (this.itemToEdit.PriceCategory == ENUM_PriceCategory.Normal ) {//"Normal"
             this.itemToEdit.Price = this.currItemFromMaster.NormalPrice;
         }
 

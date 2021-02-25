@@ -23,4 +23,10 @@ namespace DanpheEMR.ServerModel.LabModels
 
         public bool IsActive { get; set; }
     }
+
+    public class BarCodeNumber
+    {        
+        public int Value { get; set; }
+    }
+
 }

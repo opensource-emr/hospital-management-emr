@@ -1,4 +1,4 @@
-﻿import {
+import {
     NgForm,
     FormGroup,
     FormControl,
@@ -14,7 +14,7 @@ export class Allergy {
     //public Others: string = null;
     public AllergyType: string = "Allergy";
     public Severity: string = null;
-    public Verified: boolean = null;
+    public Verified: boolean = false;
     public Reaction: string = null;
     public Comments: string = null;
     public CreatedBy: number = null;
@@ -26,8 +26,7 @@ export class Allergy {
     constructor() {
         var _formBuilder = new FormBuilder();
         this.AllergyValidator = _formBuilder.group({
-            'AllergyType': ['', Validators.compose([Validators.required])],
-            'Verified': ['', Validators.compose([Validators.required])],
+          'AllergyType': ['', Validators.compose([Validators.required])],
             'Reaction': ['', Validators.compose([Validators.required])],
             'Comments': ['', Validators.compose([Validators.maxLength(200)])],
         });

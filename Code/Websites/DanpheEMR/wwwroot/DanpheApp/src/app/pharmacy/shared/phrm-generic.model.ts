@@ -1,4 +1,4 @@
-﻿import {
+import {
     NgForm,
     FormGroup,
     FormControl,
@@ -19,7 +19,7 @@ export class PHRMGenericModel {
     public ModifiedBy: number = 0;
     public ModifiedOn: string = null;
     public IsActive: boolean = true;
-
+    public CategoryId: number = 0;
     //sud: 13July'18--these are not in Generic table, we're joining in server side to get these values. 
     //public Dosage: string = null;
     //public Frequency: string = null;
@@ -27,11 +27,13 @@ export class PHRMGenericModel {
     //public Duration: string = null;
 
     public GenericValidator: FormGroup = null;
+   
 
     constructor() {
         var _formBuilder = new FormBuilder();
         this.GenericValidator = _formBuilder.group({
-            'GenericName': ['', Validators.compose([Validators.required])]
+          'GenericName': ['', Validators.compose([Validators.required])],
+          'CategoryId': ['', Validators.compose([Validators.required])]
         });
     }
 

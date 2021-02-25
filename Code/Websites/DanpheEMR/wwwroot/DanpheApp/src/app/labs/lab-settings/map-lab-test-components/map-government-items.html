@@ -1,0 +1,19 @@
+<div class="wrapper">
+<add-government-items  *ngIf="showMapGovItemsPage" 
+    [showMapGovItemsPage]="showMapGovItemsPage" 
+    [selectedItem] = "selectedItem" 
+    [update] = "update"
+    (callback-Add)="CallBackData($event)"></add-government-items>
+  <div class="row">
+    <div class="col-md-3"> <a class="btn blue bordered btn-sm primary-btn m1" name="name" (click)="AddNewMappedComponent()"> <i class="fa fa-plus"></i>Map New Component </a> </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-12">
+      <danphe-grid [grid-colDefaults]="mappedCompGridCol"
+                    [grid-data]="mappedComponents"
+                    (grid-actions)="EditAction($event)"> 
+      </danphe-grid>
+    </div>
+  <div> 
+</div>

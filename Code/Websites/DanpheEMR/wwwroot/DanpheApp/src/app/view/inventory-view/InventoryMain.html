@@ -1,4 +1,4 @@
-﻿
+
 <style>
         li.horizontal-bar:hover > a {
           background: none;
@@ -21,7 +21,7 @@
       
       </style>
 <base href="/">
-<div class="page-bar">
+<div class="page-bar fixed-top-bar">
     <ul class="page-breadcrumb" *ngIf="validRoutes != undefined">         
     <!--Start: Primary Menu Items -->
     <li *ngFor="let route of primaryNavItems">
@@ -51,4 +51,10 @@
   
     </ul>
 </div>
-<router-outlet></router-outlet>
+
+<div *ngIf="loading">
+  Loading...
+</div>
+<div *ngIf="loading==false">
+  <div class="wrapper"><router-outlet></router-outlet></div>
+</div>

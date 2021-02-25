@@ -5,7 +5,8 @@ import {
   FormControl,
   Validators,
   FormBuilder,
-  ReactiveFormsModule
+  ReactiveFormsModule,
+  AbstractControl
 } from '@angular/forms'
 import * as moment from 'moment/moment';
 import { CommonValidators } from "../../shared/common-validator";
@@ -42,12 +43,16 @@ export class GoodsReceiptItems {
   public Quantity: number = 0;
   public ModifiedBy: number = null;
   public ModifiedOn: Date = null;
-
+  //for display purpose
+  public itemPriceHistory: Array<any> = [];
+  public IsEdited: boolean;
+  public IsActive: boolean = true;
+  public CancelledBy: any;
   constructor() {
     var _formBuilder = new FormBuilder();
     this.GoodsReceiptItemValidator = _formBuilder.group({
       'ReceivedQuantity': ['', Validators.compose([Validators.required, CommonValidators.positivenum])],
-      'ItemId': ['', Validators.compose([Validators.required])],
+      'ItemId': ['', Validators.compose([Validators.required, this.ValidateItemObject])],
       'FreeQuantity': ['', Validators.compose([Validators.required])],
       'ItemRate': ['', Validators.compose([Validators.required, CommonValidators.positivenum])],
       //'VAT': ['', Validators.compose([Validators.required])],
@@ -81,5 +86,12 @@ export class GoodsReceiptItems {
     }
     //else
     //    return { 'wrongDate': true };
+  }
+  // To validate first name
+  ValidateItemObject(control: AbstractControl) {
+    if (typeof (control.value) != "object") {
+      return { invalidItemName: true };
+    }
+    return null;
   }
 }

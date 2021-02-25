@@ -1,4 +1,4 @@
-﻿import { Component, Input, ChangeDetectorRef, Output, EventEmitter } from '@angular/core';
+import { Component, Input, ChangeDetectorRef, Output, EventEmitter } from '@angular/core';
 import { LabTest } from "../../shared/lab-test.model";
 import { LabReportTemplateModel } from '../../shared/lab-report-template.model';
 import { LabSettingsBLService } from '../shared/lab-settings.bl.service';
@@ -6,8 +6,8 @@ import { MessageboxService } from '../../../shared/messagebox/messagebox.service
 import { LabComponentModel } from '../../shared/lab-component-json.model';
 import * as _ from 'lodash';
 import { ServiceDepartment } from '../../../billing/shared/service-department.model';
-import { SettingsBLService } from '../../../settings/shared/settings.bl.service';
-import { CFGParameterModel } from '../../../settings/shared/cfg-parameter.model';
+import { SettingsBLService } from '../../../settings-new/shared/settings.bl.service';
+import { CFGParameterModel } from '../../../settings-new/shared/cfg-parameter.model';
 import { Employee } from '../../../employee/shared/employee.model';
 import { LabSignatoriesViewModel } from  '../shared/lab-signatories.model';
 import { CoreService } from '../../../../../src/app/core/shared/core.service';

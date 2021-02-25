@@ -10,18 +10,17 @@
             Good Receipt for Purchase Order ID:-  {{  goodsReceipt.PurchaseOrderId }} Vendor Name:-   {{  vendorName}}
         </div>
         <div class="panel-body">
-
             <form [formGroup]="goodsReceipt.GoodsReceiptValidator" class="form-inline">
                 <div class="row">
                     <div class="form-group col-md-6">
                         <label class="control-label"><b>Bill No: </b></label>
-                        <input [(ngModel)]="goodsReceipt.BillNo" style="width:200px " class="form-control" type="text" formControlName="BillNo" />
+                        <input [(ngModel)]="goodsReceipt.BillNo" class="form-control" type="text" formControlName="BillNo" />
                         <div style="color:red" *ngIf="goodsReceipt.IsDirty('BillNo')" [hidden]="goodsReceipt.IsValidCheck('BillNo','required')"> Bill No is required</div>
                     </div>
 
                     <div class="form-group col-md-6">
                         <label class="control-label"><b>Received Date: </b></label>
-                        <div class="pull-right" style="margin-right: 312px;">
+                        <div class="pull-right">
                             <danphe-date-picker [(ngModel)]="goodsReceipt.GoodsReceiptDate" ngDefaultControl [CalendarTypes]="'np'" formControlName="GoodsReceiptDate">
                             </danphe-date-picker>
                             <div style="color:red" *ngIf="goodsReceipt.IsDirty('GoodsReceiptDate')" [hidden]="goodsReceipt.IsValidCheck('GoodsReceiptDate','required')"> Goods Receipt Date is required</div>
@@ -35,7 +34,7 @@
 
             <div class="col-md-12">
                 <div class="table-responsive">
-                    <table class="table table-striped table-hover" style="background-color:initial">
+                    <table class="table table-striped table-hover inv_table">
                         <thead>
                             <tr>
                                 <th>Item Name</th>

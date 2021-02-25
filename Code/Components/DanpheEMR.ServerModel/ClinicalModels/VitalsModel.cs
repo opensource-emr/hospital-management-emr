@@ -31,10 +31,14 @@ namespace DanpheEMR.ServerModel
         public int? PainScale { get; set; }
         public string BodyPart { get; set; }
         public VisitModel Visit { get; set; }
-
+        public string Advice { get; set; }
+        public string FreeNotes { get; set; }
+        public string DiagnosisType { get; set; }
+        public string Diagnosis { get; set; }
         public int? CreatedBy { get; set; }
         public int? ModifiedBy { get; set; }
         public DateTime? CreatedOn { get; set; }
+        public DateTime VitalsTakenOn { get; set; }
         public DateTime? ModifiedOn { get; set; }
         //public virtual PatientModel Patient { get; set; }
     }

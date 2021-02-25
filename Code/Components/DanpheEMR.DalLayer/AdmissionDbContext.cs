@@ -12,6 +12,7 @@ namespace DanpheEMR.DalLayer
     {
         public DbSet<AdmissionModel> Admissions { get; set; }
         public DbSet<EmployeeModel> Employees { get; set; }
+        public DbSet<EmployeePreferences> EmployeePreferences { get; set; }
         public DbSet<PatientBedInfo> PatientBedInfos { get; set; }
         public DbSet<WardModel> Wards { get; set; }
         public DbSet<BedModel> Beds { get; set; }
@@ -45,6 +46,12 @@ namespace DanpheEMR.DalLayer
         public DbSet<BabyBirthDetailsModel> BabyBirthDetails { get; set; }
         public DbSet<DeathTypeModel> DeathTypes { get; set; }
         public DbSet<PatientCertificateModel> PatientCertificate { get; set; }
+        public DbSet<MedicalRecordModel> MedicalRecords { get; set; }
+        public DbSet<ADTBedReservation> BedReservation { get; set; }
+        public DbSet<EmergencyPatientModel> EmergencyPatient { get; set; }
+        public DbSet<CfgParameterModel> CFGParameters { get; set; }
+        public DbSet<NotesModel> Notes { get; set; }
+
 
         public AdmissionDbContext(string conn) : base(conn)
         {
@@ -81,6 +88,7 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<DischargeTypeModel>().ToTable("ADT_DischargeType");
 
             modelBuilder.Entity<EmployeeModel>().ToTable("EMP_Employee");
+            modelBuilder.Entity<EmployeePreferences>().ToTable("EMP_EmployeePreferences");
             modelBuilder.Entity<VisitModel>().ToTable("PAT_PatientVisits");
             modelBuilder.Entity<PatientModel>().ToTable("PAT_Patient");
             modelBuilder.Entity<AddressModel>().ToTable("PAT_PatientAddress");
@@ -108,6 +116,11 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<BabyBirthDetailsModel>().ToTable("ADT_BabyBirthDetails");
             modelBuilder.Entity<DeathTypeModel>().ToTable("ADT_MST_DeathType");
             modelBuilder.Entity<PatientCertificateModel>().ToTable("ADT_PatientCertificate");
+            modelBuilder.Entity<MedicalRecordModel>().ToTable("MR_RecordSummary");
+            modelBuilder.Entity<ADTBedReservation>().ToTable("ADT_BedReservation");
+            modelBuilder.Entity<EmergencyPatientModel>().ToTable("ER_Patient");
+            modelBuilder.Entity<CfgParameterModel>().ToTable("CORE_CFG_Parameters");
+            modelBuilder.Entity<NotesModel>().ToTable("CLN_Notes");
         }
     }
 }

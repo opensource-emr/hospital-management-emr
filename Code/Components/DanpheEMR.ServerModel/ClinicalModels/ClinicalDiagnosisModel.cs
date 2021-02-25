@@ -34,5 +34,6 @@ namespace DanpheEMR.ServerModel
         public int? ModifiedBy { get; set; }
         public DateTime? CreatedOn { get; set; }
         public DateTime? ModifiedOn { get; set; }
+        public bool? IsActive { get; set; } //bikash: 11-may-2020 - to distinguish inactive diagnosis
     }
 }

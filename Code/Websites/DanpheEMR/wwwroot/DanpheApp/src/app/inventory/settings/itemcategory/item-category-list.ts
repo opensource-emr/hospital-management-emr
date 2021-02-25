@@ -1,4 +1,4 @@
-﻿import { Component, ChangeDetectorRef } from "@angular/core";
+import { Component, ChangeDetectorRef } from "@angular/core";
 
 import { ItemCategoryModel } from '../shared/item-category.model';
 import { InventorySettingBLService } from "../shared/inventory-settings.bl.service";

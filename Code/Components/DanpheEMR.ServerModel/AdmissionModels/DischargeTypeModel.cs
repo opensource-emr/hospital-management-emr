@@ -19,5 +19,10 @@ namespace DanpheEMR.ServerModel
         public int? ModifiedBy { get; set; }
         public DateTime? ModifiedOn { get; set; }
         public bool IsActive { get; set; }
+
+        [NotMapped]
+        public List<DeathTypeModel> DeathTypes { get; set; }
+        [NotMapped]
+        public List<DischargeConditionTypeModel> DischargeConditionTypes { get; set; }
     }
 }

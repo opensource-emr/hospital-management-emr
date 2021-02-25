@@ -18,38 +18,36 @@ import { DischargeSummaryBLService } from './shared/discharge-summary.bl.service
 import { DischargeSummaryDLService } from './shared/discharge-summary.dl.service';
 import { DanpheAutoCompleteModule } from '../shared/danphe-autocomplete';
 import { DischargeSummaryComponent } from './discharge-summary.component';
-import { BirthCertificateComponent } from './shared/generate-certificate/generate-birth-certificate.component';
-import { DeathCertificateComponent} from "./shared/generate-certificate/generate-death-certificate.component";
+import { DeathCertificateComponent } from "./shared/generate-certificate/generate-death-certificate.component";
+import { BirthCertificateGenerateComponent } from './shared/generate-certificate/generate-birth-certificate.component';
 @NgModule({
-    providers: [
-        DischargeSummaryBLService,
-        DischargeSummaryDLService,
-        VisitDLService,
-        AppointmentDLService,
-        PatientsBLService,
-        PatientsDLService,
-        ImagingDLService,
-        LabsDLService,
-        BillingDLService
-    ],
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        FormsModule,
-        HttpClientModule,
-        SharedModule,        
-        DanpheAutoCompleteModule,
-    ],
-    declarations: [
-        DischargeSummaryAddComponent,
-        DischargeSummaryViewComponent,
-        DischargeSummaryComponent,
-        BirthCertificateComponent,
-        DeathCertificateComponent
-  
-    ],
-    exports: [DischargeSummaryAddComponent,
-        DischargeSummaryViewComponent],
-    bootstrap: []
+  providers: [
+    DischargeSummaryBLService,
+    DischargeSummaryDLService,
+    VisitDLService,
+    AppointmentDLService,
+    PatientsBLService,
+    PatientsDLService,
+    ImagingDLService,
+    LabsDLService,
+    BillingDLService
+  ],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule,
+    HttpClientModule,
+    SharedModule,
+    DanpheAutoCompleteModule,
+  ],
+  declarations: [
+    //DischargeSummaryAddComponent,
+    //DischargeSummaryViewComponent,
+    DischargeSummaryComponent,
+    DeathCertificateComponent,
+    BirthCertificateGenerateComponent
+  ],
+  exports: [],
+  bootstrap: []
 })
 export class DischargeSummaryModule { }

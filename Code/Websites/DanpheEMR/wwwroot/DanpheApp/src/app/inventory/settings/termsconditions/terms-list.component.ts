@@ -1,8 +1,12 @@
-﻿import { Component, ChangeDetectorRef } from '@angular/core';
+﻿import { Component, ChangeDetectorRef, Input } from '@angular/core';
 import { TermsConditionsMasterModel } from '../../shared/terms-conditions-master.model';
 import { InventorySettingBLService } from "../shared/inventory-settings.bl.service";
 import GridColumnSettings from '../../../shared/danphe-grid/grid-column-settings.constant';
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
+import { ENUM_TermsApplication } from '../../../shared/shared-enums';
+import { ActivatedRoute } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 
 @Component({
     selector: 'terms-list',
@@ -18,16 +22,26 @@ export class TermsListComponent {
     public allTermsLists: Array<TermsConditionsMasterModel> = new Array<TermsConditionsMasterModel>();
     public selTermslist: Array<TermsConditionsMasterModel> = new Array<TermsConditionsMasterModel>();
 
-    constructor(public invSettingBL: InventorySettingBLService,
-        public changeDetector: ChangeDetectorRef) {
+    @Input("TermsApplicationId")
+    public TermsApplicationId: number = ENUM_TermsApplication.Inventory; 
+
+    constructor(public changeDetector: ChangeDetectorRef,
+        public messageBoxService: MessageboxService,
+        private _route: ActivatedRoute,
+        private _http: HttpClient) {
         this.TermsGridColumns = GridColumnSettings.TermsConditionsList
-        this.getTermsList();
+    }
+    ngOnInit() {
+        this._route.params.subscribe(params => { 
+            this.TermsApplicationId = params['id'];
+            this.getTermsList();
+        });
     }
 
-
-
+    /*sanjit: 18May'20 : this component is used in both inventory and pharmacy and there is no service that is shared by these two module,
+    hence, I have written the api call directly here.*/
     public getTermsList() {
-        this.invSettingBL.GetTermsConditions()
+        this._http.get<any>("/api/InventorySettings/GetTermsListByTermsApplicationId/"+ this.TermsApplicationId)
             .subscribe(res => {
                 if (res.Status == "OK") {
                     this.allTermsLists = res.Results;
@@ -37,6 +51,8 @@ export class TermsListComponent {
                     alert("Failed ! " + res.ErrorMessage);
                 }
 
+            },err =>{
+                this.messageBoxService.showMessage("Failed",[err.error.ErrorMessage])
             });
     }
 
@@ -63,13 +79,17 @@ export class TermsListComponent {
         }
     }
 
-    CallBackAdd($event) {        
-        if (this.index != null) {
-            this.allTermsLists.splice(this.index, 1, $event.terms);
-      
-        }
-        else {
-            this.allTermsLists.push($event.terms);
+    CallBackAdd($event) {
+        if ($event != null) {
+            //find the index of currently added/updated terms in the list of all items (grid)
+            let index = this.allTermsLists.findIndex(a => a.TermsId == $event.terms.TermsId);
+            //index will be -1 when this terms is currently added. 
+            if (index < 0) {
+                this.allTermsLists.splice(0, 0, $event.terms);//this will add this terms to 0th index.
+            }
+            else {
+                this.allTermsLists.splice(index, 1, $event.terms);//this will replace one terms at particular index. 
+            }
         }
         this.allTermsLists = this.allTermsLists.slice();
         this.showAddPage = false;

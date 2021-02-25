@@ -1,0 +1,171 @@
+<style>
+  .lbl-police-case {
+    color: red;
+    font-weight: bold;
+    vertical-align: bottom;
+    margin-left: 15px;
+  }
+</style>
+
+<div class="wrapper">
+  <div class="row">
+    <div class="col-lg-12 col-md-12">
+      <div style="float:right">
+        <label class="lbl-police-case" for="isPoliceCase">Show Police Case<b>:</b> </label>
+        <input id="isPoliceCase" name="isPoliceCase" style="zoom:1.5; height:auto; margin-left:10px;" type="checkbox"
+          (change)="checkValue(showPoliceCase)" [(ngModel)]="showPoliceCase" [ngModelOptions]="{standalone: true}" />
+      </div>
+      
+    </div>
+    <div class="col-lg-12 col-sm-12">
+      <danphe-grid [grid-colDefaults]="admittedListGridColumns" [grid-data]="admittedList"
+        (grid-actions)="AdmittedListGridActions($event)" [NepaliDateInGridParams]="NepaliDateInGridSettings">
+      </danphe-grid>
+    </div>
+  </div>
+  <danphe-bed-transfer *ngIf="showTransferPage" [selectedBedInfo]="selectedBedInfo"
+    (transfer)="TransferUpgrade($event)">
+  </danphe-bed-transfer>
+
+  <danphe-bed-upgrade [showUpgradePage]="showUpgradePage" [selectedBedInfo]="selectedBedInfo"
+    [similarBedFeatures]="similarBedFeatures" (upgrade)="TransferUpgrade($event)">
+  </danphe-bed-upgrade>
+
+  <!--@*Don't display wristband while inside admission sticker in Admitted-List : Bug#39 ADT*@-->
+  <admission-sticker [patientVisitId]="patientVisitId" [showSticker]="showSticker"
+    (after-print-action)="StickerPrintCallBack()" [showWristBand]="false">
+  </admission-sticker>
+
+  <admission-cancel *ngIf="showCancelAdmissionPage" [ipVisitId]="selVisitId" [patientId]="selPatId"
+    (on-cancel-closed)="CancelAdmission($event)">
+  </admission-cancel>
+
+  <change-doctor *ngIf="showChangeDoctorPage" [admittedPatientDrInfo]="admittedpatientdrinfo"
+    (changeDoc-close)="TransferUpgrade($event)">
+  </change-doctor>
+
+  <!--Model Box Starting Here-->
+  <div class="popup-static portlet box portlet-fullscreen" *ngIf="showDischargePopUpBox">
+    <div class="portlet-body form">
+      <!--Model Box Body Start-->
+      <div class="form-body">
+        <div class="col-md-12">
+          <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;"></div>
+          <div class="col-md-8 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+            <div class="col-md-12" *ngIf="disableDischarge">
+              <b>
+                <u style="color: red;">Alert ! This patient has unpaid bills, Please clear them and
+                  proceed to discharge.</u>
+                <br />
+                <button type="button" class="btn btn-primary btn-sm" (click)="Close()">
+                  OK
+                </button>
+              </b>
+              <hr />
+            </div>
+            <div class="col-md-12" style="padding-bottom: 18px;">
+              <b *ngIf="!disableDischarge">Are you sure you want to discharge this patient ?
+              </b>
+              <b *ngIf="disableDischarge">Proceed with pending bills ? </b><br />
+              <form [formGroup]="admission.AdmissionValidator" class="form-horizontal">
+                <div class="col-md-12">
+                  Remarks <b style="color: red;">*</b>:
+                  <textarea class="form-control" maxlength="100" [(ngModel)]="admission.DischargeRemarks"
+                    formControlName="DischargeRemarks" placeholder="Remarks"></textarea>
+                  <br />
+                  <span class="color-red font-sm" *ngIf="admission.IsDirty('DischargeRemarks')"
+                    [hidden]="admission.IsValidCheck('DischargeRemarks','required')">Discharge Remarks is
+                    mandatory.</span>
+                  <span class="color-red font-sm" *ngIf="admission.IsDirty('DischargeRemarks')"
+                    [hidden]="admission.IsValidCheck('DischargeRemarks','maxlength')">Max 100 characters.</span>
+                </div>
+                <div class="form-group">
+                  <label class="control-label col-md-2">Discharge Date <b>(AD)</b>
+                    <b style="float: right;">:</b></label>
+                  <div class="col-md-4">
+                    <input class="form-control" type="datetime-local" [ngModelOptions]="{standalone: true}"
+                      [(ngModel)]="admission.DischargeDate" (ngModelChange)="compareDate()"
+                      (focusout)="EngCalendarOnDateChange()" />
+                    <span class="color-red font-sm" *ngIf="!validDate">Enter Valid Date.</span><br />
+                    <span class="color-red font-sm" *ngIf="!validDate">{{this.selectedAdmission.BedInformation.Action}}
+                      Date was
+                      {{this.selectedAdmission.BedInformation.StartedOn |
+                      DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</span>
+                  </div>
+                  <label class="control-label col-md-1">
+                    <b>(BS)</b> <b style="float: right;">:</b></label>
+                  <div class="col-md-5">
+                    <np-calendar [ngModelOptions]="{standalone: true}" ngDefaultControl [showTime]="true"
+                      [display]="single-line" [(ngModel)]="dischargeDateNp"
+                      (focusout)="NepCalendarOnDateChange();compareDate();">
+                    </np-calendar>
+                  </div>
+                </div>
+              </form>
+              <div class="row">
+                <button type="button" class="btn btn-primary btn-sm" (click)="Discharge()">
+                  Discharge
+                </button>
+                <button type="button" class="btn btn-primary btn-sm" (click)="Close()">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!--Model Box Body End-->
+    </div>
+  </div>
+  <div class="popup-static portlet box portlet-fullscreen w3-modal-content w3-card-4 w3-animate-zoom inv_modal"
+    *ngIf="showPatientBillHistory">
+    <div class="portlet-body form">
+      <div class="modelbox-div clearfix" style="margin: 40px 40px;">
+        <a class="btn btn-danger history-del-btn" (click)="CloseBillHistory()" title="Cancel">X</a>
+        <!--Model Box Body Start-->
+        <div class="form-body">
+          <bill-history [showPatientBillHistory]="showPatientBillHistory" [patient]="selPatient"
+            *ngIf="showPatientBillHistory"></bill-history>
+        </div>
+        <!--Model Box Body End-->
+      </div>
+    </div>
+    <div *ngIf="showGenericSticker">
+      <visit-gen-sticker-print *ngIf="showGenericSticker" [single-sticker-info]="patVisitGenericStickerInfo"
+        (on-popup-closed)="CloseGenericSticker($event)">
+      </visit-gen-sticker-print>
+    </div>
+    <div *ngIf="showWristBand">
+      <ip-wrist-band *ngIf="showWristBand" [showWristBand]="true" [patientVisitId]="patientVisitId" [showAsPopup]="true"
+        (on-popup-closed)="CloseWristBandPage($event)">
+      </ip-wrist-band>
+    </div>
+  </div>
+</div>
+
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showInvalidTransferPopUp">
+  <div class="portlet-body form">
+    <div class="col-md-4 col-md-offset-4">
+      <div class="modelbox-div">
+        <div class="modelbox-header">
+          <h3 class="margin-0-vr text-warning text-center">
+            <strong>Transfer Not Possible</strong>
+          </h3>
+        </div>
+        <div class="modelbox-body">
+          <div class="row">
+            <p style="letter-spacing: 0.3px;line-height: 1.7;text-align: center;">Sorry, You Cannot Transfer the Patient
+              Until received by Nursing. <br>Please Contact Nursing
+              Department ({{selectedAdmittedPat.BedInformation.Ward}})</p>
+          </div>
+        </div>
+        <div class="close-modelbox">
+          <button class="btn btn-danger" (click)="CloseTransferInvalidPopUp()">
+            X
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

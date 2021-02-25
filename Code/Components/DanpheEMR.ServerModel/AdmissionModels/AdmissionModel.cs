@@ -40,8 +40,10 @@ namespace DanpheEMR.ServerModel
         public virtual BillingDeposit BilDeposit { get; set; }
         [NotMapped]
         public List<BillingTransactionItemModel> BilTxnItems { get; set; }
+
         //RequestingDepartmentId is moved to ADT_TXN_PatientBedInfo table.
-        //public int? RequestingDeptId { get; set; }//sud:19Jun'18
+        [NotMapped]
+        public int? RequestingDeptId { get; set; }//sud:19Jun'18
 
         //Added by Yubraj --19th November 2018
         public DateTime? CancelledOn { get; set; }
@@ -49,5 +51,7 @@ namespace DanpheEMR.ServerModel
         public string CancelledRemark { get; set; }
 
         public string ProcedureType { get; set; }
+        
+        public bool? IsPoliceCase { get; set; }
     }
 }

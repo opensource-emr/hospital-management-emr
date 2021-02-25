@@ -1,0 +1,113 @@
+<style>
+  .frc-removed {
+    color: red;
+  }
+
+  .tbl-trns-itm-holder .itm-selected {
+    background-color: lightgreen !important;
+    border: 1px solid #daf1e7;
+    font: bold;
+  }
+
+  .table > tbody > tr > td {
+    padding: 3px;
+  }
+	.invoice-no-wrap .tbl-trns-itm-holder {
+		overflow-x: hidden !important;
+		margin-top: 10px;
+		max-height: 56vh;
+	}
+</style>
+
+<div class="row font-small">
+  <div class="col-md-12">
+    <div class="row">
+      <div class="col-md-7">
+        <from-to-date-select (on-change)="OnDateRangeChange($event)">
+        </from-to-date-select>
+      </div>
+
+      <div class="col-md-2 col-xs-12">
+        <div class="form-group">
+          <button (click)="LoadData()" class="btn blue" style="padding: 5px 10px;"> <i class="fa fa-refresh"></i> Load </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-12">
+    <div class="row">
+      <div class="col-md-6">
+        <input danphe-auto-complete id="srch_invoiceList" class="form-control" [(ngModel)]="selInvoiceInfo"
+               [list-formatter]="invoiceListFormatter" [source]="allInvoiceInfoList" placeholder="type to search"
+               display-property-name="PatientName" value-property-name=null (focusout)="InvoiceInfoChanged()"
+               onClick="this.select();" max-num-list="100" />
+      </div>
+      <div class="col-md-3" *ngIf="allInvoiceInfoList"
+           style="padding-left: 0px;vertical-align: bottom;padding-top: 6px;margin-left: -14px;"> ({{allInvoiceInfoList.length}}) invoices found.. </div>
+    </div>
+  </div>
+</div>
+<div class="mt20" *ngIf="showAllitemtxn">
+  <div class="row font-small">
+    <div class="col-md-5">
+      <div class="invoice-no-wrap">
+        <div class="row" style="text-align: left;">
+          <!--This section is for Patient Information-->
+          <div class="col-md-6 margin-8-bt">
+            <div class="margin-8-bt"> <b> InvoiceNo: </b><span *ngIf="selInvoiceInfo">{{selInvoiceInfo.InvoiceNo}}</span> </div>
+            <div class="margin-8-bt"> <b>Date: </b> <span *ngIf="selInvoiceInfo"> {{selInvoiceInfo.TransactionDate | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}} <i>({{selInvoiceInfo.TransactionDate | nepaliDate:'format':'YYYY-MM-DD HH:mm'}} B.S)</i> </span> </div>
+          </div>
+          <div class="col-md-6 text-right">
+            <div class="margin-8-bt"> <b>Patient: </b> <span *ngIf="selInvoiceInfo"> {{selInvoiceInfo.PatientName}} </span> </div>
+            <div class="margin-8-bt"> <b>Total Amount: </b><span *ngIf="selInvoiceInfo">{{selInvoiceInfo.TotalAmount}}</span> </div>
+          </div>
+        </div>
+        <div class="table-wrapper tbl-trns-itm-holder">
+          <table class="table-striped table-hover table-bordered tbl-trns-itm"
+                 style="background-color: initial;width: 100%;">
+            <thead>
+              <tr>
+                <th>Service Name</th>
+                <th>Qty</th>
+                <th>Rate</th>
+                <th>Discount</th>
+                <th>Net Total</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container>
+                <tr (click)="TransactionItemOnClick(i,itm)" *ngFor="let itm of allTxnInvoiceItemList;let i = index"
+                    [ngClass]="{'itm-selected':itm.IsSelected}">
+                  <td>{{itm.ItemName}}</td>
+                  <td>{{itm.Quantity}}</td>
+                  <td>{{itm.Price}}</td>
+                  <td>{{itm.DiscountAmount}}</td>
+                  <td>{{itm.TotalAmount}}</td>
+                  <td style="width: 30px;text-align: center;">
+                    <div class="tooltip" style="padding: 0px 5px;color: #006687;z-index: inherit;">
+                      <i class="fa fa-eye" (click)="TransactionItemOnClick(i,itm)"></i>
+                      <p class="tooltiptext ttptextdown" style="width: 200px;margin-left: -125px;">
+                        Click to view
+                        Incentive Details
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-7 invoice-table margin-top-10" *ngIf="showFractionItemContainer">
+      <inctv-edit-fraction *ngIf="showFractionItemContainer"
+                           [selectedTxnItem]="selectedBillTxnItem"
+                           [EmpIncentiveInfo]="EmpIncentiveInfo"
+                           [employeeList]="allEmpList"
+                           [show-invoice-hdr-info]="false"
+                           (on-close)="EditFractionOnClose($event)">
+      </inctv-edit-fraction>
+    </div>
+  </div>
+</div>

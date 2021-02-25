@@ -19,6 +19,7 @@ namespace DanpheEMR.ServerModel
         public int? ModifiedBy { get; set; }
         public DateTime? ModifiedOn { get; set; }
         public bool? IsActive { get; set; }
+        public bool IsValidForReporting { get; set; }
         public int? TemplateId { get; set; }
 
         public virtual RadiologyImagingTypeModel ImagingTypes { get; set; }

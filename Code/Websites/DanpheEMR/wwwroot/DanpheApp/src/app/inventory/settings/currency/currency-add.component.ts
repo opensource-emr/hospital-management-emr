@@ -22,6 +22,7 @@ export class CurrencyAddComponent {
     @Output("callback-add")
     callbackAdd: EventEmitter<Object> = new EventEmitter<Object>();
     public update: boolean = false;
+    public loading: boolean = false;
 
     public CurrentCurrency: CurrencyModel;
 
@@ -66,15 +67,18 @@ export class CurrencyAddComponent {
 
 
         if (this.CurrentCurrency.IsValidCheck(undefined, undefined)) {
+            this.loading = true;
             this.invSettingBL.AddCurrency(this.CurrentCurrency)
                 .subscribe(
                 res => {
                     this.showMessageBox("success", "Currency Added");
                     this.CurrentCurrency = new CurrencyModel();
                     this.CallBackAddCurrency(res)
+                    this.loading = false;
                 },
                 err => {
                     this.logError(err);
+                    this.loading = false;
                 });
         }
     }
@@ -87,16 +91,19 @@ export class CurrencyAddComponent {
         }
 
         if (this.CurrentCurrency.IsValidCheck(undefined, undefined)) {
+            this.loading = true;
             this.invSettingBL.UpdateCurrency(this.CurrentCurrency)
                 .subscribe(
                 res => {
                     this.showMessageBox("success", "Currency Updated");
                     this.CurrentCurrency = new CurrencyModel();
                     this.CallBackAddCurrency(res)
+                    this.loading = false;
 
                 },
                 err => {
                     this.logError(err);
+                    this.loading = false;
                 });
         }
     }

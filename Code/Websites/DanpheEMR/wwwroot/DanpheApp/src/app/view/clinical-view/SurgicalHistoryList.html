@@ -1,14 +1,14 @@
-﻿
+
 <div class="form-body">
     <div id="SurgicalHistory">
         <div class="col-md-12">
             <div class="row">
-                <div class="col-md-7 col-xs-12">
+                <div class="col-md-8 col-xs-12">
                     <div class="portlet cstm-portlet portlet-with-collapse">
                         <div class="portlet-title cstm-pt-title">
                             <div class="cstm-portlet-caption">
                                 <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
-                                <span class="caption-subject font-blue-sharp bold uppercase">Surgical History List</span>
+                                <span class="caption-subject font-blue-sharp bold">Surgical History List</span>
                             </div>
                             <div class="cstm-action">
                                 <a class="cstm-add" (click)="showSurgicalBox()">
@@ -18,7 +18,7 @@
                         </div>
 
                         <div class="table-responsive">
-                            <table class="table table-bordered table-striped table-condensed flip-content">
+                            <table class="table table-responsive flip-content doc-tbl">
                                 <thead class="flip-content">
                                     <tr>
                                         <th>Surgery Type</th>
@@ -46,7 +46,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-5 col-xs-12">
+                <div class="col-md-4 col-xs-12">
                     <surgical-history-add [show-Surgical-AddBox]="showSurgicalAddBox"
                                           [selected-surgical-history]="SelectedSurgicalHistory"
                                           (callBack-AddUpdate)="callBackAddUpdate($event)">

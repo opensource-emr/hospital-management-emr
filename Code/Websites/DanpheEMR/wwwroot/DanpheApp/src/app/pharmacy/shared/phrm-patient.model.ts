@@ -33,7 +33,9 @@ export class PHRMPatient {
     //only for read purpose
     public ShortName: string = "";
     public PHRMPatientValidator: FormGroup = null;
-    public PANNumber: number = null;
+    public PANNumber: string = null;
+    public CountryId: any;
+    public CountrySubDivisionId: any;
     //Constructor of class
     constructor() {
         var _formBuilder = new FormBuilder();
@@ -43,7 +45,7 @@ export class PHRMPatient {
             'MiddleName': ['', Validators.compose([Validators.maxLength(30)])],
             'PhoneNumber': ['', Validators.compose([Validators.pattern('^[0-9]{1,10}$')])],
             'Address': ['', Validators.compose([Validators.maxLength(30)])],
-            'Age': ['', Validators.compose([Validators.maxLength(10)])],
+            'Age': ['', Validators.compose([Validators.required, Validators.maxLength(10)])],
             'Gender': ['', Validators.required],
         });
     }
@@ -58,8 +60,8 @@ export class PHRMPatient {
         }
     }
     //Check Is valid or not control
-  public IsValid(): boolean{ if (this.PHRMPatientValidator.valid) { return true; } else { return false; } }
-  public IsValidCheck(fieldname, validator): boolean {
+    public IsValid(): boolean { if (this.PHRMPatientValidator.valid) { return true; } else { return false; } }
+    public IsValidCheck(fieldname, validator): boolean {
         if (this.PHRMPatientValidator.valid) {
             return true;
         }

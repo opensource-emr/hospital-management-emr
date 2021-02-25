@@ -1,4 +1,4 @@
-﻿import {
+import {
     NgForm,
     FormGroup,
     FormControl,
@@ -16,7 +16,8 @@ export class PHRMReturnToSupplierItemModel {
     public ReturnToSupplierId: number = 0;
     public ItemId: number = 0;
     public BatchNo: string = null;
-    public Quantity: number = null;
+    public Quantity: number = 0;
+    public OldItemPrice: number = 0;
     public ItemPrice: number = 0;
     public SubTotal: number = 0;
     public DiscountPercentage: number = 0;
@@ -28,7 +29,6 @@ export class PHRMReturnToSupplierItemModel {
     public CreatedOn: string = null;
     public GoodReceiptItemId: number = 0;
     public ReturnToSupplierItemValidator: FormGroup = null;
-
     ////get and display
     public SelectedItem: null;
     public ItemName: string = "";
@@ -36,21 +36,25 @@ export class PHRMReturnToSupplierItemModel {
     public BatchWiseAvailableQuantity: number = 0;
     public ReceivedQuantity: number = 0;
     public FreeQuantity: number = 0;
+    public FreeQuantityReturn:number = 0;
     public FreeAmount: number = 0;
+    public FreeAmountReturn:number = 0;
     public FreeRate: number = 0;
     public DiscountedAmount: number = 0;
     public MRP: number = 0;
     public BatchNoList: any = [];
     public TempBatchNoList: any = [];
-
+    public CCCharge:any;
     public CheckQty: boolean = false;
+    public checked:boolean;// for checking and uncheck item row in UI
     public SelectedGRItems: Array<PHRMGoodsReceiptItemsModel> = new Array<PHRMGoodsReceiptItemsModel>();
     constructor() {
         var _formBuilder = new FormBuilder();
         this.ReturnToSupplierItemValidator = _formBuilder.group({
             'ItemId': ['', Validators.compose([Validators.required])],
-            'TotalAvailableQuantity': ['', Validators.compose([Validators.required])],
-            'Quantity': ['', Validators.compose([Validators.required])],
+           // 'TotalAvailableQuantity': ['', Validators.compose([Validators.required])],
+            'Quantity': ['', Validators.compose([Validators.required])]
+            // 'Checked':['',Validators.compose([Validators.required])]
         });
     }
 

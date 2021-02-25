@@ -1,32 +1,41 @@
-﻿<style>
-    .btn-critc:hover {
-        background: #f70a0a !important;
-        color: #fff;
-    }
-    .btn-moderate:hover {
-        background: #ff4500 !important;
-        color: #fff;
-    }
+<style>
+  .btn-critc, .btn-death, .btn-moderate, .btn-normal {
+    color: #fff;
+  }
+  .btn-critc:hover {
+    background: #f70a0a !important;
+    color: #fff;
+  }
+  .btn-death:hover {
+    background: #000 !important;
+    color: #fff;
+  }
+  .btn-moderate:hover {
+    background: #eab213 !important;
+    color: #fff;
+  }
     .btn-normal:hover {
         background: #50e812 !important;
         color: #fff;
     }
 </style>
-<div style="width: 100%;position: relative;padding: 0px 0px 25px 0px;background: #000000e6;">
+<div class="cstm-pat-registration">
     <div class="row">
         <div class="form-body">
             <div class="col-md-12">
                 <div class="form-group">
-                    <div class="col-md-12">                         
-                         <!-- ag7_mig_fix:(click)="RegisterNewERPatient()" not exist in component -->
-                        <a style="font-size: 16px; display: block; font-weight: 700; background: #0f1314;border-color: #fff;border: none;border-bottom: 1px solid #fff;" class="btn blue bordered btn-sm" name="Anonymous Patient" >
-                              <span style="display: inline-block; margin-left: 5px;">Triage Patient</span>
+                    <div class="col-md-12">
+                      <div class="row">
+                        <!-- ag7_mig_fix:(click)="RegisterNewERPatient()" not exist in component -->
+                        <a class="cstm-pat-registration-hdr btn blue bordered btn-sm" name="Anonymous Patient">
+                          <span style="display: inline-block; margin-left: 5px;">Triage Patient</span>
                         </a>
+                      </div>                        
                     </div>
 
                     <div class="col-md-12">
                         <div class="table-responsive">
-                            <table class="table table-bordered" style="color: #fff;">
+                            <table class="table table-bordered" style="color: #000;">
                                 <thead>
                                     <tr>
                                         <th>Patient Name</th>
@@ -43,15 +52,18 @@
                                         <td>{{ERPatient.VisitDateTime | DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'}}</td>
                                         <td>{{ERPatient.Case}}</td>
                                         <td>
-                                            <div style="float: left;">
-                                                <button class="btn btn-sm btn-critc" style="background: #a70b0b;" (click)="loading=true;TriagePatient(3)">Critical</button>
-                                            </div>
-                                            <div style="float: left;">
-                                                <button class="btn btn-sm btn-moderate" style="background: #b34117;" (click)="loading=true;TriagePatient(2)">Moderate</button>
-                                            </div>
-                                            <div>
-                                                <button class="btn btn-sm btn-normal" style="background: #3fab13;" (click)="loading=true;TriagePatient(1)">Mild</button>
-                                            </div>
+                                          <div class="pull-left">
+                                            <button class="btn btn-sm btn-death" style="background: #272222;" (click)="loading=true;TriagePatient(4)">Death</button>
+                                          </div>
+                                          <div class="pull-left">
+                                            <button class="btn btn-sm btn-critc" style="background: #a70b0b;" (click)="loading=true;TriagePatient(3)">Critical</button>
+                                          </div>
+                                          <div class="pull-left">
+                                            <button class="btn btn-sm btn-moderate" style="background: #d29b00;" (click)="loading=true;TriagePatient(2)">Moderate</button>
+                                          </div>
+                                          <div>
+                                            <button class="btn btn-sm btn-normal" style="background: #3fab13;" (click)="loading=true;TriagePatient(1)">Mild</button>
+                                          </div>
                                         </td>
                                     </tr>
                                 </tbody>

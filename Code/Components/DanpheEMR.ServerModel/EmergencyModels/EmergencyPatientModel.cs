@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DanpheEMR.ServerModel.EmergencyModels
+namespace DanpheEMR.ServerModel
 {
     public class EmergencyPatientModel
     {
@@ -24,12 +24,13 @@ namespace DanpheEMR.ServerModel.EmergencyModels
         public string Age { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public string ContactNo { get; set; }
+        public string CareOfPersonContactNumber { get; set; }
 	    public string Address { get; set; }
         public string ReferredBy { get; set; }
         public string ReferredTo { get; set; }
         public string Case { get; set; }
-        public string ConditionOnArrival  { get; set; }
-        public string ModeOfArrival { get; set; }
+        public string ConditionOnArrival  { get; set; }        
+        public int? ModeOfArrival { get; set; }
         public string CareOfPerson { get; set; }
         public string ERStatus { get; set; }
         public string TriageCode { get; set; }
@@ -59,8 +60,11 @@ namespace DanpheEMR.ServerModel.EmergencyModels
         public int CountryId { get; set; }
         [NotMapped]
         public int CountrySubDivisionId { get; set; }
-        
-        
+        [NotMapped]
+        public string DefaultDepartmentName { get; set; }
+        [NotMapped]
+        public string ModeOfArrivalName { get; set; }
+
     }
 
 }

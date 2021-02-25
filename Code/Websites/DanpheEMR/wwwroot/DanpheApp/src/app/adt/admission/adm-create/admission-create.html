@@ -1,0 +1,291 @@
+<style>
+  .lbl-police-case{
+    color: red;
+    font-weight: bold;
+    vertical-align: bottom;
+    margin-left: 15px;
+  }
+</style>
+<div class="wrapper"><!--@*@using System;
+@using System.Collections.Generic;
+@using System.Linq;
+@using System.Text;
+@using DanpheEMR.ServerModel;
+@using DanpheEMR.DalLayer;
+@using DanpheEMR.Core.Caching;
+@using System.Data; @*for tfs checkin-test*@*@
+
+@*@{
+  //  AdmissionDbContext admission = new AdmissionDbContext(ViewData["ConnectionString"].ToString());
+  //  var employee = admission.Employees.ToList<EmployeeModel>();
+   // var BedFeatures = admission.BedFeatures.ToList<BedFeature>();
+  //  var Ward = admission.Wards.ToList<WardModel>();
+ //   var Beds = admission.Beds.ToList<BedModel>();
+
+   // MasterDbContext master = new MasterDbContext(ViewData["ConnectionString"].ToString());
+   // var departments = (List<DepartmentModel>)DanpheCache.GetMasterData(MasterDataEnum.Department);
+  //  departments = departments.Where(a => a.IsAppointmentApplicable == true).ToList();
+
+
+}*@-->
+  
+  <div class="margin-top-10">
+    <div class="caption lb-caption"><span class="caption-subject"><i class="glyphicon glyphicon-asterisk"></i>Create Admission</span> </div>
+    <div class="">
+      <div class="col-md-6">
+        <form [formGroup]="CurrentPatientBedInfo.PatientBedInfoValidator" class="form-horizontal hm-form">
+          <div class="form-body">
+            <div class="form-group">
+              <label class="control-label col-md-5">Requesting Department<b>:</b></label>
+              <div class="col-md-6">
+                <input class="form-control" danphe-auto-complete
+                     formControlName="RequestingDeptId"
+                     [(ngModel)]="selectedDept"
+                     [list-formatter]="myListFormatterDept"
+                     [source]="deptList"
+                     placeholder="Enter Department Name"
+                     display-property-name="Value"
+                     value-property-name=null
+                     (focusout)="FilterDoctorList()"
+                     onclick="this.select();"
+                     max-num-list="10" />
+                <span class="color-red font-sm" *ngIf="CurrentPatientBedInfo.IsDirty('RequestingDeptId')" [hidden]="CurrentPatientBedInfo.IsValidCheck('RequestingDeptId','required')">Select Admitting Department</span> </div>
+            </div>
+          </div>
+        </form>
+        <form [formGroup]="CurrentAdmission.AdmissionValidator" class="form-horizontal hm-form">
+          <div class="form-body">
+            <div class="form-group">
+              <label class="control-label col-md-5">Admitting Doctor<sup>*</sup><b>:</b></label>
+              <div class="col-md-6">
+                <input class="form-control" danphe-auto-complete
+                     formControlName="AdmittingDoctorId"
+                     [(ngModel)]="selectedProvider"
+                     [list-formatter]="myListFormatter"
+                     [source]="filteredDocList"
+                     placeholder="Enter Doctor Name"
+                     display-property-name="Value"
+                     value-property-name=null
+                     (valueChanged)="DoctorDdlOnChange()"
+                     (focusout)="CheckForStrInDoctor()"
+                     onclick="this.select();"
+                     max-num-list="10" />
+                <span class="color-red font-sm" *ngIf="CurrentAdmission.IsDirty('AdmittingDoctorId')" [hidden]="CurrentAdmission.IsValidCheck('AdmittingDoctorId','required')">Select Admitting Doctor</span> </div>
+            </div>
+          </div>
+        </form>
+        <form [formGroup]="CurrentPatientBedInfo.PatientBedInfoValidator" class="form-horizontal hm-form">
+          <div class="form-body">
+            <div class="form-group">
+              <label class="control-label col-md-5"> Ward<sup>*</sup><b>:</b></label>
+              <div class="col-md-6">
+                <select [(ngModel)]="CurrentPatientBedInfo.WardId"
+                      formControlName="WardId"
+                      class="form-control"
+                      (ngModelChange)="WardChanged(CurrentPatientBedInfo.WardId)">
+                  <option *ngFor="let ward of wardList" value="{{ward.WardId}}">{{ward.WardName}}</option>
+                </select>
+                <span class="color-red font-sm" *ngIf="CurrentPatientBedInfo.IsDirty('WardId')" [hidden]="CurrentPatientBedInfo.IsValidCheck('WardId','required')">Select Ward</span> </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-md-5">Bed Feature<sup>*</sup><b>:</b></label>
+              <div class="col-md-6">
+                <select [(ngModel)]="CurrentPatientBedInfo.BedFeatureId"
+                      class="form-control" (ngModelChange)="GetAvailableBeds(CurrentPatientBedInfo.WardId,CurrentPatientBedInfo.BedFeatureId)"
+                      formControlName="BedFeatureId">
+                  <option *ngFor="let bed of bedFeatureList" value="{{bed.BedFeatureId}}" [disabled]="disableFeature">{{bed.BedFeatureName}}</option>
+                </select>
+                <span class="color-red font-sm" *ngIf="CurrentPatientBedInfo.IsDirty('BedFeatureId')" [hidden]="CurrentPatientBedInfo.IsValidCheck('BedFeatureId','required')">Select Bed Feature <br />
+                </span> <b>Price:-{{CurrentPatientBedInfo.BedPrice}} </b> </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-md-5">Bed<sup>*</sup><b>:</b></label>
+              <div class="col-md-7">
+                <select [(ngModel)]="CurrentPatientBedInfo.BedId"
+                      class="form-control"
+                      style="width:200px"
+                      formControlName="BedId"
+                      (change)="BedChanged($event.target.value, CurrentPatientBedInfo.BedId)"
+                      >
+                  <option selected value="0">Select Bed</option>
+                  <ng-container *ngFor="let bed of bedList">
+                    <option [ngClass]="bed.IsReserved ? 'reserved':'not-reserved'" value="{{bed.BedId}}"> {{bed.BedCode}}
+                    <ng-container *ngIf="bed && bed.IsReserved"> (Reserved)</ng-container>
+                    </option>
+                  </ng-container>
+                </select>
+                <span class="color-red font-sm" *ngIf="CurrentPatientBedInfo.IsDirty('BedId')" [hidden]="CurrentPatientBedInfo.IsValidCheck('BedId','required')">Select Bed</span> </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-md-5">Deposit Balance<b>:</b></label>
+              <span class="control-label col-md-7"> <strong style="color:red;font-size:20px">{{currencyUnit}} {{CurrentDeposit.DepositBalance}}</strong> </span> <span class="control-label col-md-12" style="font-weight:bold" *ngIf="CurrentDeposit.DepositBalance > 0"> ( In words: {{CurrentDeposit.DepositBalance | NumberInWords}} only ) </span> <span class="control-label col-md-12" style="font-weight:bold;color:green;" *ngIf="CurrentDeposit.DepositBalance > 0"> <i>This OutPatient Deposit will be transfered to InPatient Deposit.</i> </span> </div>
+            <div class="form-group">
+              <label class="control-label col-md-5">Deposit Amount<b>:</b></label>
+              <div class="col-md-7">
+                <input [(ngModel)]="CurrentDeposit.Amount" class="form-control" [ngModelOptions]="{standalone: true}"
+                     style="width:200px" placeholder="Deposit Amount" name="amount" type="number" onclick="this.select();">
+              </div>
+              <span class="control-label col-md-12" style="font-weight:bold" *ngIf="CurrentDeposit.Amount > 0"> ( In words: {{CurrentDeposit.Amount | NumberInWords}} only ) </span> </div>
+            <div class="form-group">
+              <label class="control-label col-md-5">Deposit Remarks<b>:</b></label>
+              <div class="col-md-7">
+                <input [(ngModel)]="CurrentDeposit.Remarks" class="form-control" [ngModelOptions]="{standalone: true}"
+                     style="width:200px" placeholder="Deposit Remark" name="remarks" type="text">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-md-5">Payment Mode<b>:</b></label>
+              <div class="col-md-7">
+                <select [(ngModel)]="CurrentDeposit.PaymentMode" [ngModelOptions]="{standalone: true}"
+                      style="width:100px" name="pay_mode" id="pay_mode">
+                  <option value="cash">Cash</option>
+                  <option value="cheque">Cheque</option>
+                  <option value="card">Smart Card</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group" *ngIf="CurrentDeposit.PaymentMode!='cash'">
+              <label class="control-label col-md-5">Payment Details:<b>:</b></label>
+              <div class="col-md-6">
+                <textarea [(ngModel)]="CurrentDeposit.PaymentDetails" [ngModelOptions]="{standalone: true}"></textarea>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="col-md-6 form-horizontal" style="padding:0px">
+        <div class="form-body">
+          <form [formGroup]="CurrentAdmission.AdmissionValidator" class="form-horizontal hm-form">
+            <div class="form-body">
+              <!--<div class="form-group">
+                <label class="control-label col-md-4">Admission Date<b>(AD)</b> <b>:</b></label>
+                <div class="col-md-7"> <span style="display: -webkit-box;">
+                  <input class="form-control" type="datetime-local"
+                         formControlName="AdmissionDate"
+                         [(ngModel)]="CurrentAdmission.AdmissionDate"
+                         (focusout)="EngCalendarOnDateChange()"
+                         placeholder="DD-MM-YYYY"
+                         style="width:200px" />
+                  <span> </span> <i style="color: #0773bc;font-style: normal;font-size: 10px;line-height: 28px;
+                vertical-align: -webkit-baseline-middle;margin-left: 10px;padding: 0 10px;
+                border: 1px  solid #0773bc;text-transform: uppercase;display: block;"> {{CurrentAdmission.AdmissionDate | DanpheDateTime:'timename'}} </i>
+                </span> <span class="color-red font-sm" *ngIf="CurrentAdmission.IsDirty('AdmissionDate')"
+                [hidden]="CurrentAdmission.IsValidCheck('AdmissionDate','wrongDate')">Enter Valid Date</span> </div>
+              </div>-->
+              <div class="form-group">
+                <label class="control-label col-md-4">Admission Date<b>:</b></label>
+                <div class="col-md-8">
+                  <div class="flx">
+                    <danphe-date-picker formControlName="AdmissionDate" [(ngModel)]="CurrentAdmission.AdmissionDate"
+                                        [showTime]="true" [CalendarTypes]="'en,np'">
+                    </danphe-date-picker>
+                    <span class="inl-blk">
+                      <i style="color: #0773bc;font-style: normal;font-size: 10px;line-height: 28px;
+                vertical-align: -webkit-baseline-middle;padding: 0 10px;
+                border: 1px  solid #0773bc;text-transform: uppercase;display: block;"> {{CurrentAdmission.AdmissionDate | DanpheDateTime:'timename'}} </i>
+                    </span>                                   
+                  </div>
+                  <div class="flx">
+                    <span class="color-red font-sm"
+                          [hidden]="CurrentAdmission.IsValidCheck('AdmissionDate','wrongDate')">Enter Valid Date</span>
+                  </div>
+                  
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-4"> Admission Notes<b>:</b></label>
+                <div class="col-md-7">
+                  <textarea type="text" class="form-control"
+                          formControlName="AdmissionNotes"
+                          [(ngModel)]="CurrentAdmission.AdmissionNotes"></textarea>
+                  <span class="color-red font-sm" *ngIf="CurrentAdmission.IsDirty('AdmissionNotes')" [hidden]="CurrentAdmission.IsValidCheck('AdmissionNotes','maxLength')">Admission Notes cannot exceed 1000 characters.</span> </div>
+              </div>
+            </div>
+          </form>
+          <form [formGroup]="CurrentAdmission.AdmissionValidator" class="form-horizontal hm-form">
+            <div class="form-group">
+              <label class="control-label col-md-4">Care Of Person Name<b>:</b></label>
+              <div class="col-md-7">
+                <input class="form-control" type="text" maxlength="100" formControlName="CareOfPersonName" [(ngModel)]="CurrentAdmission.CareOfPersonName"
+                     value="{{CurrentAdmission.CareOfPersonName | CapitalFirstLetter}}" placeholder="Care Of Person" />
+                <span class="error-msg" *ngIf="CurrentAdmission.IsDirty('CareOfPersonName')" [hidden]="CurrentAdmission.IsValidCheck('CareOfPersonName','maxlength')">Care of Person Name should be max 100 characters</span> </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-md-4">Care Of Person Phone<b *ngIf="CareofPersonNumberMandatory" class="color-red"> *</b><b>:</b></label>
+              <div class="col-md-7">
+                <input class="form-control" type="tel" maxlength="11" formControlName="CareOfPersonPhoneNo" [(ngModel)]="CurrentAdmission.CareOfPersonPhoneNo"
+                     value="" placeholder="Care Of Person Phone" />
+                <span class="error-msg" *ngIf="CurrentAdmission.IsDirty('CareOfPersonPhoneNo')" [hidden]="CurrentAdmission.IsValidCheck('CareOfPersonPhoneNo','pattern')">Enter valid Phone Number</span> <span class="error-msg" *ngIf="CareofPersonNumberMandatory && CurrentAdmission.IsDirty('CareOfPersonPhoneNo')" [hidden]="CurrentAdmission.IsValidCheck('CareOfPersonPhoneNo','required')">Care of Person Phone no. is mandatory</span> </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-md-4">Care Of Person Relation<b>:</b></label>
+              <div class="col-md-7"> 
+                <!-- @* Replaced *@ --> 
+                <!-- @*<input class="form-control" type="text" maxlength="100" formControlName="CareOfPersonRelation" [(ngModel)]="CurrentAdmission.CareOfPersonRelation"
+                   value="" placeholder="Care Of Person Relation" />
+              <span class="error-msg" *ngIf="CurrentAdmission.IsDirty('CareOfPersonRelation')" [hidden]="CurrentAdmission.IsValidCheck('CareOfPersonRelation','maxlength')">Care of Person Relation should be max 100 characters</span>*@ --> 
+                <!--
+              @*Modified by Yubraj----28th June. '18*@ -->
+                <select class="form-control" [(ngModel)]="CurrentAdmission.CareOfPersonRelation" [ngModelOptions]="{standalone: true}">
+                  <option value="Grandfather">Grandfather</option>
+                  <option value="Grandmother">Grandmother</option>
+                  <option value="Father">Father</option>
+                  <option value="Fatherinlaw">Father-in-law</option>
+                  <option value="Mother">Mother</option>
+                  <option value="Motherinlaw">Mother-in-law</option>
+                  <option value="Husband">Husband</option>
+                  <option value="Wife">Wife</option>
+                  <option value="Son">Son</option>
+                  <option value="Soninlaw">Son-in-law</option>
+                  <option value="Grandson">Grandson</option>
+                  <option value="Daughter">Daughter</option>
+                  <option value="Daughterinlaw">Daughter-in-law</option>
+                  <option value="Granddaughter">Granddaughter</option>
+                  <option value="Brother">Brother</option>
+                  <option value="Brotherinlaw">Brother-in-law</option>
+                  <option value="Sister">Sister</option>
+                  <option value="Sisterinlaw">Sister-in-law</option>
+                  <option value="Uncle">Uncle</option>
+                  <option value="Aunty">Aunty</option>
+                  <option value="Cousin">Cousin</option>
+                  <option value="Nephew">Nephew</option>
+                  <option value="Niece">Niece</option>
+                  <option value="friend">Friend</option>
+                  <option value="Others">Other</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="lbl-police-case" style="color:orange" for="isPoliceCase">Is Police Case<b>:</b> </label>
+              <input id="isPoliceCase" style="zoom:1.5; height:auto; margin-left:10px;" name="isPoliceCase" type="checkbox" value="" [checked]="CurrentAdmission.IsPoliceCase" 
+              [(ngModel)]="CurrentAdmission.IsPoliceCase" [ngModelOptions]="{standalone: true}" />
+              <!-- <label class="control-label col-md-4" style="color:orange" for="isPoliceCase">Is Police Case<b>:</b> </label>
+              <div class="col-md-8">
+                <div class="input-group">
+                  <div class="icheck-inline" style="height:auto; margin: auto;">                    
+                      <input id="isPoliceCase" style="zoom:1.5; height:auto; margin:0px;" name="isPoliceCase" type="checkbox" value="" [checked]="CurrentAdmission.IsPoliceCase" [(ngModel)]="CurrentAdmission.IsPoliceCase" [ngModelOptions]="{standalone: true}" />
+                      <span></span>
+                  </div>
+                </div>
+              </div> -->
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="col-md-12">
+        <button type="button" class="btn blue" (click)="AddAdmission()" [disabled]="loading">Save Admission</button>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-12"> 
+    
+    <!-- @*Set showwristband as true on successfull admission, this can later change if parameter value is false in server:sud-9Jan'19*@ -->
+    <admission-sticker [patientVisitId]="patientVisitId"
+                     [showSticker]="showSticker"
+                     (after-print-action)="StickerPrintCallBack()"
+                     [showDepositReceipt]="showDepositReceipt"
+                     [showWristBand]="true"
+                     [deposit]="CurrentDeposit"></admission-sticker>
+  </div>
+</div>

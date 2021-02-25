@@ -60,8 +60,8 @@
         <table *ngIf="displayReport" style="width:100%;box-shadow: 10px 10px 5px #888888;background-color: white;border-top: 2px solid #000;">
             <tr>
                 <td>
-                    <b>Name Of Service Provider : DanpheEMR Hospital</b> <br />
-                    <b>Taxpayers PAN : 604272476</b><br />
+                    <b>Name Of Service Provider :{{headerDetail.CustomerName}}</b> <br />
+                    <b>Taxpayers {{ headerDetail.CustomerRegLabel}}</b><br />
                     <b>Duration of Sales :</b> {{displayStartDate}} / {{displayEndDate}}<br />
                 </td>
             </tr>

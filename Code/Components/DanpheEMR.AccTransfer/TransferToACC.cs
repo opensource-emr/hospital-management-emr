@@ -15,8 +15,8 @@ namespace DanpheEMR.AccTransfer
 {
     public class TransferToACC
     {
-        public static string accConn= ConfigurationManager.ConnectionStrings["accConnStr"].ConnectionString;
-        public static  string plainConnString;
+        public static string accConn = ConfigurationManager.ConnectionStrings["accConnStr"].ConnectionString;
+        public static string plainConnString;
 
 
         //check enabled automatic transfer to accounting
@@ -42,12 +42,7 @@ namespace DanpheEMR.AccTransfer
             }
         }
 
-        public static double PostData(int section)
-        {
-            AccountingTransferData obj = new AccountingTransferData(plainConnString, 1);
-            return AccountingTransferData.PostTxnData(section);
-        }
-       
+      
         public static string getConnection(string encConnString)
         {
             string connString = "";

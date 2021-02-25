@@ -19,6 +19,8 @@ import { QuotationModel } from './quotation.model';
 import * as moment from 'moment/moment';
 import { QuotationItemsModel } from './quotation-items.model';
 import { QuotationUpLoadFileModel } from './quotation-upload-file.model';
+import { PurchaseRequestModel } from './purchase-request.model';
+import { ReturnToVendorModel } from './return-to-vendor.model';
 @Injectable()
 export class InventoryBLService {
   public PurchaseOrderItems: PurchaseOrderItems = null;
@@ -60,11 +62,15 @@ export class InventoryBLService {
       });
   }
 
-  public GetPurchaseOrderList(fromDate,toDate,Status: string) {
-    return this.inventoryDLService.GetPurchaseOrderList(fromDate,toDate,Status)
+  public GetPurchaseOrderList(fromDate, toDate, Status: string) {
+    return this.inventoryDLService.GetPurchaseOrderList(fromDate, toDate, Status)
       .map((responseData) => {
         return responseData;
       });
+  }
+  public GetAllPOVerifiers(){
+    return this.inventoryDLService.GetAllPOVerifiers()
+      .map(res => {return res;});
   }
   //GET: External PO vendor wise
   public GetPOlistVendorwise() {
@@ -80,6 +86,7 @@ export class InventoryBLService {
         return responseData;
       });
   }
+
   //get item list
   public GetRFQItemsList() {
     return this.inventoryDLService.GetRFQItemsList()
@@ -109,12 +116,24 @@ export class InventoryBLService {
         return responseData;
       });
   }
-  //get terms list
-  public GetTermsList() {
-    return this.inventoryDLService.GetTermsList()
+  //get creditNoteno
+  public GetCreditNoteNum() {
+    return this.inventoryDLService.GetCreditNoteNum()
       .map((responseData) => {
         return responseData;
       });
+  }
+  //get terms list
+  public GetTermsList(TermsApplicationId:number) {
+    return this.inventoryDLService.GetTermsList(TermsApplicationId)
+      .map((responseData) => {
+        return responseData;
+      });
+  }
+
+  //Get:Requistion  update for item
+  public GetToRequistion(requisitionId: number) {
+    return this.inventoryDLService.GetToRequistion(requisitionId).map(res => { return res; });
   }
   //GET: Getting Requisition items for creating PO
   public GetRequisitionforPO() {
@@ -173,8 +192,15 @@ export class InventoryBLService {
       });
   }
   //GET: REQUISITION
-  public GetDeptwiseRequisitionList(status: string) {
-    return this.inventoryDLService.GetDeptwiseRequisitionList(status)
+  public GetAllSubstoreRequistionList(fromDate: string, toDate: string) {
+    return this.inventoryDLService.GetAllSubstoreRequistionList(fromDate, toDate)
+      .map((responseData) => {
+        return responseData;
+      });
+  }
+  //GET: REQUISITION
+  public GetSubstoreRequistionList(fromDate: string, toDate: string, storeId: number) {
+    return this.inventoryDLService.GetSubstoreRequistionList(fromDate, toDate, storeId)
       .map((responseData) => {
         return responseData;
       });
@@ -210,13 +236,13 @@ export class InventoryBLService {
       .map(res => { return res });
   }
   //GET: Internal : get item list by VendorId for ReturnToVendor
-  public GetItemListbyVendorId(VendorId) {
-    return this.inventoryDLService.GetItemListbyVendorId(VendorId)
+    public GetItemListbyVendorId(VendorId, GoodsReceiptNo, FiscYrId) {
+    return this.inventoryDLService.GetItemListbyVendorId(VendorId, GoodsReceiptNo,FiscYrId)
       .map(res => { return res });
   }
   //GET: External : get all goods receipt list
   public GetGoodsReceiptList(fromDate, toDate) {
-    return this.inventoryDLService.GetGoodsReceiptList(fromDate,toDate)
+    return this.inventoryDLService.GetGoodsReceiptList(fromDate, toDate)
       .map(res => { return res });
   }
 
@@ -234,7 +260,7 @@ export class InventoryBLService {
     return this.inventoryDLService.GetGRItemsByGRId(GoodsReceiptId)
       .map(res => { return res });
   }
-  
+
   //GET: get purchase order details by purchase order ID
   public GetPOItemsByPOId(PurchaseOrderId) {
     return this.inventoryDLService.GetPOItemsByPOId(PurchaseOrderId)
@@ -263,6 +289,33 @@ export class InventoryBLService {
       });
   }
 
+  //GET: Get All Requisition Items details for View requisition Items by Requisition ID -- new function: sud-19Feb'20
+  GetRequisitionItemsForViewByReqId(RequisitionId: number) {
+    return this.inventoryDLService.GetRequisitionItemsForViewByReqId(RequisitionId)
+      .map((responseData) => {
+        return responseData;
+      });
+  }
+
+  GetDispatchDetails(RequisitionId: number) {
+    return this.inventoryDLService.GetDispatchDetails(RequisitionId)
+      .map((responseData) => {
+        return responseData;
+      });
+  }
+
+  GetCancelDetails(RequisitionId: number) {
+    return this.inventoryDLService.GetCancelDetails(RequisitionId)
+      .map((responseData) => {
+        return responseData;
+      });
+  }
+  GetDispatchItemByDispatchId(DispatchId: number) {
+    return this.inventoryDLService.GetDispatchItemByDispatchId(DispatchId)
+      .map((responseData) => {
+        return responseData;
+      });
+  }
   //GET: Get the return item list on that created date
   GetReturnItemList(CreatedOn: string, VendorId: number) {
     return this.inventoryDLService.GetReturnItemList(CreatedOn, VendorId)
@@ -298,6 +351,41 @@ export class InventoryBLService {
         return responseData;
       });
   }
+  //GET PO requisition
+  GetPORequisition(fromDate,toDate) {
+    return this.inventoryDLService.GetPORequisition(fromDate,toDate)
+      .map(res => { return res });
+  }
+  //GET PO requisition
+  GetPurchaseRequestById(RequisitionId: number) {
+    return this.inventoryDLService.GetPurchaseRequestById(RequisitionId)
+      .map(res => { return res });
+  }
+  GetPurchaseRequestItemsById(RequisitionId: number) {
+    return this.inventoryDLService.GetPurchaseRequestItemsById(RequisitionId)
+      .map(res => { return res });
+  }
+  GetItemPriceHistory() {
+    return this.inventoryDLService.GetItemPriceHistory()
+      .map(res => { return res });
+  }
+  GetAllInventoryFiscalYears() {
+    return this.inventoryDLService.GetAllInventoryFiscalYears()
+      .map(res => { return res });
+  }
+  //GET: Track Requisition and all its verification
+  TrackRequisitionById(RequisitionId) {
+    return this.inventoryDLService.TrackRequisitionById(RequisitionId)
+      .map(res => { return res });
+  }
+
+  //GET:FiscalYears
+  public GetAllFiscalYears() {
+    return this.inventoryDLService.GetAllFiscalYears()
+      .map(res => res);
+  }
+  
+
 
   //POST:posting the requisitions in requistion table..(tests-order.component)
   PostToPurchaseOrder(PO: PurchaseOrder) {
@@ -315,7 +403,42 @@ export class InventoryBLService {
     return this.inventoryDLService.PostToPurchaseOrder(data)
       .map(res => { return res })
   }
-
+  //POST: posting the purchase order cancel
+  PostPurchaseOrderCancelDetail(selectedPoId, cancelationRemarks) {
+    try {
+      return this.inventoryDLService.PostPurchaseOrderCancelDetail(selectedPoId,cancelationRemarks)
+        .map(res => { return res });
+    } catch (ex) {
+      throw ex;
+    }
+  }
+  //POST: posting the requisition cancel
+  WithdrawRequisitionById(RequisitionId, cancelationRemarks) {
+    try {
+      return this.inventoryDLService.WithdrawRequisitionById(RequisitionId, cancelationRemarks)
+        .map(res => { return res });
+    } catch (ex) {
+      throw ex;
+    }
+  }
+  //POST: posting the requisition cancel
+  WithdrawPurchaseRequestById(PurchaseRequestId, cancelationRemarks) {
+    try {
+      return this.inventoryDLService.WithdrawPurchaseRequestById(PurchaseRequestId, cancelationRemarks)
+        .map(res => { return res });
+    } catch (ex) {
+      throw ex;
+    }
+  }
+  //POST: posting the  goods receipt cancel
+  PostGoodsReceiptCancelDetail(selectedGRId, cancelationRemarks) {
+    try {
+      return this.inventoryDLService.PostGoodsReceiptCancelDetail(selectedGRId, cancelationRemarks)
+        .map(res => { return res });
+    } catch (ex) {
+      throw ex;
+    }
+  }
   UpdatePurchaseOrder(PO: PurchaseOrder) {
 
     //omiting the validators during post because it causes cyclic error during serialization in server side.
@@ -331,6 +454,23 @@ export class InventoryBLService {
     return this.inventoryDLService.UpdatePurchaseOrder(data)
       .map(res => { return res })
   }
+  //POST:posting the requisitions in PO requistion table..(tests-order.component)
+  PostToPORequisition(PO: PurchaseRequestModel) {
+
+    //omiting the validators during post because it causes cyclic error during serialization in server side.
+    //omit validator from inputPO (this will give us object)
+    let newPurchaseRequest: any = _.omit(PO, ['PurchaseRequestValidator']);
+    let newPurchaseRequestItems = PO.PurchaseRequestItems.map(item => {
+      return _.omit(item, ['PurchaseRequestItemValidator']);
+    });
+    //assign items to above 'newPO' with exact same propertyname : 'PurchaseOrderItems'
+    newPurchaseRequest.PurchaseRequestItems = newPurchaseRequestItems;
+
+    let data = JSON.stringify(newPurchaseRequest);
+    return this.inventoryDLService.PostToPORequisition(data)
+      .map(res => { return res })
+  }
+
   //Post:posting the request for quotation in requestforquotation table
   PostToReqForQuotation(PO: RequestForQuotationModel) {
 
@@ -375,25 +515,6 @@ export class InventoryBLService {
       .map(res => { return res })
 
   }
-  //POST : DISPATCH-ALL
-  PostToDispatch(requisitionItemStockVM: RequisitionsStockVMModel) {
-    let newRequisitionSVM: any = requisitionItemStockVM;
-    for (var i = 0; i < requisitionItemStockVM.requisitions.length; i++) {
-      let reqItemsTemp = requisitionItemStockVM.requisitions[i].RequisitionItems.map(function (item) {
-        var temp = _.omit(item, ['Item']);
-        return temp;
-      });
-      newRequisitionSVM.requisitions[i].RequisitionItems = reqItemsTemp;
-    }
-    let dispatchItemsTemp = requisitionItemStockVM.dispatchItems.map(function (item) {
-      var temp = _.omit(item, ['DispatchItemValidator']);
-      return temp;
-    });
-    newRequisitionSVM.dispatchItems = dispatchItemsTemp;
-    let data = JSON.stringify(newRequisitionSVM);
-    return this.inventoryDLService.PostToDispatch(data)
-      .map(res => { return res })
-  }
   //POST: Posting WriteOffItems
   PostToWriteOffItems(writeOffItems: Array<WriteOffItems>) {
     let newWriteOffItems: any = writeOffItems.map(item => {
@@ -418,14 +539,35 @@ export class InventoryBLService {
     return this.inventoryDLService.PostToRequisition(data)
       .map(res => { return res })
   }
+  //Posting the Requisiton and requisitionItems table
+  PostDirectDispatch(requisitionStockVM: RequisitionStockVMModel) {
+    let newRequ: any = _.omit(requisitionStockVM.requisition, ['RequisitionValidator']);
+
+    let newRequItems = requisitionStockVM.requisition.RequisitionItems.map(item => {
+      return _.omit(item, ['RequisitionItemValidator']);
+    });
+    newRequ.RequisitionItems = newRequItems;
+    
+    let newRequisitionSVM: any = requisitionStockVM;
+
+    let dispatchItemsTemp = requisitionStockVM.dispatchItems.map(function (item) {
+      var temp = _.omit(item, ['DispatchItemValidator']);
+      return temp;
+    });
+    newRequisitionSVM.requisition = newRequ;
+    newRequisitionSVM.dispatchItems = dispatchItemsTemp;
+    let data = JSON.stringify(newRequisitionSVM);
+    return this.inventoryDLService.PostDirectDispatch(data)
+      .map(res => { return res })
+  }
   //Save Return to vendor Item
-  public PostToReturnToVendor(returnItems: Array<ReturnToVendorItem>) {
-    let temp: any = returnItems.map(item => {
+  public PostToReturnToVendor(returnToVendor: ReturnToVendorModel) {
+    let temp: any = returnToVendor.itemsToReturn.map(item => {
       return _.omit(item, ['ReturnItemValidator', 'Item', 'batchNoList']);
     });
+    returnToVendor.itemsToReturn = temp;
 
-
-    let data = JSON.stringify(temp);
+    let data = JSON.stringify(returnToVendor);
     return this.inventoryDLService.PostToReturnToVendor(data)
       .map(res => { return res })
   }
@@ -435,12 +577,49 @@ export class InventoryBLService {
     return this.inventoryDLService.UpdatePOAndPOItemStatus(data)
       .map(res => { return res })
   }
+
+  //PUT:Update Purchase order and Purchase Order Items Status after Goods Receipt Generation
+  UpdateRequisitionStatus(req: Requisition) {
+    let data = JSON.stringify(req);
+    return this.inventoryDLService.UpdateRequisitionStatus(data)
+      .map(res => { return res })
+  }
+  //PUT:Approve requisition
+  ApprovePORequisition(RequisitionId) {
+    let data = JSON.stringify(RequisitionId);
+    return this.inventoryDLService.ApprovePORequisition(data)
+      .map(res => { return res })
+  }
+  //PUT:Approve requisition
+  ApproveRequisition(CurrentVerificationLevel: number, RequisitionId: number, StoreId: number) {
+    return this.inventoryDLService.ApproveRequisition(CurrentVerificationLevel, RequisitionId, StoreId)
+      .map(res => { return res })
+  }
+  //PUT:Deny requisition
+  RejectRequisition(CurrentVerificationLevel: number, RequisitionId: number, StoreId: number) {
+    return this.inventoryDLService.RejectRequisition(CurrentVerificationLevel, RequisitionId, StoreId)
+      .map(res => { return res })
+  }
   //PUT : Stock Manage
   public UpdateStock(stocks: Array<StockModel>) {
     let data = JSON.stringify(stocks);
     return this.inventoryDLService.PutStock(data)
       .map(res => { return res });
   }
+  //Cancel itms 
+  CancelRequisitionItems(requisition: Requisition) {
+    let newRequ: any = _.omit(requisition, ['RequisitionValidator']);
+
+    let newRequItems = requisition.RequisitionItems.map(item => {
+      return _.omit(item, ['RequisitionItemValidator']);
+    });
+
+    newRequ.RequisitionItems = newRequItems;
+    let data = JSON.stringify(newRequ);
+    return this.inventoryDLService.CancelRequisitionItems(data)
+      .map(res => { return res })
+  }
+
   //PUT:update Selected Quotation and RequestedQuotation
   public UpdateVendorForPO(selectedVendor: QuotationModel) {
 
@@ -450,6 +629,27 @@ export class InventoryBLService {
     return this.inventoryDLService.UpdateVendorForPO(data)
       .map(res => { return res });
 
+  }
+  //PUT: Edit PO Requisition
+  UpdatePORequisition(PO: PurchaseRequestModel) {
+
+    //omiting the validators during post because it causes cyclic error during serialization in server side.
+    //omit validator from inputPO (this will give us object)
+    let newPORequisition: any = _.omit(PO, ['PurchaseRequestValidator']);
+    let newPoItemsRequisition = PO.PurchaseRequestItems.map(item => {
+      return _.omit(item, ['PurchaseRequestItemValidator']);
+    });
+    //assign items to above 'newPO' with exact same propertyname : 'PurchaseOrderItems'
+    newPORequisition.PurchaseRequestItems = newPoItemsRequisition;
+
+    let data = JSON.stringify(newPORequisition);
+    return this.inventoryDLService.UpdatePORequisition(data)
+      .map(res => { return res })
+  }
+
+  UpdatePORequisitionAfterPOCreation(RequisitionId: number) {
+    return this.inventoryDLService.UpdatePORequisitionAfterPOCreation(RequisitionId)
+      .map(res => { return res })
   }
   //Save Return to vendor Item
   public PostQuotationDetails(quoDetails: QuotationModel) {
@@ -496,8 +696,10 @@ export class InventoryBLService {
     } catch (exception) {
       throw exception;
     }
-
-
-
+  }
+  //GET : vendor's goods received billing history
+  public GetGRVendorBillHistory() {
+    return this.inventoryDLService.GetGRVendorBillingHistory()
+      .map(res => { return res });
   }
 }

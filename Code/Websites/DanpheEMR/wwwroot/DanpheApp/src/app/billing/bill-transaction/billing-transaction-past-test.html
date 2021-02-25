@@ -13,36 +13,68 @@
   table.past-test-table {
     width: 100%;
     border-collapse: collapse;
+    font-size: 12px;
   }
 
-    table.past-test-table tr th, table.past-test-table tr td {
-      padding: 3px 2px;
-      border: 1px solid #bcbdbf;
+    table.past-test-table tr th {
+      border: none;
+      /*font-size: 0.9em;*/
+      border-top: 2px solid #eee;
+      border-bottom: 2px solid #eee;
+      background: #eee;
+      padding: 4px 7px;
+      font-weight: bold;
     }
+
+  .bg-white .billing-head {
+    font-size: 1em;
+    font-weight: bold;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+    margin-top: auto;
+  }
+
+  table.past-test-table tr th, table.past-test-table tr td {
+    padding: 4px 7px;
+    border: 1px solid #eee;
+  }
 </style>
-
-<hr>
-
 <!--class="table-wrapper-scroll-y my-custom-scrollbar"-->
-<div class="table-wrapper-scroll-y my-custom-scrollbar">
-  <p><strong>Patient Tests History</strong></p>
+<div class="table-wrapper-scroll-y my-custom-scrollbar bg-white p-15">
+  <h3 class="billing-head">Patient Tests History</h3>
   <table class="past-test-table">
     <thead>
       <tr>
-        <th>S.N</th>
-        <th>Invoice</th>
+        <!-- <th>S.N</th> -->
+        <th style="width: 120px;">
+          Date<b *ngIf="!IsLocalDate">(AD)</b><b *ngIf="IsLocalDate">(BS)</b>
+          <div class="tooltip ng-star-inserted" style="color: #0069FF;z-index: inherit;">
+            <span style="display: inline-block;background: #D8DEF1;cursor: pointer;">
+              <i class="fa fa-refresh" (click)="ChangeDateFormate()"></i>
+            </span>
+            <p class="tooltiptext ttptextdown no-print">Change date format to AD/BS</p>
+          </div>
+        </th>
         <th>Tests</th>
-        <th>Date</th>
+        <th>Invoice No.</th>
         <th>User</th>
       </tr>
     </thead>
     <tbody>
       <tr *ngFor="let data of allTests; let i=index;">
-        <td>{{i+1}}</td>
-        <td>{{data.InvoiceNumber}}</td>
+        <!-- <td>{{i+1}}</td> -->
+        <td *ngIf="!IsLocalDate" style="width: 120px;">{{data.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD  HH:mm'}}</td>
+        <td *ngIf="IsLocalDate" style="width: 120px;">{{data.CreatedOn | nepaliDate:'format':'YYYY-MM-DD  hh:mm'}}</td>
         <td>{{data.ItemName}}</td>
-        <td>{{data.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD  HH:mm'}}</td>
-        <td>{{data.User}}</td>
+        <td>{{data.InvoiceNumber}}</td>
+        <td>
+          <div id="toolbox" class="tooltip no-print" style="color: #006687;z-index: inherit;">
+            <span style="display: inline-block; padding: 1px 2px 0px;cursor: pointer;">
+              {{data.UserFirstName}}
+            </span>
+            <p class="tooltiptext ttptextdown no-print">  {{data.User}} </p>
+          </div>
+        </td>
       </tr>
     </tbody>
   </table>

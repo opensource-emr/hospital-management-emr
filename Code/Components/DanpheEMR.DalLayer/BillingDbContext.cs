@@ -8,10 +8,11 @@ using System.Data.Entity;
 using System.Data;
 using System.Data.SqlClient;
 using DanpheEMR.Security;
+using Audit.EntityFramework;
 
 namespace DanpheEMR.DalLayer
 {
-    public class BillingDbContext : DbContext
+    public class BillingDbContext : AuditDbContext
     {
         public DbSet<BillingTransactionModel> BillingTransactions { get; set; }
         public DbSet<ServiceDepartmentModel> ServiceDepartment { get; set; }
@@ -74,6 +75,7 @@ namespace DanpheEMR.DalLayer
         {
             this.Configuration.LazyLoadingEnabled = true;
             this.Configuration.ProxyCreationEnabled = false;
+            this.AuditDisabled = true;
 
         }
         protected override void OnModelCreating(DbModelBuilder modelBuilder)

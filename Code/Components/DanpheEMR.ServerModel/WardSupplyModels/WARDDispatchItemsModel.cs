@@ -29,6 +29,8 @@ namespace DanpheEMR.ServerModel
 
         public decimal? MRP { get; set; }
 
+        public decimal? Price { get; set; }
+
         public decimal SubTotal { get; set; }
 
         public string Remark { get; set; }

@@ -1,0 +1,21 @@
+<!--Start: Header Details -->
+<div class="col-md-12" style="margin:20px!important; text-align:center;" *ngIf="selectedInvoiceHeader">
+  <div class="row">
+    <div class="col-md-2">
+      <img [src]="imgURL" alt="No logo found" width="75" height="75" />
+    </div>
+    <div class="col-md-6">
+      <label style="font-size:x-large;"><strong>{{selectedInvoiceHeader.HospitalName}}</strong></label> <br />
+      <label>{{selectedInvoiceHeader.Address}}</label> <br />
+      <label>{{selectedInvoiceHeader.Telephone}}</label> <br />
+      <label>{{selectedInvoiceHeader.Email}}</label> <br /> <br />
+      <span style="font-size:15px;"><strong> {{module}} Unit </strong></span><br />
+    </div>
+    <div class="col-md-2">
+      <!--this is temporary QR coder for sample -->
+      <!-- <img [src]="QRURL" alt="No logo found" width="120" height="100" /> -->
+      <qr-code [size]="75" [backgroundAlpha]="0"></qr-code>
+    </div>
+  </div>
+</div>
+<!--End: Header Details -->

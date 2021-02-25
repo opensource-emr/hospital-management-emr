@@ -1,0 +1,66 @@
+<div class="clearfix">
+  <div class="pull-left">
+    <button class="btn btn-primary" (click)="AddEmployeeIncentive_ForNEW()">
+      <i class="fa fa-plus"></i>
+      New Employee Incentive
+    </button>
+  </div>
+  <div class="pull-right">
+    <button class="btn btn-primary" (click)="ExportAllIncentiveDate()">
+      <i class="fa fa-file-excel-o"></i>
+      Export All Data
+    </button>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-12 col-xs-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="EmployeeIncentiveSetupGridColumns" [grid-data]="EmployeeIncentiveList"
+      (grid-actions)="EmployeeIncentiveSetupGridActions($event)">
+    </danphe-grid>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12 col-xs-12 col-sm-12">
+    <employee-item-setup *ngIf="showEmployeeSetUpPopup" [EmployeeId]="selectedEmployee"
+      [all-employeeList]="allDoctorList" [all-BillitmList]="allBillitmList" [all-profileList]="profileList"
+      [existing-emp-list]="EmployeeIncentiveList" (incentive-info-change)="incentiveInfoChange($event)">
+    </employee-item-setup>
+  </div>
+</div>
+
+<div *ngIf="showTdsEditPopup && selEmpObjForTds">
+  <div class="popup-static portlet box portlet-fullscreen custom_modal">
+    <div class="portlet-body form">
+      <div class="row">
+        <div class="col-md-6 col-md-offset-3 mt20">
+          <div class="modelbox-div no-margin no-padding clearfix">
+            <div class="caption custom-caption">
+              <h3> <span style="color:black;">Edit TDS Percent For: {{selEmpObjForTds.FullName}} </span></h3>
+              <a style="float:right;" class="btn btn-danger" (click)="CloseTDSPopup()" title="Close">X</a>
+            </div>
+            <div class="form-horizontal hm-form">
+              <div class="form-body">
+                <div style="padding-bottom: 15px;">
+                  TDS Percent : <input type="number" [(ngModel)]="selEmpObjForTds.TDSPercent" (wheel)="coreService.PreventNumberChangeOnScroll($event)">
+                </div>
+
+              </div>
+              <div class="panel-footer">
+                <div class="row clearfix">
+
+                  <div class="col-md-6 text-right">
+                    <button class="btn green btn-success btn-save-frc" (click)="SaveTDSPercent()"
+                      id="btn_GroupDistribution">
+                      <i class="fa fa-save"></i> Update TDS
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

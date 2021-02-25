@@ -8,11 +8,13 @@ namespace DanpheEMR.ServerModel.PharmacyModels
 {
     public class TotalCollectionViewModel
     {
-        public decimal TotalSale { get; set; }
-        public decimal TotalReturn { get; set; }
-        public decimal NetSale { get; set; }
-        public double TotalDeposit { get; set; }
-        public double DepositReturned { get; set; }
+        public decimal? TotalSale { get; set; }
+        public decimal? TotalReturn { get; set; }
+        public decimal? NetSale { get; set; }
+        public double? TotalDeposit { get; set; }
+        public decimal? CreditAmount { get; set; }
+        public decimal? CreditReturn { get; set; }
+        public double? DepositReturned { get; set; }
         public virtual IEnumerable<CounterCollectionViewModel> CounterCollection { get; set; }
         public virtual IEnumerable<UserCollectionViewModel> UserCollection { get; set; }
     }
@@ -25,6 +27,8 @@ namespace DanpheEMR.ServerModel.PharmacyModels
         public string UserName { get; set; }
         public decimal UserSale { get; set; }
         public decimal TotalSale { get; set; }
+        public string DepositType { get; set; }
+        public decimal CounterDeposit { get; set; }
     }
     public class UserCollectionViewModel
     {
@@ -35,6 +39,7 @@ namespace DanpheEMR.ServerModel.PharmacyModels
         public string UserName { get; set; }
         public decimal UserSale { get; set; }
         public decimal TotalSale { get; set; }
+        public string DepositType { get; set; }
     }
 
 

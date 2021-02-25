@@ -16,6 +16,7 @@ namespace DanpheEMR.ServerModel.InventoryModels.InventoryReportModel
         public Nullable<decimal> TotalAmount { get; set; }
         public string RequestedBy { get; set; }
         public string Remark { get; set; }
-
+        public string UOMName { get; set; }
+        public string Code { get; set; }
     }
 }

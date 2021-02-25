@@ -1,0 +1,542 @@
+<style>
+  .fixed-action {
+    position: sticky;
+    right: 0;
+    top: 280px;
+    /*    width: 24%;*/
+    padding: 10px;
+    background-color: #b1c2d6;
+    border-radius: 10px !important;
+    z-index: 4;
+  }
+
+  .invalid-percent {
+    border: 2px solid red;
+  }
+
+  .hm-form .control-label {
+    font-size: 11px;
+    margin-top: 6px;
+    font-weight: 600;
+  }
+
+  .hm-form .filter-label {
+    font-size: 14px;
+  }
+
+  .custom_modal .modelbox-div {
+    padding-bottom: 20px;
+  }
+
+  .table-wrapper {
+    max-height: 400px;
+    overflow-y: scroll;
+    margin-top: 10px;
+  }
+
+    .table-wrapper::-webkit-scrollbar-track {
+      /*-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);*/
+      background-color: #F5F5F5;
+    }
+
+    .table-wrapper::-webkit-scrollbar {
+      width: 4px;
+      background-color: #F5F5F5;
+    }
+
+    .table-wrapper::-webkit-scrollbar-thumb {
+      background-color: #ccc;
+    }
+
+    .table-wrapper table {
+      margin-bottom: 0 !important;
+    }
+
+      .table-wrapper table th {
+        position: sticky;
+        top: -1px;
+        background-color: #f1f1f1;
+        z-index: 9;
+      }
+
+      .table-wrapper table button {
+        width: 30px;
+        height: 30px;
+        background-color: #ffa500;
+        border: 1px solid #ffa500;
+        border-radius: 3px;
+        padding: 0;
+        font-size: 11px;
+        line-height: 10px;
+        color: #291b00;
+      }
+
+        .table-wrapper table button i {
+          display: block !important;
+        }
+
+  .col-md-5 .col-md-7 .ng-untouched.ng-pristine.ng-valid, .col-md-5 .col-md-7 .ng-valid.ng-dirty.ng-touched {
+    width: 100%;
+  }
+
+  .hm-form input {
+    margin-bottom: 0 !important;
+  }
+
+  .border-bottom {
+    border: 1px solid #eae8e8;
+    margin-bottom: 15px;
+    background-color: #f7f7f7;
+    padding: 10px 10px;
+  }
+
+    .border-bottom .form-group {
+      margin-bottom: 0;
+    }
+</style>
+<!--<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showAddPage">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption no-margin">
+            <h3> <span>Edit Profile Items Percentages</span> </h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+          </div>
+          <div class="form-horizontal hm-form incentive_form">
+            <div class="form-body">
+              <div *ngIf="isDataAvailable">
+                <div class="border-bottom">
+                  <div class="form-group">
+                    <span class="col-md-4">Profile Name: <b>{{ currentProfile.ProfileName }}</b></span> <span class="col-md-4">Category Name: <b>{{ currentProfile.PriceCategoryName }}</b></span>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-5">
+                    <div class="row no-gutters">
+                      <label for="" class="control-label filter-label col-md-6">Filter By Service Department:</label>
+                      <div class="col-md-6">
+                        <select class="form-control" [(ngModel)]="selServiceDepartment"
+                                [ngModelOptions]="{standalone: true}" (ngModelChange)="filterList()">
+                          <option value="">--- Select ---</option>
+                          <option *ngFor="let dept of uniqueDeptNames" value="{{ dept.ServiceDepartmentName }}"> {{ dept.ServiceDepartmentName }} </option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-5">
+                    <div class="row no-gutters">
+                      <label for="" class="control-label filter-label col-md-4">Filter By Item Name:</label>
+                      <div class="col-md-8">
+                        <input type="text" class="form-control incentive-item-name" placeholder="Enter Item Name" [(ngModel)]="strSearchitem"
+                               [ngModelOptions]="{standalone: true}" (ngModelChange)="filterList()">
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-2" *ngIf="showEditFields">
+                    <input type="button" class="btn btn-primary" (click)="SaveProfileItems()" [disabled]="loading"
+                           value="Save Selected" style="width:100%;box-shadow: none !important;border: none;border-radius: 5px !important;" />
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-9">
+                    <div class="table-wrapper">
+                      <table class="table table-striped table-hover custom_table padLess_table table-bordered">
+                        <thead>
+                          <tr>
+                            <th style="width: 15%;">
+                              Select All
+                              <label class="mt-checkbox mt-checkbox-outline">
+                                <input id="isActive" type="checkbox" [(ngModel)]="selectAll"
+                                       [ngModelOptions]="{standalone: true}" (ngModelChange)="selectAllClicked()" />
+                                <span></span>
+                              </label>
+                            </th>
+                            <th style="width: 23%;"><b>Department</b></th>
+                            <th style="width: 31%;"><b>ItemName</b></th>
+                            <th style="width: 15%;"><b>Assigned To %</b></th>
+                            <th style="width: 15%;"><b>Referral %</b></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr *ngFor="let row of filteredItemList">
+                            <td style="text-align: center;">
+                              <label class="mt-checkbox mt-checkbox-outline">
+                                <input id="isActive" type="checkbox" [(ngModel)]="row.IsSelected"
+                                       [ngModelOptions]="{standalone: true}" (ngModelChange)="checkBoxClicked($event)" />
+                                <span></span>
+                              </label>
+                            </td>
+                            <td>{{ row.DepartmentName }}</td>
+                            <td>{{ row.ItemName }} <b *ngIf="row.DocObj.DoctorName"> ({{row.DocObj.DoctorName}})</b></td>
+                            <td>
+                              <input [(ngModel)]="row.AssignedToPercent" [ngModelOptions]="{standalone: true}" min="1"
+                                     class="form-control" name="AssignedToPercent" [disabled]="!row.IsSelected"
+                                     type="number" (change)="AssignPercentChange(row)"
+                                     (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                                     [ngClass]="{'invalid-percent': row.IsSelected && !row.IsPercentageValid}">
+                            </td>
+                            <td>
+                              <input [(ngModel)]="row.ReferredByPercent" [ngModelOptions]="{standalone: true}" min="1"
+                                     class="form-control" name="RefferredByPercent" [disabled]="!row.IsSelected"
+                                     type="number" (change)="RefererrPercentChange(row)"
+                                     (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                                     [ngClass]="{'invalid-percent': row.IsSelected && !row.IsPercentageValid}">
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  <div class="col-md-3 mt10" *ngIf="showEditFields">
+                    <div class="fixed-action">
+                      <div style="z-index: 9999; position: relative;">
+                        <b>Bulk Update</b>&nbsp;&nbsp;
+                        <div class="tooltip" id="bulkUpdateToolbox">
+                          <span style="cursor: pointer;"> <i class="fa fa-info" style="background-color: #ffffff;width: 20px;height: 20px;line-height: 20px;border-radius: 50%;text-align: center;"></i> </span>
+                          <p class="tooltiptext ttptextdown no-print">Changes the percentages of all checked-items immediately </p>
+                        </div>
+                      </div>
+                      <div class="form-group" style="display: flex;">
+                        <label class="control-label col-md-7"> AssignedTo Percent<b style="float:right;">:</b> </label>
+                        <div class="col-md-5">
+                          <div id="toolbox1" class="tooltip" style="z-index: 1031;">
+                            <input class="form-control" type="number" maxlength="50"
+                                   [(ngModel)]="currentProfile.GroupAssignedToPercent" value=""
+                                   (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                                   [ngClass]="{'invalid-percent': !isGroupPercentValid}"
+                                   (ngModelChange)="GroupPercentChange()" click="this.select()" />
+                            <p *ngIf="!isGroupPercentValid" class="tooltiptext ttptextdown">Total of Referral% and Assigned% Can't be more than 100. </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="form-group" style="display: flex;">
+                        <label class="control-label col-md-7"> ReferredBy Percent<b style="float:right;">:</b> </label>
+                        <div class="col-md-5">
+                          <div id="toolbox2" class="tooltip">
+                            <input class="form-control" type="number" maxlength="50"
+                                   [(ngModel)]="currentProfile.GroupReferredByPercent" value=""
+                                   (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                                   [ngClass]="{'invalid-percent': !isGroupPercentValid}"
+                                   (ngModelChange)="GroupPercentChange()" click="this.select()" />
+                            <p *ngIf="!isGroupPercentValid" class="tooltiptext ttptextdown">Total of Referral% and Assigned% Can't be more than 100. </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>-->
+
+<div class="popup-static portlet box portlet-fullscreen custom_modal">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="modelbox-div clearfix" style="width: 94%; left: 3%;">
+          <div class="caption custom-caption no-margin" style="padding: 8px 15px;">
+            <h3>
+              <span *ngIf="!update && newProfile">Add New INCENTIVE Profile </span>
+              <span *ngIf="update">Profile Item Setup</span>
+              <span *ngIf="update">
+                for:
+                <span style="font-weight: bold; color: blue;margin-left: 40px;font-size: 20px;">
+                  {{currentProfile.ProfileName}}
+                </span>
+              </span>
+            </h3>
+
+            <a class="btn btn-danger" (click)="Close()" title="Close Popup">X</a>
+          </div>
+          <div class="form-horizontal hm-form incentive_form">
+            <div>
+              <div class="emp-header" *ngIf="!update && newProfile">
+                <div class="form-group mb10">
+                  <div class="col-md-4">
+                    <div class="row">
+                      <span class="col-md-5">Profile Name <b>:</b></span>
+                      <div class="col-md-7">
+                        <input danphe-auto-complete [(ngModel)]="ProfileObj" [list-formatter]="profileListFormatter"
+                               [source]="profileList" placeholder="Enter Profile Name" display-property-name="ProfileName"
+                               value-property-name=null onclick="this.select()" max-num-list="10"
+                               (ngModelChange)="OnChangeProfile()" class="incentive-search-doctor" [disabled]="update"/>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-2">
+                    <div class="row">
+                      <span class="col-md-5">Description<b>:</b> </span>
+                      <div>
+                        <textarea id="description" [(ngModel)]="currentProfile.Description"
+                                  [ngModelOptions]="{standalone: true}"></textarea>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-2" *ngIf="!update">
+                    <div class="row">
+                      <button class="btn primary-btn btn-success btn-add-new-row"
+                              title="Click To Save employee incentive Info" (click)="SaveProfile()"
+                              id="btn_SaveIncentiveInfo" style="width: 100px;">
+                        <i class="fa fa-save" style="margin-right: 0px;"></i> Save
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-12" *ngIf="!newProfile">
+                <table class="table billing-table" style="background-color:initial;margin-top:10px">
+                  <thead>
+                    <tr>
+                      <th sortable-header col="department"><b>Department</b></th>
+                      <th sortable-header col="itemnames"><b>ItemName</b></th>
+                      <th sortable-header col="price"><b>Price</b></th>
+                      <th sortable-header col="assignedToPercent"><b>AssignedTo %</b></th>
+                      <th sortable-header col="referredByPercent"><b>ReferredBy %</b></th>
+                      <th sortable-header col="referredByPercent" *ngIf="OpdIpdSettings.EnableOpdIpd"><b>Outpatient?</b></th>
+                      <th sortable-header col="referredByPercent" *ngIf="OpdIpdSettings.EnableOpdIpd"><b>Inpatient?</b></th>
+                      <th></th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody style="background-color: #dde3e9;">
+                    <tr>
+                      <td>
+                        <form class="bill-itemname">
+                          <input class="form-control cstm-form-control" danphe-auto-complete
+                                 title="{{ProfileItemSetup.SelServDepartment}}" [(ngModel)]="ProfileItemSetup.SelServDepartment"
+                                 [list-formatter]="ServiceDeptListFormatter" [source]="uniqueDeptNames"
+                                 placeholder="Enter Department" display-property-name="ServiceDepartmentName"
+                                 value-property-name=null (focusout)="OnDepartmentChange()"
+                                 [ngModelOptions]="{standalone: true}" onClick="this.select();" max-num-list="10" />
+                        </form>
+                      </td>
+                      <td style="width:250px">
+                        <form class="bill-itemname">
+                          <div class="autocomplete-item">
+                            <input id="srch_itemName" class="form-control cstm-form-control" danphe-auto-complete
+                                   title="{{ProfileItemSetup.ItemName}}" autocomplete="off" [(ngModel)]="ProfileItemSetup.ItemName"
+                                   [list-formatter]="ItemsListFormatter" [source]="FilteredItemList"
+                                   placeholder="Enter Item Name" display-property-name="ItemName" value-property-name=null
+                                   match-formatted="true" (focusout)="AssignSelectedItem()" max-num-list="20"
+                                   [ngModelOptions]="{standalone: true}" onClick="this.select();"
+                                   (keyup.enter)="GoToNextInput('txt_AssignedPercent')" />
+                          </div>
+                        </form>
+                      </td>
+                      <td>
+                        <form>
+                          <input readonly [(ngModel)]="ProfileItemSetup.Price" style="width:90px" min="0"
+                                 onClick="this.select();" onwheel="this.blur();" class="form-control cstm-form-control"
+                                 name="price" type="number" [ngModelOptions]="{standalone: true}">
+                        </form>
+                      </td>
+                      <td>
+                        <div id="toolbox1" class="tooltip" style="z-index: 1031;">
+                          <input id="txt_AssignedPercent" [(ngModel)]="ProfileItemSetup.AssignedToPercent" style="width:90px"
+                                 min="0" onClick="this.select();" onwheel="this.blur();"
+                                 class="form-control cstm-form-control" name="price" type="number"
+                                 [ngModelOptions]="{standalone: true}"
+                                 [ngClass]="{'invalid-percent': !IsPercentageValid}"
+                                 (keyup.enter)="GoToNextInput('txt_ReferredPercent')"
+                                 (ngModelChange)="CheckIfItemPercentValid(ProfileItemSetup)">
+                          <p *ngIf="!IsPercentageValid" class="tooltiptext ttptextdown">
+                            Total of
+                            Referral% and Assigned% Can't be more than 100.
+                          </p>
+                        </div>
+                      </td>
+                      <td>
+                        <div id="toolbox2" class="tooltip">
+                          <input id="txt_ReferredPercent" [(ngModel)]="ProfileItemSetup.ReferredByPercent" style="width:90px"
+                                 min="0" onClick="this.select();" onwheel="this.blur();"
+                                 class="form-control cstm-form-control" name="price" type="number"
+                                 [ngModelOptions]="{standalone: true}"
+                                 [ngClass]="{'invalid-percent': !IsPercentageValid}"
+                                 (keyup.enter)="SetFocusOnButton('btn_SaveIncentiveItem')"
+                                 (ngModelChange)="CheckIfItemPercentValid(ProfileItemSetup)">
+                          <p *ngIf="!IsPercentageValid" class="tooltiptext ttptextdown">
+                            Total of
+                            Referral% and Assigned% Can't be more than 100.
+                          </p>
+                        </div>
+                      </td>
+                      <td *ngIf="OpdIpdSettings.EnableOpdIpd">
+                        <div class="col-md-1">
+                          <div class="input-group">
+                            <div class="icheck-inline no-margin">
+                              <label class="mt-checkbox mt-checkbox-outline">
+                                <input id="opd" type="checkbox" [(ngModel)]="ProfileItemSetup.OpdSelected"
+                                       [ngModelOptions]="{standalone: true}" />
+                                <span style="background: white;"></span>
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td *ngIf="OpdIpdSettings.EnableOpdIpd">
+                        <div class="col-md-1">
+                          <div class="input-group">
+                            <div class="icheck-inline no-margin">
+                              <label class="mt-checkbox mt-checkbox-outline">
+                                <input id="ipd" type="checkbox" [(ngModel)]="ProfileItemSetup.IpdSelected"
+                                       [ngModelOptions]="{standalone: true}" />
+                                <span style="background: white;"></span>
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <button class="btn green btn-success" title="Click To Save Item"
+                                (click)="SaveIncentiveItem()" [disabled]="!IsPercentageValid"
+                                id="btn_SaveIncentiveItem" style="width: 100px;">
+                          <i class="fa fa-save" style="margin-right: 0px;"></i> Save
+                        </button>
+                      </td>
+                      <td>
+                        <button class="btn btn-danger btn-add-new-row" title="Click To Discard Item"
+                                (click)="DiscardItem()">
+                          Discard
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="col-md-12" *ngIf="!newProfile">
+                <div class="row">
+                  <div class="col-md-12">
+                    <div>
+                      <h4> <span>Incentive Percentage Setting</span> </h4>
+                    </div>
+                  </div>
+                  <div class="col-md-7">
+                    <danphe-grid [grid-colDefaults]="ProfileBillItemGridColumns" [grid-data]="PreviousProfileBillItems"
+                                 (grid-actions)="ProfileBillItemGridActions($event)" [supressPagination]="true"
+                                 [fixed-height-px]="'400px'">
+                    </danphe-grid>
+                  </div>
+                  <div class="col-md-5" style="margin-top: 45px;" *ngIf="ShowEditItem">
+                    <div class="row">
+                      <div class="col-md-12">
+                        <div class="modelbox-div no-margin no-padding clearfix">
+                          <div class="caption custom-caption">
+                            <h3> <span style="color:black;">Edit Item</span></h3>
+                            <a style="float:right;" class="btn btn-danger" (click)="CloseShowEditItemPopup()"
+                               title="Close">X</a>
+                          </div>
+                          <div class="form-horizontal hm-form">
+                            <div class="form-body">
+                              <table class="table table-hover custom_table padLess_table table-bordered light_bg_table">
+                                <thead>
+                                  <tr>
+                                    <th>ItemName</th>
+                                    <th>AssignedTo %</th>
+                                    <th>ReferredBy %</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <ng-container>
+                                    <tr>
+                                      <td>
+                                        <input style="width:260px;" type="text"
+                                               [(ngModel)]="updateSelectedItem.ItemName" disabled />
+                                      </td>
+                                      <td>
+                                        <div id="toolbox1" class="tooltip" style="z-index: 1031;">
+                                          <input style="width:90px;" type="number" onClick="this.select();"
+                                                 [(ngModel)]="updateSelectedItem.AssignedToPercent"
+                                                 [ngClass]="{'invalid-percent': !IsPercentageValid}"
+                                                 (ngModelChange)="CheckIfItemPercentValid(updateSelectedItem)"
+                                                 (wheel)="coreService.PreventNumberChangeOnScroll($event)" />
+                                          <p *ngIf="!IsPercentageValid" class="tooltiptext ttptextdown">
+                                            Total of
+                                            Referral% and Assigned% Can't be more than 100.
+                                          </p>
+                                        </div>
+                                      </td>
+                                      <td>
+                                        <div id="toolbox2" class="tooltip">
+                                          <input style="width:90px;" type="number" onClick="this.select();"
+                                                 [(ngModel)]="updateSelectedItem.ReferredByPercent"
+                                                 [ngClass]="{'invalid-percent': !IsPercentageValid}"
+                                                 (ngModelChange)="CheckIfItemPercentValid(updateSelectedItem)"
+                                                 (wheel)="coreService.PreventNumberChangeOnScroll($event)" />
+                                          <p *ngIf="!IsPercentageValid" class="tooltiptext ttptextdown">
+                                            Total of
+                                            Referral% and Assigned% Can't be more than 100.
+                                          </p>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  </ng-container>
+                                </tbody>
+                              </table>
+                            </div>
+                            <div class="panel-footer">
+                              <div class="row clearfix">
+                                <div class="col-md-6">
+                                  <div class="row">
+                                    <div class="col-md-12" *ngIf="OpdIpdSettings.EnableOpdIpd">
+                                      <div class="col-md-6">
+                                        <span>
+                                          Outpatient?
+                                        </span>
+                                        <div class="input-group">
+                                          <div class="icheck-inline no-margin">
+                                            <label class="mt-checkbox mt-checkbox-outline">
+                                              <input id="ipd" type="checkbox" [(ngModel)]="updateSelectedItem.OpdSelected"
+                                                     [ngModelOptions]="{standalone: true}" />
+                                              <span></span>
+                                            </label>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div class="col-md-6">
+                                        <span>
+                                          Inpatient?
+                                        </span>
+                                        <div class="input-group">
+                                          <div class="icheck-inline no-margin">
+                                            <label class="mt-checkbox mt-checkbox-outline">
+                                              <input id="ipd" type="checkbox" [(ngModel)]="updateSelectedItem.IpdSelected"
+                                                     [ngModelOptions]="{standalone: true}" />
+                                              <span></span>
+                                            </label>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div class="col-md-6">
+                                  <button class="btn green btn-success btn-save-frc pull-right" (click)="UpdateBillItems()"
+                                          id="btn_SaveFraction" [disabled]="!IsPercentageValid">
+                                    <i class="fa fa-save"></i>
+                                    OK
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,8 @@
+<!-- Location of 'danphe-bed-transfer' component directive:
+     wwwroot\DanpheApp\src\app\adt\transfer\transfer.component.ts
+-->
+<danphe-bed-transfer *ngIf="showTransferPage"
+                     [isPopUp]="showTransferInPopUp"
+                     [selectedBedInfo]="selectedBedInfo"
+                     (transfer)="TransferUpgrade($event)">
+</danphe-bed-transfer>

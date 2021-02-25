@@ -1,0 +1,132 @@
+
+<div class="row">
+  <div class="col-md-12 margin-top-10">
+    <div class="row font-small">
+      <div class="col-md-8">
+        <div class="row">
+          <div class="col-md-6">
+            <div style="float: left;line-height: 27px;margin-right: 8px;">
+              From:
+            </div>
+            <danphe-date-picker [(ngModel)]="fromDate" ngDefaultControl [CalendarTypes]="calType">
+            </danphe-date-picker>
+          </div>
+          <div class="col-md-6">
+            <div style="float: left;line-height: 27px;margin-right: 8px;">
+              To:
+            </div>
+            <danphe-date-picker [(ngModel)]="toDate" ngDefaultControl [CalendarTypes]="calType">
+            </danphe-date-picker>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="row">
+          <div class="col-md-9  margin-5-tp">
+            <div class="pull-left">Doctor:</div>
+            <select [(ngModel)]="employeeId">
+              <option *ngFor="let emp of allEmpList" value="{{emp.EmployeeId}}">{{emp.FullName}}</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <button (click)="LoadData()" class="btn blue" style="padding: 5px 10px;">
+              <i class="fa fa-refresh"></i>  Load
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+
+  </div>
+
+</div>
+
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="row margin-top-10 font-small">
+      <div class="col-md-4">
+        <input id="searchBxLabReport" class="custom-table-search" [(ngModel)]="searchString" onclick="this.select();"
+               placeholder="Search" (ngModelChange)="FilterArrayBySearchText()">
+      </div>
+      <div class="col-md-5">
+        <div class="flex-container rd-align  margin-top-15">
+          <input type="radio" id="chk_show_all" [(ngModel)]="displayOptions" name="filters" (change)="FilterItemsByRadioBtnSelection()" value="All" />
+          <label for="chk_show_all">Show All</label>
+          <input type="radio" id="chk_assignedto" [(ngModel)]="displayOptions" name="filters" (change)="FilterItemsByRadioBtnSelection()" value="Assigned" style="margin-left: 16px;zoom: 1.2;" />
+          <label for="chk_assignedto">Assigned Only</label>
+          <input type="radio" id="chk_referredBy" [(ngModel)]="displayOptions" name="filters" (change)="FilterItemsByRadioBtnSelection()" value="Referred" style="margin-left: 16px;zoom: 1.2;" />
+          <label for="chk_referredBy">Referral Only</label>
+        </div>
+
+      </div>
+      <div class="col-md-3" *ngIf="showSaveButton">
+        <div class="margin-top-15">
+          <button class="btn blue save-btn font-small" (click)="SaveSelectedItems()">
+            <i class="fa fa-save"></i>
+            Save Selected Items
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-12 col-xs-12 col-sm-12">
+    <div class="table-responsive tbl-trns-itm-holder">
+      <table class="table-striped table-hover table-bordered tbl-trns-itm" style="background-color: initial;margin-top: 10px;width: 100%;">
+        <tr>
+          <th> <input type="checkbox" [(ngModel)]="isSelectAll" style="zoom:1.2" (change)="SelectAllChkOnChange()" /></th>
+          <th>Date</th>
+          <th>Patient</th>
+          <th>Hospital No.</th>
+          <th>InvoiceNo</th>
+          <th>Item Name</th>
+          <th>Total Amount</th>
+          <th>Referred By</th>
+          <th>Ref%</th>
+          <th>Referral Amt.</th>
+          <th>Assigned To</th>
+          <th>Assigned%</th>
+          <th>Assigned Amt.</th>
+          <th></th>
+        </tr>
+        <ng-container *ngFor="let itm of finalFilteredList">
+          <tr [style.background-color]=" itm.IsSelected ? '#d9daea' : '#fff'">
+            <td>
+              <input type="checkbox" [(ngModel)]="itm.IsSelected" style="zoom:1.2" (change)="ShowSaveButtonOnCkboxChange()" />
+            </td>
+            <td>{{itm.TransactionDate | DanpheDateTime:'format':'YYYY/MM/DD HH:mm'}}</td>
+            <td>{{itm.PatientName}}</td>
+            <td>{{itm.PatientCode}}</td>
+            <td>{{itm.InvoiceNo}}</td>
+            <td>{{itm.ItemName}}</td>
+            <td>{{itm.TotalAmount | ParseAmount}}</td>
+            <td>{{itm.ReferredByEmpName}}</td>
+            <td>{{itm.ReferredByPercent}}</td>
+            <td>{{itm.ReferralAmount | ParseAmount}}</td>
+            <td>{{itm.AssignedToEmpName}}</td>
+            <td>{{itm.AssignedToPercent}}</td>
+            <td>{{itm.AssignedToAmount | ParseAmount}}</td>
+            <td style="width: 30px;text-align: center;">
+              <div class="tooltip" style="padding: 0px 5px;color: #006687;z-index: inherit;">
+                <span>
+                  <i class="fa fa-pencil edit-icon" (click)="EditItemBtnOnClick(i,itm)"></i>
+                </span>
+
+                <p class="tooltiptext ttptextdown" style="width: 250px;margin-left: -125px;">Click to edit this item</p>
+              </div>
+            </td>
+          </tr>
+        </ng-container>
+
+      </table>
+    </div>
+  </div>
+</div>
+
+<edit-incentive-txn-item *ngIf="showUpdateItemsPopup" (on-close)="OnIncentiveEditPopupClose($event)"
+                         [emp-list]="allEmpList" [incentive-txn-item]="selItemToEdit">
+
+</edit-incentive-txn-item>

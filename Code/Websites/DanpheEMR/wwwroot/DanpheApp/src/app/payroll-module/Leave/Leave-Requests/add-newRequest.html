@@ -1,0 +1,107 @@
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showAddRequestPage">
+<div class="portlet-body form" style="background-color:white">
+                <div class="col-md-12">
+                    <div class="col-md-1 hidden-xs hidden-sm" style="margin-right: 24px;">
+                    </div>
+                    <div class="col-md-9 col-sm-10 col-xs-10 modelbox-div" style="margin-right: 24px;width: 80%;padding-left: 10px;">
+                        <div class="col-md-12">
+                            <div class="caption" style="color:blue;">
+                                <h3>
+                                    <span>Leave Details</span>
+                                </h3>
+
+                            </div>
+                            <a style="float:right;  margin-top:-32px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                        </div> 
+                        <div class="row">
+                                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                  <table class="table table-striped table-hover" style="margin-top: 20px;height:16em">
+                                    <thead>
+                                      <tr style="background-color:#96efd6">
+                                        <th></th>
+                                        <th>
+                                          Date
+                                        </th>
+                                        <th>
+                                          Leave Category
+                                        </th>
+                                        <th>
+                                          Description
+                                        </th>
+                                        <th>
+                                          RequestedTo
+                                        </th>
+                                        <th></th>
+                                        <th></th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                            <tr *ngFor="let itm of employeeRequestLeaves; let i = index">
+                                              <td>
+                                                <b>{{i+1}}</b>
+                                              </td>
+                                               <td>  
+                                                  <form [formGroup]="itm.EmployeeLeaveValidator">
+                                                    <input date-directive type="date" placeholder="date" [(ngModel)]="itm.Date" formControlName="Date"/>
+                                                  </form>
+                                              </td>
+                                              <td>
+                                                <form [formGroup]="itm.EmployeeLeaveValidator">
+                                                  <input danphe-auto-complete
+                                                         [(ngModel)]="selLeave[i]"
+                                                         [source]="leaveList"
+                                                         placeholder="Leave"
+                                                         formControlName="LeaveRuleId"
+                                                         display-property-name="LeaveCategoryName"
+                                                         value-property-name="LeaveRuleId"
+                                                         (valueChanged)="AssignSelectedLeave(i)"
+                                                         [list-formatter]="LeaveListFormatter"
+                                                         max-num-list="15"
+                                                         onclick="this.select()"
+                                                         style="background-color: azure; width:250px;height: 30px;" />
+                                                         <div class="color-red font-sm" *ngIf="itm.IsDirty('LeaveRuleId')" [hidden]="itm.IsValidCheck('LeaveRuleId','required')"> Please select Ledger.</div>
+                                                        </form>
+                                              </td>
+                                              <td>
+                                                    <form [formGroup]="itm.EmployeeLeaveValidator">
+                                                            <textarea class="col-md-12" style="height: 30px;" [(ngModel)]="itm.Description" id="Description"  formControlName="Description"></textarea>
+                                                          </form>
+                                              </td>
+                                              <td>
+                                                  <form [formGroup]="itm.EmployeeLeaveValidator">
+                                                      <input danphe-auto-complete
+                                                             [(ngModel)]="RequestedEmployee[i]"
+                                                             [source]="RequestedEmployeeList"
+                                                             placeholder="Select Employee"
+                                                             formControlName="EmployeeId"
+                                                             display-property-name="EmployeeName"
+                                                             value-property-name="FirstName"
+                                                             [list-formatter]="EmployeeListFormatter"
+                                                             (valueChanged)="AssignRequestedToEmployee(i)"
+                                                             max-num-list="15"
+                                                             onclick="this.select()"
+                                                             style="background-color: azure; width:250px;height: 30px;" />
+                                                    </form>
+                                              </td>
+                                              <td><a (click)="AddNewLeave()"><i class="glyphicon glyphicon-plus btn btn-success"></i></a></td>
+                                              <td>
+                                                <a (click)="DeleteLeaveRow(i)"><i class="btn btn-danger fa">X</i></a>
+                                              </td>
+                                            </tr> 
+                                    </tbody>
+                                  </table>
+                                </div>
+                                <div class="col-md-12" style="padding: 20px;">
+                                    <div class="col-md-5"></div>
+                                    <div class="col-md-2">
+                                  <button (click)="PostLeaveRequest()" class="btn btn-primary">
+                                    <span></span>Save Request
+                                </button>
+                                    </div>
+                                <div class="col-md-5"></div>
+                                </div>
+                        </div>
+                     </div> 
+      </div>
+</div>
+</div>

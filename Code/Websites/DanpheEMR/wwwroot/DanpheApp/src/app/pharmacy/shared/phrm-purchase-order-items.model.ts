@@ -9,6 +9,7 @@
 import * as moment from 'moment/moment';
 import { PHRMItemMasterModel } from "./phrm-item-master.model";
 import { PHRMItemTypeModel } from "./phrm-item-type.model"
+import { PHRMPackingTypeModel } from './phrm-packing-type.model';
 import { PHRMPurchaseOrder } from "./phrm-purchase-order.model";
 
 export class PHRMPurchaseOrderItems {
@@ -47,13 +48,15 @@ export class PHRMPurchaseOrderItems {
     public Item: PHRMItemMasterModel = null;
     public ItemType: PHRMItemTypeModel = null;
     public PurchaseOrderItemValidator: FormGroup = null;
-
+    public PackingQty:number = 0;
+    public PackingName:any;
+    public Packing: PHRMPackingTypeModel = null;
     constructor() {
 
         var _formBuilder = new FormBuilder();
         this.PurchaseOrderItemValidator = _formBuilder.group({
             'ItemId': ['', Validators.compose([Validators.required])],
-            'Quantity': ['', Validators.compose([Validators.required])],
+            'Quantity': ['', Validators.compose([Validators.required,this.wholeNumberRequired])],
         });
     }
 
@@ -71,6 +74,13 @@ export class PHRMPurchaseOrderItems {
         }
         else
             return !(this.PurchaseOrderItemValidator.hasError(validator, fieldName));
+    }
+    wholeNumberRequired(control: FormControl): { [key: string]: boolean } {
+        if (control.value) {
+            if (control.value % 1 != 0) return { 'wrongDecimalValue': true };
+        }
+        else
+        return { 'wrongDecimalValue': true };
     }
 
 }

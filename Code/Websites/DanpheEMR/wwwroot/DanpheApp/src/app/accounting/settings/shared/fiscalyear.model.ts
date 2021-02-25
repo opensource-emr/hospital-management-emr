@@ -21,7 +21,20 @@ export class FiscalYearModel {
     public IsActive: boolean = true;
 
     public FiscalYearValidator: FormGroup = null;
-   
+    public ClosedBy: number = 0;
+    public ClosedOn: string = null;
+    public IsClosed: boolean = true;
+    public ClosedByName: string = null;
+    public ReadyToClose: boolean = false;
+    public nStartDate: string = null;
+    public nEndDate: string = null;    
+    public Remark:string = "";
+
+    
+    public EnglishFiscalYearName: string = null;
+    public NepaliFiscalYearName: string =null;
+    public EnglishMonthList:Array<MonthModel>= new Array<MonthModel>();
+    public NepaliMonthList:Array<MonthModel>= new Array<MonthModel>();
     constructor() {
 
         var _formBuilder = new FormBuilder();
@@ -49,4 +62,12 @@ export class FiscalYearModel {
         else
             return !(this.FiscalYearValidator.hasError(validator, fieldName));
     }
+}
+
+export class MonthModel{
+    public MonthName:string=null;
+    public MonthNumber:number=0;
+    public FirstDay:string=null;
+    public LastDay:string=null;
+    public IsDisabled:boolean=false;
 }

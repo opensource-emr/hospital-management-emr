@@ -1,4 +1,4 @@
-﻿import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 import { Injectable, Directive } from '@angular/core';
 import { LabTest } from "../../labs/shared/lab-test.model";

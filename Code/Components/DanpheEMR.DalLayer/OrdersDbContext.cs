@@ -14,6 +14,7 @@ namespace DanpheEMR.DalLayer
         public DbSet<RadiologyImagingItemModel> ImagingItems { get; set; }
         public DbSet<LabTestModel> LabTests { get; set; }
         public DbSet<PHRMItemMasterModel> PharmacyItems { get; set; }
+        public DbSet<PHRMStockModel> PharmacyStocks { get; set; }
         public DbSet<PHRMGenericModel> PharmacyGenericItems { get; set; }
         public DbSet<EmployeePreferences> EmployeePreferences { get; set; }
         public DbSet<PHRMGenericDosageNFreqMap> GenericDosageMaps { get; set; }//sud: 15Jul'18
@@ -21,6 +22,9 @@ namespace DanpheEMR.DalLayer
         public DbSet<BillItemPrice> BillItemPrice { get; set; }
         public DbSet<ServiceDepartmentModel> ServiceDepartment { get; set; }
         public DbSet<DepartmentModel> Departments { get; set; }
+        public DbSet<BillingTransactionModel> BillingTransactionModels { get; set; }
+        public DbSet<WardModel> Wards { get; set; }
+        public DbSet<AdmissionModel> Admissions { get; set; }
 
         public OrdersDbContext(string conn) : base(conn)
         {
@@ -36,6 +40,7 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<LabTestModel>().ToTable("LAB_LabTests");
 
             modelBuilder.Entity<PHRMItemMasterModel>().ToTable("PHRM_MST_Item");
+            modelBuilder.Entity<PHRMStockModel>().ToTable("PHRM_Stock");
             modelBuilder.Entity<PHRMGenericModel>().ToTable("PHRM_MST_Generic");
 
             modelBuilder.Entity<EmployeePreferences>().ToTable("EMP_EmployeePreferences");
@@ -44,6 +49,9 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<BillItemPrice>().ToTable("BIL_CFG_BillItemPrice");
             modelBuilder.Entity<ServiceDepartmentModel>().ToTable("BIL_MST_ServiceDepartment");
             modelBuilder.Entity<ServiceDepartmentModel>().ToTable("BIL_MST_ServiceDepartment");
+            modelBuilder.Entity<BillingTransactionModel>().ToTable("BIL_TXN_BillingTransaction");
+            modelBuilder.Entity<WardModel>().ToTable("ADT_MST_Ward");
+            modelBuilder.Entity<AdmissionModel>().ToTable("ADT_PatientAdmission");
         }
 
 

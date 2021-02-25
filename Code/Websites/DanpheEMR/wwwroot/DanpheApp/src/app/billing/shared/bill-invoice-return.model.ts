@@ -7,6 +7,7 @@ import {
     FormBuilder,
     ReactiveFormsModule
 } from '@angular/forms'
+import { BillingTransactionItem } from './billing-transaction-item.model';
 
 export class BillInvoiceReturnModel {
     public BillReturnId: number = 0;
@@ -29,4 +30,6 @@ export class BillInvoiceReturnModel {
     public IsRemoteSynced: boolean = false;
     public TaxId: number = null;
     public InvoiceCode: string = null;
+    public Tender: number = null;
+    public ReturnedItems: Array<BillingTransactionItem> = [];//Rajesh:7Aug19
 }

@@ -1,4 +1,4 @@
-﻿import { NgModule } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { RouterModule } from "@angular/router";
 
 import { FractionComponent } from './fraction.component';
@@ -12,6 +12,7 @@ import { CalculateDetailsComponent } from './calculation/calculate/calculate-det
 import { FractionReportComponent } from './reports/fraction-report.component';
 import { FractionReportbyItemComponent } from './reports/fraction-report-item.component';
 import { FractionReportbyDoctorComponent } from './reports/fraction-report-doctor.component';
+import { PageNotFound } from '../404-error/404-not-found.component';
 
 
 @NgModule({
@@ -29,6 +30,8 @@ import { FractionReportbyDoctorComponent } from './reports/fraction-report-docto
                             { path: '', redirectTo: 'Designation', pathMatch: 'full' },
                             { path: 'Designation', component: DesignationListComponent },
                             { path: 'FractionPercent', component: FractionPercentListComponent },
+                            { path: "**", component: PageNotFound }
+
                         ]
                     },
                     {
@@ -39,6 +42,8 @@ import { FractionReportbyDoctorComponent } from './reports/fraction-report-docto
                             { path: 'ApplicableList', component: FractionApplicableListComponent },
                             { path: 'Calculate', component: CalculateComponent },
                             { path: 'CalculateDetails', component: CalculateDetailsComponent },
+                            { path: "**", component: PageNotFound }
+
                         ]
                     },
                     {
@@ -48,12 +53,12 @@ import { FractionReportbyDoctorComponent } from './reports/fraction-report-docto
                             { path: '', redirectTo: 'ReportbyDoctor', pathMatch: 'full' },
                             { path: 'ReportbyDoctor', component: FractionReportbyDoctorComponent },
                             { path: 'ReportbyItem', component: FractionReportbyItemComponent },
-                            
-
+                            { path: "**", component: PageNotFound }
                         ]
                     },
                 ]
-            }
+          },
+          { path: "**", component: PageNotFound },
         ])
     ],
     exports: [

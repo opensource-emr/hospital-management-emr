@@ -14,6 +14,8 @@ namespace DanpheEMR.ServerModel
         public string CreditNoteId { get; set; }
         public int? CreditNotePrintId { get; set; }
         public int? SupplierId { get; set; }
+        public int? GoodReceiptId { get; set; }
+        public int? ReturnStatus { get; set; }
         public DateTime ReturnDate { get; set; }
         public decimal SubTotal { get; set; }
         public decimal VATAmount { get; set; }

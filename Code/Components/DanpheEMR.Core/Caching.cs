@@ -33,7 +33,10 @@ namespace DanpheEMR.Core.Caching
         Reaction = 6,
         ImagingItems = 7,
         Taxes = 8,
-        PastUniqueData = 9
+        PastUniqueData = 9,
+        LabRunNumberSettings = 10,
+        PriceCategory = 11,
+        AccountingCodes = 12
     }
 
 
@@ -48,7 +51,7 @@ namespace DanpheEMR.Core.Caching
         {
             connString = connectionString;
             DanpheCache.globalMemcache = MemoryCache.Default;
-           cacheExpiryMinutes = cacheExpMinutes;
+            cacheExpiryMinutes = cacheExpMinutes;
         }
 
         public static bool Add(string key, object value, DateTimeOffset absoluteExpiration)
@@ -78,16 +81,29 @@ namespace DanpheEMR.Core.Caching
 
         public static object GetMasterData(MasterDataEnum masterName)
         {
-           // double cacheExpMinutes = 1;//this should come from configuration later on.
-            CoreDbContext masterDbContext = new CoreDbContext(connString);
+            // double cacheExpMinutes = 1;//this should come from configuration later on.
+            CoreDbContext coreDbContext = new CoreDbContext(connString);
             object returnValue = new object();
 
             switch (masterName)
             {
+                case MasterDataEnum.LabRunNumberSettings:
+                    {
+
+                        //check if the value exists in cache, get and add to cache as well if not present.
+                        returnValue = DanpheCache.Get("lab-runnumber-settings");
+                        if (returnValue == null)
+                        {
+                            returnValue = coreDbContext.LabRunNumberSettings.ToList<LabRunNumberSettingsModel>();
+                            DanpheCache.Add("lab-runnumber-settings", returnValue, DateTime.Now.AddMinutes(20));
+                        }
+
+                    }
+                    break;
                 case MasterDataEnum.PastUniqueData:
                     {
                         returnValue = DanpheCache.Get("past-unique-data");
-                        if(returnValue == null)
+                        if (returnValue == null)
                         {
                             UniquePastDataModel allUniqueData = new UniquePastDataModel();
                             //allUniqueData.UniqueFirstNameList = masterDbContext.Patients.Where(pat => pat.FirstName != null).Select(p => p.FirstName).Distinct().OrderBy(a => a).ToList();
@@ -98,8 +114,8 @@ namespace DanpheEMR.Core.Caching
                             //allUniqueData.UniqueLastNameList = masterDbContext.Patients.Where(pat => pat.LastName != null).Select(p => new {
                             //                                        LName = p.LastName }).Distinct().OrderBy(a => a.LName).ToList<object>();
 
-                            allUniqueData.UniqueAddressList = masterDbContext.Patients.Where(pat => pat.Address != null).Select(p => p.Address).Distinct().OrderBy(a => a).ToList();
-                                                        
+                            allUniqueData.UniqueAddressList = coreDbContext.Patients.Where(pat => pat.Address != null).Select(p => p.Address).Distinct().OrderBy(a => a).ToList();
+
                             //Refresh the data everyday
                             DanpheCache.Add("past-unique-data", allUniqueData, DateTime.Now.AddHours(24));
                             returnValue = allUniqueData;
@@ -113,7 +129,7 @@ namespace DanpheEMR.Core.Caching
                         returnValue = DanpheCache.Get("master-departments");
                         if (returnValue == null)
                         {
-                            returnValue = masterDbContext.Departments.OrderBy(a=>a.DepartmentName).ToList<DepartmentModel>();
+                            returnValue = coreDbContext.Departments.OrderBy(a => a.DepartmentName).ToList<DepartmentModel>();
                             DanpheCache.Add("master-departments", returnValue, DateTime.Now.AddMinutes(cacheExpiryMinutes));
                         }
 
@@ -126,7 +142,7 @@ namespace DanpheEMR.Core.Caching
                         returnValue = DanpheCache.Get("master-icd10");
                         if (returnValue == null)
                         {
-                            returnValue = masterDbContext.ICD10Codes.ToList<ICD10CodeModel>();
+                            returnValue = coreDbContext.ICD10Codes.ToList<ICD10CodeModel>();
                             DanpheCache.Add("master-icd10", returnValue, DateTime.Now.AddMinutes(cacheExpiryMinutes));
                         }
                     }
@@ -138,18 +154,18 @@ namespace DanpheEMR.Core.Caching
                         returnValue = DanpheCache.Get("master-employee");
                         if (returnValue == null)
                         {
-                            returnValue = masterDbContext.Employees.ToList<EmployeeModel>();
+                            returnValue = coreDbContext.Employees.ToList<EmployeeModel>();
                             DanpheCache.Add("master-employee", returnValue, DateTime.Now.AddMinutes(cacheExpiryMinutes));
                         }
                     }
                     break;
-               
+
                 case MasterDataEnum.Reaction:
                     {
                         returnValue = DanpheCache.Get("master-reaction");
                         if (returnValue == null)
                         {
-                            returnValue = masterDbContext.Reactions.ToList<ReactionModel>();
+                            returnValue = coreDbContext.Reactions.ToList<ReactionModel>();
                             DanpheCache.Add("master-reaction", returnValue, DateTime.Now.AddMinutes(cacheExpiryMinutes));
                         }
                     }
@@ -159,7 +175,7 @@ namespace DanpheEMR.Core.Caching
                         returnValue = DanpheCache.Get("master-imagingitem");
                         if (returnValue == null)
                         {
-                            returnValue = masterDbContext.ImagingItems.ToList<RadiologyImagingItemModel>();
+                            returnValue = coreDbContext.ImagingItems.ToList<RadiologyImagingItemModel>();
                             DanpheCache.Add("master-imagingitem", returnValue, DateTime.Now.AddMinutes(cacheExpiryMinutes));
                         }
                     }
@@ -171,8 +187,19 @@ namespace DanpheEMR.Core.Caching
                         returnValue = DanpheCache.Get("master-servicedepartment");
                         if (returnValue == null)
                         {
-                            returnValue = masterDbContext.ServiceDepartments.ToList<ServiceDepartmentModel>();
+                            returnValue = coreDbContext.ServiceDepartments.ToList<ServiceDepartmentModel>();
                             DanpheCache.Add("master-servicedepartment", returnValue, DateTime.Now.AddMinutes(cacheExpiryMinutes));
+                        }
+                    }
+                    break;
+                case MasterDataEnum.PriceCategory:
+                    {
+                        //check if the value exists in cache, get and add to cache as well if not present.
+                        returnValue = DanpheCache.Get("master-pricecategory");
+                        if (returnValue == null)
+                        {
+                            returnValue = coreDbContext.PriceCategory.ToList<PriceCategoryModel>();
+                            DanpheCache.Add("master-pricecategory", returnValue, DateTime.Now.AddMinutes(cacheExpiryMinutes));
                         }
                     }
                     break;
@@ -182,7 +209,7 @@ namespace DanpheEMR.Core.Caching
                         returnValue = DanpheCache.Get("master-taxes");
                         if (returnValue == null)
                         {
-                            returnValue = masterDbContext.Taxes.ToList<TaxModel>();
+                            returnValue = coreDbContext.Taxes.ToList<TaxModel>();
                             DanpheCache.Add("master-taxes", returnValue, DateTime.Now.AddMinutes(cacheExpiryMinutes));
                         }
                     }
@@ -193,8 +220,26 @@ namespace DanpheEMR.Core.Caching
                         returnValue = DanpheCache.Get("master-medicines");
                         if (returnValue == null)
                         {
-                            returnValue = masterDbContext.Medicines.ToList<PHRMItemMasterModel>();
+                            returnValue = coreDbContext.Medicines.ToList<PHRMItemMasterModel>();
                             DanpheCache.Add("master-medicines", returnValue, DateTime.Now.AddMinutes(cacheExpiryMinutes));
+                        }
+                    }
+                    break;
+                case MasterDataEnum.AccountingCodes:
+                    {
+                        //check if the value exists in cache, get and add to cache as well if not present.
+                        returnValue = DanpheCache.Get("master-accounting-codes");
+                        if (returnValue == null)
+                        {
+                            //var hospitalId = coreDbContext.Hospitals.Where(h => h.IsActive == true).FirstOrDefault().HospitalId;
+                            returnValue = (from h in coreDbContext.Hospitals
+                                           join cod in coreDbContext.ACCCodeDetails
+                                           on h.HospitalId equals cod.HospitalId
+                                           where h.IsActive == true
+                                           select cod).ToList<AccountingCodeDetailsModel>();
+                            // coreDbContext.ACCCodeDetails.Where(c=>c.HospitalId == hospitalId).ToList<AccountingCodeDetailsModel>();
+
+                            DanpheCache.Add("master-accounting-codes", returnValue, DateTime.Now.AddMinutes(cacheExpiryMinutes));
                         }
                     }
                     break;

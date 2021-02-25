@@ -1,0 +1,8 @@
+<p>Transaction Report for Item : <b>{{ItemName}}</b> from <b>{{FromDate}}</b> to <b>{{ToDate}}</b></p>
+<danphe-grid [grid-colDefaults]="ItemTxnSummaryReportColumns" [grid-data]="ItemTxnSummaryReportData" [grid-showExport]="true" [grid-exportOptions]="gridExportOptions" [NepaliDateInGridParams]="NepaliDateInGridSettings" (grid-actions)="ItemTxnSummaryGridAction($event)">
+</danphe-grid>
+
+<!-- GR POP UP -->
+<goods-receipt-view *ngIf="showGRPopUp" [goodsReceiptId]="selectedGRId" [showPopUp]="showGRPopUp" (call-back-close)="OnGRPopUpClose()"></goods-receipt-view>
+<!--Invoice Pop Up -->
+<app-phrm-invoice-view *ngIf="showInvoicePopUp" [showPopUp]="showInvoicePopUp" [invoiceId]="selectedInvoiceId" (call-back-close)="OnInvoicePopUpClose()"></app-phrm-invoice-view>

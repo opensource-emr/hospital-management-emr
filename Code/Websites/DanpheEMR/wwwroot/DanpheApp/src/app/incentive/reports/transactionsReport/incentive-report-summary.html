@@ -1,0 +1,82 @@
+<style>
+	.round-shadow-div {
+		padding: 15px;
+		margin-top: 15px;
+	}
+	.round-shadow-div .padLess_table th, .round-shadow-div .padLess_table td {
+		padding: 8px 5px !important;
+	}
+</style>
+<div class="col-md-12 text-right " *ngIf="showBillDocSummary">
+  <button class="primary-btn btn right non-printable" type="button" (click)="ExportToExcelDocSummaryReport('excelExportPage')">
+    <i class="fa fa-file-excel-o"></i>
+    Excel
+  </button>
+</div>
+<div class="col-md-12 round-shadow-div" *ngIf="showBillDocSummary">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="row">
+        <div class="col-md-6 col-sm-6">From Date: {{FromDate}}<br />ToDate: {{ToDate}}<br /></div>        
+        <div class="col-md-6 col-sm-6" style="text-align:right;">
+          <span>Print Date: {{currentDate}}</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12 text-center" style="text-align:center;font-size:18px">
+          <span><b>Incentive Summary Report</b></span>
+        </div>
+      </div>
+    </div>
+    <div class="clearfix"></div>
+    <div class="col-md-12" id="excelExportPage">
+      <div class="table-responsive">
+        <table class="table-striped table-hover table-bordered custom_table padLess_table" style="width: 100%; margin-top: 15px;">
+          <thead>
+            <tr>
+              <td style="text-align:center"><b>Sr No.</b></td>
+              <td><b>Doctor Name</b></td>
+              <!--<td style="text-align:center"><b>Referral Income</b></td>
+              <td style="text-align:center"><b>Assigned Income</b></td>-->
+              <td style="text-align:center"><b>Total Income</b></td>
+              <!--<td style="text-align:center"><b>TDS%</b></td>-->
+              <td style="text-align:center"><b>TDS Amt.</b></td>
+              <td style="text-align:center"><b>Net Income</b></td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of reportData;let i=index">
+              <td style="text-align:center">{{i+1}}</td>
+              <td><a style="font-weight:bold; font-family: 'Quicksand', 'Open Sans', sans-serif; text-align: left;" (click)="LoadDoctorItems(row)">{{row.ReferrerName}}</a></td>
+              <!--<td style="text-align:right">{{row.ReferralAmount}}</td>
+              <td style="text-align:right">{{row.AssignedAmount}}</td>-->
+              <td style="text-align:right">{{row.DocTotalAmount}}</td>
+              <!--<td style="text-align:right">{{row.TDSPercent}}</td>-->
+              <td style="text-align:right">{{row.TDSAmount}}</td>
+              <td style="text-align:right">{{row.NetTotal}}</td>
+            </tr>
+            <tr style="font-weight: bold">
+              <td style="text-align:right"></td>
+              <td style="text-align:right"><b>Total :</b></td>
+              <!--<td style="text-align:right">{{summary.tot_RefAmount}}</td>
+              <td style="text-align:right">{{summary.tot_AssignAmount}}</td>-->
+              <td style="text-align:right">{{summary.tot_TotIncome}}</td>
+              <td style="text-align:right">{{summary.tot_TDSAmount}}</td>
+              <td style="text-align:right">{{summary.tot_NetIncome}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="col-md-12">
+  <incentive-item-summary *ngIf="showItemSummary"
+                          [fromDate]="FromDate"
+                          [toDate]="ToDate"
+                          [referrerId]="selDoctorId"
+                          (callback)="DoctorItemOnClose()">
+  </incentive-item-summary>
+</div>

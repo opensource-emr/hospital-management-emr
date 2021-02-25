@@ -1,172 +1,161 @@
-﻿<div class="row">
+<div class="wrapper">
+  <div class="row">
     <form [formGroup]="currentPatCensusReport.PatientCensusValidator" class="form-horizontal">
-        <div class="form-body">
-            <div class="col-md-12">
-                <div class="caption">
-                    <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
-                    <span class="caption-subject font-red-sunglo bold uppercase">Patient Census Report</span>
-                </div>
-                <div class="col-md-5 col-xs-12">
-                    <div class="form-group">
-                        <label class="control-label col-md-5">From Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
-                        <div class="col-md-7">
-                            <danphe-date-picker [(ngModel)]="currentPatCensusReport.fromDate" ngDefaultControl [CalendarTypes]="calType" formControlName="fromDate">
-                            </danphe-date-picker>
-                            <span class="color-red font-sm" *ngIf="currentPatCensusReport.IsDirty('fromDate')" [hidden]="currentPatCensusReport.IsValidCheck('fromDate','required')"> From Date is required</span><br />
-                            <span class="color-red font-sm" *ngIf="currentPatCensusReport.IsDirty('fromDate')" [hidden]="currentPatCensusReport.IsValidCheck('fromDate','wrongDate')"> Enter Valid Date</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-5 col-xs-12">
-                    <div class="form-group">
-                        <label class="control-label col-md-4">To Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
-                        <div class="col-md-8">
-                            <danphe-date-picker [(ngModel)]="currentPatCensusReport.toDate" ngDefaultControl [CalendarTypes]="calType" formControlName="toDate">
-                            </danphe-date-picker>
-                            <span class="color-red font-sm" *ngIf="currentPatCensusReport.IsDirty('toDate')" [hidden]="currentPatCensusReport.IsValidCheck('toDate','required')"> To Date is required</span><br />
-                            <span class="color-red font-sm" *ngIf="currentPatCensusReport.IsDirty('toDate')" [hidden]="currentPatCensusReport.IsValidCheck('toDate','wrongDate')"> Can't select future date</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-2 col-xs-12">
-                    <div class="col-md-2 col-xs-12">
-                        <div class="form-group">
-                            <button class="btn blue" type="button" (click)="Load()">
-                                <i class="fa fa-search"></i>
-                                Show Report
-                            </button>
-                        </div>
-                    </div>
-                </div>
+      <div class="form-body">
+        <div class="caption custom-caption col-md-12"> <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Patient Census Report</span> </div>
+        <div class="col-md-12">
+          <div class="row">
+            <!--<div class="col-md-5 col-xs-12">
+              <div class="form-group">
+                <label class="control-label col-md-3">From Date<b class="color-red"> *</b><b style="float:right;">:</b></label>
+                <div class="col-md-9">
+                  <danphe-date-picker [(ngModel)]="currentPatCensusReport.fromDate" ngDefaultControl [CalendarTypes]="calType" formControlName="fromDate"> </danphe-date-picker>
+                  <span class="color-red font-sm" *ngIf="currentPatCensusReport.IsDirty('fromDate')" [hidden]="currentPatCensusReport.IsValidCheck('fromDate','required')"> From Date is required</span><br />
+                  <span class="color-red font-sm" *ngIf="currentPatCensusReport.IsDirty('fromDate')" [hidden]="currentPatCensusReport.IsValidCheck('fromDate','wrongDate')"> Enter Valid Date</span> </div>
+              </div>
             </div>
-            <div class="col-md-12">
-                <div class="col-md-6">
-                    <div class="col-md-7 col-xs-12">
-                        <div class="form-group">
-                            <label class="control-label col-md-5">Doctor<b style="float:right;">:</b></label>
-                            <div class="col-md-7" style="width:200px">
-                                <select [(ngModel)]="currentPatCensusReport.providerId" class="form-control" [ngModelOptions]="{standalone: true}">
-                                    <option>ALL</option>
-                                    <option value="0">No Doctor</option>
-                                    <option *ngFor="let doc of doctorList" value="{{doc.EmployeeId}}">
-                                        {{doc.FullName}}
-                                    </option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- @*-----------------Departmentid*@ -->
-                <div class="col-md-6">
-                    <div class="col-md-7 col-xs-12">
-                        <div class="form-group">
-                            <label class="control-label col-md-5">Department<b style="float:right;">:</b></label>
-                            <div class="col-md-6" style="width:200px">
-                                <select [(ngModel)]="currentPatCensusReport.departmentId" class="form-control" [ngModelOptions]="{standalone: true}">
-                                    <option>ALL Department</option>
-                                    <option *ngFor="let dep of departmentList" value="{{dep.DepartmentId}}">
-                                        {{dep.DepartmentName}}
-                                    </option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="col-md-5 col-xs-12">
+              <div class="form-group">
+                <label class="control-label col-md-3">To Date<b class="color-red"> *</b><b style="float:right;">:</b></label>
+                <div class="col-md-9">
+                  <danphe-date-picker [(ngModel)]="currentPatCensusReport.toDate" ngDefaultControl [CalendarTypes]="calType" formControlName="toDate"> </danphe-date-picker>
+                  <span class="color-red font-sm" *ngIf="currentPatCensusReport.IsDirty('toDate')" [hidden]="currentPatCensusReport.IsValidCheck('toDate','required')"> To Date is required</span><br />
+                  <span class="color-red font-sm" *ngIf="currentPatCensusReport.IsDirty('toDate')" [hidden]="currentPatCensusReport.IsValidCheck('toDate','wrongDate')"> Can't select future date</span> </div>
+              </div>
+            </div>-->
+            <div class="col-md-6 col-xs-12">
+              <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'">
+              </from-to-date-select>
             </div>
-            <!-- @*-----------------Departmentid*@ -->
-      
+            <div class="col-md-2 col-xs-12">
+              <div class="col-md-2 col-xs-12">
+                <div class="form-group">
+                  <button class="btn blue" type="button" (click)="Load()"> <i class="fa fa-search"></i> Show Report </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+        <div class="col-md-12">
+          <div class="row">
+            <div class="col-md-5">
+              <div class="form-group">
+                <label class="control-label col-md-3">Doctor<b style="float:right;">:</b></label>
+                <div class="col-md-7" style="width:200px">
+                  <select [(ngModel)]="currentPatCensusReport.providerId" class="form-control" [ngModelOptions]="{standalone: true}">
+                    <option>ALL</option>
+                    <option value="0">No Doctor</option>
+                    <option *ngFor="let doc of doctorList" value="{{doc.EmployeeId}}"> {{doc.FullName}} </option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-5">
+              <div class="form-group">
+                <label class="control-label col-md-4">Department<b style="float:right;">:</b></label>
+                <div class="col-md-5" style="width:200px">
+                  <select [(ngModel)]="currentPatCensusReport.departmentId" class="form-control" [ngModelOptions]="{standalone: true}">
+                    <option>ALL Department</option>
+                    <option *ngFor="let dep of departmentList" value="{{dep.DepartmentId}}"> {{dep.DepartmentName}} </option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </form>
+  </div>
 </div>
-
 <style>
-    .tblReport tr td:nth-child(2) {
-        white-space: nowrap !important;
-    }
+  .tblReport tr td:nth-child(2) {
+    white-space: nowrap !important;
+  }
 
-    .tblReport tr td {
-        padding: 0px 5px;
-    }
+  .tblReport tr td {
+    padding: 0px 5px;
+  }
 
-    .tblReport thead tr td {
-        font-size: 12px !important;
-        text-transform: capitalize;
-    }
+  .tblReport thead tr td {
+    font-size: 12px !important;
+    text-transform: capitalize;
+  }
 </style>
-
-<div class="row" *ngIf="showReport">
+<div class="wrapper">
+  <div class="row" *ngIf="showReport">
     <div class="col-md-12" id="printPage">
-        <div class="text-center bill-head col-md-12" style="text-align:center;font-family:sans-serif;padding-top: 5px;">
-            <span style="font-size:20px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
-            <span style="font-size:14px;">{{headerDetail.address}}</span><br />
+      <div class="text-center bill-head col-md-12" style="text-align:center;font-family:sans-serif;padding-top: 5px;">
+        <span style="font-size:20px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
+        <span style="font-size:14px;">{{headerDetail.address}}</span><br />
+      </div>
+      <div class="col-md-12">
+        <span class="col-md-2 left">
+          From Date: {{fromDate}}<br />
+          ToDate: {{toDate}}<br />
+        </span> <span class="col-md-8" style="text-align:center">
+          <b>PATIENT CENSUS REPORT</b><br />
+          &nbsp;
+        </span> <span class="col-md-2 right">
+          Print Date: {{currentDate}}<br />
+          &nbsp;
+        </span>
+      </div>
+      <div class="col-md-12">
+        <div class="table-responsive">
+          <table class="table-hover tblReport" border="1" style="background-color:initial;margin-top:10px">
+            <tbody *ngFor="let doc of ReportData">
+              <tr>
+                <td colspan="2" style="font-weight:bold">Doctor's Name</td>
+                <td colspan="8" style="font-weight:bold">{{doc.Provider}}</td>
+              </tr>
+              <tr>
+                <td style="font-weight:bold">S.N.</td>
+                <td style="font-weight:bold">Service Department</td>
+                <td style="font-weight:bold">No of Count</td>
+                <td style="font-weight:bold">Amount</td>
+                <td style="font-weight:bold">Unconfirmed Count</td>
+                <td style="font-weight:bold">Unconfirmed Amount</td>
+                <td style="font-weight:bold">Confirmed Count</td>
+                <td style="font-weight:bold">Confirmed Amount</td>
+                <td style="font-weight:bold">Total Count</td>
+                <td style="font-weight:bold">Total Amount</td>
+              </tr>
+              <tr *ngFor="let row of doc.Data;let i=index">
+                <td>{{i+1}}</td>
+                <td>{{row.ServiceDepartmentName}}</td>
+                <td style="text-align:right">{{row.totC1 - row.retC1}} ({{row.totC1}} - {{row.retC1}})</td>
+                <td style="text-align:right">{{row.totA1 - row.retA1 | ParseAmount}} ({{row.totA1 | ParseAmount}} - {{row.retA1 | ParseAmount}})</td>
+                <td style="text-align:right">{{row.totC2}}</td>
+                <td style="text-align:right">{{row.totA2 | ParseAmount}}</td>
+                <td style="text-align:right">{{row.totC3 - row.retC3}} ({{row.totC3}} - {{row.retC3}})</td>
+                <td style="text-align:right">{{row.totA3 - row.retA3 | ParseAmount}} ({{row.totA3 | ParseAmount}} - {{row.retA3 | ParseAmount}})</td>
+                <td style="text-align:right">{{row.totTC}}</td>
+                <td style="text-align:right">{{row.totTA | ParseAmount}}</td>
+              </tr>
+            </tbody>
+            <tbody>
+              <tr>
+                <td colspan="10">&nbsp;</td>
+              </tr>
+              <tr>
+                <td colspan="2"></td>
+                <td style="font-weight:bold;text-align:right">{{summary.tot_Count}}</td>
+                <td style="font-weight:bold;text-align:right">{{summary.tot_Amount}}</td>
+                <td style="font-weight:bold;text-align:right">{{summary.tot_UnConfCount}}</td>
+                <td style="font-weight:bold;text-align:right">{{summary.tot_UnConfAmt}}</td>
+                <td style="font-weight:bold;text-align:right">{{summary.tot_ConfCount}}</td>
+                <td style="font-weight:bold;text-align:right">{{summary.tot_ConfAmt}}</td>
+                <td style="font-weight:bold;text-align:right">{{summary.tot_TotalCount}}</td>
+                <td style="font-weight:bold;text-align:right">{{summary.tot_TotalAmount}}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        <div class="col-md-12">
-            <span class="col-md-2 left">From Date: {{fromDate}}<br />ToDate: {{toDate}}<br /></span>
-            <span class="col-md-8" style="text-align:center"><b>PATIENT CENSUS REPORT</b><br /> &nbsp; </span>
-            <span class="col-md-2 right">Print Date: {{currentDate}}<br />&nbsp;</span>
-          
-        </div>
-        <div class="col-md-12">
-            <div class="table-responsive">
-                <table class="table-hover tblReport" border="1" style="background-color:initial;margin-top:10px">
-                    <tbody *ngFor="let doc of ReportData">
-                        <tr>
-                            <td colspan="2" style="font-weight:bold">Doctor's Name</td>
-                            <td colspan="8" style="font-weight:bold">{{doc.Provider}}</td>
-                        </tr>
-                        <tr>
-                            <td style="font-weight:bold">S.N.</td>
-                            <td style="font-weight:bold">Service Department</td>
-                            <td style="font-weight:bold">No of Count</td>
-                            <td style="font-weight:bold">Amount</td>
-                            <td style="font-weight:bold">Unconfirmed Count</td>
-                            <td style="font-weight:bold">Unconfirmed Amount</td>
-                            <td style="font-weight:bold">Confirmed Count</td>
-                            <td style="font-weight:bold">Confirmed Amount</td>
-                            <td style="font-weight:bold">Total Count</td>
-                            <td style="font-weight:bold">Total Amount</td>
-                        </tr>
-                        <tr *ngFor="let row of doc.Data;let i=index">
-                            <td>{{i+1}}</td>
-                            <td>{{row.ServiceDepartmentName}}</td>
-                            <td style="text-align:right">{{row.totC1 - row.retC1}} ({{row.totC1}} - {{row.retC1}})</td>
-                            <td style="text-align:right">{{row.totA1 - row.retA1 | ParseAmount}} ({{row.totA1 | ParseAmount}} - {{row.retA1 | ParseAmount}})</td>
-                            <td style="text-align:right">{{row.totC2}}</td>
-                            <td style="text-align:right">{{row.totA2 | ParseAmount}}</td>
-                            <td style="text-align:right">{{row.totC3 - row.retC3}} ({{row.totC3}} - {{row.retC3}})</td>
-                            <td style="text-align:right">{{row.totA3 - row.retA3 | ParseAmount}} ({{row.totA3 | ParseAmount}} - {{row.retA3 | ParseAmount}})</td>
-                            <td style="text-align:right">{{row.totTC}}</td>
-                            <td style="text-align:right">{{row.totTA | ParseAmount}}</td>
-                        </tr>
-                    </tbody>
-                    <tbody>
-                        <tr>
-                            <td colspan="10">&nbsp;</td>
-                        </tr>
-                        <tr>
-                            <td colspan="2"></td>
-                            <td style="font-weight:bold;text-align:right">{{summary.tot_Count}}</td>
-                            <td style="font-weight:bold;text-align:right">{{summary.tot_Amount}}</td>
-                            <td style="font-weight:bold;text-align:right">{{summary.tot_UnConfCount}}</td>
-                            <td style="font-weight:bold;text-align:right">{{summary.tot_UnConfAmt}}</td>
-                            <td style="font-weight:bold;text-align:right">{{summary.tot_ConfCount}}</td>
-                            <td style="font-weight:bold;text-align:right">{{summary.tot_ConfAmt}}</td>
-                            <td style="font-weight:bold;text-align:right">{{summary.tot_TotalCount}}</td>
-                            <td style="font-weight:bold;text-align:right">{{summary.tot_TotalAmount}}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+      </div>
     </div>
     <div class="form-group" style="text-align:center">
-        <button class="blue btn" type="button" (click)="Print()">
-            <i class="fa fa-print"></i>
-            Print
-        </button>
-        <button class="blue btn" type="button" title="Export to Excel" (click)="ExportToExcel()">
-            <i class="fa fa-file-excel-o"></i>
-            Export
-        </button>
+      <button class="blue btn" type="button" (click)="Print()"> <i class="fa fa-print"></i> Print </button>
+      <button class="blue btn" type="button" title="Export to Excel" (click)="ExportToExcel()"> <i class="fa fa-file-excel-o"></i> Export </button>
     </div>
+  </div>
 </div>

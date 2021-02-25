@@ -1,0 +1,203 @@
+
+<style>
+  th {
+    text-align: center;
+  }
+</style>
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showeditPage">
+  <div class="portlet-body form">
+    <!--Model Box Body Start-->
+    <div class="form-body clearfix">
+      <div class="col-md-12" id="sf">
+        <div class="col-md-12 col-sm-12 col-xs-12 modelbox-div">
+          <div class="row">
+            <div id="printpageTransactionView">
+              <a class="btn btn-danger hidden-print rt_close_btn" (click)="Close()" title="Cancel">X</a>
+              <div class="ap-v-header">
+                <div class="row">
+                  <div class="col-md-2">
+                    <div
+                      [rbac-permission]="{'name':'accounting-transaction-backdate-voucherentry-btn','actionOnInvalid':'hidden'}"
+                      class="ac-check-wrapper">
+                      <label for="chkBackDateEntry" class="mt-checkbox mt-checkbox-outline">
+                        <input name="isBackDateEntry" type="checkbox" value="Back Date Entry"
+                          [(ngModel)]="IsBackDateEntry" (change)="ChkBackDateEntryOnChange()" id="chkBackDateEntry" style="zoom:1.4">
+                        <span></span>Back Date Entry </label>
+                    </div>
+                  </div>
+                  <div class="col-md-10">
+                    <div class="row">
+                      <div class="col-md-3">
+                        <div><b>Voucher Type:</b></div>
+                        <select disabled [(ngModel)]="selVoucher.VoucherId">
+                          <option *ngFor="let v of voucherList" value="{{v.VoucherId}}">{{v.VoucherName}}</option>
+                        </select>
+                      </div>
+                      <div class="col-md-3">
+                        <div> <b>Voucher Head:</b> </div>
+                        <form [formGroup]="transaction.TransactionValidator">
+                          <select disabled [(ngModel)]="selectedVoucherHead.VoucherHeadId" id="voucherhead"
+                            formControlName="VoucherHead" (ngModelChange)="ChangedVoucherHead()">
+                            <option *ngFor="let v of voucherHeadList" value="{{v.VoucherHeadId}}"> {{v.VoucherHeadName}}
+                            </option>
+                          </select>
+                        </form>
+                      </div>
+
+                      <!-- current edited  voucher number -->
+                      <div class="col-md-3">
+                        <div><b>Voucher Number:</b></div>
+                        <input disabled type=text [(ngModel)]="transaction.VoucherNumber"
+                          [ngModelOptions]="{standalone: true}" />
+                      </div>
+                      <div class="col-md-3">
+                        <div class="ac-check-wrapper">
+                          <div><b>Voucher Date:</b> {{TransactionDate | nepaliDate:'format':'YYYY-MM-DD'}}(BS) <br />
+                            {{TransactionDate | DanpheDateTime:'format':'YYYY-MM-DD'}} (AD)</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6" *ngIf="IsBackDateEntry">
+                <div class="row">
+                  <label class="col-md-3">Voucher Date:<b class="color-red"></b></label>
+                  <div class="col-md-7">
+                    <fiscal-year-calendar [showSingleDatePicker]="true" [showAllFiscalYear]="false" [SingleFiscalYearId]="fiscalYearId"
+                     (fiscalYearDate)="selectDate($event)"> </fiscal-year-calendar>
+
+                    <!-- <danphe-date-picker [(ngModel)]="TransactionDate" [ngModelOptions]="{standalone: true}"
+                      ngDefaultControl [CalendarTypes]="calType"> </danphe-date-picker> -->
+                  </div>
+                </div>
+              </div>
+              <table class="table table-striped table-hover inv_table table-bordered tbPadding">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th> Dr/Cr </th>
+                    <th> Ledger </th>
+                    <th></th>
+                    <th> Dr Amount </th>
+                    <th> Cr Amount </th>
+                    <th>Description</th>
+                    <th></th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let itm of transaction.TransactionItems; let i = index">
+                    <td><b>{{i+1}}</b></td>
+                    <td class="form-group">
+                      <form [formGroup]="itm.TransactionItemValidator" style="width:80px;">
+                        <input danphe-auto-complete [(ngModel)]="DrCr[i]" [source]="DrCrList" formControlName="DrCr"
+                          placeholder="Dr/Cr" display-property-name="DrCr" value-property-name="DrCr"
+                          match-formatted="true" (valueChanged)="onDrCrChange(i)" [list-formatter]="DrCrListFormatter"
+                          max-num-list="2" onclick="this.select()" id="DrCr_{{i+1}}" style="width:60px" />
+                        <div class="color-red font-sm" *ngIf="itm.IsDirty('DrCr')"
+                          [hidden]="itm.IsValidCheck('DrCr','required')">
+                          Please select Transaciton Type. </div>
+                      </form>
+                    </td>
+                    <td>
+                      <form [formGroup]="itm.TransactionItemValidator">
+                        <div> <span style="float: left !important;
+                  margin-right: 5px;">{{itm.Code}}</span>
+                          <input *ngIf="showledger" danphe-auto-complete [(ngModel)]="selLedger[i]"
+                            [source]="ledgerList" placeholder="Ledger Name" display-property-name="LedgerName"
+                            formControlName="LedgerId" value-property-name=null [grid-sort]="'LedgerName'"
+                            (valueChanged)="AssignSelectedLedger(i)" [list-formatter]="LedgerListFormatter"
+                            max-num-list="15" onclick="this.select()" id="Ledger_{{i+1}}" style="width:350px;"
+                            match-formatted="true" />
+
+                        </div>
+                        <!--<a><i>Select Cost Center Item(s) </i></a>-->
+                        <div class="color-red font-sm" *ngIf="itm.IsDirty('LedgerId')"
+                          [hidden]="itm.IsValidCheck('LedgerId','required')"> Please select Ledger.</div>
+                      </form>
+                    </td>
+                    <td></td>
+                    <td>
+                      <form [formGroup]="itm.TransactionItemValidator" *ngIf="itm.DrCr=='true' || itm.DrCr==true">
+                        <input type="number" id="Amount_{{i+1}}" formControlName="Amount" min="0"
+                          [(ngModel)]="itm.Amount" (focusout)="CalculateLedger()" name="amount"
+                          onclick="this.select()" />
+                        <div class="color-red font-sm" *ngIf="itm.IsDirty('Amount')"
+                          [hidden]="itm.IsValidCheck('Amount','invalidNumber')">Enter valid amount.</div>
+                      </form>
+                    </td>
+                    <td>
+                      <form [formGroup]="itm.TransactionItemValidator" *ngIf="itm.DrCr=='false' || itm.DrCr==false">
+                        <input type="number" id="Amount_{{i+1}}" formControlName="Amount" min="0"
+                          [(ngModel)]="itm.Amount" (focusout)="CalculateLedger()" name="amount"
+                          onclick="this.select()" />
+                        <div class="color-red font-sm" *ngIf="itm.IsDirty('Amount')"
+                          [hidden]="itm.IsValidCheck('Amount','invalidNumber')">Enter valid amount.</div>
+                      </form>
+                    </td>
+                    <td><textarea [(ngModel)]="itm.Description" id="narration" style="width:200px;"
+                        id="Description_{{i+1}}">
+        </textarea></td>
+                    <td><a (click)="AddNewTxnLedger()"><i class="fa fa-plus btn btn-success"></i></a></td>
+                    <td><a (click)="DeleteTxnLedgerRow(i)" title="Alt+X,Alt+Delete,Click to remove this item"> <i
+                          class="btn btn-danger fa fa-times"></i> </a></td>
+                  </tr>
+                  <tr>
+                    <td colspan="4">
+                      <b>
+                        In Words : {{totalAmount | NumberInWords | CapitalFirstLetter}}
+                      </b>
+                    </td>
+                    <td>
+                      <span style="font-weight:bold;">Total Debit:{{totalDebit | ParseAmount  | Currency}} </span>
+                    </td>
+                    <td>
+                      <div class="col-md-6 col-sm-6" style="width:200px;">
+                        <span style="font-weight:bold;">Total Credit:{{totalCredit | ParseAmount  | Currency}} </span>
+                      </div>
+
+                    </td>
+                    <td>
+                    </td>
+
+                    <td></td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="row">
+                <div class="col-md-6">
+                  <h4>Narration:</h4>
+                  <form [formGroup]="transaction.TransactionValidator">
+                    <textarea class="col-md-12" [(ngModel)]="transaction.Remarks" id="narration"
+                      formControlName="Remarks"></textarea>
+                    <div class="color-red font-sm" *ngIf="transaction.IsDirty('Remarks')" min="0"
+                      [hidden]="transaction.IsValidCheck('Remarks','maxLength')"> Max length for Remarks is 100
+                      characters </div>
+                  </form>
+                </div>
+                <div class="col-md-6">
+                  <h4>Reason :</h4>
+                  <form [formGroup]="transaction.TransactionValidator">
+                    <textarea class="col-md-12" [(ngModel)]="transaction.Reason" id="reason" placeholder="Enter reason (Minimum 20 characters)" [ngModelOptions]="{standalone: true}"> </textarea>
+                  </form>
+                </div>
+              </div>
+              <div class="btn-wrapper" style="text-align: right;">
+                <button [disabled]="HideSavebtn" class="btn creamyblue btn-success" (click)="UpdateTransaction()"
+                  title="Click to Save changes">Save Changes</button>
+                <button class="btn btn-danger" (click)="Cancel()"> <u>C</u>ancel </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--Model Box Body End-->
+  </div>
+</div>
+
+
+<!---------------------Print/View Pop Up form starts ------------------------>
+<transaction-view [voucherNumber]="voucherNumber" [FiscalYearId]="fiscalYId"></transaction-view>

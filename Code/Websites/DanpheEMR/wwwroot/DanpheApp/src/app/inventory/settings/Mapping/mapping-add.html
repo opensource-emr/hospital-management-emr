@@ -1,0 +1,65 @@
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showAddPage">
+    <div class="portlet-body form">
+        <div class="row">
+            <div class="col-md-6 col-md-offset-3">
+                <!-- <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+                            </div> -->
+                <div class="modelbox-div clearfix">               
+                    <div class="caption lb-caption">
+                        <h3>
+                            <span *ngIf="!update">Add Mapping</span>
+                            <span *ngIf="update">Update Mapping</span>
+                        </h3>
+                        <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>                  
+                    </div>                   
+                <form [formGroup]="CurrentCurrency.CurrencyValidator" class="form-horizontal hm-form">
+                        <div class="form-body">                        
+                            <div class="form-group">
+                                <label class="control-label col-md-5">Currency Code<sup class="color-red">*</sup><b>:</b></label>
+                                <div class="col-md-7">
+                                    <input class="form-control" maxlength="30" type="text"
+                                            [(ngModel)]="CurrentCurrency.CurrencyCode"
+                                            formControlName="CurrencyCode"
+                                            id="CurrencyCode"
+                                            placeholder="CurrencyCode" />
+                                    <span class="color-red font-sm" [hidden]="CurrentCurrency.IsValidCheck('CurrencyCode','required') || !(CurrentCurrency.IsDirty('CurrencyCode'))">CurrencyCode is required</span>
+                                    <span class="color-red font-sm" *ngIf="CurrentCurrency.IsDirty('CurrencyCode')" [hidden]="CurrentCurrency.IsValidCheck('CurrencyCode','maxlength')"> Length is not proper</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-5">Description<b>:</b></label>
+                                <div class="col-md-7">
+                                    <input class="form-control" maxlength="200" type="text"
+                                            [(ngModel)]="CurrentCurrency.Description"
+                                            [ngModelOptions]="{standalone: true}"
+                                            id="Description"
+                                            placeholder="Description" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-5">Is Active <b>:</b> </label>
+                                <div class="col-md-7">
+                                    <div class="input-group">
+                                        <div class="icheck-inline">
+                                            <label class="mt-checkbox mt-checkbox-outline">
+                                                <input id="isActive"
+                                                        type="checkbox"
+                                                        [(ngModel)]="CurrentCurrency.IsActive"
+                                                        [ngModelOptions]="{standalone: true}" />
+                                                <span></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <input type="button" class="btn primary-btn" *ngIf="!update" (click)="AddCurrency()" value="Add Currency" />
+                                <input type="button" class="btn primary-btn" *ngIf="update" (click)="Update()" value="Update" />
+                            </div>                       
+                        </div>
+                    </form>
+                </div>
+            </div>            
+        </div>
+    </div>
+</div>

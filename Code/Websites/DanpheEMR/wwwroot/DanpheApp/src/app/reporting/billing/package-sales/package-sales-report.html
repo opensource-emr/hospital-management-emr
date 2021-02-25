@@ -1,0 +1,57 @@
+<div class="wrapper">
+  <div class="row">
+    <div class="form-body">
+      <div class="col-md-12">
+        <div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Package Sales Details Report</span> </div>
+        <!--<div class="col-md-5 col-xs-12">
+          <div class="form-group">
+            <label class="control-label col-md-4">From Date<b class="color-red"> *</b><b style="float:right;">:</b></label>
+            <div class="col-md-8">
+              <danphe-date-picker [(ngModel)]="currentPackageSales.FromDate" ngDefaultControl [CalendarTypes]="'en,np'" [ngModelOptions]="{standalone: true}"> </danphe-date-picker>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-5 col-xs-12">
+          <div class="form-group">
+            <label class="control-label col-md-4">To Date<b class="color-red"> *</b><b style="float:right;">:</b></label>
+            <div class="col-md-8">
+              <danphe-date-picker [(ngModel)]="currentPackageSales.ToDate" ngDefaultControl [CalendarTypes]="'en,np'" [ngModelOptions]="{standalone: true}"> </danphe-date-picker>
+            </div>
+          </div>
+        </div>-->
+        <div class="row">
+			<div class="col-md-6 col-xs-12">
+          <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'">
+          </from-to-date-select>
+        </div>
+			<div class="col-md-2 col-xs-12">
+			  <div class="form-group">
+				<button class="btn blue" type="button" (click)="Load()"> <i class="fa fa-search"></i> Show Report </button>
+			  </div>
+			</div>
+		  </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-12 col-sm-12" *ngIf="PackageSalesDetailsData.length>0">
+      <danphe-grid [grid-colDefaults]="PackageSalesDetailsColumns"
+                   [grid-data]="PackageSalesDetailsData" (grid-actions)="PackageSaleGridActions($event)"
+                   [grid-exportOptions]="gridExportOptions" [grid-showExportNew]="true" (grid-onExport)="OnGridExport($event)" [NepaliDateInGridParams]="NepaliDateInGridSettings"> </danphe-grid>
+    </div>
+  </div>
+  <div class="popup-static portlet box portlet-fullscreen" style="display:flex;justify-content:center" *ngIf="showSticker">
+    <div class="portlet-body form">
+      <div class="col-md-12">
+        <div class="col-md-6">
+          <div class="modelbox-div" style="display:flex;justify-content:center;margin-left:16%;margin-right:16%;width:490px;margin-top:30px;">
+            <bill-sticker [billingTransactionId]="billingTransactionId"
+                          [showSticker]="showSticker"
+                          (after-print-action)="AfterStickerPrintAction($event)"></bill-sticker>
+            <a style="height: 30px;border: 1px solid black; border-radius: 58% !important; margin-top:-13px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

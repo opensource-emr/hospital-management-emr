@@ -1,0 +1,14 @@
+
+<a feature="button" class="btn blue bordered" (click)="AddCountry()"><i class="fa fa-plus"></i>Add Country</a>
+
+<country-add [showAddPage]="showAddPage" 
+              [selectedCountry]="selectedCountry"
+             (callback-Add)="CallBackAdd($event)"></country-add>
+
+<div *ngIf="showCountryList" class="row">
+    <div class="col-md-12 col-xs-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="countryGridColumns" [grid-data]="countryList" (grid-actions)="CountryGridActions($event)"
+                     [show-print-button]="false">
+        </danphe-grid>
+    </div>
+</div>

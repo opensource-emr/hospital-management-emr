@@ -1,0 +1,22 @@
+.save-btn {
+  padding: 4px 12px;
+}
+
+.font-small {
+  font-size: 12px;
+}
+
+.rd-align input[type=radio] {
+  margin-top: 2px;
+}
+
+
+.tbl-trns-itm tr th, .tbl-trns-itm tr td {
+  font-size: 12px;
+  padding: 5px 3px;
+}
+
+.tbl-trns-itm-holder {
+  max-height: 80vh;
+  overflow-x: hidden;
+}

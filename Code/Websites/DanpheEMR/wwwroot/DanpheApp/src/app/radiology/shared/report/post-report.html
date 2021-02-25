@@ -39,17 +39,32 @@
     text-align: right;
     padding-right: 15px;
   }
+
   .kdrc .dontshow {
     display: none;
   }
+
+  .lbl-choose-file {
+    padding: 4px 1px 3px 7px;
+    width: 114px;
+    background-color: #c7bebe;
+    font-size: 13px;
+  }
+
+    .lbl-choose-file:hover {
+      background-color: rgba(0, 140, 186, 0.5);
+    }
 </style>
-<div class="popup-static portlet box portlet-fullscreen" *ngIf="showreport">
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showreport">
   <div class="portlet-body form">
-    <div class="col-md-12">
-      <div class="modelbox-div">
-        <div class="modelbox-header">
-          <h4 class="margin-0-vr"><strong>Add report of {{report.ImagingItemName}} ({{report.ImagingTypeName}})</strong></h4>
-        </div>
+    <div class="row">
+		<div class="col-md-10 col-md-offset-1">
+      <div class="modelbox-div clearfix">        
+			<div class="caption custom-caption">
+				<h3> <span>Add report of {{report.ImagingItemName}} ({{report.ImagingTypeName}})</span></h3>
+				<a class="btn btn-danger" (click)="Close()" title="Cancel">X</a> 
+			</div>        
+       
         <div class="modelbox-body">
           <div class="rad-pat-info margin-15-bt">
             <div class="flex-container flex-align-center">
@@ -59,10 +74,11 @@
               <div class="flex-1 single-flx">
                 <strong>Hospital No: </strong>&nbsp;{{patient.PatientCode}}
               </div>
+
               <div class="flex-2 single-flx">
                 <div class="flex-container flex-align-center">
                   <div class="flex-1 txt-autocomp"><strong>Ref. by</strong></div>
-                  <div class="flex-3">
+                  <!-- <div class="flex-3">
                     <input class="form-control" danphe-auto-complete
                            style="font-weight:bold;"
                            [(ngModel)]="selReferredByDr"
@@ -74,6 +90,12 @@
                            match-formatted="true"
                            onClick="this.select();"
                            max-num-list="10" />
+                  </div>-->
+                  <div class="flex-3 margin-15-tp">
+                    <select-referrer [selected-ref-id]="selectedRefId" [selected-ref-name]="selectedRefName" [allow-external]="ExtRefSettings.EnableExternal"
+                                     [allow-free-text]="ExtRefSettings.AllowFreeText" [default-external]="ExtRefSettings.DefaultExternal" (on-referrer-change)="OnReferrerChanged($event)">
+
+                    </select-referrer>
                   </div>
                 </div>
               </div>
@@ -132,7 +154,6 @@
 
             <div class="row margin-5-tp">
               <div class="col-md-12 col-xs-12 col-sm-12">
-
                 <div class="row">
                   <div class="col-md-12">
                     <div class="row">
@@ -142,16 +163,21 @@
                           <div class="col-md-9"><input class="form-control" [(ngModel)]="report.Indication" type="text" placeholder="Indication" /></div>
                         </div>
                       </div>
-                      <!--<div class="col-md-3"></div>-->
-
                       <div class="col-md-5">
+                        <div class="row">
+                          <div class="col-md-4"><p class="lineheight-3 margin-0-vr">MRI/CT/X-ray No:</p></div>
+                          <div class="col-md-5"><input class="form-control" [(ngModel)]="report.RadiologyNo" type="text" placeholder="MRI/CT/X-ray Number"/></div>
+                        </div>
+                      </div>
+                      <!--<div class="col-md-3"></div>-->
+                      <!--<div class="col-md-5">
                         <div *ngIf="enableImgUpload" class="row">
                           <label class="control-label col-md-4" style="line-height: 35px;">Upload Images<b class="color-red">*</b><b style="float:right;">:</b></label>
                           <div class="col-md-8">
-                            <input class="form-control" #fileInput type="file" value="" multiple />
+                            <input class="form-control" #fileInput type="file" value="" multiple (change)="fileChangeEvent($event)" />
                           </div>
                         </div>
-                      </div>
+                      </div>-->
 
                     </div>
                   </div>
@@ -191,34 +217,51 @@
                   </div>
                 </div>
 
-
-
               </div>
             </div>
           </div>
 
+
           <div class="image-table-holder">
+            <div *ngIf="enableImgUpload" class="row">
+              <div class="col-md-6">
+                <label class="control-label col-md-4" style="line-height: 35px;">Upload Images<b class="color-red">*</b><b style="float:right;">:</b></label>
+                <div class="col-md-8">
+
+                  <input class="form-control hidden" #fileInput type="file" value="" id="chooseFile" multiple (change)="fileChangeEvent($event)" />
+                  <label for="chooseFile" class="lbl-choose-file">
+                    Choose Files..
+                  </label>
+                </div>
+              </div>
+            </div>
             <div class="row">
+
               <div class="table-responsive">
                 <table class="table table-striped table-hover" style="background-color:initial; margin:0px;">
                   <tr>
                     <th *ngFor="let image of album; let i=index">
-                      <div class="input-group">
-                        <div class="icheck-inline">
-                          <label class="mt-checkbox mt-checkbox-outline">
-                            <input id="isActive" name="isActive" type="checkbox" value=""
-                                   [(ngModel)]="image.isActive" (ngModelChange)="onCheckedChanged()">
-                            <span style="border: solid 0.5px black;"></span>
-                          </label>
-                        </div>
+<!--
+                      <div>
+                        <button class="btn btn-sm red" (click)="RemoveSingleImage(i)" title="Click to Remove this image">
+                          X
+                        </button>
                       </div>
-                      <img style="width:200px; height:200px; object-fit:contain;" (click)="open(i)" [src]="image.src" />
+-->
+                      <div>
+                        <img style="width:200px; height:200px; object-fit:contain;" (click)="open(i)" [src]="image.src" />
+                      </div>
+                      <div>
+                        {{image.caption}}
+                      </div>
+
                     </th>
                   </tr>
                 </table>
               </div>
             </div>
           </div>
+
 
 
         </div>
@@ -229,7 +272,7 @@
             <input *ngIf="buttonsList.indexOf('save')>-1" type="button" class="btn btn-primary margin-7-hr" (click)="SaveReport()" value="Save" [disabled]="loading" />
             <input style="margin-left: 15px;" *ngIf="buttonsList.indexOf('submit')>-1" type="button" class="btn btn-primary margin-7-hr" (click)="SubmitAndPrintReport()" value="Submit & Print" [disabled]="loading" />
             <!-- <input style="margin-left: 15px;" *ngIf="buttonsList.indexOf('print')>-1" type="button" class="btn btn-primary" (click)="AddReport(orderStatus='print')" value="Print" [disabled]="loading" /> -->
-            <input type="button" class="btn btn-danger margin-7-hr" (click)="DeleteImagesAndSave('pending')" value="Delete Images" *ngIf="enableDicomImages" [disabled]="loading" />
+            <!--<input *ngIf="enableImgUpload && album && album.length>0" type="button" class="btn btn-danger margin-7-hr" (click)="DeleteImagesAndSave('pending')" value="Delete Images" [disabled]="loading" />-->
 
             <label class="mt-checkbox mt-checkbox-outline" *ngIf="enableDicomImages">
               <input id="allImages" name="allImages" type="checkbox" value="" [disabled]="loading"
@@ -240,18 +283,19 @@
           </div>
         </div>
 
+<!--
         <div class="close-modelbox">
           <button class="btn btn-danger" (click)="Close()">X</button>
         </div>
+-->
       </div>
     </div>
+	  </div>
 
   </div>
 </div>
-
-
-<div class="popup-static portlet box portlet-fullscreen" *ngIf="changeDicomImageList">
-  <div class="portlet-body form " style="background-color:white">
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="changeDicomImageList">
+  <div class="portlet-body form ">
     <div class="form-horizontal">
       <div class="form-body">
         <div class="col-md-12">

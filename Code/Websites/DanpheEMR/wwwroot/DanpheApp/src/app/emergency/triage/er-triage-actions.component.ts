@@ -1,4 +1,4 @@
-﻿import { Component, ChangeDetectorRef, EventEmitter, Output, OnInit, Input } from '@angular/core';
+import { Component, ChangeDetectorRef, EventEmitter, Output, OnInit, Input } from '@angular/core';
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { CoreService } from '../../core/shared/core.service';
 import { EmergencyPatientModel } from '../shared/emergency-patient.model';
@@ -46,7 +46,10 @@ export class ERTriageActionComponent {
                 }
                 else if (severity == 3) {
                     this.ERPatient.TriageCode = "critical";
-                }
+              }
+              else if (severity == 4) {
+                this.ERPatient.TriageCode = "death";
+              }
 
                 this.PutTriagedCode();
             }

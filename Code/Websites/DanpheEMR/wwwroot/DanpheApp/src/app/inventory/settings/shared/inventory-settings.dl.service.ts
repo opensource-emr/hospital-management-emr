@@ -26,14 +26,18 @@ export class InventorySettingDLService {
   public GetAccountHead(ShowIsActive: boolean) {
     return this.http.get<any>("/api/InventorySettings?reqType=GetAccountHead&ShowIsActive=" + ShowIsActive);
   }
+  // getMappedledgerlist
+  public getMappedledgerlist(ledgerType) {
+    return this.http.get<any>("/api/Accounting?reqType=get-mapped-ledger-list&ledgerType=" + ledgerType);
+  }
   public GetCurrencyCode() {
     return this.http.get<any>("/api/InventorySettings?reqType=GetCurrencyCodeList");
   }
   public GetItemList() {
     return this.http.get<any>("/api/InventorySettings?reqType=ItemList");
   }
-  public GetTermsConditions() {
-    return this.http.get<any>("/api/InventorySettings?reqType=GetInventoryTerms");
+  public GetTermsConditions(TermsApplicationId) {
+    return this.http.get<any>("/api/InventorySettings/GetTermsListByTermsApplicationId/"+ TermsApplicationId,this.options);
   }
 
   public GetItem() {

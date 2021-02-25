@@ -15,8 +15,9 @@ import { SecurityService } from "../../../security/shared/security.service";
 import { CurrentVisitContextVM } from "../../../appointments/shared/current-visit-context.model";
 import { BillingReceiptModel } from "../../shared/billing-receipt.model";
 import { PatientService } from "../../../patients/shared/patient.service";
-import { CreditOrganization } from "../../../settings/shared/creditOrganization.model";
+import { CreditOrganization } from "../../../settings-new/shared/creditOrganization.model";
 import { Router } from "@angular/router";
+import { ENUM_BillingStatus, ENUM_VisitType, ENUM_BillingType } from "../../../shared/shared-enums";
 
 @Component({
   selector: 'insurance-bill-item-request',
@@ -523,7 +524,7 @@ export class InsuranceBillItemRequest {
       txnItem.RequestingDeptId = this.currBillingContext ? this.currBillingContext.RequestingDeptId : null;
       txnItem.BillingType = this.billingService.BillingType;
       txnItem.VisitType = this.billingService.BillingType.toLowerCase();
-      txnItem.BillStatus = "provisional";
+      txnItem.BillStatus = ENUM_BillingStatus.provisional;// "provisional";
       txnItem.IsInsurance = true;
 
       txnItem.CreatedOn = moment().format("YYYY-MM-DD HH:mm:ss");
@@ -621,8 +622,8 @@ export class InsuranceBillItemRequest {
   PostToBillingTransaction() {
     this.billingTransaction.BillingTransactionItems.forEach(a => {
       a.PatientVisitId = this.visitId;
-      a.BillingType = "outpatient";
-      a.VisitType = "outpatient";
+      a.BillingType = ENUM_BillingType.outpatient;// "outpatient";
+      a.VisitType = ENUM_VisitType.outpatient;// "outpatient";
     });
     this.billingBLService.PostBillingTransactionItems(this.billingTransaction.BillingTransactionItems)
       .subscribe(

@@ -34,13 +34,20 @@ export class PurchaseOrderItems {
 
     //to get the data ...and use it for calculation
     public VatPercentage: number = 0;
-
+    public VATAmount:number =0;
     ////to make the instance ItemMaster with new row
     public SelectedItem: ItemMaster = null;
 
     public Item: ItemMaster = null;
+    public Code:string=null;
+    public UOMName:string=null;
 
     public PurchaseOrderItemValidator: FormGroup = null;
+    public IsActive: boolean = true;
+    public CancelledBy: number;
+    public CancelledOn: string;
+    public CancelRemarks: string;
+    public IsEdited: boolean;
 
 
     constructor() {
@@ -50,7 +57,8 @@ export class PurchaseOrderItems {
             'ItemId': ['', Validators.compose([Validators.required])],
           'Quantity': ['', Validators.compose([Validators.required, CommonValidators.positivenum])],
           'StandardRate': ['', Validators.compose([Validators.required, CommonValidators.positivenum])],
-          'VatPercentage': ['', Validators.compose([Validators.required])]
+          'VatPercentage': ['', Validators.compose([Validators.required, Validators.min(0)])],
+          'DeliveryDays': ['', Validators.compose([Validators.min(0)])],
         });
     }
 

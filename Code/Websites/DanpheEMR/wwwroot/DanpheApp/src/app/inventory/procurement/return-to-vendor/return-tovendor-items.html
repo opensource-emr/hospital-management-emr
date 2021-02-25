@@ -10,35 +10,82 @@
     .bg-off {
         font-weight: bold;
     }
-</style>
+    .vendorlist .row  {
+      margin: 0 -5px;
+    }
+    .vendorlist [class*="col-"] {
+      padding: 0 5px !important;
+    }
+ </style>
 <div class="row">
     <div class="col-md-12">
-        <div class="caption">
-            <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
-            <span class="caption-subject font-blue-sharp bold uppercase">Return To Vendor</span>
+        <div class="caption lb-caption">
+            <!-- <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i> -->
+            <span class="caption-subject">Return To Vendor</span>
         </div>
     </div>
 </div>
-<div class="row" style="padding-top:10px">
-    <div class="col-md-8 form-horizontal">
-        <div class="form-group">
-            <label class="control-label col-md-2 col-sm-2">Vendor<b style="float:right">:</b></label>
-            <div class="col-md-2 col-sm-2">
-                <select class="form-control" style="float:left" [(ngModel)]="vendorId" (ngModelChange)="GetItemList(vendorId)">
-                    <option *ngFor="let vender of Vendors" value="{{vender.VendorId}}">{{vender.VendorName}}</option>             
-                </select>
+<div class="vendorlist">
+  <div class="row">
+    <div class="col-md-11">
+      <div class="row">
+        <div class="col-md-3 col-xs-12">
+          <div class="form-group row  clearfix">
+            <label class="control-label col-md-5"><b>Fiscal Year:</b></label>
+            <div class="col-md-7">
+              <select [(ngModel)]="selFiscYrId" [ngModelOptions]="{standalone: true}" style="height: 28px; width:100%;">
+                <option *ngFor="let fisc of allFiscalYrs;" value="{{fisc.FiscalYearId}}">{{fisc.FiscalYearFormatted}}</option>
+              </select>
             </div>
-            <form [formGroup]="ReturnValidator">
-                <label class="control-label col-md-2">Credit Note No.:</label>
-                <div class="col-md-2 col-sm-2">
-                    <input [(ngModel)]="CreditNoteNo" style="width:80px;" min="0"  class="form-control " formControlName="CreditNoteNo" name="creditNote" type="number">
-                    <div style="color:red" *ngIf="IsDirty('CreditNoteNo')" [hidden]="IsValid('CreditNoteNo','required')"> Creidt Note is required</div>
-                </div>
-            </form>
+          </div>
         </div>
-        <span *ngIf="ShowVendorDetails== true" style="font-size:small;">Vendor ContactNo:<b>{{SelectedVendor.ContactNo}}</b></span> &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;
-        <span *ngIf="ShowVendorDetails== true" style="font-size:small;">Vendor Address:<b>{{SelectedVendor.ContactAddress}}</b></span>
+        <div class="col-md-3 col-xs-12">
+          <div class="form-group clearfix">
+            <label class="control-label col-md-4"><b> Vendor <sup style="color: red">*</sup>:</b></label>
+            <div class="col-md-8">
+              <select class="form-control" style="width:100%" [(ngModel)]="vendorId">
+                <option *ngFor="let vender of Vendors" value="{{vender.VendorId}}">{{vender.VendorName}}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-xs-12">
+          <div class="form-group row clearfix">
+            <label class="control-label col-md-5"><b> GR No. <sup style="color: red">*</sup>:</b></label>
+            <div class="col-md-7">
+              <form [formGroup]="ReturnValidator">
+                <div>
+                  <input [(ngModel)]="GoodsReceiptNo" class="form-control " style="width:100%" formControlName="GrNo" name="grNo" type="number">
+                  <div style="color:red; font-size:12px !important" *ngIf="IsDirty('GrNo')" [hidden]="IsValid('GrNo','required')"> Enter GR No.</div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-xs-12">
+          <div class="form-group row clearfix">
+            <label class="control-label col-md-5"><b> Credit Note No <sup style="color: red">*</sup> : </b> </label>
+            <div class="col-md-7">
+              <form [formGroup]="ReturnValidator">
+                <div>
+                  <input [(ngModel)]="CreditNoteNo" class="form-control "  style="width:100%" disabled formControlName="CreditNoteNo" name="creditNote" type="number">
+                  <div style="color:red; font-size:12px !important" *ngIf="IsDirty('CreditNoteNo')" [hidden]="IsValid('CreditNoteNo','required')"> </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+    <div class="col-md-1 col-xs-12">
+      <div class="form-group clearfix">
+        <button class="btn blue" type="button" (click)=" GetItemList()">
+          <i class="fa fa-search"></i>
+          Search
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="row">
@@ -56,7 +103,7 @@
                         <th><b>Standard Rate</b></th>
                         <th><b>VAT %</b></th>
                         <th><b>Total Amount</b></th>
-                        <th><b>Remark</b></th>
+                        <th><b>Remark <b style="color: red">*</b></b></th>
                         <th></th>
                     </tr>
                 </thead>
@@ -69,7 +116,7 @@
                                        placeholder="Item Name" display-property-name="ItemName" value-property-name=null
                                        onclick="this.select();" max-num-list="10" (valueChanged)="SelectItemFromSearchBox(row.Item,i)"
                                        formControlName="ItemId" style="width:150px ;background-color:azure" />
-                                <div style="color:red" *ngIf="row.IsDirty('ItemId')" [hidden]="row.IsValidCheck('ItemId','required')"> Item is required</div>
+                                <div style="color:red;font-size:12px;" *ngIf="row.IsDirty('ItemId')" [hidden]="row.IsValidCheck('ItemId','required')"> Item is required</div>
                             </form>
                         </td>
                         <td>
@@ -77,7 +124,7 @@
                                 <select class="form-control" formControlName="BatchNo" style="width:120px ;background-color:azure" [(ngModel)]="row.GoodsReceiptId" (ngModelChange)="OnSelectedBatchNo(row.GoodsReceiptId,i)">
                                     <option *ngFor="let batch of row.batchNoList" value="{{batch.GoodsReceiptId}}" [disabled]="disableTextBox">{{batch.BatchNo}}</option>
                                 </select>
-                                <div style="color:red" *ngIf="row.IsDirty('BatchNo')" [hidden]="row.IsValidCheck('BatchNo','required')"> BatchNo is required</div>
+                                <div style="color:red;font-size:12px;" *ngIf="row.IsDirty('BatchNo')" [hidden]="row.IsValidCheck('BatchNo','required')"> BatchNo is required</div>
                             </form>
                         </td>
                         <td>
@@ -91,7 +138,7 @@
                                        (ngModelChange)="CalculateAll(i)" name="quantity" type="number"
                                        [ngClass]="row.Quantity>row.AvailableQuantity?'bg-on':'bg-off'" value="" formControlName="Quantity">
                                 <span *ngIf="row.Quantity>row.AvailableQuantity" style="color:red">No more Qty is Available </span>
-                                <div style="color:red" *ngIf="row.IsDirty('Quantity')" [hidden]="row.IsValidCheck('Quantity','required')"> Quantity is required</div>
+                                <div style="color:red;font-size:12px;" *ngIf="row.IsDirty('Quantity')" [hidden]="row.IsValidCheck('Quantity','required')"> Quantity is required</div>
 
                             </form>
                         </td>
@@ -105,7 +152,7 @@
                             <form [formGroup]="row.ReturnItemValidator">
                                 <input [(ngModel)]="row.Remark" style="width:120px;background-color:azure" class="form-control "
                                        name="Remark" type="text" value="" formControlName="Remark">
-                                <div style="color:red" *ngIf="row.IsDirty('Remark')" [hidden]="row.IsValidCheck('Remark','required')"> Remark is required</div>
+                                <div style="color:red;font-size:12px;" *ngIf="row.IsDirty('Remark')" [hidden]="row.IsValidCheck('Remark','required')"> Remark is required</div>
                             </form>
                         </td>
                         <td><a (click)="AddRowRequest()"><i class="glyphicon glyphicon-plus btn btn-success"></i></a>

@@ -19,6 +19,10 @@ import { BillPastTestListComponent } from './bill-transaction/billing-transactio
 import { SharedModule } from '../shared/shared.module';
 import { EditBillItemComponent } from './ip-billing/edit-item/edit-bill-item.component';
 import { UpdateItemPriceComponent } from './ip-billing/update-item-price/update-item-price.component';
+import { SelectPriceCategoryComponent } from './shared/price-category-select/price-category-select.component';
+import { WardBillItemRequestComponent } from './shared/ward-bill-item-request/ward-billitem-request.component';
+import { PartialPaymentComponent } from './ip-billing/partial-payment/partial-payment.component';
+import { PaymentModeInfoComponent } from './shared/payment-mode-info/payment-mode-info.component';
 
 @NgModule({
   providers: [
@@ -33,7 +37,7 @@ import { UpdateItemPriceComponent } from './ip-billing/update-item-price/update-
   imports: [ReactiveFormsModule,
     FormsModule,
     CommonModule,
-    RouterModule,  
+    RouterModule,
     SharedModule,
     DanpheAutoCompleteModule
 
@@ -45,24 +49,30 @@ import { UpdateItemPriceComponent } from './ip-billing/update-item-price/update-
     BillCopyReceiptComponent,
     BillPastTestListComponent,
     EditBillItemComponent,
-    UpdateItemPriceComponent
+    UpdateItemPriceComponent,
+    SelectPriceCategoryComponent,
+    WardBillItemRequestComponent,
+    PartialPaymentComponent,//pratik: 28 April 2020
+    PaymentModeInfoComponent,//pratik: 22 june 2020
   ],
 
   exports: [
     CommonModule,
     FormsModule,
     RouterModule,
-
+    WardBillItemRequestComponent,
     BillingPackageSelectComponent,
     EditBillItemDocPriceComponent,
     BillCopyReceiptComponent,
     BillPastTestListComponent,
     EditBillItemComponent,
-    UpdateItemPriceComponent
-
+    UpdateItemPriceComponent,
+    SelectPriceCategoryComponent,
+    PartialPaymentComponent,//pratik: 28 April 2020
+    PaymentModeInfoComponent,//pratik: 22 june 2020
   ]
 })
 export class BillingSharedModule {
 
-    
+
 }

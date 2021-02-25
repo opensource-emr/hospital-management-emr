@@ -20,7 +20,9 @@ export class VendorsModel {
   public PanNo: string = null;
   public CreditPeriod: number = 0;
   public IsTDSApplicable: boolean;
-
+  public DefaultItem: Array<number> = new Array<number>();
+  public DefaultItemJSON: string;
+  public CountryId: number = 0;
   constructor() {
     var _formBuilder = new FormBuilder();
     this.VendorsValidator = _formBuilder.group({
@@ -28,9 +30,12 @@ export class VendorsModel {
       'VendorName': ['', Validators.compose([Validators.required, Validators.maxLength(200)])],
       'Email': ['', Validators.compose([Validators.pattern('^[a-z0-9]+(\.[_a-z0-9]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,15})$')])],
       'CreditPeriod': ['', Validators.compose([Validators.pattern('^[0-9]*')])],
-      'ContactNo': ['', Validators.compose([Validators.required, Validators.pattern('^[0-9]{1,10}$')])],
-      'DefaultCurrencyId': ['', Validators.compose([Validators.required])]
-    });
+      'ContactNo': ['', Validators.compose([Validators.required, Validators.pattern('^[a-zA-Z0-9_@./#)(&+-]+$')])],
+      'DefaultCurrencyId': ['', Validators.compose([Validators.required])],
+      'PanNo': ['', Validators.compose([Validators.pattern('^[a-zA-Z0-9_@./#&+-]+$')])],
+      'CountryId': ['', Validators.compose([Validators.required])],   
+      'VendorCode':['', Validators.compose([Validators.required])],
+  });
   }
 
   public IsDirty(fieldName): boolean {

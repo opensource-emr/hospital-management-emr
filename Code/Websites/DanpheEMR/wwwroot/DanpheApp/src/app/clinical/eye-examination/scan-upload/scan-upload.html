@@ -1,0 +1,73 @@
+<div>
+  <div>
+    <button class="btn blue btn-sm" (click)="OpenUploadBox()"> <i class="fa fa-plus"></i> Add Scan Image</button>
+  </div>
+  <br />
+  <br />
+</div>
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="uploadFilesShow">
+  <div class="portlet-body form" style="background-color:white">
+    <form [formGroup]="selectedReport.EyeScanValidator" class="form-horizontal">
+      <div class="form-body">
+        <div class="col-md-12">
+          <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+          </div>
+          <div class="col-md-8 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+            <div class="col-md-12">
+              <div class="caption" style="color:blue;">
+                <h3>
+                  <span>Upload Files</span>
+                </h3>
+              </div>
+              <a style="float:right;  margin-top:-32px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+              <hr />
+            </div>
+            <div class="row">
+              <div class="col-md-4 text-left" style="display: inline-block; width: 30%"><label style="font-weight:600">Name: {{fullname}}</label></div>
+              <div class="col-md-4 text-center" style="display: inline-block; width: 20%"><label style="font-weight:600">Age: {{age}}</label></div>
+              <div class="col-md-4 text-right" style="display: inline-block; width: 33%; text-align: right"><label style="font-weight:600">Patient ID: {{Patid}}</label></div>
+            </div>
+            <hr />
+            <div class="col-md-12 col-xs-12 col-sm-12">
+            </div>
+            <div class="col-md-12 col-xs-12 col-sm-12">
+              <div class="form-group">
+                <label class="control-label col-md-3">Title<b style="float:right;">:</b></label>
+                <div class="col-md-6">
+                  <input class="form-control" [(ngModel)]="selectedReport.Title" [ngModelOptions]="{standalone: true}" type="text" id="title" value="" />
+                </div>
+              </div>
+            </div>
+            <div class="col-md-12 col-xs-12 col-sm-12">
+              <div class="form-group">
+                <label class="control-label col-md-3">Upload Images<b class="color-red">*</b><b style="float:right;">:</b></label>
+                <div class="col-md-6">
+                  <input class="form-control" #fileInput type="file"
+                         accept="image/x-png,image/gif,image/jpeg,image/jpg,image/*,.*txt,.*doc,.*docx,.*zip,.*xls,.*xlsx,.*ppt,.*pptx,.*csv,.*pdf," value="" multiple />
+                </div>
+              </div>
+            </div>
+            <div class="col-md-12 col-xs-12 col-sm-12">
+              <div class="form-group">
+                <label class="control-label col-md-3">Remark(s)<b style="float:right;">:</b></label>
+                <div class="col-md-6">
+                  <textarea class="form-control" [(ngModel)]="selectedReport.Description" [ngModelOptions]="{standalone: true}" type="text" id="title" value=""></textarea>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-12 col-xs-12 col-sm-12">
+              <div class="form-group">
+                <div class="col-md-3">
+                  <input type="button" class="btn btn-primary" (click)="SubmitFiles()" value="Submit" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

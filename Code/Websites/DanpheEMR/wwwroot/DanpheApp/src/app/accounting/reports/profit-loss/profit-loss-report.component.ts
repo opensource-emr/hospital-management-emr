@@ -5,7 +5,9 @@ import { AccountingReportsBLService } from "../shared/accounting-reports.bl.serv
 import * as moment from 'moment/moment';
 import { CommonFunctions } from '../../../shared/common.functions';
 import { FiscalYearModel } from '../../settings/shared/fiscalyear.model';
+import { CoreService } from '../../../core/shared/core.service';
 
+import { AccountingService } from "../../shared/accounting.service";
 @Component({
   selector: 'my-app',
   templateUrl: "./profit-loss-report.html"
@@ -29,55 +31,39 @@ export class ProfitLossReportComponent {
   public IsShowReport: boolean = false;
   public dateRange: string = null;
   public IsDataLoaded: boolean = false;
+  public showExportbtn : boolean=false;
   public currentFiscalYear: FiscalYearModel = new FiscalYearModel();
   public fiscalYearList: Array<FiscalYearModel> = new Array<FiscalYearModel>();
-
+  public fiscalYearId:number= 0;
+  public ledgerCode:any;
   constructor(
     public msgBoxServ: MessageboxService,
-    public accReportBLServ: AccountingReportsBLService) {
-    this.fromDate = moment().format('YYYY-MM-DD');
-    this.toDate = moment().format('YYYY-MM-DD');
-    this.GetCurrentFiscalYear();
+    public coreservice : CoreService,
+      public accReportBLServ: AccountingReportsBLService, public accountingService: AccountingService) {
+   
     this.dateRange = "today";
+    this.showExport();
   }
-  GetCurrentFiscalYear() {
-    try {
-      this.accReportBLServ.GetFiscalYearsList().subscribe(res => {
-        if (res.Status == "OK") {
-          this.fiscalYearList = res.Results;
-          this.currentFiscalYear = this.fiscalYearList.find(x => x.IsActive == true);
-          this.IsDataLoaded = true;
-        }
-        else {
-          this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
-        }
-      });
-    }
-    catch (ex) {
-      console.log(ex);
-    }
+  public validDate:boolean=true;
+  selectDate(event){
+    if (event) {
+      this.fromDate = event.fromDate;
+      this.toDate = event.toDate;
+      this.fiscalYearId = event.fiscalYearId;
+      this.validDate = true;
+    } 
+    else {
+      this.validDate =false;
+    } 
   }
-  checkValidFiscalYear() {
-    var frmdate = moment(this.fromDate, "YYYY-MM-DD");
-    var tdate = moment(this.toDate, "YYYY-MM-DD");
-    var flag = false;
-    this.fiscalYearList.forEach(a => {
-      if ((moment(a.StartDate, 'YYYY-MM-DD') <= frmdate) && (tdate <= moment(a.EndDate, 'YYYY-MM-DD'))) {
-        flag = true;
-      }
-    });
-    if (!flag) {
-      this.msgBoxServ.showMessage("error", ['Selected dates must be with in a fiscal year']);
-    }
-    return flag;
-  }
+ 
   loadData() {
-    if (this.checkDateValidation() && this.checkValidFiscalYear()) {
-      this.accReportBLServ.GetProfitLossReport(this.fromDate, this.toDate).subscribe(res => {
+    if (this.checkDateValidation()) { 
+      this.accReportBLServ.GetProfitLossReport(this.fromDate, this.toDate,this.fiscalYearId).subscribe(res => {
         if (res.Status == "OK") {
           let data = res.Results;
-          this.RevenueData = data.find(a => a.PrimaryGroup == "Revenue");
-          this.ExpenseData = data.find(a => a.PrimaryGroup == "Expenses");
+          this.RevenueData = data.find(a => a.PrimaryGroup == this.accountingService.getnamebyCode("001"));  //  "Revenue"
+          this.ExpenseData = data.find(a => a.PrimaryGroup == this.accountingService.getnamebyCode("002")); // "Expenses"
           this.CalculateTotalAmounts();
           this.formatDataforDisplay();
           this.showReportData = true;
@@ -148,18 +134,18 @@ export class ProfitLossReportComponent {
     let nonDirectIncome = 0;
     let GrossAmt = 0;
     let TotalAmt = 0;
-    //inserting initial Types (Direct Income)
-    RevData = this.pushCOA(RevData, "Direct Income");
+    //inserting initial Types (Direct Income) 
+    RevData = this.pushCOA(RevData, this.accountingService.getnamebyCode("004")); // "Direct Income"
     //inserting initial Types (Purchase)
-    RevData = this.pushCOA(RevData, "Purchase");
+    RevData = this.pushCOA(RevData, this.accountingService.getnamebyCode("007")); //"Purchase"
     //inserting initial Types (Direct Expense)
-    RevData = this.pushCOA(RevData, "Direct Expense");
+    RevData = this.pushCOA(RevData, this.accountingService.getnamebyCode("003")); // Direct Expense
     //Calculating Gross Amount
-    let temp = RevData.find(a => a.Name == "Direct Income");
+    let temp = RevData.find(a => a.Name == this.accountingService.getnamebyCode("004")); //"Direct Income"
     GrossAmt = temp ? temp.Amount : 0;
-    temp = RevData.find(a => a.Name == "Purchase");
+    temp = RevData.find(a => a.Name == this.accountingService.getnamebyCode("007")); // "Purchase"
     GrossAmt -= temp ? temp.Amount : 0;
-    temp = RevData.find(a => a.Name == "Direct Expense");
+    temp = RevData.find(a => a.Name == this.accountingService.getnamebyCode("003")); //  "Direct Expense"
     GrossAmt -= temp ? temp.Amount : 0;
 
     //inserting Blank Entries in List of make total in same line
@@ -167,25 +153,25 @@ export class ProfitLossReportComponent {
     let ExpLength = ExpData.length + 1;
     if (RevLength > ExpLength)
       for (let i = 0; i < RevLength - ExpLength; i++)
-        ExpData = this.pushToList(ExpData, "", 0, "BlankEntry", 0);
+        ExpData = this.pushToList(ExpData, "", 0, "BlankEntry", 0,0);
     else if (RevLength < ExpLength)
       for (let i = 0; i < ExpLength - RevLength; i++)
-        RevData = this.pushToList(RevData, "", 0, "BlankEntry", 0);
+        RevData = this.pushToList(RevData, "", 0, "BlankEntry", 0,0);
     //inserting Gross in List
     if (GrossAmt >= 0) {
-      RevData = this.pushToList(RevData, "Gross Profit", GrossAmt, "BoldTotal", 0);
+      RevData = this.pushToList(RevData, "Gross Profit", GrossAmt, "BoldTotal", 0,0);
     } else {
-      RevData = this.pushToList(RevData, "Gross Loss", GrossAmt, "BoldTotal", 0);
+      RevData = this.pushToList(RevData, "Gross Loss", GrossAmt, "BoldTotal", 0,0);
     }
 
     //inserting initial Types (Indirect Income)Indirect Expenses
-    RevData = this.pushCOA(RevData, "Indirect Income");
+    RevData = this.pushCOA(RevData, this.accountingService.getnamebyCode("006")); //"Indirect Income"
 
     //inserting initial Types (Indirect Expenses)
-    RevData = this.pushCOA(RevData, "Indirect Expenses");
+    RevData = this.pushCOA(RevData, this.accountingService.getnamebyCode("005")); //"Indirect Expenses"
 
     TotalAmt = GrossAmt;
-    temp = RevData.find(a => a.Name == "Indirect Income");
+    temp = RevData.find(a => a.Name == this.accountingService.getnamebyCode("006")); //"Indirect Income"
     TotalAmt += temp ? temp.Amount : 0;
     //inserting Total in List
     //RevData = this.pushToList(RevData, "Total", TotalAmt, "BoldCategory");
@@ -193,14 +179,14 @@ export class ProfitLossReportComponent {
 
 
     let NetAmt = TotalAmt;
-    if (RevData.find(a => a.Name == "Indirect Expenses") != null) {
-      NetAmt = NetAmt - RevData.find(a => a.Name == "Indirect Expenses").Amount;
+    if (RevData.find(a => a.Name == this.accountingService.getnamebyCode("005")) != null) { //"Indirect Expenses"
+      NetAmt = NetAmt - RevData.find(a => a.Name ==  this.accountingService.getnamebyCode("005")).Amount; //"Indirect Expenses"
     }
     //inserting NetAmount in List
     if (NetAmt >= 0) {
-      RevData = this.pushToList(RevData, "Net Profit", NetAmt, "BoldTotal", 0);
+      RevData = this.pushToList(RevData, "Net Profit", NetAmt, "BoldTotal", 0,0);
     } else {
-      RevData = this.pushToList(RevData, "Net Loss", NetAmt, "BoldTotal", 0);
+      RevData = this.pushToList(RevData, "Net Loss", NetAmt, "BoldTotal", 0,0);
     }
 
     ////inserting other Types in List (except Direct Income)
@@ -260,33 +246,37 @@ export class ProfitLossReportComponent {
   }
 
   pushCOA(data, COA) {
-    this.RevenueData.COAList.forEach(a => {
-      if (a.COA == COA) {
-        data = this.pushToList(data, a.COA, a.TotalAmount, "BoldCategoryCOA", 0);
-        a.LedgerGroupList.forEach(b => {
-          data = this.pushToList(data, b.LedgerGroupName, b.LedgerGroupAmount, "ledgerGroupLevel", 0);
-          b.LedgerList.forEach(c => {
-            data = this.pushToList(data, c.LedgerName, CommonFunctions.parseAmount(c.Amount), "ledgerLevel", c.LedgerId);
+    if(this.RevenueData != undefined || this.RevenueData != null){
+      this.RevenueData.COAList.forEach(a => {
+        if (a.COA == COA) {
+          data = this.pushToList(data, a.COA, a.TotalAmount, "BoldCategoryCOA", 0,0);
+          a.LedgerGroupList.forEach(b => {
+            data = this.pushToList(data, b.LedgerGroupName, b.LedgerGroupAmount, "ledgerGroupLevel", 0,0);
+            b.LedgerList.forEach(c => {
+              data = this.pushToList(data, c.LedgerName, CommonFunctions.parseAmount(c.Amount), "ledgerLevel", c.LedgerId,c.Code);
+            });
           });
+        }
+      });
+    }
+    if(this.ExpenseData != undefined || this.ExpenseData != null){
+        this.ExpenseData.COAList.forEach(a => {
+          if (a.COA == COA) {
+            data = this.pushToList(data, a.COA, a.TotalAmount, "BoldCategoryCOA", 0,0);
+            a.LedgerGroupList.forEach(b => {
+              data = this.pushToList(data, b.LedgerGroupName, b.LedgerGroupAmount, "ledgerGroupLevel", 0,0);
+              b.LedgerList.forEach(c => {
+                data = this.pushToList(data, c.LedgerName, CommonFunctions.parseAmount(c.Amount), "ledgerLevel", c.LedgerId,c.Code);
+              });
+            });
+          }
         });
-      }
-    });
-    this.ExpenseData.COAList.forEach(a => {
-      if (a.COA == COA) {
-        data = this.pushToList(data, a.COA, a.TotalAmount, "BoldCategoryCOA", 0);
-        a.LedgerGroupList.forEach(b => {
-          data = this.pushToList(data, b.LedgerGroupName, b.LedgerGroupAmount, "ledgerGroupLevel", 0);
-          b.LedgerList.forEach(c => {
-            data = this.pushToList(data, c.LedgerName, CommonFunctions.parseAmount(c.Amount), "ledgerLevel", c.LedgerId);
-          });
-        });
-      }
-    });
+     }
     return data;
   }
   //common function for foramtting
   //it takes source list, name, amount and style string then return by attaching obj to it.
-  pushToList(list, name, amt, style, ledgerId) {
+  pushToList(list, name, amt, style, ledgerId,code) {
     let Obj = new Object();
     Obj["Name"] = name;
     Obj["Amount"] = amt;
@@ -294,6 +284,7 @@ export class ProfitLossReportComponent {
     Obj["LedgerId"] = ledgerId;
     Obj["ShowLedgerGroup"] = false;
     Obj["ShowLedger"] = false;
+    Obj["Code"] =code;
     list.push(Obj);
 
     return list;
@@ -308,8 +299,9 @@ export class ProfitLossReportComponent {
     popupWinindow = window.open('', '_blank', 'width=600,height=700,scrollbars=no,menubar=no,toolbar=no,location=no,status=no,titlebar=no');
     popupWinindow.document.open();
     let documentContent = "<html><head>";
-    documentContent += '<link rel="stylesheet" type="text/css" media="print" href="../../themes/theme-default/DanphePrintStyle.css"/>';
-    documentContent += '<link rel="stylesheet" type="text/css" href="../../themes/theme-default/DanpheStyle.css"/>';
+   // documentContent += '<link rel="stylesheet" type="text/css" media="print" href="../../themes/theme-default/DanphePrintStyle.css"/>';
+    // documentContent += '<link rel="stylesheet" type="text/css" href="../../themes/theme-default/DanpheStyle.css"/>';
+    documentContent += '<link rel="stylesheet" type="text/css" href="../../themes/theme-default/PrintStyle.css"/>';
     documentContent += '<link rel="stylesheet" type="text/css" href="../../../assets/global/plugins/bootstrap/css/bootstrap.min.css"/>';
     documentContent += '</head>';
     documentContent += '<body onload="window.print()">' + headerContent + printContents + '</body></html>'
@@ -331,6 +323,7 @@ export class ProfitLossReportComponent {
   SwitchViews(row) {
     this.ledgerId = row.LedgerId;
     this.ledgerName = row.Name;
+    this.ledgerCode = row.Code;
     this.showLedgerDetail = true;
   }
   ShowReport($event) {
@@ -375,6 +368,10 @@ export class ProfitLossReportComponent {
   }
 
   checkDateValidation() {
+    if(!this.validDate){
+      this.msgBoxServ.showMessage("error", ['Select proper date.']);
+      return false;
+    }
     let flag = true;
     flag = moment(this.fromDate, "YYYY-MM-DD").isValid() == true ? flag : false;
     flag = moment(this.toDate, "YYYY-MM-DD").isValid() == true ? flag : false;
@@ -384,4 +381,15 @@ export class ProfitLossReportComponent {
     }
     return flag;
   }
+  showExport(){
+
+    let exportshow = this.coreservice.Parameters.find(a => a.ParameterName =="AllowOtherExport" && a.ParameterGroupName == "Accounting").ParameterValue;
+        if ( exportshow== "true"){
+          this.showExportbtn =true;     
+        }
+        else{
+            this.showExportbtn = false;
+        }
+      }
+
 }

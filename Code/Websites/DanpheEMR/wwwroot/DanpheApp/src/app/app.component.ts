@@ -8,7 +8,7 @@ import { User } from "./security/shared/user.model";
 import { CoreService } from './core/shared/core.service';
 import { DanpheRoute } from "./security/shared/danphe-route.model";
 import { DLService } from "./shared/dl.service";
-
+import { MessageboxService } from './shared/messagebox/messagebox.service';
 import {
   Router,
   Event as RouterEvent,
@@ -22,6 +22,7 @@ import 'rxjs/add/operator/map' //needed to subscribe from rxjs.
 import { NavigationService } from './shared/navigation-service';
 import { DanpheHTTPResponse } from './shared/common-models';
 import { DanpheCache, MasterType } from './shared/danphe-cache-service-utility/cache-services';
+import { EmployeeService } from './employee/shared/employee.service';
 // import { parse } from 'path';
 
 
@@ -40,14 +41,19 @@ export class AppComponent {
   public currUser: User = new User();
   public nepDate: any;
   public validRoutes: Array<DanpheRoute> = new Array<DanpheRoute>();
+  public showDatePopup: boolean = false;
+  public empPre = { np: false, en: false };
+  public selectedDatePref: string = "";
+  public defaultCal = "";
   constructor(public _http: HttpClient, _serv: PatientService,
     public router: Router,
     public VisService: VisitService,
     public coreService: CoreService,
     public securityService: SecurityService,
-    public securityBlService: SecurityBLService,
+    public securityBlService: SecurityBLService, public employeeService: EmployeeService,
     public dlService: DLService, public navService: NavigationService,
-    public changeDetector: ChangeDetectorRef) {
+    public changeDetector: ChangeDetectorRef,
+    public msgBoxServ: MessageboxService) {
     this.PatService = _serv;
 
     //START:data loads from api into cache memory.
@@ -70,11 +76,12 @@ export class AppComponent {
     this.coreService.GetMasterEntities().subscribe(res => {
       this.coreService.SetMasterEntities(res);
     });
-
+   
     //load all the application lookups.
     this.coreService.GetAllLookups().subscribe(res => {
       this.coreService.SetAllLookUps(res);
     });
+  
 
     //Get Valid Navigation Routes list
     this.SetValidNavigationRoute();
@@ -96,6 +103,9 @@ export class AppComponent {
     //set counterInformation of pharmacy at the time of loading
     this.GetActivePharmacyCounter();
 
+    //sud-nagesh:21Jun'20-- to get and set current hospital information for accounting.
+    this.LoadAccountingHospitalInfo();
+
     //to show-hide loading image when route changes from one to another.
     //we've to subscribe to the router event to do that. 
     router.events.subscribe((event: RouterEvent) => {
@@ -109,6 +119,19 @@ export class AppComponent {
     window.addEventListener('storage', (event) => {
       if (event.key == 'logout-event') {
         window.location.href = '/Account/Logout';
+      }
+    });
+
+    // get default caleder perference at user level
+    this.coreService.getCalenderDatePreference().subscribe(res => {
+      this.coreService.SetCalenderDatePreference(res);
+      if (this.coreService.DatePreference != "") {
+        if (this.coreService.DatePreference == 'np') {
+          this.DatePreferenceData('np');
+        }
+        else {
+          this.DatePreferenceData('en');
+        }
       }
     });
   }
@@ -163,11 +186,12 @@ export class AppComponent {
           loggedUsr.Profile = res.Results.Profile;
           loggedUsr.NeedsPasswordUpdate = res.Results.NeedsPasswordUpdate;
           loggedUsr.LandingPageRouteId = res.Results.LandingPageRouteId;
+          loggedUsr.IsSystemAdmin = res.Results.IsSysAdmin;
           this.currentUsr = loggedUsr;
           if (loggedUsr.Profile.ImageLocation == "") {
-            this.currentUsr.Profile.ImageLocation = "/themes/theme-default/images/NO_Image.png";
+            this.employeeService.ProfilePicSrcPath = "/themes/theme-default/images/NO_Image.png";
           } else {
-            this.currentUsr.Profile.ImageLocation = "\\" + this.currentUsr.Profile.ImageLocation;
+            this.employeeService.ProfilePicSrcPath = "\\" + this.currentUsr.Profile.ImageLocation;
           }
           if (loggedUsr.NeedsPasswordUpdate) {
             this.router.navigate(['/Employee/ProfileMain/ChangePassword']);
@@ -189,11 +213,14 @@ export class AppComponent {
           if (res.Results.LandingPageRouteId != null) {
             var path = this.securityService.UserNavigations.find(a => a.RouteId == res.Results.LandingPageRouteId);
             var check = sessionStorage.getItem("isLandingVisited");
-            if (check != "true") {
+            var isLandingVisitedNewTab = localStorage.getItem("isLandingVisitedNewTab");
+
+            if (check != "true" && isLandingVisitedNewTab != "true") {
               if (path) {
                 //adding browser session storage for landing page visited
                 //if user refresh after login then he will not to be redirect to landing page
                 sessionStorage.setItem("isLandingVisited", "true");
+                localStorage.setItem('isLandingVisitedNewTab', "true");
                 this.router.navigate(['/' + path.UrlFullPath]);
               } else {
                 this.router.navigate(['/']);
@@ -233,6 +260,21 @@ export class AppComponent {
           this.logError(err.ErrorMessage);
         });
   }
+
+  //sud: 20June'20--To Do Later-- Bring ACtive hospital and assign to security service.. 
+  // GetActiveAccHospital(): void {
+  //   this.securityBlService.GetActiveBillingCounter()
+  //     .subscribe(res => {
+  //       if (res.Status == 'OK') {
+  //         this.securityService.getLoggedInCounter().CounterId = res.Results;
+  //       }
+  //     },
+  //       err => {
+  //         //alert('failed to get the data.. please check log for details.');
+  //         this.logError(err.ErrorMessage);
+  //       });
+  // }
+
   GetAllValidRouteList(): void {
     this.securityBlService.GetAllValidRouteList()
       .subscribe(res => {
@@ -294,6 +336,7 @@ export class AppComponent {
         }
         else {
           //alert('failed to get user permissions.. please check log for details.');
+          window.location.href = '/Account/Logout';
           this.logError(res.ErrorMessage);
         }
       },
@@ -320,10 +363,13 @@ export class AppComponent {
       //this.pageParameters.Logo
     }
     else {
+
+      window.location.href = '/Account/Logout';
       alert(res.ErrorMessage);
-      console.log(res.ErrorMessage);
+      //console.log(res.ErrorMessage);
     }
   }
+ 
 
 
   DownloadUserManual() {
@@ -346,11 +392,86 @@ export class AppComponent {
     //Ajay 07 Aug 2019
     //removing landing page from session
     sessionStorage.removeItem("isLandingVisited");
+    localStorage.removeItem('isLandingVisitedNewTab');
     //when logged out from one tab, add a key : logout-event to local storage, which will be continuously listened by other windows.
     localStorage.setItem('logout-event', 'logout' + Math.random());
     //after setting localstorage, redirect to Logout page.
     window.location.href = '/Account/Logout';
 
   }
+
+  // START: VIKAS : default caledar date preference for user 
+  openShowDatePreference() {
+    this.showDatePopup = true;
+  }
+  Close() {
+    this.showDatePopup = false;
+  }
+  ChangeDatePreference(e) {
+    if (e.target.name == "AD") {
+      this.DatePreferenceData('en');
+      this.msgBoxServ.showMessage('notice', ['Default English (AD) calendar preference is saved locally. If you want to store permanently click on save']);
+    }
+    else if (e.target.name == "BS") {
+      this.DatePreferenceData('np');
+      this.msgBoxServ.showMessage('notice', ['Default Nepali (BS) calendar preference is saved locally. If you want to store permanently click on save']);
+    }
+
+  }
+  DatePreferenceData(type) {
+    if (type == 'np') {
+      this.empPre.en = false;
+      this.empPre.np = true;
+      this.selectedDatePref = "np";
+      this.defaultCal = "Nepali (BS)";
+      this.coreService.DatePreference = type;
+    }
+    else {
+      this.empPre.np = false;
+      this.empPre.en = true;
+      this.selectedDatePref = "en";
+      this.defaultCal = "English (AD)";
+      this.coreService.DatePreference = type;
+    }
+  }
+
+  SaveEmpPref() {
+    this.dlService.Add(this.selectedDatePref, "/api/Core?reqType=post-emp-datepreference")
+      .subscribe(res => {
+        if (res.Status = "OK") {
+          let data = res.Results;
+          this.coreService.DatePreference = (data != null) ? data.PreferenceValue : null;
+          if (this.coreService.DatePreference != null) {
+            this.DatePreferenceData(this.coreService.DatePreference);
+          }
+          this.msgBoxServ.showMessage('success', ['Saved your date preference']);
+          this.Close();
+        }
+      })
+  }
+  // END: VIKAS
+
+
+
+  LoadAccountingHospitalInfo(): void {
+    this.securityBlService.GetAccountingHopitalInfo()
+      .subscribe((res: DanpheHTTPResponse) => {
+        if (res.Status == 'OK') {
+          this.securityService.SetAccHospitalInfo(res.Results);
+          this.coreService.GetCodeDetails().subscribe(res => {      
+            this.coreService.SetCodeDetails(res);
+          });
+         
+          this.coreService.GetFiscalYearList().subscribe(res => {      
+            this.coreService.SetFiscalYearList(res);
+          });
+        }
+      },
+        err => {
+          alert('failed to get user permissions.. please check log for details.');
+          this.logError(err.ErrorMessage);
+        });
+  }
+
 
 }

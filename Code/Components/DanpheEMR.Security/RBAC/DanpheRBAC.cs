@@ -219,17 +219,24 @@ namespace DanpheEMR.Security
             }
             return false;
         }
+        public static bool UserHasPermissionId(int UserId, int PermissionId)
+        {
+            //filter from all permissions of current user.
+            List<RbacPermission> userPermissions = (from userPermission in RBAC.GetUserAllPermissions(UserId)
+                                                    where userPermission.PermissionId == PermissionId
+                                                    select userPermission).ToList();
+            if (userPermissions != null && userPermissions.Count > 0)
+            {
+                return true;
+            }
+            return false;
+        }
         public static List<RbacPermission> GetUserAllPermissions(int userId)
         {
             List<RbacPermission> retList = (List<RbacPermission>)DanpheCache.Get("RBAC-UserPermissions-UserId" + userId);
             if (retList == null)
             {
-                var isUsrSysAdmin = (from usRole in RBAC.GetAllUserRoleMaps()
-                                     where usRole.UserId == userId
-                                     join role in RBAC.GetAllRoles()
-                                     on usRole.RoleId equals role.RoleId
-                                     where role.IsSysAdmin == true
-                                     select role).Count() > 0;
+                var isUsrSysAdmin = UserIsSuperAdmin(userId);
                 //return all permissions if current user is systemadmin.
                 if (isUsrSysAdmin)
                 {
@@ -257,6 +264,28 @@ namespace DanpheEMR.Security
 
         }
 
+        public static bool UserIsSuperAdmin(int userId)
+        {
+            return (from usRole in RBAC.GetAllUserRoleMaps()
+                    where usRole.UserId == userId
+                    join role in RBAC.GetAllRoles()
+                    on usRole.RoleId equals role.RoleId
+                    where role.IsSysAdmin == true
+                    select role).Count() > 0;
+        }
+
+        public static bool UserHasRoleId(int UserId, int RoleId)
+        {
+            //filter from all roles of current user.
+            List<RbacRole> userRoles = (from userRole in RBAC.GetUserAllRoles(UserId)
+                                                    where userRole.RoleId == RoleId
+                                                    select userRole).ToList();
+            if (userRoles != null && userRoles.Count > 0)
+            {
+                return true;
+            }
+            return false;
+        }
         public static List<RbacRole> GetUserAllRoles(int userid)
         {
             List<RbacRole> retList = new List<RbacRole>();
@@ -275,7 +304,10 @@ namespace DanpheEMR.Security
             return retList;
         }
 
-
+        public static string GetPermissionNameById(RbacDbContext rbacDb, int CurrentVerifiersPermissionId)
+        {
+            return rbacDb.Permissions.Where(p => p.PermissionId == CurrentVerifiersPermissionId).Select(p => p.PermissionName).FirstOrDefault();
+        }
         public static RbacUser UpdateDefaultPasswordOfUser(string userName, string password, string confirmpassword)
         {
 
@@ -347,6 +379,132 @@ namespace DanpheEMR.Security
                 }
             }
             return decryptedPwd;
+        }
+
+        /// <summary>
+        ///    Adds the given role into RbacRole table.
+        /// </summary>
+        /// <param name="rbacRole">Expects RbacRole Object</param>
+        /// <param name="rbacDbContext">The dbContext used for the request</param>
+        /// <returns> return the Role id of the created role.</returns>
+        public static int CreateRole(RbacRole rbacRole, RbacDbContext rbacDbContext)
+        {
+            try
+            {
+                rbacDbContext.Roles.Add(rbacRole);
+                rbacDbContext.SaveChanges();
+                return rbacRole.RoleId;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+        /// <summary>
+        ///    Adds the given permission into permission table.
+        /// </summary>
+        /// <param name="rbacPermission">Expects RBACPermission Object</param>
+        /// <param name="rbacDbContext">The dbContext used for the request</param>
+        /// <returns> returns the permission id of the created permission.</returns>
+        public static int CreatePermission(RbacPermission rbacPermission, RbacDbContext rbacDbContext)
+        {
+            try
+            {
+                rbacDbContext.Permissions.Add(rbacPermission);
+                rbacDbContext.SaveChanges();
+                return rbacPermission.PermissionId;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+        public static void ActivateDeactivateRolePermissionMap(RolePermissionMap role, Boolean Status, RbacUser currentUser, RbacDbContext rbacDbContext)
+        {
+            rbacDbContext.RolePermissionMaps.Attach(role);
+            rbacDbContext.Entry(role).State = EntityState.Modified;
+            rbacDbContext.Entry(role).Property(x => x.IsActive).IsModified = true;
+            rbacDbContext.Entry(role).Property(x => x.ModifiedBy).IsModified = true;
+            rbacDbContext.Entry(role).Property(x => x.ModifiedOn).IsModified = true;
+            role.IsActive = Status;
+            role.ModifiedBy = currentUser.EmployeeId;
+            role.ModifiedOn = DateTime.Now;
+            rbacDbContext.SaveChanges();
+        }
+
+        /// <summary>
+        /// Creates the role permission mapping in the table.
+        /// </summary>
+        /// <param name="PermissionId">The permission id of the view,button,function etc.</param>
+        /// <param name="RoleId">The role id of the role that can access the given permission</param>
+        /// <param name="currentUser">The user creating the mapping</param>
+        /// <param name="rbacDbContext">The Db context for the request</param>
+        public static void MapRoleWithPermission(int PermissionId, int RoleId, RbacUser currentUser, RbacDbContext rbacDbContext)
+        {
+            //check whether such mapping has been created already and deactivated.
+            var MapRolePermission = rbacDbContext.RolePermissionMaps.FirstOrDefault(a => a.PermissionId == PermissionId && a.RoleId == RoleId && a.IsActive == false);
+            if (MapRolePermission != null)
+            {
+                MapRolePermission.IsActive = true;
+                MapRolePermission.ModifiedBy = currentUser.EmployeeId;
+                MapRolePermission.ModifiedOn = DateTime.Now;
+                rbacDbContext.SaveChanges();
+            }
+            else
+            {
+                MapRolePermission = new RolePermissionMap();
+                MapRolePermission.PermissionId = PermissionId;
+                MapRolePermission.RoleId = RoleId;
+                MapRolePermission.CreatedBy = currentUser.EmployeeId;
+                MapRolePermission.CreatedOn = DateTime.Now;
+                MapRolePermission.IsActive = true;
+                rbacDbContext.RolePermissionMaps.Add(MapRolePermission);
+                rbacDbContext.SaveChanges();
+            }
+        }
+
+        /// <summary>
+        /// Activate/Deactivate Permission
+        /// </summary>
+        /// <param name="rbacPermission">The Permission on which the action is done</param>
+        /// <param name="currentUser">The requesting user</param>
+        /// <param name="rbacDbContext">The db context for the request</param>
+        public static void ActivateDeactivatePermission(RbacPermission rbacPermission, Boolean Status, RbacUser currentUser, RbacDbContext rbacDbContext)
+        {
+
+            try
+            {
+                rbacDbContext.Permissions.Attach(rbacPermission);
+                rbacDbContext.Entry(rbacPermission).State = EntityState.Modified;
+                rbacDbContext.Entry(rbacPermission).Property(x => x.IsActive).IsModified = true;
+                rbacDbContext.Entry(rbacPermission).Property(x => x.ModifiedBy).IsModified = true;
+                rbacDbContext.Entry(rbacPermission).Property(x => x.ModifiedOn).IsModified = true;
+                rbacPermission.IsActive = Status;
+                rbacPermission.ModifiedBy = currentUser.EmployeeId;
+                rbacPermission.ModifiedOn = DateTime.Now;
+                rbacDbContext.SaveChanges();
+
+                // also activate all the role permission map of this permission
+                List<RolePermissionMap> RolePermissionMapList = rbacDbContext.RolePermissionMaps.Where(a => a.PermissionId == rbacPermission.PermissionId).ToList();
+
+                if (RolePermissionMapList.Count() > 0)
+                {
+                    foreach (RolePermissionMap rolePermissionMap in RolePermissionMapList)
+                    {
+                        RBAC.ActivateDeactivateRolePermissionMap(rolePermissionMap, Status, currentUser, rbacDbContext);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        }
+        public static List<int> GetAllRoleIdsByPermissionId(int PermissionId)
+        {
+            var rbacDb = new RbacDbContext(connStringName);
+            return rbacDb.RolePermissionMaps.Where(RPM => RPM.PermissionId == PermissionId && RPM.IsActive == true).Select(RPM => RPM.RoleId).ToList();
         }
 
     }

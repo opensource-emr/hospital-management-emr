@@ -1,0 +1,303 @@
+<style>
+.control-label {
+	font-size: 13px;
+}
+.form-control {
+	font-size: 13px;
+}
+div.col-md-7 {
+	padding: 0px;
+}
+div.col-md-5 {
+	padding: 0px;
+}
+div.col-md-4 {
+	padding: 0px;
+}
+div.col-md-3 {
+	padding: 0px;
+}
+.mt-checkbox {
+	font-size: 13px;
+}
+/*div.col-xs-12 {
+    padding-left: 10px;
+    margin-left: 25px;
+    margin-right: 15px;
+  }*/
+
+  /*This class for background border red */
+.bg-on {
+	font-weight: bold;
+	border: solid 1px red;
+}
+/*This class for */
+.bg-off {
+	font-weight: bold;
+}
+#appointmentTable {
+	font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+	border-collapse: collapse;
+	background-color: #66e0ff;
+	width: 100%;
+}
+#appointmentTable th {
+	padding-top: 12px;
+	padding-bottom: 12px;
+	text-align: left;
+	background-color: #00b3b3;
+	color: white;
+}
+#appointmentTable tr:nth-child(even) {
+	background-color: #ccffff
+}
+#appointmentTable tr:hover {
+	background-color: #e6ffff
+}
+</style>
+
+<div class="row" style="margin-top:10px;margin-bottom:10px">
+  <div class="col-lg-6 col-sm-12 text-left">
+    <div class="caption lb-caption">
+      <h3><span><i class="fa fa-calendar-check-o"></i>New Appointment</span></h3>
+      <!-- <h1 class="page-title-new"><i class="fa fa-calendar-check-o"></i>New Appointment</h1> --> 
+    </div>
+  </div>
+  <div class="col-lg-6 col-sm-12 text-right"> <a *ngIf="!showApptPanel" class="btn blue bordered " name="name" (click)="SwitchViews()"> <span class="glyphicon glyphicon-plus"></span>New Patient </a> 
+    <!--<a *ngIf="showApptPanel" class="btn blue bordered " name="name" (click)="SwitchViews()">
+      <span class="glyphicon glyphicon-refresh"></span>Show Patient List
+    </a>--> 
+    
+  </div>
+</div>
+<div class="row" *ngIf="!showApptPanel">
+  <div class="col-lg-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="AppointmentpatientGridColumns" [grid-data]="patients"
+                   (grid-actions)="AppointmentPatientGridActions($event)"
+                   (serverSearchText)="serverSearchTxt($event)"
+                   [customServerSearch]="enableServerSideSearch"> </danphe-grid>
+    <!-- [show-ServerSideSearch]="true"
+      [api-type]="patGirdDataApi" --> 
+  </div>
+</div>
+<div class="row margin-top-10" *ngIf="showApptPanel">
+  <div class="form-body clearfix">
+    <div id="appointmentSection" *ngIf="enablePreview">
+      <div class="col-md-12">
+        <div>
+          <form [formGroup]="CurrentAppointment.AppointmentValidator" class="form-horizontal hm-form">
+            <div class="row">
+              <div class="col-md-6 col-xs-12">
+                <div class="form-group row">
+                  <label class="control-label col-md-5"> First Name <sup>*</sup><b>:</b> </label>
+                  <div class="col-md-7">
+                    <input class="form-control" maxlength="30" type="text" formControlName="FirstName"
+                           [(ngModel)]="CurrentAppointment.FirstName" required
+                           value="{{CurrentAppointment.FirstName | CapitalFirstLetter}}" placeholder="First Name" />
+                    <span class="color-red font-sm" *ngIf="CurrentAppointment.IsDirty('FirstName')"
+                          [hidden]="CurrentAppointment.IsValidCheck('FirstName','required')"> First Name
+                    is required. </span> <span class="color-red font-sm" *ngIf="CurrentAppointment.IsDirty('FirstName')"
+                          [hidden]="CurrentAppointment.IsValidCheck('FirstName','maxlength')"> First Name
+                    must be less than 30 characters. </span> </div>
+                </div>
+                <div class="form-group row">
+                  <label class="control-label col-md-5">Middle Name<b>:</b></label>
+                  <div class="col-md-7">
+                    <input class="form-control" maxlength="30" type="text" [(ngModel)]="CurrentAppointment.MiddleName"
+                           value="{{CurrentAppointment.MiddleName | CapitalFirstLetter}}" placeholder="Middle Name"
+                           formControlName="MiddleName" />
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label class="control-label col-md-5"> Last Name<sup>*</sup><b>:</b> </label>
+                  <div class="col-md-7">
+                    <input class="form-control" maxlength="30" type="text" formControlName="LastName"
+                           [(ngModel)]="CurrentAppointment.LastName" required
+                           value="{{CurrentAppointment.LastName | CapitalFirstLetter}}" placeholder="Last Name" />
+                    <span class="color-red font-sm" *ngIf="CurrentAppointment.IsDirty('LastName')"
+                          [hidden]="CurrentAppointment.IsValidCheck('LastName','required')"> Last Name is
+                    required. </span> <span class="color-red font-sm" *ngIf="CurrentAppointment.IsDirty('LastName')"
+                          [hidden]="CurrentAppointment.IsValidCheck('LastName','maxlength')"> Last Name
+                    must be less than 30 characters. </span> </div>
+                </div>
+				  <div class="form-group row">
+                  <label class="control-label col-md-5"> Gender<sup>*</sup><b>:</b> </label>
+                  <div class="col-md-7">
+                    <div class="input-group ap-group">
+                      <div class="icheck-inline">
+                        <label class="mt-checkbox mt-checkbox-outline">
+                          <input type="radio" value="Male" [(ngModel)]="CurrentAppointment.Gender"
+                                 formControlName="Gender">
+                          <span></span>Male </label>
+                        <label class="mt-checkbox mt-checkbox-outline">
+                          <input type="radio" value="Female" [(ngModel)]="CurrentAppointment.Gender"
+                                 formControlName="Gender">
+                          <span></span>Female </label>
+                        <label class="mt-checkbox mt-checkbox-outline">
+                          <input type="radio" value="Others" [(ngModel)]="CurrentAppointment.Gender"
+                                 formControlName="Gender">
+                          <span></span>Other </label>
+                      </div>
+                    </div>
+                    <span class="color-red font-sm" *ngIf="CurrentAppointment.IsDirty('Gender')"
+                          [hidden]="CurrentAppointment.IsValidCheck('Gender','required')"> Gender is
+                    required. </span> </div>
+                </div>
+				  <div class="form-group row" *ngIf="!CurrentAppointment.IsDobVerified">
+                  <label class="control-label col-md-3">Age <sup>*</sup> <b>:</b></label>
+                  <div class="col-md-9">
+                    <div class="col-md-3" style="padding-left:0px;padding-right: 0px;">
+                      <input class="form-control" type="text" max="150" formControlName="Age"
+                             [(ngModel)]="CurrentAppointment.Age" placeholder="Age" style="padding-right:0px;" />
+                    </div>
+                    <div class="col-md-9" style="padding-right: 0px;">
+                      <div class="input-group">
+                        <div class="icheck-inline" style="margin-left:-13px">
+                          <label class="mt-radio mt-radio-outline" style="margin-left: 8px">
+                            <input name="AgeUnit" type="radio" value="Y" [(ngModel)]="CurrentAppointment.AgeUnit" [ngModelOptions]="{standalone: true}" [disabled]="CurrentAppointment.AppointmentId">
+                            <span></span>Yrs </label>
+                          <label class="mt-radio mt-radio-outline" style="margin-left: 2px">
+                            <input name="AgeUnit" type="radio" value="M" [(ngModel)]="CurrentAppointment.AgeUnit" [ngModelOptions]="{standalone: true}" [disabled]="CurrentAppointment.AppointmentId">
+                            <span></span>Months </label>
+                          <label class="mt-radio mt-radio-outline" style="margin-left: 2px">
+                            <input name="AgeUnit" type="radio" value="D" [(ngModel)]="CurrentAppointment.AgeUnit" [ngModelOptions]="{standalone: true}" [disabled]="CurrentAppointment.AppointmentId">
+                            <span></span>Days </label>
+                        </div>
+                      </div>
+                    </div>
+                    <span class="color-red font-sm" *ngIf="CurrentAppointment.IsDirty('Age')" [hidden]="CurrentAppointment.IsValidCheck('Age','required')"> Age is required.</span> </div>
+                </div>
+				  <div class="form-group row">
+                  <label class="control-label col-md-5">Reason<b>:</b></label>
+                  <div class="col-md-7">
+                    <input class="form-control" type="text" [(ngModel)]="CurrentAppointment.Reason"
+                           [ngModelOptions]="{standalone: true}" placeholder="Reason" />
+                  </div>
+                </div>
+				  <div class="form-group row">
+                  <label class="control-label col-md-5"> Contact Number<sup>*</sup><b>:</b> </label>
+                  <div class="col-md-7">
+                    <input class="form-control" maxlength="11" type="tel" formControlName="ContactNumber"
+                           [(ngModel)]="CurrentAppointment.ContactNumber" placeholder="Contact Number" />
+                    <span class="color-red font-sm" *ngIf="CurrentAppointment.IsDirty('ContactNumber')"
+                          [hidden]="CurrentAppointment.IsValidCheck('ContactNumber','pattern')"> Please
+                    enter valid contact number. </span> <span class="color-red font-sm" *ngIf="CurrentAppointment.IsDirty('ContactNumber')"
+                          [hidden]="CurrentAppointment.IsValidCheck('ContactNumber','required')"> Contact
+                    number is required. </span> </div>
+                </div>
+				  <div class="form-group row">
+                  <label class="control-label col-md-5"> Appointment Date<sup>*</sup><b>:</b> </label>
+                  <div class="col-md-7">
+                    <input id="appdate" class="form-control" type="date" name="" value=""
+                           [(ngModel)]="CurrentAppointment.AppointmentDate" formControlName="AppointmentDate"
+                           (ngModelChange)="GetAppointmentList()" />
+                    <span class="color-red font-sm" *ngIf="CurrentAppointment.IsDirty('AppointmentDate')"
+                          [hidden]="CurrentAppointment.IsValidCheck('AppointmentDate','required')"> Appointment Date is required. </span> <span class="color-red font-sm" *ngIf="CurrentAppointment.IsDirty('AppointmentDate')"
+                          [hidden]="CurrentAppointment.IsValidCheck('AppointmentDate','wrongDate')"> Enter
+                    Valid Date. </span> </div>
+                </div>
+				  <div class="form-group row">
+                  <label class="control-label col-md-5"> Appointment Time<b>:</b> </label>
+                  <div class="col-md-7">
+                    <input class="form-control" type="time" name="" value=""
+                           [(ngModel)]="CurrentAppointment.AppointmentTime" formControlName="AppointmentTime"
+                           (focusout)="OnTimeChange()" />
+                    <span class="color-red font-sm" *ngIf="CurrentAppointment.IsDirty('AppointmentTime')"
+                          [hidden]="CurrentAppointment.IsValidAppointmentTime()">Appointment Time Already Taken.</span> <span class="color-red font-sm" *ngIf="CurrentAppointment.IsDirty('AppointmentTime')"
+                          [hidden]="CurrentAppointment.IsValidTime()">Enter Valid Time.</span> </div>
+                </div>
+              </div>            
+             
+             
+				<div class="col-md-6 col-xs-12">
+					<div class="form-group row">
+                  <label class="control-label col-md-5">Department<b>:</b></label>
+                  <div class="col-md-7">
+                    <input class="form-control" danphe-auto-complete
+                           [ngClass]="!CurrentAppointment.IsValidSelDepartment? 'bg-on' : 'bg-off'"
+                           [(ngModel)]="selectedDepartment"
+                           [list-formatter]="myDepartmentListFormatter"
+                           [source]="departmentList"
+                           [ngModelOptions]="{standalone: true}"
+                           placeholder="Department Name"
+                           display-property-name="DepartmentName"
+                           (focusout)="AssignSelectedDepartment()"
+                           onClick="this.select()"
+                           (focus)="AssignSelectedDepartment()"
+                           match-formatted="true"
+                           [grid-sort]="'DepartmentName'"
+                           max-num-list="10" />
+                    <!--<span class="color-red font-sm" *ngIf="CurrentAppointment.IsDirty('Doctor')" [hidden]="CurrentAppointment.IsValidCheck('Department','required')">Department is mandatory.</span>--> 
+                    <span class="color-red" *ngIf="!CurrentAppointment.IsValidSelDepartment" [hidden]="CurrentAppointment.IsValidSelDepartment">Select Department from the list.</span> </div>
+                </div>
+					<div class="form-group row">
+                  <label class="control-label col-md-5">Doctor<b>:</b></label>
+                  <div class="col-md-7">
+                    <input class="form-control" danphe-auto-complete
+                           [ngClass]="!CurrentAppointment.IsValidSelProvider? 'bg-on' : 'bg-off'"
+                           [ngModelOptions]="{standalone: true}"
+                           [(ngModel)]="selectedDoctor"
+                           [list-formatter]="DocListFormatter"
+                           [source]="filteredDocList"
+                           placeholder="Doctor's Name"
+                           display-property-name="ProviderName"
+                           (focusout)="AssignSelectedDoctor()"
+                           onClick="this.select()"
+                           (focus)="AssignSelectedDoctor()"
+                           max-num-list="10" />
+                    <!--<span class="color-red font-sm" *ngIf="visit.IsDirty('Doctor')" [hidden]="visit.IsValidCheck('Doctor','required')">Doctor is mandatory.</span>--> 
+                    <span class="color-red" *ngIf="!CurrentAppointment.IsValidSelProvider" [hidden]="CurrentAppointment.IsValidSelProvider">Select doctor from the list.</span> </div>
+                </div>
+				</div>
+				
+				<div class="col-md-4 col-xs-12">
+					<div class="form-group row" *ngIf="aptList.length>0"> 
+                  <!-- <label class="control-label col-md-5">Appontment List of <b>{{selProvider}}></b></label> -->
+                  
+                  <div class="col-md-12">
+                    <hr style="width:506px;border-style:double;border-color:black" />
+                    <div>
+                      <table class="table table-striped table-hover" width="470" border="0" id="appointmentTable"
+                             style="margin-left:25px;">
+                        <tr>
+                          <td colspan="8" align="center"> Appointment List of <b>{{selectedDoctor.ProviderName}}</b></td>
+                        </tr>
+                        <tr>
+                          <th align="center"><b>S.N</b></th>
+                          <th align="center"><b>Patient Name</b></th>
+                          <th align="center"><b>Time</b></th>
+                          <th align="center"><b>Date</b></th>
+                          <th align="center"><b>Contact</b></th>
+                          <th align="center"><b>CreatedBy</b></th>
+                          <th align="center"><b>EditedBy</b></th>
+                        </tr>
+                        <tr *ngFor="let apt of aptListafterTime;let i=index">
+                          <td align="center"> {{i+1}}. </td>
+                          <td align="left"> {{apt.PatientName}} </td>
+                          <td align="left"> {{apt.Time}} </td>
+                          <td align="left"> {{apt.Date | DanpheDateTime:'format':'YYYY-MM-DD'}} </td>
+                          <td align="left"> {{apt.PhoneNumber}} </td>
+                          <td align="left"> {{apt.CreatedByName}} </td>
+                          <td align="left"> {{apt.ModifiedByName}} </td>
+                        </tr>
+                      </table>
+                    </div>
+                    <hr style="width:506px;border-style:double;border-color:black" />
+                  </div>
+                </div></div>
+				
+              <div class="col-md-12">
+                <div class="m1">
+                  <input type="button" class="btn blue" style="width: auto;" *ngIf="!Update" name="addappointment"
+                         value="Add Appointment" (click)="AddTelephoneAppointment()" [disabled]="loading" />
+                  <input type="button" class="btn blue" style="width: auto;" *ngIf="Update" name="updateappointment"
+                         value="Update Appointment" (click)="UpdateTelephoneAppointment()" [disabled]="loading" />
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

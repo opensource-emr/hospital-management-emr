@@ -133,9 +133,9 @@ namespace DanpheEMR.Controllers
                     OrdersDbContext orderDbContext = new OrdersDbContext(connString);
                     //concatenate all orderitems into one list.
                     List<OrderItemsVM> allOrderItems = new List<OrderItemsVM>();
-                    //allOrderItems = allOrderItems.Concat(GetPhrmItems(orderDbContext)).ToList();
+                    allOrderItems = allOrderItems.Concat(GetPhrmItems(orderDbContext)).ToList();
                     allOrderItems = allOrderItems.Concat(GetLabItems(orderDbContext)).ToList();
-                    allOrderItems = allOrderItems.Concat(GetPhrmGenericItems(orderDbContext)).ToList();
+                    //allOrderItems = allOrderItems.Concat(GetPhrmGenericItems(orderDbContext)).ToList();
                     allOrderItems = allOrderItems.Concat(GetImagingItems(orderDbContext)).ToList();
                     allOrderItems = allOrderItems.Concat(GetOtherItems(orderDbContext)).ToList();
 
@@ -168,13 +168,14 @@ namespace DanpheEMR.Controllers
                     responseData.Status = "OK";
                     responseData.Results = genericList;
                 }
-                else if(reqType == "otherItems")
+                else if (reqType == "otherItems")
                 {
                     OrdersDbContext orderDbContext = new OrdersDbContext(connString);
                     var itemList = (from itm in orderDbContext.BillItemPrice
                                     join servceDpt in orderDbContext.ServiceDepartment on itm.ServiceDepartmentId equals servceDpt.ServiceDepartmentId
                                     where (servceDpt.IntegrationName.ToLower() != "radiology" && servceDpt.IntegrationName.ToLower() != "lab")
-                                    select new {
+                                    select new
+                                    {
                                         BillItemPriceId = itm.BillItemPriceId,
                                         ServiceDepartmentId = itm.ServiceDepartmentId,
                                         ItemId = itm.ItemId,
@@ -201,7 +202,8 @@ namespace DanpheEMR.Controllers
                                         EHSPrice = itm.EHSPrice,
                                         SAARCCitizenPrice = itm.SAARCCitizenPrice,
                                         ForeignerPrice = itm.ForeignerPrice,
-                                        ServiceDepartmentName= servceDpt.ServiceDepartmentName
+                                        InsForeignerPrice = itm.InsForeignerPrice,
+                                        ServiceDepartmentName = servceDpt.ServiceDepartmentName
                                     }).OrderBy(item => item.ItemName).ToList();
                     responseData.Status = "OK";
                     responseData.Results = itemList;
@@ -253,6 +255,17 @@ namespace DanpheEMR.Controllers
                         preferenceName = "Medicationpreferences";
                         preferenceIdType = "MedicineId";
                     }
+                    else if (preferenceType.ToLower() == "patient")
+                    {
+                        preferenceName = "Patientpreferences";
+                        preferenceIdType = "PatientId";
+                    }
+                    else if (preferenceType.ToLower() == "followup")
+                    {
+                        preferenceName = "Followuppreferences";
+                        preferenceIdType = "PatientId";
+                    }
+
 
                     string ItemId = this.ReadQueryStringData("itemId");
                     //string clientValue = this.ReadPostData();
@@ -360,6 +373,17 @@ namespace DanpheEMR.Controllers
                         preferenceName = "Medicationpreferences";
                         preferenceIdType = "//MedicineId";
                     }
+                    else if (preferenceType.ToLower() == "patient")
+                    {
+                        preferenceName = "Patientpreferences";
+                        preferenceIdType = "//PatientId";
+                    }
+                    else if (preferenceType.ToLower() == "followup")
+                    {
+                        preferenceName = "Followuppreferences";
+                        preferenceIdType = "//PatientId";
+                    }
+
 
                     RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
                     EmployeePreferences employeePreference = (from pref in orderDbContext.EmployeePreferences
@@ -405,15 +429,25 @@ namespace DanpheEMR.Controllers
         private List<OrderItemsVM> GetPhrmItems(OrdersDbContext orderDbContext)
         {
             var itemList = (from itm in orderDbContext.PharmacyItems
+                            join stock in orderDbContext.PharmacyStocks on itm.ItemId equals stock.ItemId
+                            join gen in orderDbContext.PharmacyGenericItems on itm.GenericId equals gen.GenericId
+                            join map in orderDbContext.GenericDosageMaps on gen.GenericId equals map.GenericId into abc
+                            from a in abc.DefaultIfEmpty()
                             select new OrderItemsVM
                             {
                                 Type = "Medication",
                                 PreferenceType = "Medication",
                                 ItemId = itm.ItemId,
                                 ItemName = itm.ItemName,
+                                GenericName = gen.GenericName,
                                 GenericId = itm.GenericId,
                                 IsPreference = false,
-                                IsGeneric = false
+                                IsGeneric = false,
+                                Route = a.Route != null ? a.Route : "",
+                                Frequency = a.Frequency != null ? a.Frequency : 0,
+                                FreqInWords = a.FreqInWords != null ? a.FreqInWords : "",
+                                Dosage = a.Dosage != null ? a.Dosage : "",
+                                AvailableQuantity = stock.AvailableQuantity
                             }).OrderBy(itm => itm.ItemName).ToList();
             return itemList;
         }
@@ -464,7 +498,7 @@ namespace DanpheEMR.Controllers
                                 GenericId = null,
                                 IsGeneric = false,
                                 IsPreference = false
-                            }).OrderBy(itm=>itm.ItemName).ToList();
+                            }).OrderBy(itm => itm.ItemName).ToList();
             return itemList;
         }
 
@@ -544,6 +578,7 @@ namespace DanpheEMR.Controllers
                 }
 
                 retList = (from item in orderDbContext.PharmacyItems
+                           join gen in orderDbContext.PharmacyGenericItems on item.GenericId equals gen.GenericId
                            join medId in medIds on item.ItemId equals medId
                            select new OrderItemsVM
                            {
@@ -551,6 +586,7 @@ namespace DanpheEMR.Controllers
                                ItemName = item.ItemName,
                                ItemId = (int)item.ItemId,
                                GenericId = item.GenericId,
+                               GenericName = gen.GenericName,
                                IsPreference = true,
                                PreferenceType = "Medication",
                                IsGeneric = false
@@ -656,11 +692,13 @@ namespace DanpheEMR.Controllers
 
         //below properties are only for medication, theyll be null in other items. 
         public int? GenericId { get; set; }
+        public string GenericName { get; set; }
         public bool? IsGeneric { get; set; }
         public string Dosage { get; set; }
         public string Route { get; set; }
         public double? Frequency { get; set; }
         public string FreqInWords { get; set; }
+        public Double? AvailableQuantity { get; set; }
 
     }
 

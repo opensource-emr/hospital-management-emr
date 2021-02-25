@@ -1,4 +1,4 @@
-﻿<input type="button" class="btn btn-primary" (click)="AddShifts()" value="Add Shift" />
+<input type="button" class="btn btn-primary" (click)="AddShifts()" value="Add Shift" />
 <div class="row">
     <div class="col-md-12 col-xs-12 col-sm-12">
         <danphe-grid [grid-colDefaults]="shiftsGridColumns"
@@ -41,6 +41,7 @@
                                     <label class="control-label col-md-4">Start Time<b class="color-red">  *</b><b style="float:right;">:</b></label>
                                     <div class="col-md-8">
                                         <input class="form-control" type="time"
+                                               (ngModelChange)="CalculationForTotalHrs()"
                                                (focusout)="CalculationForTotalHrs()"
                                                [(ngModel)]="currentShifts.StartTime"
                                                formControlName="StartTime" />
@@ -51,6 +52,7 @@
                                     <label class="control-label col-md-4">End Time<b class="color-red">  *</b><b style="float:right;">:</b></label>
                                     <div class="col-md-8">
                                         <input class="form-control" type="time"
+                                               (ngModelChange)="CalculationForTotalHrs()"
                                                (focusout)="CalculationForTotalHrs()"
                                                [(ngModel)]="currentShifts.EndTime"
                                                formControlName="EndTime" />

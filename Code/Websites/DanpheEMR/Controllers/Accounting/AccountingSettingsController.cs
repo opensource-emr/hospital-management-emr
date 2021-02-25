@@ -17,6 +17,10 @@ using Microsoft.AspNetCore.Http.Features;
 using DanpheEMR.CommonTypes;
 using RefactorThis.GraphDiff;//for entity-update.
 using DanpheEMR.Security;
+using DanpheEMR.ServerModel.InventoryModels;
+using DanpheEMR.AccTransfer;
+using System.Data;
+using Newtonsoft.Json.Converters;
 // For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace DanpheEMR.Controllers
@@ -40,6 +44,8 @@ namespace DanpheEMR.Controllers
         {
             DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
             AccountingDbContext accountingDbContext = new AccountingDbContext(connString);
+            //sud-nagesh: 20June'20-- for Acc-Hospital Separation.
+            int currentHospitalId = HttpContext.Session.Get<int>("AccSelectedHospitalId");
 
             try
             {
@@ -54,15 +60,18 @@ namespace DanpheEMR.Controllers
                 {
 
                     var Voucherhead = (from voc in accountingDbContext.VoucherHeads
-                                   select new
-                                   {
-                                       VoucherHeadId = voc.VoucherHeadId,
-                                       VoucherHeadName = voc.VoucherHeadName,
-                                       IsActive = voc.IsActive,
-                                       Description = voc.Description,
-                                       CreatedOn = voc.CreatedOn,
-                                       CreatedBy = voc.CreatedBy
-                                   }
+                                       where voc.HospitalId == currentHospitalId
+                                       select new
+                                       {
+                                           VoucherHeadId = voc.VoucherHeadId,
+                                           HospitalId = voc.HospitalId,
+                                           VoucherHeadName = voc.VoucherHeadName,
+                                           IsActive = voc.IsActive,
+                                           Description = voc.Description,
+                                           CreatedOn = voc.CreatedOn,
+                                           CreatedBy = voc.CreatedBy,
+                                           IsDefault = voc.IsDefault
+                                       }
                                     ).ToList().OrderBy(a => a.VoucherHeadId);
                     responseData.Results = Voucherhead;
                     responseData.Status = "OK";
@@ -80,52 +89,21 @@ namespace DanpheEMR.Controllers
                                        IsActive = voc.IsActive,
                                        Description = voc.Description,
                                        CreatedOn = voc.CreatedOn,
-                                       CreatedBy = voc.CreatedBy
+                                       CreatedBy = voc.CreatedBy,
+                                       ISCopyDescription = voc.ISCopyDescription
                                    }
                                     ).ToList().OrderBy(a => a.VoucherId);
                     responseData.Results = Voucher;
                     responseData.Status = "OK";
                 }
-                else if (reqType == "GetVoucherswithVOCMap")
-                {
 
-                    var Voucher = (from vMap in accountingDbContext.VoucherLedgerGroupMaps
-                                   join voc in accountingDbContext.Vouchers on vMap.VoucherId equals voc.VoucherId
-                                   where vMap.LedgerGroupId == ledgergroupId
-                                   group vMap by new { voc.VoucherId, voc.VoucherName, vMap.LedgerGroupId } into p
-                                   select new
-                                   {
-                                       VoucherId = p.Key.VoucherId,
-                                       VoucherName = p.Key.VoucherName,
-                                       LedgerGroupId = p.Key.LedgerGroupId,
-
-                                   }
-                                    ).ToList();
-                    responseData.Results = Voucher;
-                    responseData.Status = "OK";
-                }
-                else if (reqType == "voucher-ledgerList")
-                {
-
-                    //List<LedgerModel> ledgerList = (from ledger in accountingDbContext.Ledgers
-                    //                                join ledgerGroup in accountingDbContext.LedgerGroups on ledger.LedgerGroupId equals ledgerGroup.LedgerGroupId
-                    //                                join voucherLedgerMap in accountingDbContext.VoucherLedgerGroupMaps on ledgerGroup.LedgerGroupId equals voucherLedgerMap.LedgerGroupId
-                    //                                where voucherLedgerMap.VoucherId == voucherId
-                    //                                select ledger).ToList();
-                    //responseData.Results = ledgerList;
-                }
-
-                else if (reqType == "itemList")
-                {
-                    List<ItemModel> items = (from item in accountingDbContext.Items
-                                             select item).ToList();
-                    responseData.Results = items;
-                }
                 else if (reqType == "GetLedgers")
                 {
                     var ledgers = (from ledger in accountingDbContext.Ledgers
+                                   where ledger.HospitalId == currentHospitalId
                                    select new
                                    {
+                                       ledger.HospitalId,
                                        LedgerId = ledger.LedgerId,
                                        LedgerName = ledger.LedgerName,
                                        IsActive = ledger.IsActive
@@ -135,13 +113,22 @@ namespace DanpheEMR.Controllers
                 }
                 else if (reqType == "GetLedgerGroups")
                 {
+                    //NageshBB- 22Jul 2020-if this api called from other module , then we have hospital Id issue 
+                    //for this resolution we have temp solution
+                    //we have saved accPrimary id in parameter table so, we will return this hospital records here
+                    //This is not correct solution , well solution is to show activate hospital popup when user get logged in into system.
+                    //so, this will help us to make software as multi tenant. if user have 2 or more hospital permission then this popup will come.
+                    //if user have only one hsopital permission then automatically activate this hospital
+                    var HospId = (currentHospitalId > 0) ? currentHospitalId : AccountingTransferData.GetAccPrimaryHospitalId(accountingDbContext);
                     var LedgerGrouplist = (from ledgrp in accountingDbContext.LedgerGroups
+                                           where ledgrp.HospitalId == HospId
                                            select new
                                            {
+                                               ledgrp.HospitalId,
                                                ledgrp.LedgerGroupId,
                                                ledgrp.PrimaryGroup,
                                                ledgrp.COA,
-                                                ledgrp.LedgerGroupName,
+                                               ledgrp.LedgerGroupName,
                                                ledgrp.IsActive,
                                                ledgrp.Description,
                                                ledgrp.Name
@@ -151,30 +138,14 @@ namespace DanpheEMR.Controllers
                     responseData.Status = "OK";
 
                 }
-                else if (reqType == "GetItems")
-                {
-                    var itemsList = (from itm in accountingDbContext.Items
-                                         //join ledger in accountingDbContext.Ledgers on itm.LedgerId equals ledger.LedgerId
-                                     select new
-                                     {
-                                         ItemId = itm.ItemId,
-                                         ItemName = itm.ItemName,
-                                         AvailableQuantity = itm.AvailableQuantity,
-                                         IsActive = itm.IsActive,
-                                         Description = itm.Description,
-                                         CreatedBy = itm.CreatedBy,
-                                         CreatedOn = itm.CreatedOn,
-                                         //LedgerId = itm.LedgerId,
-                                         //LedgerName = ledger.LedgerName
-                                     }).ToList().OrderBy(a => a.ItemName);
-                    //// responseData.Status = "OK";
-                    responseData.Results = itemsList;
-                }
+
                 else if (reqType == "GetLedgerGroupsDetails")
                 {
                     var LedgerGrouplist = (from ledgrp in accountingDbContext.LedgerGroups
+                                           where ledgrp.HospitalId == currentHospitalId
                                            select new
                                            {
+                                               ledgrp.HospitalId,
                                                ledgrp.PrimaryGroup,
                                                ledgrp.COA,
                                                IsActive = ledgrp.IsActive,
@@ -185,47 +156,33 @@ namespace DanpheEMR.Controllers
                     responseData.Status = "OK";
 
                 }
-                else if (reqType == "GetLedgerGrpVoucherByLedgerGrpId")
-                {
-                    var LedgerGrpVoucherByLedGrpIdList = (from ledMap in accountingDbContext.VoucherLedgerGroupMaps
-                                                          join ledGrp in accountingDbContext.LedgerGroups on ledMap.LedgerGroupId equals ledGrp.LedgerGroupId
-                                                          join voc in accountingDbContext.Vouchers on ledMap.VoucherId equals voc.VoucherId
-                                                          where ledMap.LedgerGroupId == ledgergroupId
-                                                          select new
-                                                          {
-                                                              VoucherLedgerGroupMapId = ledMap.VoucherLedgerGroupMapId,
-                                                              LedgerGroupName = ledGrp.LedgerGroupName,
-                                                              LedgerGroupId = ledGrp.LedgerGroupId,
-                                                              VoucherId = voc.VoucherId,
-                                                              VoucherName = voc.VoucherName,
-                                                              IsDebit = ledMap.IsDebit,
-                                                              CreatedOn = ledMap.CreatedOn,
-                                                              CreatedBy = ledMap.CreatedBy,
-                                                              IsActive = ledMap.IsActive
-                                                          }
-                                                 ).ToList();
-                    responseData.Results = LedgerGrpVoucherByLedGrpIdList;
-                    responseData.Status = "OK";
-                }
+
                 else if (reqType == "GetFiscalYearList")
                 {
+                    var currentDate = DateTime.Now.Date;
                     var fiscalYearList = (from fsYear in accountingDbContext.FiscalYears
+                                          where fsYear.HospitalId == currentHospitalId
                                           select new
                                           {
                                               FiscalYearId = fsYear.FiscalYearId,
+                                              HospitalId = fsYear.HospitalId,//sud-nagesh:20Jun'20
                                               FiscalYearName = fsYear.FiscalYearName,
                                               StartDate = fsYear.StartDate,
                                               EndDate = fsYear.EndDate,
                                               Description = fsYear.Description,
-                                              IsActive = fsYear.IsActive
+                                              IsActive = fsYear.IsActive,
+                                              CurrentDate = currentDate,
+                                              IsClosed = fsYear.IsClosed,
+                                              showreopen = (fsYear.IsClosed == true) ? true : false
 
-                                          }).ToList().OrderByDescending(p => p.IsActive);
+                                          }).ToList().OrderByDescending(p => p.FiscalYearId);
                     responseData.Status = "OK";
                     responseData.Results = fiscalYearList;
                 }
                 else if (reqType == "GetCostCenterItemList")
                 {
                     var costCenterList = (from costCenter in accountingDbContext.CostCenterItems
+                                          where costCenter.HospitalId == currentHospitalId
                                           select new
                                           {
                                               CostCenterItemId = costCenter.CostCenterItemId,
@@ -239,12 +196,15 @@ namespace DanpheEMR.Controllers
                 else if (reqType == "GetChartofAccount")
                 {
                     var chartOfAccountList = (from chartofAcc in accountingDbContext.ChartOfAccounts
+
                                               select new
                                               {
                                                   ChartOfAccountId = chartofAcc.ChartOfAccountId,
                                                   ChartOfAccountName = chartofAcc.ChartOfAccountName,
                                                   Description = chartofAcc.Description,
-                                                  IsActive = chartofAcc.IsActive
+                                                  IsActive = chartofAcc.IsActive,
+                                                  COACode = chartofAcc.COACode,
+                                                  PrimaryGroupId = chartofAcc.PrimaryGroupId
                                               }).ToList();
                     responseData.Status = "OK";
                     responseData.Results = chartOfAccountList;
@@ -252,10 +212,13 @@ namespace DanpheEMR.Controllers
                 else if (reqType == "LedgersList")
                 {
                     var ledgerList = (from ledGroup in accountingDbContext.LedgerGroups
+                                      where ledGroup.HospitalId == currentHospitalId
                                       join led in accountingDbContext.Ledgers
                                       on ledGroup.LedgerGroupId equals led.LedgerGroupId
+                                      where led.HospitalId == currentHospitalId
                                       select new
                                       {
+                                          led.HospitalId,
                                           led.LedgerId,
                                           led.LedgerGroupId,
                                           ledGroup.PrimaryGroup,
@@ -270,12 +233,34 @@ namespace DanpheEMR.Controllers
                                           led.DrCr,
                                           led.CreatedBy,
                                           led.CreatedOn,
-                                          led.Name
+                                          led.Name,
+                                          led.Code,
+                                          led.LedgerType,
+                                          led.PANNo,
+                                          led.MobileNo,
+                                          led.Address,
+                                          led.TDSPercent,
+                                          led.CreditPeriod,
+                                          led.LandlineNo
                                       }).ToList();
                     responseData.Status = "OK";
                     responseData.Results = ledgerList;
                 }
-                else if(reqType== "phrm-supplier")
+                else if (reqType == "SectionsList")
+                {
+                    var sections = (from s in accountingDbContext.Section
+                                    where s.HospitalId == currentHospitalId
+                                    select new
+                                    {
+                                        s.HospitalId,
+                                        s.SectionId,
+                                        s.SectionName,
+                                        s.SectionCode
+                                    }).ToList();
+                    responseData.Results = sections;
+                    responseData.Status = "OK";
+                }
+                else if (reqType == "phrm-supplier")
                 {
                     var supplier = (from s in accountingDbContext.PHRMSupplier
                                     select new
@@ -284,6 +269,26 @@ namespace DanpheEMR.Controllers
                                         s.SupplierName
                                     }).ToList();
                     responseData.Results = supplier;
+                    responseData.Status = "OK";
+                }
+
+                else if (reqType == "get-employee")
+                {
+                    var supplier = (from emp in accountingDbContext.Emmployees
+                                    select new
+                                    {
+                                        emp.EmployeeId,
+                                        EmployeeName = emp.FullName  // emp.FirstName + " " + (string.IsNullOrEmpty(emp.MiddleName) ? "" : emp.MiddleName + " ") + emp.LastName,
+                                    }).ToList();
+                    responseData.Results = supplier;
+                    responseData.Status = "OK";
+                }
+                
+                else if (reqType == "get-primary-list")
+                {
+                    var primaryGroupList  =accountingDbContext.PrimaryGroup.Where(p=>p.IsActive == true).ToList();
+                                   
+                    responseData.Results = primaryGroupList;
                     responseData.Status = "OK";
                 }
                 responseData.Status = "OK";
@@ -311,6 +316,8 @@ namespace DanpheEMR.Controllers
             responseData.Status = "OK";//by default status would be OK, hence assigning at the top
             AccountingDbContext accountingDBContext = new AccountingDbContext(connString);
             RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
+            //sud-nagesh: 20June'20-- for Acc-Hospital Separation.
+            int currentHospitalId = HttpContext.Session.Get<int>("AccSelectedHospitalId");
 
             try
             {
@@ -321,57 +328,185 @@ namespace DanpheEMR.Controllers
                 if (reqType == "AddLedgers")
                 {
                     LedgerModel ledger = DanpheJSONConvert.DeserializeObject<LedgerModel>(str);
-                    if (accountingDBContext.Ledgers.Any(r => r.LedgerGroupId == ledger.LedgerGroupId && r.LedgerName == ledger.LedgerName))
+                    //check for duplicate and don't allow to addd if found.
+                    //match with current hospital id, and don't allow to add same ledger. 
+                    if (accountingDBContext.Ledgers.Any(r => r.LedgerGroupId == ledger.LedgerGroupId && r.LedgerName == ledger.LedgerName && r.HospitalId == currentHospitalId))
                     {
                         responseData.Status = "Failed";
                     }
                     else
                     {
-                        ledger.CreatedOn = System.DateTime.Now;
-                        accountingDBContext.Ledgers.Add(ledger);
-                        accountingDBContext.SaveChanges();
-                        if (ledger.LedgerType == "pharmacysupplier")
+                        using (var dbContextTransaction = accountingDBContext.Database.BeginTransaction())
                         {
-                            LedgerMappingModel ledgerMapping = new LedgerMappingModel();
-                            ledgerMapping.LedgerId = ledger.LedgerId;
-                            ledgerMapping.LedgerType = ledger.LedgerType;
-                            ledgerMapping.ReferenceId = (int)ledger.LedgerReferenceId;
-                            accountingDBContext.LedgerMappings.Add(ledgerMapping);
+                            try
+                            {
+                                ledger.CreatedOn = System.DateTime.Now;
+                                ledger.Code = AccountingTransferData.GetProvisionalLedgerCode(accountingDBContext, currentHospitalId);
+                                ledger.HospitalId = currentHospitalId;
+
+                                accountingDBContext.Ledgers.Add(ledger);
+                                accountingDBContext.SaveChanges();
+                                if (ledger.LedgerType == "pharmacysupplier")
+                                {
+                                    LedgerMappingModel ledgerMapping = new LedgerMappingModel();
+                                    ledgerMapping.LedgerId = ledger.LedgerId;
+                                    ledgerMapping.LedgerType = ledger.LedgerType;
+                                    ledgerMapping.ReferenceId = (int)ledger.LedgerReferenceId;
+                                    ledgerMapping.HospitalId = currentHospitalId;
+                                    accountingDBContext.LedgerMappings.Add(ledgerMapping);
+                                }
+                                accountingDBContext.SaveChanges();
+
+                                var flag = DanpheEMR.AccTransfer.AccountingTransferData.LedgerAddUpdateInBalanceHisotry(ledger, accountingDBContext, false, currentHospitalId,currentUser.EmployeeId);
+
+                                if (flag)
+                                {
+                                    responseData.Results = ledger;
+                                    responseData.Status = "OK";
+                                    dbContextTransaction.Commit();
+                                }
+                                else
+                                {
+                                    responseData.Status = "Failed";
+                                    dbContextTransaction.Rollback();
+                                }
+
+                            }
+                            catch (Exception ex)
+                            {
+                                dbContextTransaction.Rollback();
+                                throw ex;
+                            }
                         }
-                        accountingDBContext.SaveChanges();
-                        responseData.Results = ledger;
-                        responseData.Status = "OK";
                     }
 
                 }
                 if (reqType == "AddLedgersList")
                 {
+                    InventoryDbContext inventoryDBContext = new InventoryDbContext(connString);
                     List<LedgerModel> Ledgrs = DanpheJSONConvert.DeserializeObject<List<LedgerModel>>(str);
-                    //if (accountingDBContext.Ledgers.Any(r => r.LedgerGroupId == ledger.LedgerGroupId && r.LedgerName == ledger.LedgerName))
-                    //{
-                    //    responseData.Status = "Failed";
-                    //}
-                    //else
-                    //{
-                    Ledgrs.ForEach(ledger =>
+                    bool ledBalnce = false;
+                    using (var dbContextTransaction = accountingDBContext.Database.BeginTransaction())
                     {
-                        ledger.CreatedOn = System.DateTime.Now;
-                        accountingDBContext.Ledgers.Add(ledger);
-                        accountingDBContext.SaveChanges();
-                        if (ledger.LedgerType == "pharmacysupplier")
+                        try
                         {
-                            LedgerMappingModel ledgerMapping = new LedgerMappingModel();
-                            ledgerMapping.LedgerId = ledger.LedgerId;
-                            ledgerMapping.LedgerType = ledger.LedgerType;
-                            ledgerMapping.ReferenceId = (int)ledger.LedgerReferenceId;
-                            accountingDBContext.LedgerMappings.Add(ledgerMapping);
+
+                            Ledgrs.ForEach(ledger =>
+                             {
+                                 //first create ledger if not existing, then update balance history for different types of ledgers.
+
+                                 //Part:1--- Create ledger.. or Update LedgerInformation.
+                                 if (ledger.LedgerId == 0)
+                                 {
+                                     ledger.CreatedOn = System.DateTime.Now;
+                                     ledger.Code = AccountingTransferData.GetProvisionalLedgerCode(accountingDBContext, currentHospitalId);
+                                     ledger.IsActive = true;
+                                     ledger.HospitalId = currentHospitalId;
+                                     accountingDBContext.Ledgers.Add(ledger);
+                                     accountingDBContext.SaveChanges();
+
+                                     ledBalnce = AccountingTransferData.LedgerAddUpdateInBalanceHisotry(ledger, accountingDBContext, false, currentHospitalId,currentUser.EmployeeId);
+
+                                 }
+                                 else
+                                 {
+                                     //hospitalid can't be udated in Existing ledger so no need to check... 
+                                     var existLedger = accountingDBContext.Ledgers.Where(l => l.LedgerId == ledger.LedgerId && l.HospitalId == currentHospitalId).FirstOrDefault();
+                                     if (existLedger != null)
+                                     {
+                                         existLedger.LedgerId = ledger.LedgerId;
+                                         existLedger.LedgerName = ledger.LedgerName;
+                                         existLedger.Description = ledger.Description;
+                                         existLedger.DrCr = ledger.DrCr;
+                                         existLedger.IsActive = ledger.IsActive;
+                                         existLedger.PANNo = ledger.PANNo;
+                                         existLedger.Address = ledger.Address;
+                                         existLedger.MobileNo = ledger.MobileNo;
+                                         existLedger.LandlineNo = ledger.LandlineNo;
+
+                                         accountingDBContext.Ledgers.Attach(existLedger);
+                                         accountingDBContext.Entry(existLedger).State = EntityState.Modified;
+                                         accountingDBContext.Entry(existLedger).Property(x => x.LedgerName).IsModified = true;
+                                         accountingDBContext.Entry(existLedger).Property(x => x.Description).IsModified = true;
+                                         accountingDBContext.Entry(existLedger).Property(x => x.DrCr).IsModified = true;
+                                         accountingDBContext.Entry(existLedger).Property(x => x.IsActive).IsModified = true;
+                                         accountingDBContext.Entry(existLedger).Property(x => x.PANNo).IsModified = true;
+                                         accountingDBContext.Entry(existLedger).Property(x => x.Address).IsModified = true;
+                                         accountingDBContext.Entry(existLedger).Property(x => x.MobileNo).IsModified = true;
+                                         accountingDBContext.Entry(existLedger).Property(x => x.LandlineNo).IsModified = true;
+                                         accountingDBContext.SaveChanges();
+                                         ledBalnce = AccountingTransferData.LedgerAddUpdateInBalanceHisotry(existLedger, accountingDBContext, false, currentHospitalId,currentUser.EmployeeId);
+
+                                     }
+                                 }
+
+
+                                 //Part:2 --- Update LedgerMapping table for certain types eg: Consultant, PharmacySupplier, Inv-Vendors, etc.. 
+
+                                 if (!string.IsNullOrEmpty(ledger.LedgerType))
+                                 {
+                                     var lederMapData = accountingDBContext.LedgerMappings.Where(l =>
+                                  l.HospitalId == currentHospitalId &&
+                                  l.ReferenceId == (int)ledger.LedgerReferenceId
+                                  && l.LedgerType.ToLower() == ledger.LedgerType.ToLower()).FirstOrDefault();
+
+                                     //if null then it will create new mapping, else update existing ledger. 
+                                     if (lederMapData == null)
+                                     {
+                                         LedgerMappingModel ledgerMapping = new LedgerMappingModel();
+                                         ledgerMapping.LedgerId = ledger.LedgerId;
+                                         ledgerMapping.LedgerType = ledger.LedgerType;
+                                         ledgerMapping.ReferenceId = (int)ledger.LedgerReferenceId;
+                                         ledgerMapping.HospitalId = currentHospitalId;
+                                         accountingDBContext.LedgerMappings.Add(ledgerMapping);
+                                     }
+                                     else
+                                     {
+                                         //hospitalid not required for existing ledger-mappings
+                                         lederMapData.LedgerId = ledger.LedgerId;
+                                         accountingDBContext.LedgerMappings.Attach(lederMapData);
+                                         accountingDBContext.Entry(lederMapData).State = EntityState.Modified;
+                                         accountingDBContext.Entry(lederMapData).Property(x => x.LedgerId).IsModified = true;
+                                     }
+
+                                     //We need to update also in Inventory Table if current request is for InvSubcategory.
+                                     if (ledger.LedgerType == "inventorysubcategory")
+                                     {
+                                         var subcateogryData = inventoryDBContext.ItemSubCategoryMaster.Where(l => l.SubCategoryId == (int)ledger.LedgerReferenceId).FirstOrDefault();
+                                         if (subcateogryData != null)
+                                         {
+                                             subcateogryData.LedgerId = ledger.LedgerId;
+                                             inventoryDBContext.ItemSubCategoryMaster.Attach(subcateogryData);
+                                             inventoryDBContext.Entry(subcateogryData).State = EntityState.Modified;
+                                             inventoryDBContext.Entry(subcateogryData).Property(x => x.LedgerId).IsModified = true;
+
+                                         }
+                                     }
+                                 }
+
+                             });
+
+                            inventoryDBContext.SaveChanges();
+                            accountingDBContext.SaveChanges();
+                            if (ledBalnce)
+                            {
+                                responseData.Results = Ledgrs;
+                                responseData.Status = "OK";
+                                dbContextTransaction.Commit();
+                            }
+                            else
+                            {
+                                responseData.Status = "Failed";
+                                dbContextTransaction.Rollback();
+                            }
+
                         }
-                    });
-                    
-                        accountingDBContext.SaveChanges();
-                        responseData.Results = Ledgrs;
-                        responseData.Status = "OK";
-                    //}
+                        catch (Exception ex)
+                        {
+                            throw ex;
+                        }
+                    }
+
 
                 }
                 else if (reqType == "AddVouchers")
@@ -388,7 +523,7 @@ namespace DanpheEMR.Controllers
                 else if (reqType == "AddVoucherHead")
                 {
                     VoucherHeadModel voucherHead = DanpheJSONConvert.DeserializeObject<VoucherHeadModel>(str);
-                    if(accountingDBContext.VoucherHeads.Any(x=>x.VoucherHeadId== voucherHead.VoucherHeadId && x.VoucherHeadName == voucherHead.VoucherHeadName))
+                    if (accountingDBContext.VoucherHeads.Any(x => x.HospitalId == currentHospitalId && x.VoucherHeadId == voucherHead.VoucherHeadId && x.VoucherHeadName == voucherHead.VoucherHeadName))
                     {
                         responseData.Status = "Failed";
                     }
@@ -396,38 +531,43 @@ namespace DanpheEMR.Controllers
                     {
                         voucherHead.CreatedOn = System.DateTime.Now;
                         voucherHead.CreatedBy = currentUser.UserId;
+                        voucherHead.HospitalId = currentHospitalId;
                         accountingDBContext.VoucherHeads.Add(voucherHead);
                         accountingDBContext.SaveChanges();
                         responseData.Results = voucherHead;
                         responseData.Status = "OK";
                     }
                 }
-                else if (reqType == "AddItems")
-                {
-                    ItemModel item = DanpheJSONConvert.DeserializeObject<ItemModel>(str);
-                    item.CreatedOn = System.DateTime.Now;
-                    accountingDBContext.Items.Add(item);
-                    accountingDBContext.SaveChanges();
-                    var itemWithLedgerName = (from led in accountingDBContext.Ledgers
-                                              where led.LedgerId == item.LedgerId
-                                              select new
-                                              {
-                                                  ItemId = item.ItemId,
-                                                  ItemName = item.ItemName,
-                                                  AvailableQuantity = item.AvailableQuantity,
-                                                  IsActive = item.IsActive,
-                                                  Description = item.Description,
-                                                  LedgerId = item.LedgerId,
-                                                  LedgerName = led.LedgerName
-                                              }
-                                           );
-                    responseData.Results = itemWithLedgerName;
-                    responseData.Status = "OK";
-                }
+                //else if (reqType == "AddItems")
+                //{
+                //    ItemModel item = DanpheJSONConvert.DeserializeObject<ItemModel>(str);
+                //    item.CreatedOn = System.DateTime.Now;
+                //    accountingDBContext.Items.Add(item);
+                //    accountingDBContext.SaveChanges();
+                //    var itemWithLedgerName = (from led in accountingDBContext.Ledgers
+                //                              where led.LedgerId == item.LedgerId
+                //                              select new
+                //                              {
+                //                                  ItemId = item.ItemId,
+                //                                  ItemName = item.ItemName,
+                //                                  AvailableQuantity = item.AvailableQuantity,
+                //                                  IsActive = item.IsActive,
+                //                                  Description = item.Description,
+                //                                  LedgerId = item.LedgerId,
+                //                                  LedgerName = led.LedgerName
+                //                              }
+                //                           );
+                //    responseData.Results = itemWithLedgerName;
+                //    responseData.Status = "OK";
+                //}
                 else if (reqType == "AddLedgersGroup")
                 {
                     LedgerGroupModel ledgerGrpData = DanpheJSONConvert.DeserializeObject<LedgerGroupModel>(str);
-                    if (accountingDBContext.LedgerGroups.Any(r => r.LedgerGroupName == ledgerGrpData.LedgerGroupName && r.COA == ledgerGrpData.COA && r.PrimaryGroup == ledgerGrpData.PrimaryGroup))
+                    if (accountingDBContext.LedgerGroups.Any(lg =>
+                    lg.HospitalId == currentHospitalId //sud-nagesh:20Jun'20-for HospitalSeparation
+                    && lg.LedgerGroupName == ledgerGrpData.LedgerGroupName
+                    && lg.COA == ledgerGrpData.COA
+                    && lg.PrimaryGroup == ledgerGrpData.PrimaryGroup))
                     {
                         responseData.Status = "Failed";
                     }
@@ -435,101 +575,26 @@ namespace DanpheEMR.Controllers
                     {
                         ledgerGrpData.CreatedOn = DateTime.Now;
                         ledgerGrpData.CreatedBy = currentUser.UserId;
+                        ledgerGrpData.HospitalId = currentHospitalId;//sud-nagesh:20Jun'20-for HospitalSeparation
                         accountingDBContext.LedgerGroups.Add(ledgerGrpData);
                         accountingDBContext.SaveChanges();
                         responseData.Results = ledgerGrpData;
                         responseData.Status = "OK";
                     }
                 }
-                else if (reqType == "manageVoucherWithLedgegroup")
-                {
-                    List<VoucherLedgerGroupMapModel> mappedData = DanpheJSONConvert.DeserializeObject<List<VoucherLedgerGroupMapModel>>(str);
-                    var postMappedLedgerGroup = new List<VoucherLedgerGroupMapModel>();
-                    var putMappedLedgerGroup = new List<VoucherLedgerGroupMapModel>();
-                    //map and separate two list for add and update 
-                    mappedData.ForEach(x =>
-                    {
-                        if (x.actionName == "post")
-                        {
-                            x.CreatedOn = DateTime.Now;
-                            x.CreatedBy = currentUser.UserId;
-                            postMappedLedgerGroup.Add(x);
-                        }
-                        else if (x.actionName == "put")
-                        {
-                            putMappedLedgerGroup.Add(x);
-                        }
-                    });
-                    //update
-                    foreach (var itm in putMappedLedgerGroup)
-                    {
-                        accountingDBContext.VoucherLedgerGroupMaps.Attach(itm);
-                        accountingDBContext.Entry(itm).Property(x => x.IsActive).IsModified = true;
-                    }
-                    accountingDBContext.SaveChanges();
 
-                    //add
-                    foreach (var itm in postMappedLedgerGroup)
-                    {
-                        accountingDBContext.VoucherLedgerGroupMaps.Add(itm);
-                    }
-                    accountingDBContext.SaveChanges();
-                    responseData.Status = "OK";
-                }
-                else if (reqType == "AddFiscalYear")
-                {
-                    FiscalYearModel fsModel = DanpheJSONConvert.DeserializeObject<FiscalYearModel>(str);
-
-                    var checkFiscalYear = (from fs in accountingDBContext.FiscalYears
-                                           where ((fs.FiscalYearName == fsModel.FiscalYearName) && (fs.IsActive == true))
-                                           select fs).FirstOrDefault();
-                    if (checkFiscalYear != null)
-                    {
-                        fsModel = null;
-                        responseData.Results = fsModel;
-                    }
-                    else
-                    {
-                        fsModel.CreatedOn = System.DateTime.Now;
-                        fsModel.CreatedBy = currentUser.UserId;
-                        accountingDBContext.FiscalYears.Add(fsModel);
-                        accountingDBContext.SaveChanges();
-
-                        var fiscalCurtData = (from fisCal in accountingDBContext.FiscalYears
-                                              where fisCal.FiscalYearId == fsModel.FiscalYearId
-                                              select new
-                                              {
-                                                  FiscalYearId = fisCal.FiscalYearId,
-                                                  FiscalYearName = fisCal.FiscalYearName,
-                                                  StartYear = fisCal.StartDate,
-                                                  EndYear = fisCal.EndDate,
-                                                  Description = fisCal.Description,
-                                                  IsActive = fisCal.IsActive,
-                                              });
-                        responseData.Results = fiscalCurtData;
-                    }
-                    responseData.Status = "OK";
-
-                }
+              
                 else if (reqType == "AddCostCenterItem")
                 {
                     CostCenterItemModel costCenterMod = DanpheJSONConvert.DeserializeObject<CostCenterItemModel>(str);
                     costCenterMod.CreatedOn = System.DateTime.Now;
                     costCenterMod.CreatedBy = currentUser.UserId;
+                    costCenterMod.HospitalId = currentHospitalId;
                     accountingDBContext.CostCenterItems.Add(costCenterMod);
                     accountingDBContext.SaveChanges();
 
-                    var curtCostCenterItmData = (from costCenterItm in accountingDBContext.CostCenterItems
-                                                 where costCenterItm.CostCenterItemId == costCenterMod.CostCenterItemId
-                                                 select new
-                                                 {
-                                                     CostCenterItemId = costCenterItm.CostCenterItemId,
-                                                     CostCenterItemName = costCenterItm.CostCenterItemName,
-                                                     Description = costCenterItm.Description,
-                                                     IsActive = costCenterItm.IsActive,
-                                                 });
                     responseData.Status = "OK";
-                    responseData.Results = curtCostCenterItmData;
+                    responseData.Results = costCenterMod;
                 }
                 else if (reqType == "AddLedgerGroupCategory")
                 {
@@ -554,6 +619,25 @@ namespace DanpheEMR.Controllers
                     responseData.Status = "OK";
                     responseData.Results = curtLedGrpCategoryData;
                 }
+                else if (reqType == "AddSection")
+                {
+                    AccSectionModel section = DanpheJSONConvert.DeserializeObject<AccSectionModel>(str);
+                    section.HospitalId = currentHospitalId;
+                    accountingDBContext.Section.Add(section);
+                    accountingDBContext.SaveChanges();
+                    responseData.Results = section;
+                    responseData.Status = "OK";
+                }
+                else if (reqType == "AddCOA")
+                {
+                    ChartOfAccountModel coa = DanpheJSONConvert.DeserializeObject<ChartOfAccountModel>(str);
+                    coa.CreatedOn = System.DateTime.Now;
+                    coa.CreatedBy = currentUser.UserId;
+                    accountingDBContext.ChartOfAccounts.Add(coa);
+                    accountingDBContext.SaveChanges();
+                    responseData.Results = coa;
+                    responseData.Status = "OK";
+                }
 
 
             }
@@ -577,7 +661,8 @@ namespace DanpheEMR.Controllers
             DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
 
             AccountingDbContext accountingDBContext = new AccountingDbContext(connString);
-
+            //sud-nagesh: 20June'20-- for Acc-Hospital Separation.
+            int currentHospitalId = HttpContext.Session.Get<int>("AccSelectedHospitalId");
 
             try
             {
@@ -588,18 +673,7 @@ namespace DanpheEMR.Controllers
                 if (!String.IsNullOrEmpty(str))
                 {
 
-                    if (reqType == "itemISActive")
-                    {
-
-                        ItemModel item = DanpheJSONConvert.DeserializeObject<ItemModel>(str);
-                        accountingDBContext.Items.Attach(item);
-                        accountingDBContext.Entry(item).Property(x => x.IsActive).IsModified = true;
-                        accountingDBContext.SaveChanges();
-                        responseData.Results = item;
-                        responseData.Status = "OK";
-
-                    }
-                    else if (reqType == "ledgerISActive")
+                    if (reqType == "ledgerISActive")
                     {
 
                         LedgerModel ledger = DanpheJSONConvert.DeserializeObject<LedgerModel>(str);
@@ -608,6 +682,24 @@ namespace DanpheEMR.Controllers
                         accountingDBContext.SaveChanges();
                         responseData.Results = ledger;
                         responseData.Status = "OK";
+
+                    }
+                    else if (reqType == "reopen-fiscal-year")
+                    {
+                        try
+                        {                          
+                            FiscalYearModel fs = DanpheJSONConvert.DeserializeObject<FiscalYearModel>(str);                            
+                            DataTable fiscalYearDT = accountingDBContext.ReOpenFiscalYear(fs.FiscalYearId, currentUser.EmployeeId, currentHospitalId,fs.Remark);                            
+                            var resultStr = JsonConvert.SerializeObject(fiscalYearDT, new IsoDateTimeConverter() { DateTimeFormat = "yyyy-MM-dd" });
+                            var fiscalYearList = JsonConvert.DeserializeObject<List<dynamic>>(resultStr);
+                            responseData.Results = fiscalYearList;                     
+                            responseData.Status = "OK";                      
+                        }
+                        catch (Exception ex)
+                        {
+                            responseData.Status = "Failed";
+                            throw ex;
+                        }
 
                     }
                     else if (reqType == "updateLedgerGrpIsActive")
@@ -622,8 +714,8 @@ namespace DanpheEMR.Controllers
                     else if (reqType == "updateLedgerGroup")
                     {
                         LedgerGroupModel ledgerGroup = DanpheJSONConvert.DeserializeObject<LedgerGroupModel>(str);
-                        var ledgerGrp = accountingDBContext.LedgerGroups.Where(x => x.LedgerGroupId == ledgerGroup.LedgerGroupId).FirstOrDefault();
-                        if(ledgerGrp != null)
+                        var ledgerGrp = accountingDBContext.LedgerGroups.Where(x => x.LedgerGroupId == ledgerGroup.LedgerGroupId && x.HospitalId == currentHospitalId).FirstOrDefault();//sud-nagesh:20Jun'20-for HospitalSeparation
+                        if (ledgerGrp != null)
                         {
                             ledgerGrp.COA = ledgerGroup.COA;
                             ledgerGrp.Description = ledgerGroup.Description;
@@ -632,7 +724,6 @@ namespace DanpheEMR.Controllers
                             ledgerGrp.ModifiedBy = ledgerGroup.ModifiedBy;
                             ledgerGrp.ModifiedOn = System.DateTime.Now;
                             ledgerGrp.PrimaryGroup = ledgerGroup.PrimaryGroup;
-
                             accountingDBContext.LedgerGroups.Attach(ledgerGrp);
                             accountingDBContext.Entry(ledgerGrp).Property(x => x.COA).IsModified = true;
                             accountingDBContext.Entry(ledgerGrp).Property(x => x.Description).IsModified = true;
@@ -650,15 +741,7 @@ namespace DanpheEMR.Controllers
                             responseData.Status = "Failed";
                         }
                     }
-                    else if (reqType == "updateFiscalYearStatus")
-                    {
-                        FiscalYearModel fiscalYearModel = DanpheJSONConvert.DeserializeObject<FiscalYearModel>(str);
-                        accountingDBContext.FiscalYears.Attach(fiscalYearModel);
-                        accountingDBContext.Entry(fiscalYearModel).Property(x => x.IsActive).IsModified = true;
-                        accountingDBContext.SaveChanges();
-                        responseData.Status = "OK";
-                        responseData.Results = fiscalYearModel;
-                    }
+                 
                     else if (reqType == "updateCostCenterItemStatus")
                     {
                         CostCenterItemModel ccImodel = DanpheJSONConvert.DeserializeObject<CostCenterItemModel>(str);
@@ -681,35 +764,78 @@ namespace DanpheEMR.Controllers
                     {
                         LedgerModel ledger = DanpheJSONConvert.DeserializeObject<LedgerModel>(str);
                         var led = accountingDBContext.Ledgers.Where(s => s.LedgerId == ledger.LedgerId).FirstOrDefault();
-                        if (led != null)
+
+                        using (var dbContextTransaction = accountingDBContext.Database.BeginTransaction())
                         {
-                            led.IsActive = ledger.IsActive;
-                            led.LedgerName = ledger.LedgerName;
-                            led.OpeningBalance = ledger.OpeningBalance;
-                            led.Description = ledger.Description;
-                            led.IsCostCenterApplicable = ledger.IsCostCenterApplicable;
-                            led.DrCr = ledger.DrCr;
-                            accountingDBContext.Ledgers.Attach(led);
-                            accountingDBContext.Entry(led).Property(x => x.IsActive).IsModified = true;
-                            accountingDBContext.Entry(led).Property(x => x.LedgerName).IsModified = true;
-                            accountingDBContext.Entry(led).Property(x => x.Description).IsModified = true;
-                            accountingDBContext.Entry(led).Property(x => x.DrCr).IsModified = true;
-                            accountingDBContext.Entry(led).Property(x => x.IsCostCenterApplicable).IsModified = true;
-                            accountingDBContext.Entry(led).Property(x => x.OpeningBalance).IsModified = true;
-                            accountingDBContext.SaveChanges();
-                            responseData.Status = "OK";
-                            responseData.Results = led;
+                            try
+                            {
+
+                                if (led != null)
+                                {
+                                    led.IsActive = ledger.IsActive;
+                                    led.LedgerName = ledger.LedgerName;
+                                    led.OpeningBalance = ledger.OpeningBalance;
+                                    led.Description = ledger.Description;
+                                    led.IsCostCenterApplicable = ledger.IsCostCenterApplicable;
+                                    led.DrCr = ledger.DrCr;
+                                    led.PANNo = ledger.PANNo;
+                                    led.Address = ledger.Address;
+                                    led.MobileNo = ledger.MobileNo;
+                                    led.CreditPeriod = ledger.CreditPeriod;
+                                    led.TDSPercent = ledger.TDSPercent;
+                                    led.LandlineNo = ledger.LandlineNo;
+                                    led.LedgerGroupId = ledger.LedgerGroupId;
+                                    accountingDBContext.Ledgers.Attach(led);
+                                    accountingDBContext.Entry(led).Property(x => x.IsActive).IsModified = true;
+                                    accountingDBContext.Entry(led).Property(x => x.LedgerName).IsModified = true;
+                                    accountingDBContext.Entry(led).Property(x => x.Description).IsModified = true;
+                                    accountingDBContext.Entry(led).Property(x => x.DrCr).IsModified = true;
+                                    accountingDBContext.Entry(led).Property(x => x.IsCostCenterApplicable).IsModified = true;
+                                    accountingDBContext.Entry(led).Property(x => x.OpeningBalance).IsModified = true;
+                                    accountingDBContext.Entry(led).Property(x => x.PANNo).IsModified = true;
+                                    accountingDBContext.Entry(led).Property(x => x.Address).IsModified = true;
+                                    accountingDBContext.Entry(led).Property(x => x.MobileNo).IsModified = true;
+                                    accountingDBContext.Entry(led).Property(x => x.CreditPeriod).IsModified = true;
+                                    accountingDBContext.Entry(led).Property(x => x.TDSPercent).IsModified = true;
+                                    accountingDBContext.Entry(led).Property(x => x.LandlineNo).IsModified = true;
+                                    accountingDBContext.Entry(led).Property(x => x.LedgerGroupId).IsModified = true;
+
+                                    accountingDBContext.SaveChanges();
+
+                                    var flag = AccountingTransferData.LedgerAddUpdateInBalanceHisotry(ledger, accountingDBContext, false, currentHospitalId,currentUser.EmployeeId);
+
+                                    if (flag)
+                                    {
+                                        responseData.Status = "OK";
+                                        responseData.Results = led;
+                                        dbContextTransaction.Commit();
+                                    }
+                                    else
+                                    {
+                                        responseData.Status = "Failed";
+                                        dbContextTransaction.Rollback();
+                                    }
+                                }
+                                else
+                                {
+                                    responseData.Status = "Failed";
+                                }
+
+                            }
+                            catch (Exception ex)
+                            {
+                                dbContextTransaction.Rollback();
+                                throw ex;
+                            }
                         }
-                        else
-                        {
-                            responseData.Status = "Failed";
-                        }
+
                     }
 
                     else if (reqType == "UpdateVoucherHead")
                     {
                         VoucherHeadModel voucher = DanpheJSONConvert.DeserializeObject<VoucherHeadModel>(str);
                         var voucherHead = accountingDBContext.VoucherHeads.Where(s => s.VoucherHeadId == voucher.VoucherHeadId).FirstOrDefault();
+
                         if (voucherHead != null)
                         {
                             voucherHead.IsActive = voucher.IsActive;
@@ -717,15 +843,76 @@ namespace DanpheEMR.Controllers
                             voucherHead.Description = voucher.Description;
                             voucherHead.ModifiedOn = System.DateTime.Now;
                             voucherHead.ModifiedBy = voucher.ModifiedBy;
+                            voucherHead.IsDefault = voucher.IsDefault;
+
                             accountingDBContext.VoucherHeads.Attach(voucherHead);
                             accountingDBContext.Entry(voucherHead).Property(x => x.IsActive).IsModified = true;
                             accountingDBContext.Entry(voucherHead).Property(x => x.VoucherHeadName).IsModified = true;
                             accountingDBContext.Entry(voucherHead).Property(x => x.Description).IsModified = true;
                             accountingDBContext.Entry(voucherHead).Property(x => x.ModifiedOn).IsModified = true;
                             accountingDBContext.Entry(voucherHead).Property(x => x.ModifiedBy).IsModified = true;
+                            accountingDBContext.Entry(voucherHead).Property(x => x.IsDefault).IsModified = true;
                             accountingDBContext.SaveChanges();
+                            if (voucher.IsDefault == true)
+                            {
+                                accountingDBContext.VoucherHeads.Where(v => v.VoucherHeadId != voucher.VoucherHeadId).ToList().ForEach(i => i.IsDefault = false);
+                                accountingDBContext.SaveChanges();
+                            }
                             responseData.Status = "OK";
                             responseData.Results = voucherHead;
+                        }
+                        else
+                        {
+                            responseData.Status = "Failed";
+                        }
+                    }
+
+                    else if (reqType == "UpdateSection")
+                    {
+                        AccSectionModel clientsection = DanpheJSONConvert.DeserializeObject<AccSectionModel>(str);
+
+                        var section = accountingDBContext.Section.Where(s => s.SectionId == clientsection.SectionId).FirstOrDefault();
+
+                        if (section != null)
+                        {
+                            section.SectionId = clientsection.SectionId;
+                            section.SectionName = clientsection.SectionName;
+                            section.SectionCode = clientsection.SectionCode;
+
+                            accountingDBContext.Section.Attach(section);
+                            accountingDBContext.Entry(section).Property(x => x.SectionId).IsModified = true;
+                            accountingDBContext.Entry(section).Property(x => x.SectionName).IsModified = true;
+                            accountingDBContext.Entry(section).Property(x => x.SectionCode).IsModified = true;
+                            accountingDBContext.SaveChanges();
+                            responseData.Status = "OK";
+                            responseData.Results = section;
+                        }
+                        else
+                        {
+                            responseData.Status = "Failed";
+                        }
+                    }
+                    else if (reqType == "UpdateCOA")
+                    {
+                        ChartOfAccountModel coa = DanpheJSONConvert.DeserializeObject<ChartOfAccountModel>(str);
+
+                        var coaobj = accountingDBContext.ChartOfAccounts.Where(s => s.ChartOfAccountId == coa.ChartOfAccountId).FirstOrDefault();
+
+                        if (coaobj != null)
+                        {
+                            coaobj.ChartOfAccountName = coa.ChartOfAccountName;
+                            coaobj.COACode = coa.COACode;
+                            coaobj.PrimaryGroupId = coa.PrimaryGroupId;
+                            coaobj.Description = coa.Description;
+
+                            accountingDBContext.ChartOfAccounts.Attach(coaobj);
+                            accountingDBContext.Entry(coaobj).Property(x => x.ChartOfAccountName).IsModified = true;
+                            accountingDBContext.Entry(coaobj).Property(x => x.COACode).IsModified = true;
+                            accountingDBContext.Entry(coaobj).Property(x => x.PrimaryGroupId).IsModified = true;
+                            accountingDBContext.Entry(coaobj).Property(x => x.Description).IsModified = true;
+                            accountingDBContext.SaveChanges();
+                            responseData.Status = "OK";
+                            responseData.Results = coaobj;
                         }
                         else
                         {
@@ -751,93 +938,6 @@ namespace DanpheEMR.Controllers
 
 
 
-
-        #region Save Goods Receipt and GoodsReceiptItems In Database
-        public static Boolean AddLedgerGroup(AccountingDbContext accountingdbcontext, LedgerGroupModel ledgerGroupData, RbacUser currentUser)
-        {
-            try
-            {
-                if (ledgerGroupData != null)
-                {
-                    ledgerGroupData.CreatedOn = System.DateTime.Now;
-                    ledgerGroupData.CreatedBy = currentUser.UserId;
-                    accountingdbcontext.LedgerGroups.Add(ledgerGroupData);
-                    int i = accountingdbcontext.SaveChanges();
-                    return (i > 0) ? true : false;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-        #endregion
-
-
-        #region Save Goods Receipt and GoodsReceiptItems In Database
-        public static Boolean VoucherLedgerGroupMap(AccountingDbContext accountingdbcontext, List<VoucherLedgerGroupMapModel> voucherLedgerMapData, RbacUser currentUser)
-        {
-            try
-            {
-                if (voucherLedgerMapData != null)
-                {
-                    ///  VoucherLedgerGroupMapModel vouchMap = new VoucherLedgerGroupMapModel();
-
-                    for (int i = 0; i < voucherLedgerMapData.Count; i++)
-                    {
-                        voucherLedgerMapData[i].CreatedOn = DateTime.Now;
-                        accountingdbcontext.VoucherLedgerGroupMaps.Add(voucherLedgerMapData[i]);
-                    }
-
-                    int j = accountingdbcontext.SaveChanges();
-                    return (j > 0) ? true : false;
-
-
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-        #endregion
-
-        #region Method for check all flag from flaglist
-        public static Boolean CheckFlagList(List<Boolean> flagList)
-        {
-            try
-            {
-                Boolean flag = true;
-                if (flagList.Count <= 0)
-                {
-                    return false;
-                }
-                for (int i = 0; i < flagList.Count; i++)
-                {
-                    if (flagList[i] == false)
-                    {
-                        flag = false;
-                        break;
-                    }
-                }
-                return (flag == true) ? true : false;
-
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-
-        }
-        #endregion
     }
 }
 

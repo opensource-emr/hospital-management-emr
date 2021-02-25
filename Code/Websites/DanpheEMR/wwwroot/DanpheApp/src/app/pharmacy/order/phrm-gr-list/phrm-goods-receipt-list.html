@@ -1,0 +1,149 @@
+<style>
+  @media print {
+    button {
+      visibility: hidden;
+      display: none;
+    }
+
+    #print-good-reciept {
+      background-color: white !important;
+      height: 100% !important;
+      width: 100% !important;
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      margin: 0 !important;
+      padding: 15px !important;
+      font-size: 14px !important;
+      line-height: 18px !important;
+    }
+
+    @page {
+      size: auto !important;
+      margin: 0 !important;
+    }
+  }
+
+  .printStyle {
+    border: dotted 1px;
+    margin: 10px 50px;
+  }
+
+  .print-border-top {
+    border-top: dotted 1px;
+  }
+
+  .print-border-bottom {
+    border-bottom: dotted 1px;
+  }
+
+  .print-border {
+    border: dotted 1px;
+  }
+
+  .center-style {
+    text-align: center;
+  }
+
+  .border-up-down {
+    border-top: dotted 1px;
+    border-bottom: dotted 1px;
+  }
+</style>
+
+<div class="row">
+  <div class="col-lg-12 col-sm-12">
+    <div class="form-group">
+      <div class="col-md-8">
+        <div class="input-group">
+          <div class="icheck-inline">
+            <label class="mt-checkbox mt-checkbox-outline">
+              <input type="radio" checked="checked" (change)="LoadGoodsReceiptListByStatus(false)" name="name" value="false" style="width:15px;height:15px" />
+              <span></span>Complete </label>
+            <label class="mt-checkbox mt-checkbox-outline">
+              <input type="radio" (change)="LoadGoodsReceiptListByStatus(true)" name="name" value="true" style="width:15px;height:15px" />
+              <span></span>Cancelled </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- @*<div class="row" style="width: 100%;">
+            <div class="col-md-5 col-xs-12">
+                <div class="form-group">
+                    <label class="control-label col-md-5">From Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                    <div class="col-md-7">
+                        <danphe-date-picker [(ngModel)]="fromDate" ngDefaultControl [CalendarTypes]="'en,np'">
+                        </danphe-date-picker>
+                    </div>
+                </div>
+
+            </div>
+            <div class="col-md-5 col-xs-12">
+                <div class="form-group">
+                    <label class="control-label col-md-4">To Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                    <div class="col-md-7">
+                        <danphe-date-picker [(ngModel)]="toDate" ngDefaultControl [CalendarTypes]="'en,np'">
+                        </danphe-date-picker>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="col-md-2 col-xs-12">
+                <div class="form-group">
+                    <button class="btn blue" type="button" (click)="filterlist()">
+                        <i class="fa fa-search"></i>
+                        Show Details
+                    </button>
+                </div>
+            </div>
+
+        </div>*@ -->
+    <div class="row" style="width: 100%;">
+      <div class="col-md-5 col-xs-12">
+        <div class="form-group">
+          <label class="control-label col-md-5">Supplier Name<b style="float:right;">:</b></label>
+          <div class="col-md-7">
+            <input danphe-auto-complete class="form-control " [(ngModel)]="currentSupplier" [source]="supplierList" [list-formatter]="myListFormatter" placeholder="select supplier" display-property-name="SupplierName" value-property-name="SupplierName" min-chars="0" max-num-list="20" onClick="this.select();" match-formatted="true" [grid-sort]="'SupplierName'" (valueChanged)="SupplierChange($event)" style="width:260px " />
+          </div>
+        </div>
+      </div>
+      <div class="col-md-5 col-xs-12">
+        <div class="form-group">
+          <label class="control-label col-md-4">Aging Days<b style="float:right;">:</b></label>
+          <div class="col-md-8">
+            <input type="text" [(ngModel)]="fromDay" name="" placeholder="From" style="width:100px" class="form-control col-lg-3" />
+            <!-- @*<span class="error-msg" *ngIf="fromDay>toDay">From days should not greater than To days</span>*@ -->
+            <label class="col-lg-2"> </label>
+            <input type="text" [(ngModel)]="toDay" name="" placeholder="To" style="width:100px" class="form-control col-lg-3">
+            <!-- @*<span class="error-msg" *ngIf="fromDay<toDay">To days should not greater than From days</span>*@ -->
+
+          </div>
+        </div>
+      </div>
+      <div class="col-md-2 col-xs-12">
+        <div class="form-group">
+          <button class="btn blue" type="button" (click)="filterlist()"> <i class="fa fa-search"></i> Show Details </button>
+        </div>
+      </div>
+    </div>
+    <danphe-grid [grid-colDefaults]="goodsreceiptsGridColumns" [grid-data]="newGoodsReceiptList" (grid-actions)="GoodsReceiptGridAction($event)" [grid-exportOptions]="gridExportOptions" [grid-showExport]="true"> </danphe-grid>
+    <div style="float:right">
+      <table>
+        <tr></tr>
+        <tr>
+          <td style="width:200px; text-align:right;"><b>Sub Total :</b></td>
+          <td style="text-align:left;">{{subTotal | ParseAmount }}</td>
+          <td style="width:200px; text-align:right;"><b>Discount Total :</b></td>
+          <td style="text-align:left;">{{discountTotal | ParseAmount }}</td>
+          <td style="width:200px; text-align:right;"><b>Total Amount :</b></td>
+          <td style=" text-align:left;">{{totalAmount | ParseAmount }}</td>
+          <td style="width:350px;"></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
+<goods-receipt-view *ngIf="showGRPopUp" [goodsReceiptId]="currentGRdetails.GoodReceiptId" [showPopUp]="showGRPopUp" [canUserModify]="true" (call-back-close)="OnGRPopUpClose()"></goods-receipt-view>
+

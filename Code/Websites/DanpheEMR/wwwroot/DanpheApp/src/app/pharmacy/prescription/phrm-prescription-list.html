@@ -1,0 +1,92 @@
+<style>
+
+  .bg-modal {
+    background-color: rgba(0, 0, 0, 0.8);
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+
+  .modal-contents {
+    width: 530px;
+    background-color: white;
+    text-align: center;
+    padding: 20px;
+    position: relative;
+    border-radius: 4px;
+  }
+</style>
+<div class="row">
+    <div class="col-lg-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="prescriptionGridColumns" [grid-data]="prescriptionListData" (grid-actions)="PrescriptionGridActions($event)">
+        </danphe-grid>
+    </div>
+</div>
+<!--prescription items list and their availability-->
+<div class="bg-modal" *ngIf="isShowPrescriptionDetail">
+  <div class="modal-contents">
+    <div id="printpage" class="row printStyle print-border">
+      <div style="text-align:center;">
+        <a style="float:right;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+        <print-header [unit-name]="'Pharmacy Unit'"></print-header>
+        <div class="clear"></div>
+        <div class="left" style="text-align:left;">
+          <p>Hospital Code:<b> {{currentPrescription.PatientCode}}</b></p>
+          <p>Patient Name:<b>  {{currentPrescription.PatientName}}</b></p>
+        </div>
+
+        <div class="right" style="text-align:right;">
+          <p>Requested By:<b> {{currentPrescription.ProviderFullName}}</b></p>
+          <p>Date: <b>{{currentPrescription.CreatedOn | date}}</b></p>
+        </div>
+      </div>
+      <div class="clear"></div>
+      <p class="text-center btm-pad border-up-down"><b> PRESCRIPTION DETAILS</b></p>
+      <div class="clear"></div>
+      <div class="clear footer"></div>
+      <div class="table-responsive">
+        <table class="table table-striped table-hover table-bordered" style="background-color:initial;margin-top:10px">
+          <thead>
+            <tr style="font-weight: bold;text-align:center">
+              <td>S.N</td>
+              <td>Item Name</td>
+              <td>Frequency</td>
+              <td>Days</td>
+              <td>Availability</td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="text-align:center" *ngFor="let row of currentPrescription.PHRMPrescriptionItems; let i = index ">
+              <td><b>{{i+1}}</b></td>
+              <td><b>{{row.ItemName}}</b></td>
+              <td>{{row.Frequency}}</td>
+              <td>{{row.HowManyDays}}</td>
+              <td><span style="color:blue" *ngIf="row.IsAvailable">YES</span><span style="color:red" *ngIf="!row.IsAvailable">NO</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="col-md-12 clear"></div>
+    </div>
+    <!--buttons-->
+    <div class="row center-style">
+      <div class="col-md-12 col-xs-12 ">
+        <a (click)="print()" class="btn btn-warning">
+          Print
+          <i class="glyphicon glyphicon-print"></i>
+        </a><span> </span><span> </span>
+        &nbsp;
+        <a  *ngIf="!blockDispatch" (click)="Dispatch()" class="btn btn-success">
+          Dispatch
+          <i class="glyphicon glyphicon-share-alt"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

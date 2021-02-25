@@ -18,7 +18,9 @@ import * as moment from 'moment/moment';
 })
 export class PatientBillHistoryComponent {
 
+  @Input("showPatientBillHistory")
   public showPatientBillHistory: boolean = false;
+
   @Input("patient")
   public patient: Patient;
 
@@ -59,9 +61,23 @@ export class PatientBillHistoryComponent {
     this.currencyUnit = this.billingService.currencyUnit;
 
   }
-  @Input("showPatientBillHistory")
-  public set value(val: boolean) {
-    this.showPatientBillHistory = val;
+
+
+  //@Input("showPatientBillHistory")
+  //public set value(val: boolean) {
+  //  this.showPatientBillHistory = val;
+  //  if (this.showPatientBillHistory && this.patient && this.patient.PatientId) {
+  //    this.LoadPatientPastBillSummary(this.patient.PatientId);
+  //    this.LoadPatientBillDetail(this.patient.PatientId);
+  //  }
+  //  else {
+  //    this.showPatientBillHistory = false;
+  //  }
+  //}
+
+  ngOnInit() {
+    //console.log(this.patient);
+    //console.log(this.showPatientBillHistory);
     if (this.showPatientBillHistory && this.patient && this.patient.PatientId) {
       this.LoadPatientPastBillSummary(this.patient.PatientId);
       this.LoadPatientBillDetail(this.patient.PatientId);
@@ -70,7 +86,6 @@ export class PatientBillHistoryComponent {
       this.showPatientBillHistory = false;
     }
   }
-
   LoadPatientPastBillSummary(patientId: number) {
     this.billingBLService.GetPatientPastBillSummary(patientId)
       .subscribe((res: DanpheHTTPResponse) => {
@@ -161,5 +176,5 @@ export class PatientBillHistoryComponent {
   showDetailedView(event: any) {
     console.log(event);
   }
-  
+
 }

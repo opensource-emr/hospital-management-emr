@@ -1,0 +1,67 @@
+﻿/* Custom modal css start */
+.inv_modal .modelbox-div, .custom_modal .modelbox-div {
+    padding: 0;
+    position: relative;
+  }
+  
+  .inv_modal .lb-caption, .custom_modal .custom-caption {
+    position: relative;
+    padding: 15px 15px;
+    border-bottom: 1px solid #ced0d4;
+  }
+  
+  .inv_modal .lb-caption h3, .lb-caption h3, .custom_modal .custom-caption h3, .custom-caption h3 {
+    color: #333333;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+  }
+  
+  .inv_modal .lb-caption .heading, .custom_modal .custom-caption .heading {
+    margin: 0;
+  }
+  
+  .inv_modal .lb-caption .btn-danger, .inv_modal .modelbox-div .history-del-btn, .custom_modal .custom-caption .btn-danger, .custom_modal .modelbox-div .del-btn {
+    position: absolute;
+    top: -15px;
+    right: -15px;
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    border-radius: 50% !important;
+    padding: 0;
+    text-align: center;
+    margin: 0;
+  }
+  
+  .inv_modal .modelbox-div .history-del-btn i, .custom_modal .modelbox-div .del-btn {
+    margin: 0;
+  }
+  
+  .inv_modal .form-actions, .custom_modal .form-actions {
+    background-color: transparent;
+    padding: 15px 0;
+  }
+  
+  .inv_modal .form-actions .btn, .custom_modal .form-actions .btn {
+    width: auto !important;
+  }
+  
+  .inv_modal .form-body, .custom_modal .form-body {
+    padding: 15px 15px 0 15px;
+  }
+  
+  .inv_modal .form-horizontal .page-bar, .custom_modal .form-horizontal .page-bar {
+    box-shadow: none;
+  }
+  .inv_modal .icheck-inline label, .custom_modal .icheck-inline label {
+    padding-top: 0;
+  }
+  
+  .inv_modal table .icheck-inline label, .custom_modal table .icheck-inline label {
+    margin: 0;
+  }
+  
+  .inv_modal .icheck-inline.list-inline label, .custom_modal .icheck-inline.list-inline label {
+    margin: 0;
+  }

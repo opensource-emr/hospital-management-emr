@@ -15,6 +15,7 @@ using Newtonsoft.Json;
 using DanpheEMR.Security;
 using DanpheEMR.Controllers.Billing;
 using System.Threading.Tasks;
+using DanpheEMR.Enums;
 
 namespace DanpheEMR.Controllers
 {
@@ -23,9 +24,15 @@ namespace DanpheEMR.Controllers
     {
 
         double cacheExpMinutes;//= 5;//this should come from configuration later on.
+        bool realTimeRemoteSyncEnabled = false;
+        string InvoiceCode = "BL";
+        double? DepositReturnAmount = 0;
+        BillingTransactionModel billTxnReturnData = new BillingTransactionModel();
+        PatientModel patient = new PatientModel();
         public BillReturnController(IOptions<MyConfiguration> _config) : base(_config)
         {
             cacheExpMinutes = _config.Value.CacheExpirationMinutes;
+            realTimeRemoteSyncEnabled = _config.Value.RealTimeRemoteSyncEnabled;
         }
 
 
@@ -52,7 +59,7 @@ namespace DanpheEMR.Controllers
         public string Post(string reqType)
         {
             DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
-            string ipDataString = this.ReadPostData();
+            //string ipDataString = this.ReadPostData();
             responseData.Status = "OK";//by default status would be OK, hence assigning at the top
             try
             {
@@ -61,8 +68,11 @@ namespace DanpheEMR.Controllers
                 RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
                 if (reqType == "returnInvoice")//submit
                 {
+                    var billInvReturnModel = Request.Form["billInvReturnModel"];
+                    var billTransaction = Request.Form["billTransaction"];
                     //var currentDate = DateTime.Now;
-                    BillInvoiceReturnModel billInvoiceRet = DanpheJSONConvert.DeserializeObject<BillInvoiceReturnModel>(ipDataString);
+                    BillInvoiceReturnModel billInvoiceRet = DanpheJSONConvert.DeserializeObject<BillInvoiceReturnModel>(billInvReturnModel);
+
                     if (billInvoiceRet != null)
                     {
                         //Transaction Begins  
@@ -70,6 +80,7 @@ namespace DanpheEMR.Controllers
                         {
                             try
                             {
+                                billingDbContext.AuditDisabled = false;
                                 BillingFiscalYear currFiscYear = BillingBL.GetFiscalYear(billingDbContext);
                                 //credit note number will continue from current fiscal year, regardless whether the bill was generated in earlier fiscal year.. (sud:30Aug'18)
                                 int? maxCreditNoteNum = billingDbContext.BillReturns.Where(a => a.FiscalYearId == currFiscYear.FiscalYearId).Max(a => a.CreditNoteNumber);
@@ -87,6 +98,81 @@ namespace DanpheEMR.Controllers
                                 billingDbContext.BillReturns.Add(billInvoiceRet);
                                 billingDbContext.SaveChanges();
 
+                                //commented--sud:7Feb--this logic is totally wrong
+                                //var visit = billingDbContext.Visit.Where(x => x.PatientId == billInvoiceRet.PatientId).OrderByDescending(x=>x.VisitDate).FirstOrDefault();
+
+                                //visit.BillingStatus = ENUM_BillingStatus.returned;
+                                //billingDbContext.Visit.Attach(visit);
+                                //billingDbContext.Entry(visit).Property(a => a.BillingStatus).IsModified = true;
+                                billingDbContext.AuditDisabled = true;
+
+
+                                if (!string.IsNullOrEmpty(billTransaction))
+                                {
+                                    // Rajesh: 8sept19 once the items are returned then for remaining items will generate new invoice.
+                                    BillingTransactionModel billingTXN = DanpheJSONConvert.DeserializeObject<BillingTransactionModel>(billTransaction);
+
+                                    billTxnReturnData = billingTXN;
+
+                                    List<BillingTransactionItemModel> billingTransactionItems = new List<BillingTransactionItemModel>();
+                                    // PatientModel patient = new PatientModel();
+                                    patient = billingTXN.Patient;
+                                    billingTransactionItems = billingTXN.BillingTransactionItems;
+                                    DepositReturnAmount = billingTXN.DepositReturnAmount;
+
+                                    if (billingTXN.BillingTransactionItems.Count > 0)
+                                    {
+                                        billingTXN.BillingTransactionItems = null;
+                                        billingTXN.Patient = null;
+                                        billingTXN.CreatedBy = currentUser.EmployeeId;
+                                        if (billingTXN.BillStatus == "unpaid")
+                                        {
+                                            billingTXN.PaidDate = null;
+                                            billingTXN.PaidAmount = null;
+                                            billingTXN.PaymentReceivedBy = null;
+                                            billingTXN.PaidCounterId = null;
+
+                                        }
+                                        else if (billingTXN.BillStatus == "paid")
+                                        {
+                                            billingTXN.PaidDate = DateTime.Now;
+                                            billingTXN.PaidAmount = billingTXN.TotalAmount;
+                                            billingTXN.PaidCounterId = billingTXN.CounterId;
+                                            billingTXN.PaymentReceivedBy = billingTXN.CreatedBy;
+                                        }
+
+                                        BillingFiscalYear fiscYear = BillingBL.GetFiscalYear(connString);
+
+                                        billingTXN.CreatedOn = DateTime.Now;
+                                        billingTXN.CreatedBy = currentUser.EmployeeId;
+                                        billingTXN.FiscalYearId = fiscYear.FiscalYearId;
+                                        billingTXN.DepositReturnAmount = 0;
+                                        billingTXN.InvoiceNo = BillingBL.GetInvoiceNumber(connString);
+                                        billingTXN.InvoiceCode = billingTXN.IsInsuranceBilling == true ? "INS" : BillingBL.InvoiceCode;
+                                        billingDbContext.Entry(billingTXN).State = System.Data.Entity.EntityState.Detached;
+                                        billingDbContext.BillingTransactions.Add(billingTXN);
+                                        billingDbContext.SaveChanges();
+
+                                        //check this logic: Pratik--
+                                        //why are we adding new billingtransactionitems in the database.. ?
+                                        billingTransactionItems.ForEach(item =>
+                                        {
+                                            item.BillingTransactionId = billingTXN.BillingTransactionId;
+                                            item.BillingTransaction = null;
+                                            item.Patient = null;
+                                            item.CreatedBy = currentUser.EmployeeId;
+                                            item.CreatedOn = DateTime.Now;
+                                            item.RequisitionDate = DateTime.Now;
+                                            item.RequestedBy = currentUser.EmployeeId;
+                                            item.PaidDate = billingTXN.PaidDate;
+                                            item.PaidCounterId = billingTXN.CounterId;
+                                            item.PaymentReceivedBy = billingTXN.CreatedBy;
+                                            billingDbContext.BillingTransactionItems.Add(item);
+                                            billingDbContext.SaveChanges();
+
+                                        });
+                                    }
+                                }
                                 //update transactiontable after bill is returned..
                                 int invoiceNo = billInvoiceRet.RefInvoiceNum;
                                 //BillingTransactionModel billTxn = billingDbContext.BillingTransactions
@@ -98,7 +184,15 @@ namespace DanpheEMR.Controllers
                                     .FirstOrDefault();
                                 billingDbContext.BillingTransactions.Attach(billTxn);
                                 billTxn.ReturnStatus = true;
+                                if (billTxnReturnData.BillingTransactionItems != null)
+                                {
+                                    if (billTxnReturnData.BillingTransactionItems.Count > 0)
+                                    {
+                                        billTxn.PartialReturnTxnId = billTxnReturnData.BillingTransactionId;
+                                    }
+                                }
                                 billingDbContext.Entry(billTxn).Property(a => a.ReturnStatus).IsModified = true;
+                                billingDbContext.Entry(billTxn).Property(a => a.PartialReturnTxnId).IsModified = true;
                                 billingDbContext.SaveChanges();
 
                                 if (billTxn.IsInsuranceBilling == true)
@@ -114,32 +208,138 @@ namespace DanpheEMR.Controllers
                                 //replaced calling centralized function in BillingBL
                                 for (int i = 0; i < invoiceItems.Count; i++)
                                 {
-                                    invoiceItems[i] = BillingTransactionBL.UpdateTxnItemBillStatus(billingDbContext,
-                                    invoiceItems[i],
-                                    "returned",
-                                    currentUser.EmployeeId);
+                                    if (string.IsNullOrEmpty(billTransaction))
+                                    {
+
+                                        invoiceItems[i] = BillingTransactionBL.UpdateTxnItemBillStatus(billingDbContext,
+                                        invoiceItems[i],
+                                        "returned",
+                                        currentUser);
+                                    }
+                                    else
+                                    {
+
+                                        invoiceItems[i].ReturnStatus = true;
+                                        invoiceItems[i].IsSelected = billInvoiceRet.ReturnedItems[i].IsSelected;
+                                        if (billInvoiceRet.ReturnedItems[i].IsSelected == true)
+                                        {
+                                            var id = billInvoiceRet.ReturnedItems[i].RequisitionId;
+                                            var srvDptId = invoiceItems[i].ServiceDepartmentId;
+                                            var serviceDepartment = billingDbContext.ServiceDepartment.Where(a => a.ServiceDepartmentId == srvDptId).FirstOrDefault();
+
+                                            if (!string.IsNullOrEmpty(serviceDepartment.IntegrationName))
+                                            {
+                                                if (serviceDepartment.IntegrationName.ToLower() == "lab")
+                                                {
+                                                    var LabReq = billingDbContext.LabRequisitions.Where(b => b.RequisitionId == id).FirstOrDefault();
+                                                    if (LabReq != null)
+                                                    {
+                                                        LabReq.BillingStatus = "returned";
+                                                        billingDbContext.LabRequisitions.Attach(LabReq);
+                                                        billingDbContext.Entry(LabReq).Property(a => a.BillingStatus).IsModified = true;
+                                                        billingDbContext.SaveChanges();
+                                                    }
+                                                }
+                                                else if (serviceDepartment.IntegrationName.ToLower() == "radiology")
+                                                {
+                                                    var RadReq = billingDbContext.RadiologyImagingRequisitions.Where(a => a.ImagingRequisitionId == id).FirstOrDefault();
+                                                    if (RadReq != null)
+                                                    {
+                                                        RadReq.BillingStatus = "returned";
+                                                        billingDbContext.RadiologyImagingRequisitions.Attach(RadReq);
+                                                        billingDbContext.Entry(RadReq).Property(a => a.BillingStatus).IsModified = true;
+                                                        billingDbContext.SaveChanges();
+                                                    }
+                                                }
+                                                else if (serviceDepartment.IntegrationName.ToLower() == "opd")
+                                                {
+                                                    //var aa = billTxn.BillingTransactionItems.Find(a => a.ServiceDepartment.IntegrationName.ToLower() == "opd");
+                                                    VisitModel visit = (from v in billingDbContext.Visit
+                                                                        where v.PatientId == billTxn.PatientId
+                                                                        && v.PatientVisitId == billTxn.PatientVisitId
+                                                                        select v).FirstOrDefault();
+
+                                                    if (visit != null)
+                                                    {
+                                                        visit.BillingStatus = "returned";
+                                                        billingDbContext.Entry(visit).Property(a => a.BillingStatus).IsModified = true;
+                                                    }
+                                                }
+
+                                            }
+
+
+                                            
+
+                                        }
+                                        invoiceItems[i].ReturnQuantity = invoiceItems[i].Quantity;
+                                        billingDbContext.BillingTransactionItems.Attach(invoiceItems[i]);
+                                        billingDbContext.Entry(invoiceItems[i]).Property(a => a.ReturnStatus).IsModified = true;
+                                        billingDbContext.Entry(invoiceItems[i]).Property(a => a.ReturnQuantity).IsModified = true;
+                                        billingDbContext.SaveChanges();
+                                    }
                                 }
 
                                 //Yubraj: 18th Dec '18 :: Updating IsActive in deposit table while invoice return
                                 List<BillingDeposit> deposit = (from dpt in billingDbContext.BillingDeposits
                                                                 where dpt.BillingTransactionId == billInvoiceRet.BillingTransactionId &&
-                                                                 (dpt.DepositType == "depositdeduct" || dpt.DepositType == "ReturnDeposit")
+                                                                 (dpt.DepositType == ENUM_BillDepositType.DepositDeduct //"depositdeduct" 
+                                                                 || dpt.DepositType == ENUM_BillDepositType.ReturnDeposit) // "ReturnDeposit")
                                                                 select dpt).ToList();
                                 if (deposit != null)
                                 {
                                     deposit.ForEach(a =>
                                     {
                                         a.IsActive = true; //keeping false was affecting the patient deposit info
-                                        a.ModifiedRemarks = "Updated after invoice return of BillTxnId: "+ billInvoiceRet.BillingTransactionId.ToString();
+                                        a.ModifiedRemarks = "Updated after invoice return of BillTxnId: " + billInvoiceRet.BillingTransactionId.ToString();
                                         a.ModifiedOn = DateTime.Now;
                                         a.ModifiedBy = currentUser.EmployeeId;
                                     });
                                 }
+
+                                //var aa = billTxn.BillingTransactionItems.Find(a => a.ServiceDepartment.IntegrationName.ToLower() == "opd");
+                                //VisitModel visit = (from v in billingDbContext.Visit
+                                //                    where v.PatientId == billTxn.PatientId
+                                //                    && v.PatientVisitId == billTxn.PatientVisitId && aa != null
+                                //                    select v).FirstOrDefault();
+
+                                //if (visit != null)
+                                //{
+                                //    visit.BillingStatus = "returned";
+                                //    billingDbContext.Entry(visit).Property(a => a.BillingStatus).IsModified = true;
+                                //}
+
                                 billInvoiceRet.ReturnedItems = invoiceItems.ToList();
+                                billInvoiceRet.PartialReturnTxnId = billTxn.PartialReturnTxnId;
                                 billingDbContext.SaveChanges();
 
                                 dbContextTransaction.Commit(); //end of transaction
-                                responseData.Results = billInvoiceRet;
+                                billInvoiceRet.Patient = patient;
+                                billTxnReturnData.Patient = patient;
+                                billTxnReturnData.DepositReturnAmount = DepositReturnAmount;
+                                responseData.Results = new
+                                {
+
+                                    BillingReturnedData = billInvoiceRet,
+                                    BillingRemainingData = billTxnReturnData,
+
+                                };
+
+                                //sync to remote server once return invoice is created
+                                //send to IRD only after transaction is committed successfully: sud-23Dec'18
+                                if (realTimeRemoteSyncEnabled)
+                                {
+                                    if (billInvoiceRet.Patient == null)
+                                    {
+                                        PatientModel pat = billingDbContext.Patient.Where(p => p.PatientId == billInvoiceRet.PatientId).FirstOrDefault();
+                                        billInvoiceRet.Patient = pat;
+                                    }
+
+                                    //Sud:23Dec'18--making parallel thread call (asynchronous) to post to IRD. so that it won't stop the normal execution of logic.
+                                    //BillingBL.SyncBillToRemoteServer(billInvoiceRet, "sales-return", billingDbContext);
+                                    Task.Run(() => BillingBL.SyncBillToRemoteServer(billInvoiceRet, "sales-return", billingDbContext));
+                                }
+
 
                             }
                             catch (Exception ex)

@@ -1,0 +1,25 @@
+﻿<div class="sub-navtab fixed-subnavtab">
+    <ul class="nav nav-tabs" *ngIf="validRoutes != undefined">
+        <li *ngFor="let route of validRoutes">
+            <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'a-tab-active'">{{route.DisplayName}}<i
+                    class="{{route.Css}}"></i></a>
+        </li>
+    </ul>
+    <!-- @*this is hardcoded tab we have to replace with Db*@-->
+    <!-- <ul class="nav nav-tabs">
+        <li>
+            <a routerLink="PurchaseOrderItems" title="Create New Order" [routerLinkActive]="'a-tab-active'">
+                <span class="fa fa-plus-square" > </span>Order
+            </a>
+        </li>
+        <li><a routerLink="PurchaseOrderList" [routerLinkActive]="'a-tab-active'">Order List</a></li>
+        <li>
+            <a routerLink="GoodsReceiptItems" title="Create New Goods Receipt" [routerLinkActive]="'a-tab-active'">
+                <span class="fa fa-plus-square"> </span>Goods Receipt
+            </a>
+        </li>
+        <li><a routerLink="GoodsReceiptList" [routerLinkActive]="'a-tab-active'">Goods Receipt List</a></li>
+    </ul> -->
+</div>
+<router-outlet>
+</router-outlet>

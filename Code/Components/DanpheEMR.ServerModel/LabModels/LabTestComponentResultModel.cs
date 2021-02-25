@@ -38,6 +38,8 @@ namespace DanpheEMR.ServerModel
 
         public string AbnormalType { get; set; }
 
+        public int? ResultGroup { get; set; }
+
     }
 
 }

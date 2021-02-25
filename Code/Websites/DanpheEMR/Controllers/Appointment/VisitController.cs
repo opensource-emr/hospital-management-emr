@@ -17,6 +17,7 @@ using DanpheEMR.Core.Parameters;
 using DanpheEMR.Controllers.Billing;
 using System.Data.SqlClient;
 using System.Data;
+using DanpheEMR.Enums;
 // For more information on enabling Web API for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 //test for checkin
 namespace DanpheEMR.Controllers
@@ -24,8 +25,10 @@ namespace DanpheEMR.Controllers
 
     public class VisitController : CommonController
     {
+        bool realTimeRemoteSyncEnabled = false;
         public VisitController(IOptions<MyConfiguration> _config) : base(_config)
         {
+            realTimeRemoteSyncEnabled = _config.Value.RealTimeRemoteSyncEnabled;
         }
 
         // GET: api/values
@@ -34,54 +37,65 @@ namespace DanpheEMR.Controllers
             string status,
             string reqType,
             int visitId,
+            bool followup,
             int inputProviderId,
             DateTime requestDate,
             string firstName,
             string lastName,
             string phoneNumber,
-            DateTime? fromDate,
-            DateTime? toDate,
+            DateTime fromDate,
+            DateTime toDate,
             string claimCode,
             int dayslimit,
             string search)
         {
             //DanpheHTTPResponse<List<VisitModel>> responseData = new DanpheHTTPResponse<List<VisitModel>>();
             DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
+            responseData.Status = "OK";
             try
             {
                 VisitDbContext dbContext = new VisitDbContext(base.connString);
-                List<VisitModel> visitList = new List<VisitModel>();
+                //List<VisitModel> visitList = new List<VisitModel>();
                 RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
                 //load visits that are initiated
 
                 if (reqType == "pastVisitList")
                 {
-                    if (search == null)
+                    CoreDbContext coreDbContext = new CoreDbContext(connString);
+                    search = search == null ? string.Empty : search.ToLower();
+                    var testdate = toDate.AddDays(1);
+                    var visitList = (from visit in dbContext.Visits.Include("Patient")
+                                     where (visit.VisitType.ToLower() == ENUM_VisitType.outpatient && (visit.BillingStatus != ENUM_BillingStatus.returned && visit.BillingStatus != ENUM_BillingStatus.cancel)
+                                                && (visit.Patient.FirstName + " " + (string.IsNullOrEmpty(visit.Patient.MiddleName) ? "" : visit.Patient.MiddleName + " ")
+                                                + visit.Patient.LastName + visit.Patient.PatientCode + visit.Patient.PhoneNumber).Contains(search))
+                                     select visit).OrderByDescending(v => v.VisitDate).ThenByDescending(v => v.VisitTime).AsQueryable();
+
+
+                    if (CommonFunctions.GetCoreParameterBoolValue(coreDbContext, "Common", "ServerSideSearchComponent", "NursingOutPatient") == true && search == "")
                     {
-                        visitList = (from visit in dbContext.Visits.Include("Patient")
-                                     where (visit.VisitType.ToLower() == "outpatient" && visit.BillingStatus != "returned" || visit.BillingStatus != "cancelled")
-                                     select visit).OrderByDescending(v => v.PatientVisitId).Take(2000).ToList();
-                        responseData.Status = "OK";
-                        responseData.Results = visitList;
+                        visitList = visitList.Take(CommonFunctions.GetCoreParameterIntValue(coreDbContext, "Common", "ServerSideSearchListLength"));
+                    }
+
+                    if (fromDate.Date != DateTime.Now.Date)
+                    {
+                        var finalResults = visitList.Where(a => a.CreatedOn > fromDate && a.CreatedOn < testdate).ToList();
+                        responseData.Results = finalResults;
                     }
                     else
                     {
-                        visitList = (from visit in dbContext.Visits.Include("Patient")
-                                     where (visit.VisitType.ToLower() == "outpatient" && visit.BillingStatus != "returned" || visit.BillingStatus != "cancelled"
-                                                && (visit.Patient.FirstName + " " + (string.IsNullOrEmpty(visit.Patient.MiddleName) ? "" : visit.Patient.MiddleName + " ")
-                                                + visit.Patient.LastName + visit.Patient.PatientCode + visit.Patient.PhoneNumber).Contains(search))
-                                     select visit).ToList().OrderByDescending(v => v.PatientVisitId).ToList();
-                        responseData.Status = "OK";
-                        responseData.Results = visitList;
+                        var finalResults = visitList.ToList();
+                        responseData.Results = finalResults;
                     }
+                    //responseData.Status = "OK";
+
                 }
                 else if (reqType == "existingClaimCode-VisitList")
                 {
-                    visitList = (from visit in dbContext.Visits.Include("Patient")
-                                 select visit).ToList()
-                               .Where(v => (v.BillingStatus != "returned" || v.BillingStatus != "cancelled") && v.ClaimCode == claimCode)
+                    var visitList = (from visit in dbContext.Visits.Include("Patient")
+                                     select visit).ToList()
+                               .Where(v => (v.BillingStatus != ENUM_BillingStatus.returned && v.BillingStatus != ENUM_BillingStatus.cancel) && v.ClaimCode == claimCode)
                                .OrderByDescending(v => v.PatientVisitId).ToList();
-                    responseData.Status = "OK";
+                    //responseData.Status = "OK";
                     responseData.Results = visitList;
                 }
 
@@ -96,20 +110,31 @@ namespace DanpheEMR.Controllers
                 else if (reqType == "patient-visitHistory")
                 {
                     //today's all visit or all visits with IsVisitContinued status as false
-                    visitList = (from visit in dbContext.Visits
-                                 where visit.PatientId == patientId && visit.BillingStatus != "returned"
-                                 select visit).ToList();
+                    var visitList = (from visit in dbContext.Visits
+                                     where visit.PatientId == patientId && visit.BillingStatus != ENUM_BillingStatus.returned // "returned"
+                                     select visit).ToList();
                     responseData.Results = visitList;
                 }
                 else if (reqType == "patient-visitHistory-today")
                 {
                     //today's all visit or all visits with IsVisitContinued status as false
-                    visitList = (from visit in dbContext.Visits
-                                 where visit.PatientId == patientId
-                                 //DbFunctions.TruncateTime(defaultLastDateToShow)
-                                 && DbFunctions.TruncateTime(visit.VisitDate) == DbFunctions.TruncateTime(DateTime.Now)
-                                 && visit.BillingStatus != "returned"
-                                 select visit).ToList();
+                    var visitList = (from visit in dbContext.Visits
+                                     where visit.PatientId == patientId
+                                   //DbFunctions.TruncateTime(defaultLastDateToShow)
+                                   && DbFunctions.TruncateTime(visit.VisitDate) == DbFunctions.TruncateTime(DateTime.Now)
+                                     && visit.BillingStatus != ENUM_BillingStatus.returned // "returned"
+                                     select visit).ToList();
+                    responseData.Results = visitList;
+                }
+                else if (reqType == "patient-visitHistorylist")
+                {
+                    //today's all visit or all visits with IsVisitContinued status as false
+                    var visitList = (from visit in dbContext.Visits
+                                     where visit.PatientId == patientId
+                                   //DbFunctions.TruncateTime(defaultLastDateToShow)
+                                   && (DbFunctions.TruncateTime(visit.VisitDate) == DbFunctions.TruncateTime(DateTime.Now) || followup == true)
+                                     && visit.BillingStatus != ENUM_BillingStatus.returned // "returned"
+                                     select visit).ToList();
                     responseData.Results = visitList;
                 }
                 else if (reqType == "patient-visit-providerWise")
@@ -118,7 +143,7 @@ namespace DanpheEMR.Controllers
                     var patAllVisits = (from v in dbContext.Visits
                                         join doc in dbContext.Employees
                                          on v.ProviderId equals doc.EmployeeId
-                                        where v.PatientId == patientId && v.BillingStatus != "returned"
+                                        where v.PatientId == patientId && v.BillingStatus != ENUM_BillingStatus.returned // "returned"
                                         group new { v, doc } by new { v.ProviderId, doc.FirstName, doc.MiddleName, doc.LastName, doc.Salutation } into patVis
                                         select new
                                         {
@@ -138,12 +163,14 @@ namespace DanpheEMR.Controllers
                 {
                     AdmissionDbContext admissionDb = new AdmissionDbContext(base.connString);
                     var data = (from bedInfo in admissionDb.PatientBedInfos
+                                join bedFeat in admissionDb.BedFeatures on bedInfo.BedFeatureId equals bedFeat.BedFeatureId
                                 join bed in admissionDb.Beds on bedInfo.BedId equals bed.BedId
                                 join ward in admissionDb.Wards on bedInfo.WardId equals ward.WardId
                                 join adm in admissionDb.Admissions on bedInfo.PatientVisitId equals adm.PatientVisitId
                                 where adm.PatientId == patientId && adm.AdmissionStatus == "admitted"
                                 select new
                                 {
+                                    bedFeat.BedFeatureName,
                                     adm.PatientVisitId,
                                     ward.WardName,
                                     bed.BedNumber,
@@ -159,6 +186,9 @@ namespace DanpheEMR.Controllers
                         {
                             PatientId = patientId,
                             PatientVisitId = data.PatientVisitId,
+                            BedFeatureName = data.BedFeatureName,
+                            BedNumber = data.BedNumber,
+                            BedCode = data.BedCode,
                             ProviderId = data.AdmittingDoctorId,
                             ProviderName = VisitBL.GetProviderName(data.AdmittingDoctorId, base.connString),
                             Current_WardBed = data.WardName,
@@ -230,7 +260,7 @@ namespace DanpheEMR.Controllers
                             responseData.Results = results;
                         }
                     }
-                    responseData.Status = "OK";
+                    //responseData.Status = "OK";
                 }
                 //gets the doctorschedule from visit table
                 //Nagesh - want to remove added by me
@@ -239,7 +269,7 @@ namespace DanpheEMR.Controllers
                     DanpheHTTPResponse<object> responseResult = new DanpheHTTPResponse<object>();
 
                     List<VisitModel> visitListByProviderId = (from d in dbContext.Visits
-                                                              where d.ProviderId == inputProviderId && d.BillingStatus != "returned"
+                                                              where d.ProviderId == inputProviderId && d.BillingStatus != ENUM_BillingStatus.returned// "returned"
                                                               select d).ToList().Where(a => a.VisitDate.Date == requestDate.Date).ToList();
                     //VisitDay visitDays = VisitDay.FormatData(visitListByProviderId);
 
@@ -267,6 +297,7 @@ namespace DanpheEMR.Controllers
                                                      NormalPrice = billItem.Price, //added by Yubraj : 16th May '19
                                                      SAARCCitizenPrice = billItem.SAARCCitizenPrice,
                                                      ForeignerPrice = billItem.ForeignerPrice,
+                                                     InsForeignerPrice = billItem.InsForeignerPrice,
                                                      TaxApplicable = billItem.TaxApplicable,
                                                      ServiceDepartmentId = billItem.ServiceDepartmentId,
                                                      ServiceDepartmentName = servDept.ServiceDepartmentName,
@@ -316,6 +347,7 @@ namespace DanpheEMR.Controllers
                                                    SAARCCitizenPrice = billItem.SAARCCitizenPrice,
                                                    ForeignerPrice = billItem.ForeignerPrice,
                                                    EHSPrice = billItem.EHSPrice,
+                                                   InsForeignerPrice = billItem.InsForeignerPrice,
                                                    IsTaxApplicable = billItem.TaxApplicable,
                                                    billItem.HasAdditionalBillingItems
                                                }).ToList();
@@ -347,6 +379,7 @@ namespace DanpheEMR.Controllers
                                                 SAARCCitizenPrice = billItem.SAARCCitizenPrice,
                                                 ForeignerPrice = billItem.ForeignerPrice,
                                                 EHSPrice = billItem.EHSPrice,
+                                                InsForeignerPrice = billItem.InsForeignerPrice,
                                                 IsTaxApplicable = billItem.TaxApplicable,
                                                 DiscountApplicable = billItem.DiscountApplicable
                                             }).ToList();
@@ -382,6 +415,7 @@ namespace DanpheEMR.Controllers
                                                    NormalPrice = billItem.Price,
                                                    SAARCCitizenPrice = billItem.SAARCCitizenPrice,
                                                    ForeignerPrice = billItem.ForeignerPrice,
+                                                   InsForeignerPrice = billItem.InsForeignerPrice,
                                                    EHSPrice = billItem.EHSPrice,
                                                    IsTaxApplicable = billItem.TaxApplicable
                                                }).ToList();
@@ -412,6 +446,7 @@ namespace DanpheEMR.Controllers
                                                      NormalPrice = billItem.Price,
                                                      SAARCCitizenPrice = billItem.SAARCCitizenPrice,
                                                      ForeignerPrice = billItem.ForeignerPrice,
+                                                     InsForeignerPrice = billItem.InsForeignerPrice,
                                                      EHSPrice = billItem.EHSPrice,
                                                      IsTaxApplicable = billItem.TaxApplicable,
                                                      DiscountApplicable = billItem.DiscountApplicable
@@ -444,6 +479,7 @@ namespace DanpheEMR.Controllers
                                                 SAARCCitizenPrice = billItem.SAARCCitizenPrice,
                                                 ForeignerPrice = billItem.ForeignerPrice,
                                                 EHSPrice = billItem.EHSPrice,
+                                                InsForeignerPrice = billItem.InsForeignerPrice,
                                                 IsTaxApplicable = billItem.TaxApplicable,
                                                 DiscountApplicable = billItem.DiscountApplicable
                                             }).ToList();
@@ -480,6 +516,7 @@ namespace DanpheEMR.Controllers
                                                    SAARCCitizenPrice = billItem.SAARCCitizenPrice,
                                                    ForeignerPrice = billItem.ForeignerPrice,
                                                    EHSPrice = billItem.EHSPrice,
+                                                   InsForeignerPrice = billItem.InsForeignerPrice,
                                                    IsTaxApplicable = billItem.TaxApplicable
                                                }).ToList();
                         responseData.Results = visitDoctorList;
@@ -572,7 +609,7 @@ namespace DanpheEMR.Controllers
                     var visList = (from visit in dbContext.Visits
                                    where visit.PatientId == patientId
                                    && visit.ProviderId == currentUser.EmployeeId
-                                   && visit.BillingStatus != "returned"
+                                   && visit.BillingStatus != ENUM_BillingStatus.returned // "returned"
                                    && visit.IsSignedVisitSummary == true
                                    select new
                                    {
@@ -591,11 +628,21 @@ namespace DanpheEMR.Controllers
                     var cardPrintInfo = patDbContext.PATHealthCard.Where(a => a.PatientId == patientId).FirstOrDefault();
 
                     BillingDbContext billingDbContext = new BillingDbContext(connString);
+                    CoreDbContext coreDbContext = new CoreDbContext(connString);
+                    var parameter = coreDbContext.Parameters.Where(a => a.ParameterGroupName == "Common" && a.ParameterName == "BillItemHealthCard").FirstOrDefault();
+                    if (parameter != null && parameter.ParameterValue != null)
+                    {
+                        //JObject paramValue = JObject.Parse(parameter.ParameterValue);
+                       //var result = JsonConvert.DeserializeObject<any>(parameter.ParameterValue);
 
-                    //if one item was found but cancelled or returned then we've to issue it again..
-                    var cardBillingInfo = billingDbContext.BillingTransactionItems
+                        //dynamic result = JValue.Parse(parameter.ParameterValue);
+                        
+                    }
+                        //if one item was found but cancelled or returned then we've to issue it again..
+                        var cardBillingInfo = billingDbContext.BillingTransactionItems
                                                        .Where(bItm => bItm.PatientId == patientId && bItm.ItemName == "Health Card"
-                                                       && bItm.BillStatus != "cancel" && ((!bItm.ReturnStatus.HasValue || bItm.ReturnStatus == false)))
+                                                       && bItm.BillStatus != ENUM_BillingStatus.cancel //"cancel" 
+                                                       && ((!bItm.ReturnStatus.HasValue || bItm.ReturnStatus == false)))
                                                        .FirstOrDefault();
 
                     var healthCardStatus = new
@@ -610,7 +657,7 @@ namespace DanpheEMR.Controllers
                     //    responseData.Results = true;
                     //else
                     //    responseData.Results = false;
-                    responseData.Status = "OK";
+                    //responseData.Status = "OK";
                 }
 
                 else
@@ -628,82 +675,128 @@ namespace DanpheEMR.Controllers
 
                     DateTime freeFollowupLastDate = System.DateTime.Now.AddDays(-dayslimit);
 
-                    if (search == null) // Vikas: 17th June 2019 :added real time search.
+                    CoreDbContext coreDbContext = new CoreDbContext(connString);
+                    search = search == null ? string.Empty : search.ToLower();
+
+                    var visitVMList = (from visit in dbContext.Visits
+                                       join department in dbContext.Departments on visit.DepartmentId equals department.DepartmentId
+                                       join patient in dbContext.Patients on visit.PatientId equals patient.PatientId
+                                       where ((visit.VisitStatus == status)
+                                          && visit.VisitDate > DbFunctions.TruncateTime(defaultLastDateToShow) && visit.VisitType != ENUM_VisitType.inpatient) && visit.BillingStatus != ENUM_BillingStatus.returned
+                                          && (visit.Patient.FirstName + " " + (string.IsNullOrEmpty(visit.Patient.MiddleName) ? "" : visit.Patient.MiddleName + " ")
+                                     + visit.Patient.LastName + visit.Patient.PatientCode + visit.Patient.PhoneNumber).Contains(search)
+                                       select new ListVisitsVM
+                                       {
+                                           PatientVisitId = visit.PatientVisitId,
+                                           ParentVisitId = visit.ParentVisitId,
+                                           DepartmentId = department.DepartmentId,
+                                           DepartmentName = department.DepartmentName,
+                                           ProviderId = visit.ProviderId,
+                                           ProviderName = visit.ProviderName,
+                                           VisitDate = visit.VisitDate,
+                                           VisitTime = visit.VisitTime,
+
+                                           VisitType = visit.VisitType,
+                                           AppointmentType = visit.AppointmentType,
+
+                                           PatientId = patient.PatientId,
+                                           PatientCode = patient.PatientCode,
+                                           ShortName = patient.FirstName + " " + (string.IsNullOrEmpty(patient.MiddleName) ? "" : patient.MiddleName + " ") + patient.LastName,
+                                           PhoneNumber = patient.PhoneNumber,
+                                           DateOfBirth = patient.DateOfBirth,
+                                           Gender = patient.Gender,
+                                           Patient = patient,
+
+                                           BillStatus = visit.BillingStatus
+                                       }).OrderByDescending(v => v.VisitDate).ThenByDescending(a => a.VisitTime).AsQueryable();
+
+
+                    if (CommonFunctions.GetCoreParameterBoolValue(coreDbContext, "Common", "ServerSideSearchComponent", "VisitList") == true && search == "")
                     {
-                        var visitVMList = (from visit in dbContext.Visits
-                                           join department in dbContext.Departments on visit.DepartmentId equals department.DepartmentId
-                                           join patient in dbContext.Patients on visit.PatientId equals patient.PatientId
-                                           where ((visit.VisitStatus == status)
-                                                  && visit.VisitDate > DbFunctions.TruncateTime(defaultLastDateToShow) && visit.VisitType != "inpatient") && visit.BillingStatus != "returned"
-                                           select new ListVisitsVM
-                                           {
-                                               PatientVisitId = visit.PatientVisitId,
-                                               ParentVisitId = visit.ParentVisitId,
-                                               DepartmentId = department.DepartmentId,
-                                               DepartmentName = department.DepartmentName,
-                                               ProviderId = visit.ProviderId,
-                                               ProviderName = visit.ProviderName,
-                                               VisitDate = visit.VisitDate,
-                                               VisitTime = visit.VisitTime,
-
-                                               VisitType = visit.VisitType,
-                                               AppointmentType = visit.AppointmentType,
-
-                                               PatientId = patient.PatientId,
-                                               PatientCode = patient.PatientCode,
-                                               ShortName = patient.FirstName + " " + (string.IsNullOrEmpty(patient.MiddleName) ? "" : patient.MiddleName + " ") + patient.LastName,
-                                               PhoneNumber = patient.PhoneNumber,
-                                               DateOfBirth = patient.DateOfBirth,
-                                               Gender = patient.Gender,
-                                               Patient = patient,
-
-                                               BillStatus = visit.BillingStatus
-                                           }).OrderByDescending(v => v.VisitDate).ThenByDescending(a => a.VisitTime).Take(200).ToList();
-
-                        //check if the topmost visit is valid for follow up or not.
-                        var List = VisitBL.GetValidForFollowUp(visitVMList, freeFollowupLastDate);
-                        responseData.Results = List;
+                        visitVMList = visitVMList.Take(CommonFunctions.GetCoreParameterIntValue(coreDbContext, "Common", "ServerSideSearchListLength"));
                     }
-                    else
-                    {
-                        List<ListVisitsVM> visitVMList = (from visit in dbContext.Visits
-                                                          join department in dbContext.Departments on visit.DepartmentId equals department.DepartmentId
-                                                          join patient in dbContext.Patients on visit.PatientId equals patient.PatientId
-                                                          where ((visit.VisitStatus == status)
-                                                             && visit.VisitDate > DbFunctions.TruncateTime(defaultLastDateToShow) && visit.VisitType != "inpatient") && visit.BillingStatus != "returned"
-                                                             && (visit.Patient.FirstName + " " + (string.IsNullOrEmpty(visit.Patient.MiddleName) ? "" : visit.Patient.MiddleName + " ")
-                                                        + visit.Patient.LastName + visit.Patient.PatientCode + visit.Patient.PhoneNumber).Contains(search)
-                                                          select new ListVisitsVM
-                                                          {
-                                                              PatientVisitId = visit.PatientVisitId,
-                                                              ParentVisitId = visit.ParentVisitId,
-                                                              DepartmentId = department.DepartmentId,
-                                                              DepartmentName = department.DepartmentName,
-                                                              ProviderId = visit.ProviderId,
-                                                              ProviderName = visit.ProviderName,
-                                                              VisitDate = visit.VisitDate,
-                                                              VisitTime = visit.VisitTime,
+                    var finalResults = visitVMList.ToList();
+                    //check if the topmost visit is valid for follow up or not.
+                    var List = VisitBL.GetValidForFollowUp(finalResults, freeFollowupLastDate);
+                    //responseData.Status = "OK";
+                    responseData.Results = List;
 
-                                                              VisitType = visit.VisitType,
-                                                              AppointmentType = visit.AppointmentType,
+                    //if (search == null) // Vikas: 17th June 2019 :added real time search.
+                    //{
+                    //    var visitVMList = (from visit in dbContext.Visits
+                    //                       join department in dbContext.Departments on visit.DepartmentId equals department.DepartmentId
+                    //                       join patient in dbContext.Patients on visit.PatientId equals patient.PatientId
+                    //                       where ((visit.VisitStatus == status)
+                    //                              && visit.VisitDate > DbFunctions.TruncateTime(defaultLastDateToShow) && visit.VisitType != ENUM_VisitType.inpatient) && visit.BillingStatus != ENUM_BillingStatus.returned
+                    //                       select new ListVisitsVM
+                    //                       {
+                    //                           PatientVisitId = visit.PatientVisitId,
+                    //                           ParentVisitId = visit.ParentVisitId,
+                    //                           DepartmentId = department.DepartmentId,
+                    //                           DepartmentName = department.DepartmentName,
+                    //                           ProviderId = visit.ProviderId,
+                    //                           ProviderName = visit.ProviderName,
+                    //                           VisitDate = visit.VisitDate,
+                    //                           VisitTime = visit.VisitTime,
 
-                                                              PatientId = patient.PatientId,
-                                                              PatientCode = patient.PatientCode,
-                                                              ShortName = patient.FirstName + " " + (string.IsNullOrEmpty(patient.MiddleName) ? "" : patient.MiddleName + " ") + patient.LastName,
-                                                              PhoneNumber = patient.PhoneNumber,
-                                                              DateOfBirth = patient.DateOfBirth,
-                                                              Gender = patient.Gender,
-                                                              Patient = patient,
+                    //                           VisitType = visit.VisitType,
+                    //                           AppointmentType = visit.AppointmentType,
 
-                                                              BillStatus = visit.BillingStatus
-                                                          }).OrderByDescending(v => v.VisitDate).ThenByDescending(a => a.VisitTime).ToList();
+                    //                           PatientId = patient.PatientId,
+                    //                           PatientCode = patient.PatientCode,
+                    //                           ShortName = patient.FirstName + " " + (string.IsNullOrEmpty(patient.MiddleName) ? "" : patient.MiddleName + " ") + patient.LastName,
+                    //                           PhoneNumber = patient.PhoneNumber,
+                    //                           DateOfBirth = patient.DateOfBirth,
+                    //                           Gender = patient.Gender,
+                    //                           Patient = patient,
 
-                        //check if the topmost visit is valid for follow up or not.
-                        var List = VisitBL.GetValidForFollowUp(visitVMList, freeFollowupLastDate);
-                        responseData.Results = List;
-                    }
+                    //                           BillStatus = visit.BillingStatus
+                    //                       }).OrderByDescending(v => v.VisitDate).ThenByDescending(a => a.VisitTime).Take(200).ToList();
+
+                    //    //check if the topmost visit is valid for follow up or not.
+                    //    var List = VisitBL.GetValidForFollowUp(visitVMList, freeFollowupLastDate);
+                    //    responseData.Results = List;
+                    //}
+                    //else
+                    //{
+                    //    List<ListVisitsVM> visitVMList = (from visit in dbContext.Visits
+                    //                                      join department in dbContext.Departments on visit.DepartmentId equals department.DepartmentId
+                    //                                      join patient in dbContext.Patients on visit.PatientId equals patient.PatientId
+                    //                                      where ((visit.VisitStatus == status)
+                    //                                         && visit.VisitDate > DbFunctions.TruncateTime(defaultLastDateToShow) && visit.VisitType != ENUM_VisitType.inpatient) && visit.BillingStatus != ENUM_BillingStatus.returned
+                    //                                         && (visit.Patient.FirstName + " " + (string.IsNullOrEmpty(visit.Patient.MiddleName) ? "" : visit.Patient.MiddleName + " ")
+                    //                                    + visit.Patient.LastName + visit.Patient.PatientCode + visit.Patient.PhoneNumber).Contains(search)
+                    //                                      select new ListVisitsVM
+                    //                                      {
+                    //                                          PatientVisitId = visit.PatientVisitId,
+                    //                                          ParentVisitId = visit.ParentVisitId,
+                    //                                          DepartmentId = department.DepartmentId,
+                    //                                          DepartmentName = department.DepartmentName,
+                    //                                          ProviderId = visit.ProviderId,
+                    //                                          ProviderName = visit.ProviderName,
+                    //                                          VisitDate = visit.VisitDate,
+                    //                                          VisitTime = visit.VisitTime,
+
+                    //                                          VisitType = visit.VisitType,
+                    //                                          AppointmentType = visit.AppointmentType,
+
+                    //                                          PatientId = patient.PatientId,
+                    //                                          PatientCode = patient.PatientCode,
+                    //                                          ShortName = patient.FirstName + " " + (string.IsNullOrEmpty(patient.MiddleName) ? "" : patient.MiddleName + " ") + patient.LastName,
+                    //                                          PhoneNumber = patient.PhoneNumber,
+                    //                                          DateOfBirth = patient.DateOfBirth,
+                    //                                          Gender = patient.Gender,
+                    //                                          Patient = patient,
+
+                    //                                          BillStatus = visit.BillingStatus
+                    //                                      }).OrderByDescending(v => v.VisitDate).ThenByDescending(a => a.VisitTime).ToList();
+
+                    //    //check if the topmost visit is valid for follow up or not.
+                    //    var List = VisitBL.GetValidForFollowUp(visitVMList, freeFollowupLastDate);
+                    //    responseData.Results = List;
+                    //}
+
                 }
-                responseData.Status = "OK";
             }
             catch (Exception ex)
             {
@@ -777,9 +870,9 @@ namespace DanpheEMR.Controllers
                         //    .Where(v => v.PatientVisitId == vis.PatientVisitId).FirstOrDefault();
 
                         //updateIsContinuedStatus in case of referral visit and followup visit
-                        if (vis.AppointmentType.ToLower() == "referral"
-                            || vis.AppointmentType.ToLower() == "followup"
-                            || vis.AppointmentType.ToLower() == "transfer")
+                        if (vis.AppointmentType.ToLower() == ENUM_AppointmentType.referral.ToLower() // "referral"
+                            || vis.AppointmentType.ToLower() == ENUM_AppointmentType.followup.ToLower() //"followup"
+                            || vis.AppointmentType.ToLower() == ENUM_AppointmentType.transfer.ToLower())//"transfer")
                         {
                             UpdateIsContinuedStatus(vis.ParentVisitId,
                                 vis.AppointmentType,
@@ -850,9 +943,9 @@ namespace DanpheEMR.Controllers
                         //    .Where(v => v.PatientVisitId == vis.PatientVisitId).FirstOrDefault();
 
                         //updateIsContinuedStatus in case of referral visit and followup visit
-                        if (vis.AppointmentType.ToLower() == "referral"
-                            || vis.AppointmentType.ToLower() == "followup"
-                            || vis.AppointmentType.ToLower() == "transfer")
+                        if (vis.AppointmentType.ToLower() == ENUM_AppointmentType.referral.ToLower() // "referral"
+                            || vis.AppointmentType.ToLower() == ENUM_AppointmentType.followup.ToLower() // "followup"
+                            || vis.AppointmentType.ToLower() == ENUM_AppointmentType.transfer.ToLower()) // "transfer")
                         {
                             UpdateIsContinuedStatus(vis.ParentVisitId,
                                 vis.AppointmentType,
@@ -928,9 +1021,9 @@ namespace DanpheEMR.Controllers
                         //    .Where(v => v.PatientVisitId == vis.PatientVisitId).FirstOrDefault();
 
                         //updateIsContinuedStatus in case of referral visit and followup visit
-                        if (vis.AppointmentType.ToLower() == "referral"
-                            || vis.AppointmentType.ToLower() == "followup"
-                            || vis.AppointmentType.ToLower() == "transfer")
+                        if (vis.AppointmentType.ToLower() == ENUM_AppointmentType.referral.ToLower() // "referral"
+                        || vis.AppointmentType.ToLower() == ENUM_AppointmentType.followup.ToLower() // "followup"
+                        || vis.AppointmentType.ToLower() == ENUM_AppointmentType.transfer.ToLower()) // "transfer")
                         {
                             UpdateIsContinuedStatus(vis.ParentVisitId,
                                 vis.AppointmentType,
@@ -1133,11 +1226,17 @@ namespace DanpheEMR.Controllers
                                 quickVisit.Visit.PatientId,
                                  quickVisit.Visit,
                                 currentUser.EmployeeId);
-                            if (quickVisit.Visit.AppointmentType.ToLower() == "transfer" || quickVisit.Visit.AppointmentType.ToLower() == "referral")
+                            //if (quickVisit.Visit.AppointmentType.ToLower() == "transfer" || quickVisit.Visit.AppointmentType.ToLower() == "referral")
+                            if (quickVisit.Visit.AppointmentType.ToLower() == ENUM_AppointmentType.transfer.ToLower()
+                                || quickVisit.Visit.AppointmentType.ToLower() == ENUM_AppointmentType.referral.ToLower())
+
                             {
                                 UpdateIsContinuedStatus(quickVisit.Visit.ParentVisitId, quickVisit.Visit.AppointmentType, true, currentUser.EmployeeId, visitDbContext);
                             }
                             visitDbTransaction.Commit();
+
+                            //pratik: 5march'20 ---to generate queue no for every new visit
+                            quickVisit.Visit.QueueNo = VisitBL.CreateNewPatientQueueNo(visitDbContext, quickVisit.Visit.PatientVisitId, connString);
 
                             responseData.Results = quickVisit;
                             responseData.Status = "OK";
@@ -1197,19 +1296,20 @@ namespace DanpheEMR.Controllers
                 currVisit.CreatedBy = currentUserId;
                 currVisit.CreatedOn = DateTime.Now;
                 currVisit.VisitType = currVisit.VisitType;
-                currVisit.VisitStatus = "initiated";
+                currVisit.VisitStatus = ENUM_VisitStatus.initiated;// "initiated";
                 if (billTxn != null && billTxn.IsInsuranceBilling == true)
                 {
-                    currVisit.BillingStatus = "unpaid";
+                    currVisit.BillingStatus = ENUM_BillingStatus.unpaid; // "unpaid";
                 }
 
                 else
                 {
-                    currVisit.BillingStatus = "paid";
+                    currVisit.BillingStatus = ENUM_BillingStatus.paid;// "paid";
                 }
                 currVisit.PatientId = currPatientId;
-                if (currVisit.VisitType == "outpatient")
-                    currVisit.VisitCode = VisitBL.CreateNewPatientVisitCode(currVisit.VisitType, connString);//"V" + (newVisit.PatientVisitId + 100000);
+                //if (currVisit.VisitType == "outpatient")
+                if (currVisit.VisitType == ENUM_VisitType.outpatient)
+                 currVisit.VisitCode = VisitBL.CreateNewPatientVisitCode(currVisit.VisitType, connString);//"V" + (newVisit.PatientVisitId + 100000);
                 else
                     currVisit.VisitCode = VisitBL.CreateNewPatientVisitCode(currVisit.VisitType, connString); //"H" + (newVisit.PatientVisitId + 100000);
 
@@ -1248,7 +1348,7 @@ namespace DanpheEMR.Controllers
                     clientTransaction.CreatedBy = currentUserId;
                     clientTransaction.PatientId = PatientId;
                     clientTransaction.PatientVisitId = currVisit.PatientVisitId;
-                    if (clientTransaction.BillStatus == "paid")
+                    if (clientTransaction.BillStatus == ENUM_BillingStatus.paid)// "paid")
                     {
                         clientTransaction.PaidAmount = clientTransaction.TotalAmount;
                         clientTransaction.PaidCounterId = clientTransaction.CounterId;
@@ -1275,15 +1375,16 @@ namespace DanpheEMR.Controllers
                         //if (txnItem.ItemName != "Health Card")
                         //    txnItem.RequisitionId = clientTransaction.PatientVisitId;
                         txnItem.CounterDay = clientTransaction.CreatedOn;
+                        txnItem.CounterId = clientTransaction.CounterId;
 
-                        
+
 
                         ServiceDepartmentModel srvDept = visitDbContext.ServiceDepartments.Where(s => s.ServiceDepartmentName == txnItem.ServiceDepartmentName).FirstOrDefault();
 
                         if (srvDept != null)
                         {
                             txnItem.ServiceDepartmentId = srvDept.ServiceDepartmentId;
-                          
+
                             //If integrationName is opd then we should add requisition id as patientvisitid.
                             if ((!string.IsNullOrEmpty(srvDept.IntegrationName)) && srvDept.IntegrationName.ToLower() == "opd")
                             {
@@ -1291,7 +1392,7 @@ namespace DanpheEMR.Controllers
                             }
                         }
 
-                        if (clientTransaction.BillStatus == "paid")
+                        if (clientTransaction.BillStatus == ENUM_BillingStatus.paid)// "paid")
                         {
                             txnItem.PaidCounterId = clientTransaction.PaidCounterId;
                             txnItem.PaidDate = clientTransaction.PaidDate;
@@ -1307,12 +1408,24 @@ namespace DanpheEMR.Controllers
                             currentUserId, clientTransaction.TotalAmount ?? default(int), true);
 
                     }
+                    visitDbContext.AuditDisabled = false;
                     visitDbContext.BillingTransactions.Add(clientTransaction);
                     visitDbContext.SaveChanges();
                     //Yubraj: 28th June '19 //to get Billing UserName 
                     RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
+                    visitDbContext.AddAuditCustomField("ChangedByUserId", currentUser.EmployeeId);
+                    visitDbContext.AddAuditCustomField("ChangedByUserName", currentUser.UserName);
                     clientTransaction.BillingUserName = currentUser.UserName;
-                   
+
+                    visitDbContext.AuditDisabled = true;
+
+                    //sync transcation data to IRD or any other remote server.
+                    if (realTimeRemoteSyncEnabled)
+                    {
+                        //passing null from here as we don't want to creat another billingdb context inside of it..
+                        //this will be handled inside BillingBL's function. 
+                        DanpheEMR.Controllers.VisitBL.SyncBillToRemoteServer(clientTransaction, "sales", visitDbContext);
+                    }
                 }
                 else
                 {
@@ -1361,7 +1474,11 @@ namespace DanpheEMR.Controllers
                                 quickVisit.Visit.PatientId,
                                  quickVisit.Visit,
                                 currentUser.EmployeeId);
-                            if (quickVisit.Visit.AppointmentType.ToLower() == "transfer" || quickVisit.Visit.AppointmentType.ToLower() == "referral" || quickVisit.Visit.AppointmentType.ToLower() == "followup")
+                            //if (quickVisit.Visit.AppointmentType.ToLower() == "transfer" || quickVisit.Visit.AppointmentType.ToLower() == "referral" || quickVisit.Visit.AppointmentType.ToLower() == "followup")
+                            if (quickVisit.Visit.AppointmentType.ToLower() == ENUM_AppointmentType.transfer.ToLower()
+                                || quickVisit.Visit.AppointmentType.ToLower() == ENUM_AppointmentType.referral.ToLower()
+                                || quickVisit.Visit.AppointmentType.ToLower() == ENUM_AppointmentType.followup.ToLower())
+
                             {
                                 UpdateIsContinuedStatus(quickVisit.Visit.ParentVisitId, quickVisit.Visit.AppointmentType, true, currentUser.EmployeeId, visitDbContext);
                             }

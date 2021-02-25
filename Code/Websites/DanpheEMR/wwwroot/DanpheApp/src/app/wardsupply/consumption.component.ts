@@ -1,4 +1,4 @@
- import { Component, ChangeDetectorRef } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { RouterOutlet, RouterModule, Router } from '@angular/router';
 import { WardSupplyBLService } from './shared/wardsupply.bl.service';
 import { MessageboxService } from '../shared/messagebox/messagebox.service';
@@ -9,10 +9,11 @@ import { Array } from 'core-js';
 import { SecurityService } from '../security/shared/security.service';
 import { CallbackService } from '../shared/callback.service';
 import * as moment from 'moment/moment';
+import { CommonFunctions } from '../shared/common.functions';
 
 
 @Component({
-    templateUrl:"../../app/view/ward-supply-view/Consumption.html" // "/WardSupplyView/Consumption"
+    templateUrl: "../../app/view/ward-supply-view/Consumption.html" // "/WardSupplyView/Consumption"
 })
 export class ConsumptionComponent {
 
@@ -21,6 +22,9 @@ export class ConsumptionComponent {
     public WardStockList: Array<WardStockModel> = [];
     public WardList: Array<WardModel> = [];
     public WardId: number = 0;
+    public CurrentStoreId: number = 0;
+    //public MRP: number = 0;
+    public showEditBtn: boolean = true;
     public IsShowConsumption: boolean = false;
     public TotalConsumption: any;
     public PatientList: Array<any> = [];
@@ -29,7 +33,7 @@ export class ConsumptionComponent {
     public ShowPatientInfo: boolean = false;
     public WardConsumption: WardConsumptionModel = new WardConsumptionModel();
     public loading: boolean = false;
-    public currentCounterId: number = 0;
+    public showDetail: boolean = false;
 
     constructor(
         public wardBLService: WardSupplyBLService,
@@ -41,24 +45,26 @@ export class ConsumptionComponent {
         //this.GetWardList();
         //this.GetPatientList();
         try {
-            this.currentCounterId = this.securityService.getPHRMLoggedInCounter().CounterId;
-
-            if (this.currentCounterId < 1) {
-                this.callBackService.CallbackRoute = '/WardSupply/Consumption'
-                this.router.navigate(['/Pharmacy/ActivateCounter']);
+            this.CurrentStoreId = this.securityService.getActiveStore().StoreId;
+            if (!this.CurrentStoreId) {
+                this.LoadSubStoreSelectionPage();
             }
             else {
                 this.GetPatientList();
                 this.GetWardList();
             }
         } catch (exception) {
-          this.messageboxService.showMessage("Error", [exception]);
+            this.messageboxService.showMessage("Error", [exception]);
         }
+    }
+
+    LoadSubStoreSelectionPage() {
+        this.router.navigate(['/WardSupply']);
     }
     //get ward list
     GetWardList() {
         try {
-            this.wardBLService.GetWardList()
+            this.wardBLService.GetWardList(this.CurrentStoreId)
                 .subscribe(res => {
                     if (res.Status = 'OK') {
                         this.WardList = [];
@@ -67,7 +73,7 @@ export class ConsumptionComponent {
                 });
         }
         catch (exception) {
-          this.messageboxService.showMessage("Error", [exception]);
+            this.messageboxService.showMessage("Error", [exception]);
         }
     }
     //get Patient List
@@ -82,7 +88,7 @@ export class ConsumptionComponent {
                 });
         }
         catch (exception) {
-          this.messageboxService.showMessage("Error", [exception]);
+            this.messageboxService.showMessage("Error", [exception]);
         }
     }
     //used to format display of item in ng-autocomplete
@@ -117,15 +123,13 @@ export class ConsumptionComponent {
     //get wardsupply stock list - sanjit 17feb2019
     public getAllItemsStockDetailsList() {
         try {
-            this.wardBLService.GetAllWardItemsStockDetailsList()
+            this.wardBLService.GetAllWardItemsStockDetailsList(this.CurrentStoreId)
                 .subscribe(res => {
                     if (res.Status == "OK") {
                         if (res.Results.length) {
                             this.ItemTypeListWithItems = [];
                             this.ItemTypeListWithItems = res.Results;
-                            if (this.WardId > 0) {
-                                this.ItemTypeListWithItems = this.ItemTypeListWithItems.filter(a => a.WardId == this.WardId);
-                            }
+                            
                         }
                         else {
                             this.messageboxService.showMessage("Failed", ["No Any Data Available"]);
@@ -135,7 +139,7 @@ export class ConsumptionComponent {
                 });
 
         } catch (exception) {
-          this.messageboxService.showMessage("Error",[exception]);
+            this.messageboxService.showMessage("Error", [exception]);
         }
     }
     //get phrm stock list
@@ -146,7 +150,7 @@ export class ConsumptionComponent {
         }
 
         catch (exception) {
-          this.messageboxService.showMessage("Error", [exception]);
+            this.messageboxService.showMessage("Error", [exception]);
         }
     }
     CallBackGetItemTypeList(res) {
@@ -165,7 +169,7 @@ export class ConsumptionComponent {
             }
         }
         catch (exception) {
-          this.messageboxService.showMessage("Error", [exception]);
+            this.messageboxService.showMessage("Error", [exception]);
         }
     }
     //get ward stock list
@@ -176,13 +180,11 @@ export class ConsumptionComponent {
                     if (res.Status == 'OK') {
                         this.WardStockList = [];
                         this.WardStockList = res.Results;
-                        //filtering record per ward
-                        this.WardStockList = this.WardStockList.filter(a => a.WardId == this.WardId);
                     }
                 });
         }
         catch (exception) {
-          this.messageboxService.showMessage("Error", [exception]);
+            this.messageboxService.showMessage("Error", [exception]);
         }
     }
     GetAvailableQuantity(itm) {
@@ -196,7 +198,7 @@ export class ConsumptionComponent {
     }
     //used to format display of item in ng-autocomplete
     ItemListFormatter(data: any): string {
-        let html = data["ItemName"] + " |B.No.|" + data["BatchNo"] + " |M.R.P|" + data["MRP"];
+        let html = "<font color='blue'; size=03 >" + data["ItemName"] + "</font>(" + data["GenericName"] + ") B-<b>" + data["BatchNo"] + "</b> RS.<b>" + data["MRP"] + "</b> <font color='red'>Qty " + data["AvailableQuantity"] + "</font>";
         return html;
     }
     onChangeItem($event, index) {
@@ -204,9 +206,10 @@ export class ConsumptionComponent {
         this.SelecetdItemList[index].ExpiryDate = $event.ExpiryDate;
         this.SelecetdItemList[index].BatchNo = $event.BatchNo;
         this.SelecetdItemList[index].MRP = $event.MRP;
-        this.SelecetdItemList[index].AvailableQuantity = this.GetAvailableQuantity(this.SelecetdItemList[index]);
+        this.SelecetdItemList[index].AvailableQuantity = $event.AvailableQuantity;
         this.SelecetdItemList[index].ItemName = $event.ItemName;
         this.SelecetdItemList[index].WardId = this.WardId;
+        this.SelecetdItemList[index].StockId = $event.StockId;
     }
     DeleteRow(index) {
         try {
@@ -219,7 +222,7 @@ export class ConsumptionComponent {
             //}, 0);
         }
         catch (exception) {
-          this.messageboxService.showMessage("Error", [exception]);
+            this.messageboxService.showMessage("Error", [exception]);
         }
     }
     AddRow() {
@@ -228,14 +231,14 @@ export class ConsumptionComponent {
             this.SelecetdItemList.push(tempSale);
         }
         catch (exception) {
-          this.messageboxService.showMessage("Error", [exception]);
+            this.messageboxService.showMessage("Error", [exception]);
         }
     }
     QuantityChanged(index) {
         if (this.SelecetdItemList[index].Quantity > this.SelecetdItemList[index].AvailableQuantity) {
             this.messageboxService.showMessage("Error", ['Quantity must be less than available quantity']);
         } else {
-            this.SelecetdItemList[index].SubTotal = this.SelecetdItemList[index].Quantity * this.SelecetdItemList[index].MRP;
+            this.SelecetdItemList[index].SubTotal = CommonFunctions.parseAmount(this.SelecetdItemList[index].Quantity * this.SelecetdItemList[index].MRP);
         }
         this.TotalConsumption = 0;
         this.SelecetdItemList.forEach(a => this.TotalConsumption += a.SubTotal);
@@ -258,14 +261,17 @@ export class ConsumptionComponent {
                 this.SelecetdItemList[j].PatientId = this.SelectedPatient.PatientId;
                 this.SelecetdItemList[j].Remark = this.WardConsumption.Remark;
                 this.SelecetdItemList[j].CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
-                this.SelecetdItemList[j].CounterId = this.currentCounterId;
+                this.SelecetdItemList[j].StoreId = this.CurrentStoreId;
+                //this.SelecetdItemList[j].MRP = this.MRP.toFixed(2);
             }
             this.wardBLService.PostConsumptionData(this.SelecetdItemList)
                 .subscribe(res => {
                     if (res.Status == "OK" && res.Results != null) {
                         this.messageboxService.showMessage("Success", ['Consumption completed']);
                         this.loading = false;
-                        this.Cancel();
+                        //this.Cancel();
+                        this.showDetail = true;
+                        //this.ShowConsumptionPage();
                     }
                     else if (res.Status == "Failed") {
                         this.loading = false;
@@ -275,7 +281,7 @@ export class ConsumptionComponent {
                 },
                     err => {
                         this.loading = false;
-                      this.messageboxService.showMessage("Error", [err.ErrorMessage]);
+                        this.messageboxService.showMessage("Error", [err.ErrorMessage]);
                     });
         }
     }
@@ -285,12 +291,13 @@ export class ConsumptionComponent {
         this.SelectedPatient = null;
         this.WardList = [];
         this.WardId = 0;
+        this.SelecetdItemList = [];
         this.WardConsumption = new WardConsumptionModel();
         this.GetWardList();
     }
-    ShowConsumptionPage() {
-        this.router.navigate(['/WardSupply/Pharmacy/Consumption']);
-       
 
+    ShowConsumptionPage() {
+        this.Cancel();
+        this.router.navigate(['/WardSupply/Pharmacy/Consumption']);
     }
 }

@@ -1,0 +1,168 @@
+<style>
+    .table>tbody>tr>td,
+    .table>tbody>tr>th,
+    .table>tfoot>tr>td,
+    .table>tfoot>tr>th,
+    .table>thead>tr>td,
+    .table>thead>tr>th {
+        padding: 0px !important;
+    }
+
+    .btn-att {
+        font-weight: 700;
+        font-size: 12px;
+        padding: 3px;
+        margin: 1px;
+        display: inline-block;
+        margin-bottom: 0;
+        text-align: center;
+        cursor: pointer;
+        height: 21px;
+        width: 30px;
+        border: 1px solid transparent;
+        white-space: nowrap;
+
+    }
+
+    /* .btn-att:hover{
+
+    } */
+
+    @media (min-width: 992px) {
+        .col-md-2 {
+            width: auto !important;
+        }
+    }
+
+    .table .btn {
+        margin-right: 0px !important;
+    }
+
+    .bottom-right {
+        position: relative;
+        bottom: 6px;
+        left: 6px;
+        color: #4c789e;
+        font-size: 10px;
+    }
+
+    .panel {
+        margin-bottom: 15px;
+        margin-left: 10px;
+        margin-right: 8px;
+    }
+</style>
+<div class="row" style="padding: 4px;">
+    <div class="col-md-3">
+        <label class="control-label" style="padding-top: 7px;">
+            Select Year
+            <b style="float:right;">:</b>
+        </label>&nbsp;
+        <select [(ngModel)]="PayrollDetail.Year" (ngModelChange)="OnSelectYearLoadMonth()"
+            style="width: 150px; height: 30px;">
+            <option *ngFor="let yy of years" value="{{yy}}">
+                {{yy}}
+            </option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <label class="control-label" style="padding-top: 7px;">
+            Select Month
+            <b style="float:right;">:</b>
+        </label>&nbsp;
+        <select style="width: 150px; height: 30px;" [(ngModel)]="PayrollDetail.mm"
+            (ngModelChange)="OnSelectMonthLoadMonth()">
+            <option *ngFor="let mm of listOfMonths" value="{{mm}}">
+                {{mm}}
+            </option>
+        </select>
+    </div>
+    <div class="col-md-2" [rbac-permission]="{'name':'payroll-attendance-show-all-employee-btn','action':'hidden'}">
+        <label class="mt-checkbox mt-checkbox-outline" style="font-weight: bold;color: green;">
+            <input (change)="LoadEmployeeList('all')" name="name" style="width:15px;height:15px" type="radio"
+                class="ng-untouched ng-pristine ng-valid">
+            <span></span>ALL Employee
+        </label>
+    </div>
+    <div class="col-md-2" [rbac-permission]="{'name':'payroll-attendance-biometric-sync-btn','action':'hidden'}">
+        <button class="btn btn-primary" (click)="GetFileToImportData()" title="Click to select the file...">
+            <i class="fa fa-refresh"></i> Sync Biometric Attendance
+        </button>
+    </div>
+    <div class="col-md-2" [rbac-permission]="{'name':'payroll-attendance-edit-btn','action':'hidden'}">
+        <button class="btn btn-primary" (click)="EditAttendance()">
+            <i class="fa fa-edit"></i> Edit Attendance
+        </button>
+    </div>
+</div>
+<div class="row" style=" padding: 5px;">
+
+    <div class="col-md-4">
+        <input [(ngModel)]="searchText" style="width:360px;" class="searchtbx" type="text" placeholder="search"
+            onfocus="this.placeholder = ''" onfocusout="this.placeholder = 'search'">
+    </div>
+    <div class="col-md-8">
+        <button class="btn" style="background-color: #4dd84d"></button> : &nbsp;<b>Present( P )</b> &nbsp;
+        <button class="btn" style="background-color: #ef8a8a"></button> : &nbsp;<b>Absent( A )</b> &nbsp;
+        <button class="btn" style="background-color: #D3D3D3"></button> : &nbsp;<b>Weekly OFF( WF )</b> &nbsp;
+        <button class="btn" style="background-color: #ffa500"></button> : &nbsp;<b>Government Holiday( GH )</b> &nbsp;
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover table-bordered "
+                style="background-color:initial;margin-top:10px; ">
+                <thead>
+                    <tr style=" background-color: #3598dc; color:#ffff">
+                        <th class="th-sm" style="padding-bottom: 13px ;"><b>No.</b></th>
+                        <th class="th-sm" style="padding-bottom: 13px;"><b>EmployeeName</b></th>
+                        <th *ngFor="let data of dates" style="width: 100px;"  matTooltip="{{data.HolidayTitle}}"
+                            [ngStyle]="{'background-color': data.color}" class="th-sm">
+                            <b><span>{{data.date |  date: 'd'}}</span> </b><br /> <span
+                                style="font-size: 12px;">{{data.shortDay}}</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr
+                        *ngFor="let emp of empAtt | paginate: { itemsPerPage: 20, currentPage: p } | grdFilter: {EmployeeName: searchText, EmployeeId:searchText}; let i = index">
+                        <td style="width:75px;">{{ emp.EmployeeId }}</td>
+                        <td style="width: 750px">{{emp.EmployeeName}}</td>
+                        <td *ngFor="let att of emp.DailyAttend;">
+                            <button class="btn-att" [disabled]="!ShowIcon" style="color: white"
+                                (click)="openDialog(att)" title="{{att.Title}}"
+                                [ngStyle]="{'color': att.ColorCode == '' ? '#ffff' :  att.ColorCode,'background-color': '#ffff'}">{{att.AttStatus}}
+                                <span *ngIf="ShowIcon"
+                                    [ngStyle]="{'left':att.AttStatus === 'OFF' ? '-2px':(att.AttStatus === 'HL' ? '0px':'6px')}"
+                                    class="fa fa-pencil bottom-right"></span></button>
+
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <pagination-controls (pageChange)="p = $event"></pagination-controls>
+        </div>
+    </div>
+</div>
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showPopup">
+    <div class="portlet-body form">
+        <div class="modelbox-div" style="margin-left: 58%;
+        margin-right: 21%;
+        margin-top: 6%;
+        float: none;">
+            <div style="padding:10px">
+                <i style="margin-top: 14px;
+                margin-right: 1px;" class="btn btn-danger pull-right" (click)="Close()" title="Cancel">X</i>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    Choose CSV File
+                </div>
+                <div class="panel-body">
+                    <input type="file" #fileImportInput name="File Upload" id="txtFileUpload"
+                        (change)="fileChangeListener($event)" accept=".csv" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

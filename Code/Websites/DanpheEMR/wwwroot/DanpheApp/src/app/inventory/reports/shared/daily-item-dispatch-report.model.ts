@@ -11,7 +11,10 @@ export class DailyItemDispatchReport {
 
     public FromDate: string = "";
     public ToDate: string = "";
-    public DepartmentName: string = "";
+    public StoreId: number = null;
+    public CreatedOn: Date = null ;
+    public StoreName: string = "";
+    public SelectedStore: string = "";
 
 
     public DailyItemDispatchValidator: FormGroup = null;

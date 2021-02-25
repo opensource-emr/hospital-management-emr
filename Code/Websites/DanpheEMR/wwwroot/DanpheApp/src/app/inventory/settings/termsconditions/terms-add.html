@@ -1,75 +1,71 @@
-﻿<div class="popup-static portlet box portlet-fullscreen" *ngIf="showTermPage">
-    <div class="portlet-body form" style="background-color:white">
-        <div class="col-md-12">
-            <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
-            </div>
-            <div class="col-md-5 col-sm-12 col-xs-12 modelbox-div" style="margin-right:24px">
-                <div class="col-md-12">
-                    <div class="caption" style="color:blue;">
-                        <h3>
-                            <span>{{CurrentTermsModel.TermsId ? 'Update' : 'Add'}} Terms & Conditions</span>
-                        </h3>
-                    </div>
-                    <a style="float:right;  margin-top:-32px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
-                    <hr />
-                </div>
-                <form  [formGroup]="CurrentTermsModel.TermsValidators" class="form-horizontal">
-                    <div class="form-body">
-                        <div class="col-md-12 col-xs-12" style="margin-right: 24px;">
-                            <div class="form-group">
-                                <label class="control-label col-md-5">ShortName<b class="color-red">*</b><b style="float:right;">:</b></label>
-                                <div class="col-md-7">
-                                    <input class="form-control" maxlength="200" type="text"
-                                           [(ngModel)]="CurrentTermsModel.ShortName"
-                                           [ngModelOptions]="{standalone: true}"
-                                           placeholder="Short Name" />
-                                    <!--<span class="color-red font-sm" [hidden]="CurrentTermsModel.IsValidCheck('ShortName','required') || !(CurrentTermsModel.IsDirty('ShortName'))">Shortname is required</span>-->
+﻿<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showTermPage">
+    <div class="portlet-body form">
+        <div class="row">
+            <div class="col-md-4 col-md-offset-4">
+               <!-- <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+            </div> -->
+            <div class="modelbox-div clearfix">                
+                <div class="caption lb-caption">                    
+                    <h3>
+                        <span>{{CurrentTermsModel.TermsId ? 'Update' : 'Add'}} Terms & Conditions</span>
+                    </h3>
+                    <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>                    
+                </div>                  
+                <form  [formGroup]="CurrentTermsModel.TermsValidators" class="form-horizontal hm-form">
+                    <div class="form-body">                        
+                        <div class="form-group">
+                            <label class="control-label col-md-5">ShortName<sup class="color-red">*</sup><b>:</b></label>
+                            <div class="col-md-7">
+                                <input class="form-control" maxlength="200" type="text"
+                                        [(ngModel)]="CurrentTermsModel.ShortName"
+                                        [ngModelOptions]="{standalone: true}"
+                                        placeholder="Short Name" />
+                                <!--<span class="color-red font-sm" [hidden]="CurrentTermsModel.IsValidCheck('ShortName','required') || !(CurrentTermsModel.IsDirty('ShortName'))">Shortname is required</span>-->
 
-                                </div>
-                               
+                            </div>                           
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-md-5">Text<sup class="color-red">*</sup><b>:</b></label>
+                            <div class="col-md-7">
+                                <textarea class="form-control" formControlName="Text" [(ngModel)]="CurrentTermsModel.Text" maxlength="2000" rows="5" cols="80"></textarea>
+                                <span class="color-red font-sm" [hidden]="CurrentTermsModel.IsValidCheck('Text','required') || !(CurrentTermsModel.IsDirty('Text'))">Text is required</span>
 
                             </div>
-                            <div class="form-group">
-                                <label class="control-label col-md-5">Text<b class="color-red">*</b><b style="float:right;">:</b></label>
-                                <div class="col-md-7">
-                                    <textarea class="form-control" formControlName="Text" [(ngModel)]="CurrentTermsModel.Text" maxlength="2000" rows="5" cols="80"></textarea>
-                                    <span class="color-red font-sm" [hidden]="CurrentTermsModel.IsValidCheck('Text','required') || !(CurrentTermsModel.IsDirty('Text'))">Text is required</span>
-
-                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-md-5">Type<sup class="color-red">*</sup><b>:</b></label>
+                            <div class="col-md-7">
+                                <input class="form-control" maxlength="200" type="text"
+                                        [(ngModel)]="CurrentTermsModel.Type"
+                                        [ngModelOptions]="{standalone: true}"
+                                        placeholder="Type" />
                             </div>
-                            <div class="form-group">
-                                <label class="control-label col-md-5">Type<b class="color-red">*</b><b style="float:right;">:</b></label>
-                                <div class="col-md-7">
-                                    <input class="form-control" maxlength="200" type="text"
-                                           [(ngModel)]="CurrentTermsModel.Type"
-                                           [ngModelOptions]="{standalone: true}"
-                                           placeholder="Type" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="control-label col-md-5">Is Active <b style="float:right;">:</b> </label>
-                                <div class="col-md-7">
-                                    <div class="input-group">
-                                        <div class="icheck-inline">
-                                            <label class="mt-checkbox mt-checkbox-outline">
-                                                <input id="IsActive"
-                                                       type="checkbox"
-                                                       [(ngModel)]="CurrentTermsModel.IsActive"
-                                                       [ngModelOptions]="{standalone: true}" />
-                                                <span></span>
-                                            </label>
-                                        </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-md-5">Is Active <b>:</b> </label>
+                            <div class="col-md-7">
+                                <div class="input-group">
+                                    <div class="icheck-inline">
+                                        <label class="mt-checkbox mt-checkbox-outline">
+                                            <input id="IsActive"
+                                                    type="checkbox"
+                                                    [(ngModel)]="CurrentTermsModel.IsActive"
+                                                    [ngModelOptions]="{standalone: true}" />
+                                            <span></span>
+                                        </label>
                                     </div>
                                 </div>
                             </div>
-                            <div class="form-actions">
-                                <input type="button" class="btn btn-primary" *ngIf="!update" (click)="AddTerms()" value="Add Terms" />
-                                <input type="button" class="btn btn-primary" *ngIf="update" (click)="UpdateTerms()" value="Update Terms" />
-                            </div>
                         </div>
+                        <div class="form-actions">
+                            <input type="button" class="btn primary-btn" *ngIf="!update" (click)="AddTerms()" value="Add Terms" [disabled]="loading" />
+                            <input type="button" class="btn primary-btn" *ngIf="update" (click)="UpdateTerms()" value="Update Terms" [disabled]="loading" />
+                        </div>                        
                     </div>
                 </form>
+            </div> 
             </div>
+            
         </div>
     </div>
 </div>

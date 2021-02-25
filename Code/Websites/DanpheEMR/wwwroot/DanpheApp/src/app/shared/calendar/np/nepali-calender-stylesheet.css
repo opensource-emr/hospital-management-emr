@@ -1,0 +1,116 @@
+.selector-enter, .cal-board-sel {
+    display: flex;
+}
+  .selector-enter{
+      padding-left: 5px;
+  }
+  .pad-top {
+    padding-top: 8px;
+  }
+.np-datepickr-holdr {
+  position: relative;
+  display: flex;
+  border: 1px solid #e1dddd;
+  width: 140px;
+  padding: 0;
+  margin: 0;
+  background: #fff;
+  justify-content: space-between;
+}
+.multi-line-time {
+  padding-top: 5px;
+  display: block;
+}
+
+.multi-line-date {
+  display: block;
+}
+
+.single-line-time {
+  display: inline-block;
+}
+
+.single-line-date {
+  float: left;
+  display: inline-block;
+}
+
+.np-cal-today {
+  color: #006687;
+  cursor: pointer;
+}
+
+  .np-cal-today:hover {
+    color: black;
+    font-size: 10px;
+    padding-right: 2px;
+    padding-top: 2px;
+  }
+
+.margin-1-rt {
+  margin-right: 1px;
+}
+
+.margin-2-hr {
+  margin-right: 2px;
+  margin-left: 2px;
+}
+
+.year {
+  width: 36px;
+  display: inline-block;
+  padding: 5px 2px 6px !important;
+  height: 28px !important;
+}
+
+.month {
+  width: 20px;
+  padding-left: 5px;
+  display: inline-block;
+  padding: 5px 2px 6px !important;
+  height: 28px !important;
+}
+
+.day {
+  width: 26px;
+  padding-left: 5px;
+  display: inline-block;
+  padding: 5px 2px 6px !important;
+  height: 28px !important;
+}
+
+  .day,
+  .year,
+  .month,
+  .day:focus,
+  .year:focus,
+  .month:focus,
+  .day:active,
+  .year:active,
+  .month:active,
+  .day:visited,
+  .year:visited,
+  .month:visited {
+    border: none !important;
+    outline: none !important;
+    letter-spacing: 1px;
+    border-radius: 0 !important;
+  }
+
+.vert-center {
+  margin: 0;
+  padding: 5px 1px 3px;
+  background: #fff;
+}
+.vert-center  i.fa{
+  color: #1b1b1c;
+  cursor: pointer;
+}
+.neptime {
+  font-family: 'Quicksand','Open Sans', sans-serif !important;
+  font-size: 12px;
+  padding: 0 0 0 3px;
+  margin-left: 3px;
+  height: 30px;
+  border: 1px solid #e1dddd;
+}

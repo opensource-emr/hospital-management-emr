@@ -4,7 +4,7 @@ import { LabSettingsBLService } from '../shared/lab-settings.bl.service';
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 import { LabComponentModel } from '../../shared/lab-component-json.model';
 import * as _ from 'lodash';
-import { SettingsBLService } from '../../../settings/shared/settings.bl.service';
+import { SettingsBLService } from '../../../settings-new/shared/settings.bl.service';
 import { DanpheHTTPResponse } from '../../../shared/common-models';
 import { GridEmitModel } from '../../../../../src/app/shared/danphe-grid/grid-emit.model';
 import { CoreCFGLookUp } from '../shared/coreCFGLookUp.model';

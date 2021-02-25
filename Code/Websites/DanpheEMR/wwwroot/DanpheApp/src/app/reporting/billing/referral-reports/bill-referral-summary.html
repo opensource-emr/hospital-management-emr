@@ -1,0 +1,74 @@
+<div class="wrapper">
+  <div class="row">
+    <div class="col-md-10 " *ngIf="showBillRefSummary">
+      <button class="blue btn right non-printable" type="button" (click)="ExportToExcelRefSummary()"> <i class="fa fa-file-excel-o"></i> Excel </button>
+    </div>
+    <div class="col-md-12" *ngIf="showBillRefSummary" style="border: 0.5px solid;padding-top: 10px;">
+      <div class="col-md-12" style="padding:0px"> <span class="col-md-3 left" style="padding:0px">From Date: {{FromDate}}<br />
+        ToDate: {{ToDate}}<br />
+        </span> <span class="col-md-6" style="text-align:center;padding:0px;font-size:20px"> <b>Referral Summary Report</b> </span> <span class="col-md-3 right" style="padding:0px;text-align:right;">Print Date: {{currentDate}}</span> </div>
+      <table class="table-striped table-hover table-bordered" style="background-color:initial;margin-top:10px;width:100%">
+        <thead>
+          <tr>
+            <td style="text-align:center"><b>Sr No.</b></td>
+            <td><b>Referred By</b></td>
+            <td style="text-align:center"><b>Gross Total</b></td>
+            <td style="text-align:center"><b>Discount</b></td>
+            <td style="text-align:center"><b>Net Return Amt.</b></td>
+            <td style="text-align:center"><b>Net Sales</b></td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of reportData;let i=index">
+            <td style="text-align:center">{{i+1}}</td>
+            <td><a style="font-weight:bold" (click)="loadRefDepts(row)">{{row.ReferrerName}}</a></td>
+            <td style="text-align:right">{{row.SubTotal}}</td>
+            <td style="text-align:right">{{row.Discount}}</td>
+            <td style="text-align:right">{{row.Refund}}</td>
+            <td style="text-align:right">{{row.NetTotal}}</td>
+          </tr>
+        </tbody>
+      </table>
+      <table class="table table-striped table-hover table-responsive" style="margin-top:10px">
+        <tr>
+          <th>Gross Total:</th>
+          <td>{{summary.tot_SubTotal}}</td>
+          <th>Discount Amount:</th>
+          <td>{{summary.tot_Discount}}</td>
+          <th>Net Return Amount:</th>
+          <td>{{summary.tot_Refund}}</td>
+          <th>Net Sales:</th>
+          <td>{{summary.tot_NetTotal}}</td>
+        </tr>
+        <tr> 
+          <!--<th>Total Sales:</th>
+            <td>{{summary.tot_SalesTotal}}</td>-->
+          <th>Deposit Received:</th>
+          <td>{{summary.tot_DepositReceived}}</td>
+          <th>Deposit Refund:</th>
+          <td>{{summary.tot_DepositRefund}}</td>
+          <th>Cash Collection:</th>
+          <td>{{summary.tot_CashCollection}}</td>
+        </tr>
+        <tr>
+          <th>Provisional Amount:</th>
+          <td>{{summary.tot_Provisional}}</td>
+          <th>Cancel Amount:</th>
+          <td>{{summary.tot_Cancel}}</td>
+          <th>Credit Amount:</th>
+          <td>{{summary.tot_Credit}}</td>
+          <th>Collection From Receivables:</th>
+          <td>{{summary.tot_CreditReceived}}</td>
+        </tr>
+      </table>
+    </div>
+    <div class="col-md-12">
+      <referral-item-summary *ngIf="showItemSummary"
+                                  [showReferralItemSummary]="showItemSummary"
+                                  [fromDate]="FromDate"
+                                  [toDate]="ToDate"
+                                  [referrerId]="selReferrerId"
+                                  (callback)="CallBackRefDept()"> </referral-item-summary>
+    </div>
+  </div>
+</div>

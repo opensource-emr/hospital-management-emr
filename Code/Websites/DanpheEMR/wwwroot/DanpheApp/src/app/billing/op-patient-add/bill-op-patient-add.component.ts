@@ -7,7 +7,7 @@ import * as moment from 'moment/moment';
 import { BillingBLService } from '../shared/billing.bl.service';
 import { PatientService } from '../../patients/shared/patient.service';
 import { PatientsBLService } from '../../patients/shared/patients.bl.service';
-import { CountrySubdivision } from '../../settings/shared/country-subdivision.model';
+import { CountrySubdivision } from '../../settings-new/shared/country-subdivision.model';
 import { BillingOpPatientVM } from './bill-op-patientVM';
 import { DanpheCache, MasterType } from '../../shared/danphe-cache-service-utility/cache-services';
 import { UnicodeService } from '../../common/unicode.service';
@@ -100,6 +100,19 @@ export class BillOutpatientAddComponent {
         this.newPatient.OutPatientValidator.controls[i].updateValueAndValidity();
       }
       if (this.newPatient.IsValid(undefined, undefined)) {
+        //check if middlename exists or not to append to Shortname 
+        var midName = this.newPatient.MiddleName;
+        if (midName) {
+          midName = this.newPatient.MiddleName.trim() + " ";
+        } else {
+          midName = "";
+        }
+        //removing extra spaces typed by the users
+        this.newPatient.FirstName = this.newPatient.FirstName.trim();
+        this.newPatient.MiddleName = this.newPatient.MiddleName ? this.newPatient.MiddleName.trim() : null;
+        this.newPatient.LastName = this.newPatient.LastName.trim();
+        this.newPatient.ShortName = this.newPatient.FirstName + " " + midName + this.newPatient.LastName;
+
         this.CheckExistingPatientsAndSubmit();
       }
     }
@@ -111,7 +124,7 @@ export class BillOutpatientAddComponent {
 
   public CheckExistingPatientsAndSubmit() {
     if (!this.newPatient.PatientId) {
-      this.billingBLService.GetExistedMatchingPatientList(this.newPatient.FirstName, this.newPatient.LastName, this.newPatient.PhoneNumber)
+      this.billingBLService.GetExistedMatchingPatientList(this.newPatient.FirstName, this.newPatient.LastName, this.newPatient.PhoneNumber, this.newPatient.Age, this.newPatient.Gender)
         .subscribe(res => {
           if (res.Status == "OK" && res.Results.length) {
             this.matchedPatientList = res.Results;

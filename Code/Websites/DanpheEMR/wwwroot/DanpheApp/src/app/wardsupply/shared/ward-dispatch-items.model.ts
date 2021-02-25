@@ -1,4 +1,4 @@
-﻿import {
+import {
     NgForm,
     FormGroup,
     FormControl,
@@ -20,7 +20,7 @@ export class WardDispatchItemsModel {
     public SubTotal: number = 0;
     public Remark: string = '';
     public CreatedBy: number = 0;
-    public CreatedOn: string = '';
+    public CreatedOn: string = moment(new Date()).format('YYYY-MM-DD hh:mm:ss');
 
     public TotalQty: number = null;
     public DispatchedQty: number = null;

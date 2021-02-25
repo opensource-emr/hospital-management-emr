@@ -28,6 +28,11 @@ namespace DanpheEMR.DalLayer
         public DbSet<VitalsModel> Vitals { get; set; }
         public DbSet<LabRequisitionModel> LabRequisitions { get; set; }
         public DbSet<ImagingRequisitionModel> ImagingRequisitions { get; set; }
+        public DbSet<MembershipTypeModel> MembershipTypes { get; set; }
+        public DbSet<PatientMembershipModel> PatientMemberships { get; set; }
+        public DbSet<AdminParametersModel> AdminParameters { get; set; }
+        public DbSet<ModeOfArrival> ModeOfArrival { get; set; }
+
 
         public EmergencyDbContext(string conn) : base(conn)
         {
@@ -36,7 +41,9 @@ namespace DanpheEMR.DalLayer
         }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
-        {            
+        {
+            modelBuilder.Entity<ModeOfArrival>().ToTable("ER_ModeOfArrival");
+            modelBuilder.Entity<AdminParametersModel>().ToTable("CORE_CFG_Parameters");
             modelBuilder.Entity<EmergencyPatientModel>().ToTable("ER_Patient");
             modelBuilder.Entity<PatientModel>().ToTable("PAT_Patient");
             modelBuilder.Entity<VisitModel>().ToTable("PAT_PatientVisits");
@@ -59,6 +66,8 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<VitalsModel>().ToTable("CLN_PatientVitals");
             modelBuilder.Entity<LabRequisitionModel>().ToTable("LAB_TestRequisition");
             modelBuilder.Entity<ImagingRequisitionModel>().ToTable("RAD_PatientImagingRequisition");
+            modelBuilder.Entity<MembershipTypeModel>().ToTable("PAT_CFG_MembershipType");
+            modelBuilder.Entity<PatientMembershipModel>().ToTable("PAT_PatientMembership");
         }
     }
 }

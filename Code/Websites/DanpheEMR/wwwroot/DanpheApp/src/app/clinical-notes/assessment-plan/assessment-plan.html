@@ -1,0 +1,146 @@
+<style>
+    .cancel-button {
+        padding: 5px 10px;
+        background: #b51717;
+        color: #fff;
+        text-decoration: none;
+        border: 1px solid #fff;
+        font-weight: 700;
+        display: inline-block;
+    }
+    table.allIcdOrdersTable tbody tr td:first-child{
+        vertical-align: middle;
+    }
+    td.all-orders p {
+        float: left;
+        display: inline-block;
+        margin: 4px 5px 0px 0px;
+        padding-left: 3px;
+        background: #e0e0e0;
+    }
+    /*.cstm-slidefromtop {
+        position: relative;
+        -webkit-animation: fromtop 0.8s;*/ /* Safari 4.0 - 8.0 */
+        /*animation: fromtop 0.8s;
+    }*/
+
+    /*@-webkit-keyframes fromtop {
+        0% {
+            top: -200%;
+        }      
+        40% {
+            top: -100%;
+        }
+
+        100% {
+            top: 0%;
+        }
+    }*/
+  
+</style>
+
+    <div class="prob-entry hm-form">
+        <div class="text-head-wrapper clearfix">
+            <h3 class="text-head cstm-add-heading">Assessment/Plan</h3>
+        </div>
+        <div class="row">
+          <div class="col-md-4">
+            <!--<div *ngIf="editable">
+    </div>-->
+            <div class="autocomplete-item" *ngIf="ICD10List && ICD10List.length>0">
+              <input danphe-auto-complete
+                     class="form-control"
+                     [(ngModel)]="icd10Selected"
+                     [source]="ICD10List"
+                     [list-formatter]="ICDListFormatter"
+                     placeholder="Select ICD10"
+                     display-property-name="ICD10Description"
+                     value-property-name=null
+                     (valueChanged)="AssignSelectedICD()"
+                     onClick="this.select();"
+                     match-formatted="true"
+                     [grid-sort]="'ICD10Description'"
+                     max-num-list="20" />
+            </div>
+
+            <!--<span (click)="makeEditable(icd10Selected.ICD10Code)" *ngIf="!editable"><span>{{icd10Selected.ICD10Code}}</span>{{icd10Selected.ICD10Description}}</span>-->
+          </div>
+          <div class="col-md-4">
+            <div class="cstm-form-group">
+              <div class="row">
+                <label class="cstm-control-label control-label col-md-4">Remark<b>:</b></label>
+                <div class="col-md-8">
+                  <textarea rows="1"></textarea>
+                </div>
+              </div>
+            </div>
+           </div>
+            <div class="col-md-4">
+              <a *ngIf="(editIndex != null) && (editIndex >= 0)" (click)="Reset()" class="cancel-button">Cancel</a>
+            </div>
+            <!--<div class="col-md-1">
+        <a (click)="Remove(i)" style="padding: 3px 8px 4px 8px;background: #b51717; text-align: center;color: #fff;"><i class="fa fa-close"></i></a>
+    </div>-->
+          </div>
+          <!--<div class="row" style="margin-top: 15px;padding: 0px;">
+      <a (click)="AddNewRow()" class="add-button">Add New</a>
+  </div>-->
+
+        </div>
+
+    <div class="prob-entry hm-form">       
+             <div class="text-head-wrapper clearfix">
+                <h3 class="text-head cstm-add-heading">Selected Assessment and Orders</h3>
+            </div>             
+        
+            <p *ngIf="!assessments.DiagnosisOrdersList.length">No ICD Selected Yet</p>
+            <table *ngIf="assessments.DiagnosisOrdersList.length" class="table table-bordered allIcdOrdersTable" style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th>Assessment Name</th>
+                        <th>Orders</th>
+                        <th>Edit Orders</th>
+                    </tr>
+                </thead>
+                <tr *ngFor="let assessment of assessments.DiagnosisOrdersList; let assessIndex=index;">
+                    <td width="38%" *ngIf="assessment.IsEditable">
+                        <span>
+                            ({{assessment.ICD.ICD10Code}}) {{assessment.ICD.ICD10Description}}
+                        </span>
+                    </td>
+                    <td *ngIf="assessment.IsEditable" width="48%" class="all-orders">
+                        <p *ngFor="let orders of assessment.OrdersList; let orderIndex=index;">
+                            {{orders.Order.ItemName}} <a (click)="Remove(assessIndex,orderIndex)" style="display: inline-block; padding: 0px 4px 0px 4px;background: #b51717; text-align: center;color: #fff;"><i class="fa fa-close"></i></a>
+                        </p>
+                    </td>
+                    <td *ngIf="assessment.IsEditable" width="14%">
+                        <a (click)="EditOrder(assessIndex)" style="padding: 2px 5px;margin-right: 5px;background: #006687;color: #fff;"><i class="fa fa-edit"></i>Add Order</a>
+                        <a *ngIf="assessment.IsEditable" (click)="RemoveCompleteRow(assessIndex)" style="padding: 2px 5px;background: #b51717;color: #fff;"><i class="fa fa-close"></i></a>
+                    </td>
+                </tr>
+
+
+                <tr *ngFor="let assessment of assessments.DiagnosisOrdersList; let assessIndex=index;">
+                    <td width="38%" *ngIf="!assessment.IsEditable">
+                        ({{assessment.ICD.ICD10Code}}) {{assessment.ICD.ICD10Description}}
+                    </td>
+                    <td *ngIf="!assessment.IsEditable" width="48%" class="all-orders">
+                        <p *ngFor="let orders of assessment.OrdersList; let orderIndex=index;">
+                            {{orders.Order.ItemName}}
+                        </p>
+                    </td>
+                    <td *ngIf="!assessment.IsEditable" width="14%">
+                       
+                    </td>
+                </tr>
+
+            </table>           
+        
+    </div>
+
+
+<div *ngIf="openOrderBox" >
+    <div class="cstm-slidefromtop">
+        <order-select (sendBackOrders)="GetOrders($event)" [showSelectOrder]="openOrderBox" [selectedOrders]="ordersSelected"></order-select>
+    </div>  
+</div>

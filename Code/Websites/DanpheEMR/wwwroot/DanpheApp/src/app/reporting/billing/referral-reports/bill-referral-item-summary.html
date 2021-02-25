@@ -1,0 +1,116 @@
+<style>
+.table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+	padding: 0px 0px 0px 5px !important;
+}
+</style>
+<div class="wrapper">
+  <div class="row">
+    <div class="col-md-12" *ngIf="showReport">
+      <button class="blue btn non-printable" type="button" (click)="CallBackDepts()"> <i class="fa fa-arrow-left"></i> Back </button>
+      <button class="blue btn right non-printable" type="button" (click)="ExportToExcel('itmSummaryPrintPage')"> <i class="fa fa-file-excel-o"></i> Excel </button>
+      <div id="itmSummaryPrintPage">
+        <div class="col-md-12" style="padding:0px"> <span class="col-md-2 left" style="padding:0px">From Date: {{FromDate}}<br />
+          ToDate: {{ToDate}}<br />
+          </span> <span class="col-md-8" style="text-align:center;padding:0px;font-size:16px"> Referred by: <b>{{reportData[0].ReferrerName}}</b><br />
+          <span *ngIf="ServDeptName != ''"> Service Department: <b>{{ServDeptName}}</b></span> </span> <span class="col-md-2 right" style="padding:0px">Print Date: {{currentDate}}</span> </div>
+        <table *ngIf="ServDeptName != ''" class="table-striped table-hover table-bordered" style="background-color:initial;width:100%">
+          <thead style="background-color:whitesmoke">
+            <tr>
+              <td style="text-align:center"><b>Sr No.</b></td>
+              <td style="width: 7%;"><b>Date</b></td>
+              <td style="text-align:center"><b>PatientCode</b></td>
+              <td style="text-align:center"><b>PatientName</b></td>
+              <td style="text-align:center"><b>ItemName</b></td>
+              <td style="text-align:center"><b>Price</b></td>
+              <td style="text-align:center"><b>Quantity</b></td>
+              <td style="text-align:center"><b>Gross</b></td>
+              <td style="text-align:center"><b>Discount</b></td>
+              <td style="text-align:center"><b>Total</b></td>
+              <td style="text-align:center"><b>Net Return Amt.</b></td>
+              <td style="text-align:center"><b>Net Sales</b></td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of reportData;let i=index">
+              <td style="text-align:center">{{i+1}}</td>
+              <td style="width: 7%;">{{row.Date | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+              <td>{{row.PatientCode}}</td>
+              <td>{{row.PatientName}}</td>
+              <td>{{row.ItemName}}</td>
+              <td style="text-align:right">{{row.Price}}</td>
+              <td style="text-align:right">{{row.Quantity}}</td>
+              <td style="text-align:right">{{row.SubTotal}}</td>
+              <td style="text-align:right">{{row.DiscountAmount}}</td>
+              <td style="text-align:right">{{row.TotalAmount}}</td>
+              <td style="text-align:right">{{row.ReturnAmount}}</td>
+              <td style="text-align:right">{{row.NetAmount}}</td>
+            </tr>
+          </tbody>
+        </table>
+        <table *ngIf="ServDeptName == ''" class="table-striped table-hover table-bordered" style="background-color:initial;width:100%">
+          <thead style="background-color:whitesmoke">
+            <tr>
+              <td style="text-align:center"><b>Sr No.</b></td>
+              <td style="width: 7%;"><b>Date</b></td>
+              <td style="text-align:center"><b>PatientCode</b></td>
+              <td style="text-align:center"><b>PatientName</b></td>
+              <td style="text-align:center"><b>ItemName</b></td>
+              <td style="text-align:center"><b>Price</b></td>
+              <td style="text-align:center"><b>Quantity</b></td>
+              <td style="text-align:center"><b>Gross</b></td>
+              <td style="text-align:center"><b>Discount</b></td>
+              <td style="text-align:center"><b>Total</b></td>
+              <td style="text-align:center"><b>Net Return Amt.</b></td>
+              <td style="text-align:center"><b>Net Sales</b></td>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngFor="let deptrow of allReportData">
+              <tr>
+                <td colspan="12" style="text-align:left">Service Department:&nbsp;<b>{{deptrow.ServiceDepartmentName}}</b></td>
+              </tr>
+              <tr *ngFor="let row of deptrow.reportData;let i=index">
+                <td style="text-align:center">{{i+1}}</td>
+                <td style="width: 7%;">{{row.Date | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                <td>{{row.PatientCode}}</td>
+                <td>{{row.PatientName}}</td>
+                <td>{{row.ItemName}}</td>
+                <td style="text-align:right">{{row.Price}}</td>
+                <td style="text-align:right">{{row.Quantity}}</td>
+                <td style="text-align:right">{{row.SubTotal}}</td>
+                <td style="text-align:right">{{row.DiscountAmount}}</td>
+                <td style="text-align:right">{{row.TotalAmount}}</td>
+                <td style="text-align:right">{{row.ReturnAmount}}</td>
+                <td style="text-align:right">{{row.NetAmount}}</td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+        <table class="table table-striped table-hover table-responsive" style="margin-top:10px">
+          <tr>
+            <th>Gross Total:</th>
+            <td>{{summary.tot_SubTotal}}</td>
+            <th>Discount Amount:</th>
+            <td>{{summary.tot_Discount}}</td>
+            <th>Return Amount:</th>
+            <td>{{summary.tot_Refund}}</td>
+            <th>Net Sales:</th>
+            <td>{{summary.tot_NetTotal}}</td>
+          </tr>
+          <tr>
+            <th>Provisional Amount:</th>
+            <td>{{summary.tot_Provisional}}</td>
+            <th>Cancel Amount:</th>
+            <td>{{summary.tot_Cancel}}</td>
+            <th>Credit Amount:</th>
+            <td>{{summary.tot_Credit}}</td>
+            <!--<th>Cash Collection:</th>
+          <td>{{summary.tot_CashCollection}}</td>
+          <th>Total Sales:</th>
+          <td>{{summary.tot_SalesTotal}}</td>--> 
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

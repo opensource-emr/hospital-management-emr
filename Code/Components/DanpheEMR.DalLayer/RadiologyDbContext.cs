@@ -20,6 +20,8 @@ namespace DanpheEMR.DalLayer
         public DbSet<RadiologyReportTemplateModel> RadiologyReportTemplate { get; set; }
        // public DbSet<ReportingDoctorModel> ReportingDoctors { get; set; }
         public DbSet<BillingTransactionItemModel> BillingTransactionItems { get; set; }
+        public DbSet<ServiceDepartmentModel> ServiceSepartments { get; set; }
+        public DbSet<DepartmentModel> Departments { get; set; }
         public RadiologyDbContext(string conn) : base(conn)
         {
             this.Configuration.LazyLoadingEnabled = true;
@@ -69,6 +71,8 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<PatientModel>().ToTable("PAT_Patient");
             modelBuilder.Entity<EmployeePreferences>().ToTable("EMP_EmployeePreferences");
             modelBuilder.Entity<BillingTransactionItemModel>().ToTable("BIL_TXN_BillingTransactionItems");
+            modelBuilder.Entity<ServiceDepartmentModel>().ToTable("BIL_MST_ServiceDepartment");
+            modelBuilder.Entity<DepartmentModel>().ToTable("MST_Department");
         }
 
 

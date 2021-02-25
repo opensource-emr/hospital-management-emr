@@ -5,7 +5,7 @@ import { VisitDLService } from '../../appointments/shared/visit.dl.service';
 import { ImagingDLService } from '../../radiology/shared/imaging.dl.service';
 import { ClinicalDLService } from '../../clinical/shared/clinical.dl.service';
 import { LabsDLService } from '../../labs/shared/labs.dl.service';
-import { AdmissionDLService } from '../../admission/shared/admission.dl.service';
+import { ADT_DLService } from '../../adt/shared/adt.dl.service';
 import { Patient } from './patient.model';
 import { PatientFilesModel } from './patient-files.model'
 import * as moment from 'moment/moment';
@@ -24,12 +24,12 @@ export class PatientsBLService {
     public labsDLService: LabsDLService,
     public imagingDLService: ImagingDLService,
     public clinicalDLService: ClinicalDLService,
-    public admissionDLService: AdmissionDLService) {
+    public admissionDLService: ADT_DLService) {
 
   }
   // for getting the Patient
-  public GetPatients() {
-    return this.patientDLService.GetPatients()
+  public GetPatients(searcgTxt) {
+    return this.patientDLService.GetPatients(searcgTxt)
       .map(res => { return res })
   }
 
@@ -152,8 +152,8 @@ export class PatientsBLService {
       .map(res => { return res })
   }
   //Get Matching Patient Details by FirstName,LastName,PhoneNumber for showing registered matching patient on Registration Creation time
-  public GetExistedMatchingPatientList(FirstName, LastName, PhoneNumber, IsInsurance = false, IMISCode = null) {
-    return this.patientDLService.GetExistedMatchingPatientList(FirstName, LastName, PhoneNumber, IsInsurance, IMISCode)
+  public GetExistedMatchingPatientList(FirstName, LastName, PhoneNumber, Age, Gender, IsInsurance = false, IMISCode = null) {
+    return this.patientDLService.GetExistedMatchingPatientList(FirstName, LastName, PhoneNumber, Age, Gender, IsInsurance, IMISCode)
       .map(res => { return res });
   }
 

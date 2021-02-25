@@ -16,6 +16,8 @@ namespace DanpheEMR.DalLayer
         public DbSet<AdminParametersModel> AdminParameters { get; set; }
         public DbSet<LoginInformationModel> LoginInformation { get; set; }
         public DbSet<CookieAuthInfoModel> CookieInformation { get; set; }
+        public DbSet<AuditTableDisplayName> AuditTableDisplayNames { get; set; }
+
         public SystemAdminDbContext(string conn) : base(conn)
         {
             this.Configuration.LazyLoadingEnabled = true;
@@ -28,6 +30,7 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<AdminParametersModel>().ToTable("SysAdmin_Parameters");
             modelBuilder.Entity<LoginInformationModel>().ToTable("DanpheLogInInformation");
             modelBuilder.Entity<CookieAuthInfoModel>().ToTable("Danphe_CookieAuthInfo");
+            modelBuilder.Entity<AuditTableDisplayName>().ToTable("tbl_AuditTableDisplayName");
         }
 
       

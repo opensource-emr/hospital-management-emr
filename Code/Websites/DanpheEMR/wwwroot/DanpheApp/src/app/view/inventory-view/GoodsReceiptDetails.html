@@ -1,53 +1,74 @@
 <style>
-  .printStyle {
-    border: dotted 1px;
-    margin: 10px 100px;
-  }
-
-  .print-border-top {
-    border-top: dotted 1px;
-  }
-
-  .print-border-bottom {
-    border-bottom: dotted 1px;
-  }
-
-  .print-border {
-    border: dotted 1px;
-  }
-
-  .center-style {
-    text-align: center;
-  }
-
-  .border-up-down {
-    border-top: dotted 1px;
-    border-bottom: dotted 1px;
-  }
-
-  .table-details td {
-    width: 120px !important;
-    padding-bottom: 10px;
-  }
-
-  .table-details-value {
-    text-align: left;
-    padding-left: 10px;
-  }
+.printStyle {
+	border: dotted 1px;
+	margin: 10px 100px;
+}
+.print-border-top {
+	border-top: dotted 1px;
+}
+.print-border-bottom {
+	border-bottom: dotted 1px;
+}
+.print-border {
+	border: dotted 1px;
+}
+.center-style {
+	text-align: center;
+}
+.border-up-down {
+	border-top: dotted 1px;
+	border-bottom: dotted 1px;
+}
+.table-details td {
+	width: 120px !important;
+	padding-bottom: 10px;
+}
+.table-details-value {
+	text-align: left;
+	padding-left: 10px;
+}
+.qr-code {
+	position: relative;
+	left: 99px;
+}
+.cancelStamp {
+	transform: rotate(12deg);
+	color: #555;
+	font-size: 3rem;
+	font-weight: 700;
+	border: 0.25rem solid #555;
+	display: inline-block;
+	padding: 0.25rem 1rem;
+	text-transform: uppercase;
+	border-radius: 1rem;
+	font-family: 'Courier';
+	mix-blend-mode: multiply;
+	color: #D23;
+	border: 0.5rem solid #D23;
+	transform: rotate(-14deg);
+	border-radius: 0;
+}
 </style>
-
+<div class="row">
+  <div class="col-md-12">
+    <div class="left">
+      <button class="btn btn-primary btn-sm" (click)="goodsreceiptList()"><i class="fa fa-backward"></i>Back to Goods Receipt
+        List</button>
+    </div>
+    <div class="right">
+      <button class="btn btn-primary btn-sm" (click)="print()"><i class="fa fa-print"></i>Print</button>
+    </div>
+  </div>
+</div>
 
 <div id="printpage" class="row printStyle print-border">
   <div style="text-align:center;">
-
     <div class="col-md-12">
       <div class="row" style="margin-bottom: 10px;">
-        <div class="logo" style="width: 18%;padding:0px 15px 0px 15px; float: left;">
-          <img class="img-responsive" style="max-height:70px;" src="../../../themes/theme-default/images/manmohan_logo.png" />
-        </div>
+        <div class="logo" style="width: 18%;padding:0px 15px 0px 15px; float: left;"> <img class="img-responsive" style="max-height:70px;"
+            src="../../../themes/theme-default/images/manmohan_logo.png" /> </div>
         <div style="width: 64%;float: left;padding-bottom:  0px;">
-          <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
-            <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
+          <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;"> <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
             <span style="font-size:15px;">{{headerDetail.address}}</span><br />
             <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
             <span style="font-size:15px;"><strong> Inventory Unit </strong></span><br />
@@ -63,16 +84,17 @@
       </div>
       <div class="clear"></div>
       <div class="left" style="text-align:left;">
-        <p>Goods Receipt No:<b> {{goodsreceiptDetails.GoodsReceiptID}}</b></p>
+        <p>Goods Receipt No:<b>{{goodsreceiptDetails.CurrentFiscalYear}}-{{goodsreceiptDetails.GoodsReceiptNo}}</b></p>
         <p>Purchase Order No:<b> {{goodsreceiptDetails.PurchaseOrderId}}</b></p>
         <p>Vendor Name:<b> {{goodsreceiptDetails.VendorName}}</b></p>
-        <p>Vendor No:<b> {{goodsreceiptDetails.VendorNo}}</b></p>
+        <p>Vendor Contact:<b> {{goodsreceiptDetails.VendorNo}}</b></p>
       </div>
-
       <div class="right" style="text-align:right;">
-        <p>Received Date:<b> {{goodsreceiptDetails.ReceivedDate}} ({{goodsreceiptDetails.ReceivedDate | nepaliDate }})</b></p>
-        <p>Sup. Bill Date:<b> {{goodsreceiptDetails.GoodsReceiptDate}} ({{goodsreceiptDetails.GoodsReceiptDate | nepaliDate }})</b></p>
-        <p>Sup. Bill No:<b> {{goodsreceiptDetails.BillNo}}</b></p>
+        <p>Entry Date:<b> {{goodsreceiptDetails.CreatedOn}}
+          ({{goodsreceiptDetails.CreatedOn | nepaliDate }})</b></p>
+        <p>Bill Date:<b> {{goodsreceiptDetails.GoodsReceiptDate}}
+          ({{goodsreceiptDetails.GoodsReceiptDate | nepaliDate }})</b></p>
+        <p>Bill No:<b> {{goodsreceiptDetails.BillNo}}</b></p>
         <p>Credit Period<b> {{goodsreceiptDetails.CreditPeriod}} Days</b></p>
       </div>
       <div class="clear"></div>
@@ -80,48 +102,55 @@
       <p class="text-center btm-pad border-up-down"><b> GOODS RECEIPT DETAILS</b></p>
       <div class="clear"></div>
       <div class="clear footer"></div>
-      <div class="table-responsive">
-        <table class="table table-striped table-hover table-bordered" style="background-color:initial;margin-top:10px">
-          <thead>
-            <tr style="font-weight: bold;text-align:center">
-              <td>S.N</td>
-              <td>Code</td>
-              <td>Name</td>
-              <td>Category</td>
-              <td>Batch No.</td>
-              <td>Expiry Dt.</td>
-              <td>Received Qty.</td>
-              <td>Free Qty.</td>
-              <td>Rate</td>
-              <!-- @*<td  *ngIf="goodsreceiptDetails.CcCharge > 0">CcCharge</td>*@ -->
-              <td *ngIf="goodsreceiptDetails.DiscountAmount > 0">Discount</td>
-              <td *ngIf="goodsreceiptDetails.VATTotal > 0">VAT</td>
-              <td>Amount</td>
-            </tr>
-          </thead>
-          <tbody>
-            <tr style="text-align:center" *ngFor="let row of goodsreceiptItemsDetails ; let  i = index " > 
-              <td><b>{{i + 1}}</b></td>
-              <td><b>{{row.ItemCode}}</b></td>
-              <td><b>{{row.ItemName}}</b></td>
-              <td><b>{{row.ItemCategory}}</b></td>
-              <td>{{row.BatchNo}}</td>
-              <td style="width:100px">{{row.ExpiryDate}}</td>
-              <td>{{row.ReveivedQuantity}}</td>
-              <td>{{row.FreeQuantity}}</td>
-              <td>{{row.GRItemRate}}</td>
-              <!-- @*<td  *ngIf="goodsreceiptDetails.CcCharge > 0">{{row.CcAmount}}</td>*@ -->
-              <td *ngIf="goodsreceiptDetails.DiscountAmount > 0">{{row.DiscountAmount}}</td>
-              <td *ngIf="goodsreceiptDetails.VATTotal > 0">{{row.VATAmount}}</td>
-              <td>{{row.ItemTotalAmount | number: "1.2-2"}}</td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="table-responsive" [ngClass]="{'receipt-watermark': goodsreceiptDetails.IsCancel ? true : false}">
+        <div [ngClass]="{'receipt-watermark': goodsreceiptDetails.IsCancel ? true : false}">
+          <table class="table table-striped table-hover table-bordered"
+            style="background-color:initial;margin-top:10px">
+            <thead>
+              <tr style="font-weight: bold;text-align:center">
+                <td>S.N</td>
+                <td>Code</td>
+                <td>Name</td>
+                <td>Category</td>
+                <td>Batch No.</td>
+                <td>Expiry Dt.</td>
+                <td>Received Qty.</td>
+                <td>Free Qty.</td>
+                <td>Rate</td>
+                <!-- @*<td  *ngIf="goodsreceiptDetails.CcCharge > 0">CcCharge</td>*@ -->
+                <td *ngIf="goodsreceiptDetails.DiscountAmount > 0">Discount</td>
+                <td *ngIf="goodsreceiptDetails.VATTotal > 0">VAT</td>
+                <td>Amount</td>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="text-align:center" *ngFor="let row of goodsreceiptItemsDetails ; let  i = index ">
+                <td><b>{{i + 1}}</b></td>
+                <td><b>{{row.ItemCode}}</b></td>
+                <td><b>{{row.ItemName}}</b></td>
+                <td><b>{{row.ItemCategory}}</b></td>
+                <td>{{row.BatchNo}}</td>
+                <td style="width:100px">{{row.ExpiryDate}}</td>
+                <td>{{row.ReveivedQuantity}}</td>
+                <td>{{row.FreeQuantity}}</td>
+                <td>{{row.GRItemRate | number : "1.2-2"}}</td>
+                <!-- @*<td  *ngIf="goodsreceiptDetails.CcCharge > 0">{{row.CcAmount}}</td>*@ -->
+                <td *ngIf="goodsreceiptDetails.DiscountAmount > 0">{{row.DiscountAmount}}</td>
+                <td *ngIf="goodsreceiptDetails.VATTotal > 0">{{row.VATAmount}}</td>
+                <td>{{row.ItemTotalAmount | number: "1.2-2"}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
       <hr />
       <div class="col-md-12">
+        <div *ngIf="goodsreceiptDetails.IsCancel == true" class="left">
+          <div class="cancelStamp"> Cancelled </div>
+        </div>
         <div class="right" style="text-align:right;">
-          <table class="table table-striped table-hover table-bordered" style="background-color:initial;margin-top:10px">
+          <table class="table table-striped table-hover table-bordered"
+            style="background-color:initial;margin-top:10px">
             <tr>
               <td><b>Sub total:</b></td>
               <td>{{goodsreceiptDetails.SubTotal | number: "1.2-2"}}</td>
@@ -157,7 +186,8 @@
           </table>
         </div>
         <div class="right" style="text-align:right;">
-          <table class="table table-striped table-hover table-bordered" style="background-color:initial;margin-top:10px">
+          <table class="table table-striped table-hover table-bordered"
+            style="background-color:initial;margin-top:10px">
             <tr>
               <td><b>Insurance Charge:</b></td>
               <td>{{goodsreceiptDetails.InsuranceCharge | number: "1.2-2"}}</td>
@@ -182,45 +212,85 @@
         </div>
       </div>
       <div class="clearfix"></div>
-      <div style="text-align:left !important" class="col-md-12 print-border-bottom">
-        <b>Remarks:</b> {{goodsreceiptDetails.Remarks}}
+      <div style="text-align:left !important" class="col-md-12  print-border-bottom">
+        <div *ngIf="!!goodsreceiptDetails.Remarks" class="col-md-2"> <b>Remarks:</b> {{goodsreceiptDetails.Remarks}} </div>
+        <div *ngIf="goodsreceiptDetails.IsCancel == true" class="col-md-10"> <b>Cancellation Remarks:</b> {{goodsreceiptDetails.CancelRemarks}} </div>
       </div>
-      <br/>
+      <br />
       <div class="col-md-12 clear">
-        <div class="left" style="width:33.33%;text-align:left">
-          <strong>Prepared By</strong><br />
+        <div class="left" style="width:33.33%;text-align:left"> <strong>Prepared By</strong><br />
           Name: <b>{{creator.Name}}</b><br />
-          Designation: {{creator.Role}}
-        </div>
-        <div class="left" style="width:33.33%;text-align:left">
-          <strong>Verified By</strong><br />
+          Designation: {{creator.Role}} </div>
+        <div class="left" style="width:33.33%;text-align:left"> <strong>Verified By</strong><br />
           Name:<br />
-          Designation:
-        </div>
-        <div class="left" style="width:33.33%;text-align:left">
-          <strong>Authorized By</strong><br />
+          Designation: </div>
+        <div class="left" style="width:33.33%;text-align:left"> <strong>Authorized By</strong><br />
           Name: <b>{{creator.Name}}</b><br />
-          Designation: {{creator.Role}}
-        </div>
+          Designation: {{creator.Role}} </div>
       </div>
     </div>
   </div>
 </div>
 <div class="row center-style">
-  <div class="col-md-12 col-xs-12 ">
-    <a (click)="editReceipt(goodsreceiptDetails.IsTransferredToACC)" class="btn btn-warning">
-      Edit Receipt
-      <i class="glyphicon glyphicon-edit"></i>
-    </a><span> </span><span> </span>
-    &nbsp;
-    <a (click)="print()" class="btn btn-default">
-      Print
-      <i class="glyphicon glyphicon-print"></i>
-    </a><span> </span><span> </span>
-    &nbsp;
-    <a (click)="goodsreceiptList()" class="btn btn-primary">
-      Goods Receipt List
-      <i class="glyphicon glyphicon-share-alt"></i>
-    </a>
+  <div class="col-md-12 col-xs-12"> 
+    <!--(click)="cancelGoodsReceipt(goodsreceiptItemsDetails[0].IsTransferredToACC)"-->
+    <button rbac-permission='{"name":"inventory-goodsreceipt-cancel-button","actionOnInvalid":"remove"}'
+      class="btn btn-danger" *ngIf="!goodsreceiptDetails.IsCancel" data-toggle="modal" data-target="#CancelPopup"> 
+    <!--this is trigger for modal box--> 
+    Cancel GR <i class="glyphicon glyphicon-floppy-remove"></i> </button>
+    <span></span><span></span> &nbsp;
+    <button rbac-permission='{"name":"inventory-goodsreceipt-edit-button","actionOnInvalid":"remove"}'
+      (click)="editReceipt(goodsreceiptItemsDetails[0].IsTransferredToACC)" class="btn btn-warning"
+      *ngIf="!goodsreceiptDetails.IsCancel"> Edit Receipt <i class="glyphicon glyphicon-edit"></i> </button>
+    <span> </span><span> </span> &nbsp;
+    <!-- <button (click)="print()" class="btn btn-default"> Print <i class="glyphicon glyphicon-print"></i> </button>
+    <span> </span><span> </span> &nbsp;
+    <button (click)="goodsreceiptList()" class="btn btn-primary"> Goods Receipt List <i class="glyphicon glyphicon-share-alt"></i> </button> -->
+  </div>
+</div>
+
+<!-- Modal for cancel gr --> 
+<!--We can check this out here for more information.
+  https://www.w3schools.com/bootstrap/bootstrap_modal.asp -->
+<div id="CancelPopup" class="modal fade inv_modal" role="dialog">
+  <div class="modal-dialog modal-lg"> 
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="caption lb-caption">
+        <h3><span>Warning</span></h3>
+        <button type="button" class="btn btn-danger" data-dismiss="modal">X</button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to cancel this Goods Receipt?</p>
+        <i>If yes, Remarks is mandatory.</i>
+        <form action="" class="hm-form mt20 clearfix">
+          <div class="form-group">
+            <div class="row">
+              <label class="control-label col-md-3">Cancellation Remarks <sup>*</sup><b>:</b></label>
+              <div class="col-md-9">
+                <textarea style="width:100%;" type="text" name="cancelRemarks"
+              [(ngModel)]="goodsreceiptDetails.CancelRemarks" rows="5"></textarea>
+              </div>
+            </div>
+          </div>
+        </form>
+        <!--
+        <div class="col-md-12" style="margin-top:15px">
+          <div class="col-md-4">
+            <b>Cancellation Remarks<i style="color:red">*</i><span class="right">:</span></b>
+          </div>
+          <div class="col-md-8">
+            <textarea style="width:100%;" type="text" name="cancelRemarks"
+              [(ngModel)]="goodsreceiptDetails.CancelRemarks" rows="5"></textarea>
+          </div>
+        </div>
+--> 
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal"
+          [disabled]="goodsreceiptDetails.CancelRemarks == ''" (click)="cancelGR()">Yes</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+      </div>
+    </div>
   </div>
 </div>

@@ -8,89 +8,131 @@ import { CoreService } from "../../core/shared/core.service";
 import { AuditTrailModel } from "../shared/audit-trail-model";
 import { RbacUser } from "../shared/rabac-user";
 import { LoginInformationModel } from '../shared/login-information.model';
+import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from '../../shared/danphe-grid/NepaliColGridSettingsModel';
 
 
 @Component({
-  //templateUrl: "../../view/system-admin-view/AuditTrail.html"
   templateUrl: "./auditTrail.html"
 })
 export class AuditTrailComponent {
 
 
-  private loading: boolean = false;
+  public loading: boolean = false;
   public FromDate: string = null;
   public ToDate: string = null;
-  private IsVAlidDate: boolean = false;
-  private actionName: any;
+  public IsVAlidDate: boolean = false;
+  public ActionName: string = '';
 
-  private UserName: any;
-  private Table_Name: any;
+  public UserName: string = '';
+  public Table_Name: string = '';
   public CurrentAudit: AuditTrailModel = new AuditTrailModel();
   public auditTrailGridColumns: Array<any> = null;
-  private auditTrailData: Array<AuditTrailModel> = new Array<AuditTrailModel>();
-  private userNameList: Array<any> = new Array<any>();
-  private tableNameList: Array<any> = Array<any>();
-  private auditUserName: RbacUser = new RbacUser();
-  private auditTableName: AuditTrailModel = new AuditTrailModel();
-
+  public loginInfoGridColumns: Array<any> = null;
+  public auditTrailData: Array<AuditTrailModel> = new Array<AuditTrailModel>();
+  public userNameList: Array<any> = new Array<any>();
+  public tableNameList: Array<any> = Array<any>();
+  public auditUserName: RbacUser = new RbacUser();
+  public auditTableName: AuditTrailModel = new AuditTrailModel();
+  actionList: Array<string> = new Array<string>();
 
   public loginList: Array<LoginInformationModel> = new Array<LoginInformationModel>();
   public fromDate: string = null;
   public toDate: string = null;
   public dateRange: string = null;
+  tableNameMappingList: any = [];
+  public reportHeaderHtml_auditTrail: string = '';
+  public reportHeaderHtml_loginInfo: string = '';
+
+  public showPrintButton: boolean = true;
+  public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
+  public ConvertToNepaliDate: NepaliDateInGridParams = new NepaliDateInGridParams();
 
   constructor(private systemAdminBLService: SystemAdminBLService,
     private msgBoxServ: MessageboxService,
     private coreService: CoreService) {
-
     this.tableNameList = new Array<any>();
     this.userNameList = new Array<any>();
     this.CurrentAudit.FromDate = moment().format('YYYY-MM-DD');
     this.CurrentAudit.ToDate = moment().format('YYYY-MM-DD');
+    this.auditTrailGridColumns = GridColumnSettings.AuditTrailDetails;
+    this.loginInfoGridColumns = GridColumnSettings.CustomAuditTrailDetails;
+    this.auditUserName = new RbacUser();
+    this.auditTableName = new AuditTrailModel();    
+    this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail("InsertedDate", true));
+    this.ConvertToNepaliDate.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail("CreatedOn", true));
 
-    //this.auditTrailGridColumns = GridColumnSettings.AuditTrailDetails;
-    //this.GetAuditTrailDetails();
-
-    this.auditTrailGridColumns = GridColumnSettings.CustomAuditTrailDetails;
     this.dateRange = "last1Week";
 
 
-    this.GetAuditData(null, null);
+    this.GetLoginInfoData(null, null);
+
+
+    //this.GetAuditTrailDetails();
+    this.GetAuditData();
+    this.GetDBActivityActionList();
   }
 
-  //this function load all Audit Trail details
-  //GetAuditData() {
-  //    this.systemAdminBLService.GetAuditList()
-  //        .subscribe(
-  //            res => {
-  //                if (res.Status == "OK") {
-  //                    this.userNameList = res.Results.UserList;
-  //                    this.tableNameList = res.Results.TableNameList;
-
-  //                } else {
-  //                    this.msgBoxServ.showMessage("failed", ['Failed to get Audit list.' + res.ErrorMessage]);
-  //                }
-  //            },
-  //        );
-  //}
-
-  GetAuditData(frmDate, toDate) {
+  GetLoginInfoData(frmDate, toDate) {
     this.systemAdminBLService.GetLogInInfo(frmDate, toDate)
       .subscribe(
         res => {
           if (res.Status == "OK") {
+            this.reportHeaderHtml_loginInfo = this.coreService.GetReportHeaderParameterHTML(moment(frmDate).format('YYYY-MM-DD'),
+            moment(toDate).format('YYYY-MM-DD'), ('Login Information Report')
+          );
             this.loginList = res.Results;
           }
         });
   }
 
 
+  //this function load all Audit Trail details
+  GetAuditData() {
+    this.systemAdminBLService.GetAuditList()
+      .subscribe(
+        res => {
+          if (res.Status == "OK") {
+            res.Results.UserList.forEach(element => {
+              element['UserNameValue'] = element['UserName'];
+            });
+            this.userNameList = res.Results.UserList;
+            this.tableNameList = res.Results.TableNameList;
+            this.tableNameMappingList = res.Results.TableDisplayNameMap;
+          } else {
+            this.msgBoxServ.showMessage("failed", ['Failed to get Audit list.' + res.ErrorMessage]);
+          }
+        },
+      );
+  }
+
+  GetDBActivityActionList(): void {
+    try {
+      // currently list is hard-coded
+      this.actionList = ['CREATE', 'ALTER', 'DROP', 'SELECT', 'INSERT', 'UPDATE', 'DELETE', 'TABLE', 'VIEW', 'TRIGGER', 'STORED_PROCEDURE', 'SCHEMA', 'LOGIN_INFO', 'SERVER_ACTIVITY'];
+    } catch (ex) {
+      this.msgBoxServ.showMessage('error', [ex]);
+    }
+  }
+
   onDateChange($event) {
     this.fromDate = $event.fromDate;
     this.toDate = $event.toDate;
     if (this.fromDate != null && this.toDate != null) {
       if (moment(this.fromDate).isBefore(this.toDate) || moment(this.fromDate).isSame(this.toDate)) {
-        this.GetAuditData(this.fromDate, this.toDate)
+        this.GetLoginInfoData(this.fromDate, this.toDate)
+      } else {
+        this.msgBoxServ.showMessage("failed", ['Please enter valid From date and To date']);
+      }
+
+    }
+  }
+
+  onDateChangeForAuditTrail($event){
+    this.CurrentAudit.FromDate = $event.fromDate;
+    this.CurrentAudit.ToDate = $event.toDate;
+    if (this.fromDate != null && this.toDate != null) {
+      if (moment(this.CurrentAudit.FromDate).isBefore(this.CurrentAudit.ToDate) || moment(this.CurrentAudit.FromDate).isSame(this.CurrentAudit.ToDate)) {
+        this.ShowAuditTrailDetails();
       } else {
         this.msgBoxServ.showMessage("failed", ['Please enter valid From date and To date']);
       }
@@ -102,9 +144,12 @@ export class AuditTrailComponent {
   //Get all details of Audit Trail
   ShowAuditTrailDetails() {
 
-    this.systemAdminBLService.GetAuditTrailDetails(this.CurrentAudit, this.Table_Name, this.UserName)
+    this.systemAdminBLService.GetAuditTrailDetails(this.CurrentAudit, this.Table_Name, this.UserName, this.ActionName)
       .subscribe(res => {
         if (res.Status == "OK" && res.Results.length > 0) {
+          this.reportHeaderHtml_auditTrail = this.coreService.GetReportHeaderParameterHTML(moment(this.CurrentAudit.FromDate).format('YYYY-MM-DD'),
+            moment(this.CurrentAudit.ToDate).format('YYYY-MM-DD'), ('Audit Trail Report')
+          );
           this.auditTrailData = res.Results;
         }
         else {
@@ -117,20 +162,23 @@ export class AuditTrailComponent {
 
   onChangeUserName($event) {
     try {
-      this.UserName = this.auditUserName.UserName;
-    }
-    catch (exception) {
+      const arr = [];
+      $event.forEach(element => {
+        arr.push(element.UserName);
+      });
+      this.UserName = arr.join(',');
+    } catch (exception) {
       this.ShowCatchErrMessage(exception);
     }
   }
-
   onChangeTableName($event) {
     try {
-
-      this.Table_Name = this.auditTableName.Table_Name;
-
-    }
-    catch (exception) {
+      const arr = [];
+      $event.forEach(element => {
+        arr.push(element.Table_Name);
+      });
+      this.Table_Name = arr.join(',');
+    } catch (exception) {
       this.ShowCatchErrMessage(exception);
     }
   }
@@ -142,7 +190,7 @@ export class AuditTrailComponent {
 
 
   tableNameFormatter(data: any): string {
-    let html = data["Table_Name"];
+    let html = data['TableDisplayName'];
     return html;
   }
 
@@ -158,3 +206,4 @@ export class AuditTrailComponent {
     fileName: 'SqlDBActivityLogDetails_' + moment().format('YYYY-MM-DD') + '.xls',
   };
 }
+

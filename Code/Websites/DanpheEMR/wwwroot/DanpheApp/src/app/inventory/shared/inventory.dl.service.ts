@@ -7,6 +7,9 @@ export class InventoryDLService {
   public options = {
     headers: new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' })
   };
+  public optionsJson = {
+    headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+  };
   constructor(public http: HttpClient) {
 
   }
@@ -49,6 +52,10 @@ export class InventoryDLService {
   public GetPurchaseOrderList(fromDate, toDate, Status: string) {
     return this.http.get<any>('/api/inventory?reqType=purchaseOrderList&FromDate=' + fromDate + "&ToDate=" + toDate + "&status=" + Status, this.options);
   }
+
+    GetAllPOVerifiers() {
+      return this.http.get<any>('/api/Inventory/GetAllPOVerifiers', this.options);
+    }
   //
   public GetPOlistVendorwise() {
     return this.http.get<any>('/api/inventory?reqType=getpolistVendorwise', this.options);
@@ -63,6 +70,8 @@ export class InventoryDLService {
   public GetItemList() {
     return this.http.get<any>('/api/inventory?reqType=ItemList', this.options);
   }
+
+  
 
   //GET: Get ItemList
   public GetRFQItemsList() {
@@ -82,9 +91,17 @@ export class InventoryDLService {
   public GetVendorList() {
     return this.http.get<any>('/api/inventory?reqType=VendorList', this.options);
   }
+  //GET: Get CreditNoteNo
+  public GetCreditNoteNum() {
+    return this.http.get<any>('/api/inventory?reqType=getcreditnoteno', this.options);
+  }
   //GET: Get TermsList
-  public GetTermsList() {
-    return this.http.get<any>('/api/inventory?reqType=TermsList', this.options);
+  public GetTermsList(TermsApplicationId:number) {
+    return this.http.get<any>('/api/InventorySettings/GetTermsListByTermsApplicationId/'+ TermsApplicationId, this.options);
+  }
+  //Get:Requistion  update for item
+  public GetToRequistion(RequisitionId) {
+    return this.http.get<any>('/api/inventory?reqType=Requisition&RequisitionId=' + RequisitionId, this.options);
   }
   //GET: Getting Requisition items for creating PO
   public GetRequisitionforPO() {
@@ -116,11 +133,15 @@ export class InventoryDLService {
   }
   //GET: get all requisition items by ItemId for Dispatch-All purpose
   public GetRequisitionItemsbyItemId(itmId: number) {
-    return this.http.get<any>("/api/inventory?reqType=RequisitionByItemId&ItemId=" + itmId, this.options);
+    return this.http.get<any>("/api/inventory?reqType=RequisitionByItemId&ItemId=" + itmId, this.optionsJson);
   }
   //GET: Dept wise Requisition List by Status
-  public GetDeptwiseRequisitionList(status: string) {
-    return this.http.get<any>('/api/inventory?reqType=deptwiseRequistionList&status=' + status, this.options);
+  public GetAllSubstoreRequistionList(fromDate: string, toDate: string) {
+    return this.http.get<any>('/api/Inventory/GetAllSubstoreRequistionList/' + fromDate + '/' + toDate, this.optionsJson);
+  }
+  //GET: Dept wise Requisition List by Status
+  public GetSubstoreRequistionList(fromDate: string, toDate: string, storeId: number) {
+    return this.http.get<any>('/api/Inventory/GetSubstoreRequistionList/' + fromDate + '/' + toDate + '/' + storeId, this.optionsJson);
   }
 
   //GET: Department details by requisition id
@@ -145,8 +166,8 @@ export class InventoryDLService {
     return this.http.get<any>("/api/inventory?reqType=stockManage&ItemId=" + ItemId, this.options);
   }
   //GET: Internal : get item list by VendorId for ReturnToVendor
-  public GetItemListbyVendorId(VendorId) {
-    return this.http.get<any>("/api/inventory?reqType=itemListbyVendorId&vendorId=" + VendorId, this.options);
+  public GetItemListbyVendorId(VendorId, GoodsReceiptNo, FiscYrId) {
+    return this.http.get<any>("/api/inventory?reqType=itemListbyVendorId&vendorId=" + VendorId + "&GoodsReceiptNo=" + GoodsReceiptNo + "&FiscYrId=" + FiscYrId, this.options);
   }
   //GET: External : get all goods receipt list
   public GetGoodsReceiptList(fromDate, toDate) {
@@ -162,14 +183,32 @@ export class InventoryDLService {
   public GetGRItemsByGRId(goodsReceiptId) {
     return this.http.get<any>("/api/inventory?reqType=GRItemsDetailsByGRId&goodsReceiptId=" + goodsReceiptId, this.options);
   }
-  
+
   //GET: get purchase order details by purchase order ID
   public GetPOItemsByPOId(purchaseOrderId) {
     return this.http.get<any>("/api/inventory?reqType=POItemsDetailsByPOId&purchaseOrderId=" + purchaseOrderId, this.options);
   }
+
   //Get: Single Requisition Details (RequisitionItems) by RequisitionId for View
   public GetRequisitionItemsByRID(RequisitionId: number) {
     return this.http.get<any>('/api/inventory?reqType=requisitionItemsForView&RequisitionId=' + RequisitionId);
+  }
+
+  //Get: Single Requisition Details (RequisitionItems) by RequisitionId for View  -- sud-19Feb'20
+  public GetRequisitionItemsForViewByReqId(RequisitionId: number) {
+    return this.http.get<any>('/api/inventory?reqType=get-requisitionitems-for-view&RequisitionId=' + RequisitionId);
+  }
+
+
+  public GetDispatchDetails(RequisitionId: number) {
+    return this.http.get<any>('/api/inventory?reqType=dispatchview&RequisitionId=' + RequisitionId);
+  }
+
+  public GetCancelDetails(RequisitionId: number) {
+    return this.http.get<any>('/api/inventory?reqType=cancelview&RequisitionId=' + RequisitionId);
+  }
+  public GetDispatchItemByDispatchId(DispatchId: number) {
+    return this.http.get<any>('/api/inventory?reqType=dispatchviewbyDispatchId&DispatchId=' + DispatchId);
   }
   //Get:Return items details
   public GetReturnItemList(CreatedOn: string, VendorId: number) {
@@ -191,18 +230,77 @@ export class InventoryDLService {
   public GetQuotationDetails(ReqForQuotationId: number) {
     return this.http.get<any>('/api/inventory?reqType=ReqForQuotationDetails&ReqForQuotationItemById=' + ReqForQuotationId, this.options);
   }
-
-
+  //GEt: Getting quotaion Details
+  public GetPORequisition(fromDate,toDate) {
+    return this.http.get<any>('/api/inventory?reqType=PORequisition&FromDate=' + fromDate + "&ToDate=" + toDate, this.options);
+  }
+  public GetPurchaseRequestById(RequisitionId) {
+    return this.http.get<any>('/api/inventory?reqType=PORequisitionItemsById&RequisitionId=' + RequisitionId, this.options);
+  }
+  public GetPurchaseRequestItemsById(PurchaseRequestId) {
+    return this.http.get<any>('/api/Inventory/GetPurchaseRequestItemsById/' + PurchaseRequestId, this.options);
+  }
+  public GetItemPriceHistory() {
+    return this.http.get<any>('/api/Inventory/GetAllItemPriceHistory' , this.options);
+  }
+  public GetAllInventoryFiscalYears() {
+    return this.http.get<any>('/api/Inventory/GetAllInventoryFiscalYears' , this.options);
+  }
+  //Get: Track Requisition by id
+  public TrackRequisitionById(RequisitionId) {
+    return this.http.get<any>('/api/Inventory/TrackRequisitionById/' + RequisitionId, this.options);
+  }
+//GET:FiscalYears
+  public GetAllFiscalYears() {
+    return this.http.get<any>("/api/Billing?reqType=all-fiscalYears");
+    }
 
   //POST: Save Purchase Order
   public PostToPurchaseOrder(PurchaseOrderObjString: string) {
     let data = PurchaseOrderObjString;
     return this.http.post<any>("/api/Inventory?reqType=PurchaseOrder", data, this.options);
-
+  }
+  //POST: cancel purchase order
+  public PostPurchaseOrderCancelDetail(POId,CancelRemarks) {
+    try {
+      return this.http.post<any>(`/api/Inventory?reqType=cancel-purchase-order&purchaseOrderId=${POId}`,CancelRemarks, this.options);
+    } catch (ex) {
+      throw ex;
+    }
+  }
+  //POST: cancel Requisition
+  public WithdrawRequisitionById(requisitionId, CancelRemarks) {
+    try {
+      return this.http.post<any>("/api/Inventory/WithdrawRequisitionById/" + requisitionId, CancelRemarks, this.optionsJson);
+    } catch (ex) {
+      throw ex;
+    }
+  }
+  //POST: cancel Requisition
+  public WithdrawPurchaseRequestById(PurchaseRequestId, CancelRemarks) {
+    try {
+      return this.http.post<any>("/api/Inventory/WithdrawPurchaseRequestById/" + PurchaseRequestId, CancelRemarks, this.optionsJson);
+    } catch (ex) {
+      throw ex;
+    }
+  }
+  //POST: cancel goods receipt
+  PostGoodsReceiptCancelDetail(GoodsReceiptId, CancelRemarks) {
+    try {
+      return this.http.post<any>("/api/Inventory/CancelGoodsReceipt/" + GoodsReceiptId, CancelRemarks, this.optionsJson);
+    } catch (ex) {
+      throw ex;
+    }
   }
   public UpdatePurchaseOrder(PurchaseOrderObjString: string) {
     let data = PurchaseOrderObjString;
-    return this.http.post<any>("/api/Inventory?reqType=UpdatePurchaseOrder", data, this.options);
+    return this.http.put<any>("/api/Inventory?reqType=UpdatePurchaseOrder", data, this.options);
+  }
+  //POST: Save Purchase Order Requisition
+  public PostToPORequisition(PORequisitionObjString: string) {
+    let data = PORequisitionObjString;
+    return this.http.post<any>("/api/Inventory?reqType=PostPORequisition", data, this.options);
+
   }
   //POST: Save RequestForQuotation
   public PostToReqForQuotation(ReqForQuotationObjString: string) {
@@ -220,15 +318,15 @@ export class InventoryDLService {
     let data = DispatchItemsObjString;
     return this.http.post<any>("/api/Inventory?reqType=DispatchItems", data, this.options);
   }
-  //POST:Save dispatched Items to database (DISPATCH-ALL)
-  public PostToDispatch(DispatchItemsObjString: string) {
-    let data = DispatchItemsObjString;
-    return this.http.post<any>("/api/Inventory?reqType=DispatchAllItems", data, this.options);
-  }
   //Save Goods Receipt
   public PostToRequisition(RequisitionObjString: string) {
     let data = RequisitionObjString;
     return this.http.post<any>("/api/Inventory?reqType=Requisition", data, this.options);
+  }
+  //Save Goods Receipt
+  public PostDirectDispatch(RequisitionObjString: string) {
+    let data = RequisitionObjString;
+    return this.http.post<any>("/api/Inventory/PostDirectDispatch", data, this.optionsJson);
   }
   //Save Return to vendor Item
   public PostToReturnToVendor(ReturnToVendorObjString: string) {
@@ -262,11 +360,48 @@ export class InventoryDLService {
     let data = PurchaseOrderObjString;
     return this.http.put<any>("/api/Inventory?reqType=updatepoandpoitemstatus", data, this.options);
   }
+
+  //PUT:Update Purchase order and Purchase Order Items Status after Goods Receipt Generation
+  UpdateRequisitionStatus(ReqObjString: string) {
+
+    let data = ReqObjString;
+    return this.http.put<any>("/api/Inventory?reqType=updaterequisitionstatus", data, this.options);
+  }
+  //PUT:Update Purchase order and Purchase Order Items Status after Goods Receipt Generation
+  ApprovePORequisition(data) {
+    return this.http.put<any>("/api/Inventory?reqType=approvePORequisition", data, this.options);
+  }
+  //PUT:Update Purchase order and Purchase Order Items Status after Goods Receipt Generation
+  ApproveRequisition(CurrentVerificationLevel: number, RequisitionId: number, StoreId: number) {
+    return this.http.put<any>("/api/Inventory/ApproveRequisition/" + CurrentVerificationLevel + "/" + RequisitionId + "/" + StoreId, this.options);
+  }
+  //PUT:Update Purchase order and Purchase Order Items Status after Goods Receipt Generation
+  RejectRequisition(CurrentVerificationLevel: number, RequisitionId: number, StoreId: number) {
+    return this.http.put<any>("/api/Inventory/RejectRequisition/" + CurrentVerificationLevel + "/" + RequisitionId + "/" + StoreId, this.options);
+  }
   //PUT : Stock Manage
   PutStock(data) {
     return this.http.put<any>("/api/Inventory?reqType=stockManage", data, this.options);
   }
   UpdateVendorForPO(data) {
     return this.http.put<any>("/api/Inventory?reqType=SelectedVendorforPO", data, this.options);
+  }
+  public UpdatePORequisition(PORequisitionObjString: string) {
+    let data = PORequisitionObjString;
+    return this.http.put<any>("/api/Inventory?reqType=UpdatePORequisition", data, this.options);
+  }
+  public UpdatePORequisitionAfterPOCreation(reqId: number) {
+    let data = reqId.toString();
+    return this.http.put<any>("/api/Inventory?reqType=UpdatePORequisitionAfterPOCreation", data, this.options);
+
+  }
+
+  //Cancel remaining items 
+  CancelRequisitionItems(data) {
+    return this.http.put<any>("/api/Inventory?reqType=cancelRequisitionItems", data, this.options);
+  }
+  //GET : vendor's billing history (goods received)
+  public GetGRVendorBillingHistory() {
+    return this.http.get<any>('/api/Inventory/GetAllGRVendorBillingHistory', this.options);
   }
 }

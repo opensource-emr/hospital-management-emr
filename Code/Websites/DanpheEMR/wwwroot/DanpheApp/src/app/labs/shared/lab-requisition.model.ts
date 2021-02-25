@@ -1,4 +1,4 @@
-﻿import { ICD10 } from "../../clinical/shared/icd10.model";
+import { ICD10 } from "../../clinical/shared/icd10.model";
 
 export class LabTestRequisition {
     public RequisitionId: number = 0;
@@ -26,9 +26,12 @@ export class LabTestRequisition {
     public CreatedOn: string = null;
     public SampleCreatedBy: number = null;
     public SampleCreatedOn: string = null;
+    public SampleCollectedOnDateTime: string = null;
     public Comments: string = "";
     public ReportTemplateId: number = 0;
     public RunNumberType: string=null;
+    public BillCancelledBy: number = null;
+    public BillCancelledOn: string = null;
 
 
     //Added by Anish While making Diagnosis

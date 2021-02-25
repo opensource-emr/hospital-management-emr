@@ -1,0 +1,157 @@
+
+<div *ngIf="showRequestItemList">
+  <danphe-grid [grid-colDefaults]="WardRequestedItemsGridColumns"
+               [grid-data]="WardRequestItemsList"
+               (grid-actions)="PHRMWardRequestItemsGridAction($event)"> </danphe-grid>
+</div>
+<link href="../../../../../assets-dph/styles/pharmacy/phrm-sale.component.css" rel="stylesheet" />
+<style>
+  .no-margin {
+    margin: 0 !important;
+  }
+
+  .indnt {
+    text-indent: 15px;
+  }
+
+  input.form-control {
+    height: 28px;
+  }
+
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+</style>
+<div *ngIf="!showRequestItemList">
+  <div class="col-md-12">
+    <div class="caption lb-caption">
+      <button class="btn btn-primary" (click)="Cancel()" style="padding-top: 4px; padding-bottom: 4px; margin-right: 15px;"> 
+      <!--	  <i class="fa fa-backward" style="color: #ffffff !important;"></i>&nbsp;&nbsp;&nbsp;--> 
+      Back</button>
+      <div style="display: inline-block; vertical-align: middle">
+        <h3><span>Ward Dispatch</span></h3>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <div>
+        <table class="table table-striped table-hover inv_table padLess_table table-bordered" style="background-color:initial;margin-top:3px">
+          <thead>
+            <tr>
+              <th></th>
+              <th><b>Drug/Medicine Name</b></th>
+              <th><b>Expiry</b></th>
+              <th><b>Batch</b></th>
+              <th></th>
+              <th><b>ReqQty</b></th>
+              <th><b>AvlQty</b></th>
+              <th><b>Qty</b></th>
+              <th><b>M.R.P.</b></th>
+              <th><b>Amount</b></th>
+              - </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of WardReqItemsList; let i = index">
+              <td><a (click)="DeleteRow(i)"><i class="btn btn-danger fa fa-times"></i></a></td>
+              <td style="width:200px" class="autocomplete-item"><input *ngIf="row.enableItmSearch" danphe-auto-complete class="form-control"
+                       [(ngModel)]="row.selectedItem"
+                       [source]="ItemListForSale"
+                       [list-formatter]="myItemListFormatter"
+                       placeholder="--Select Medicine--"
+                       display-property-name="ItemName"
+                       value-property-name=null
+                       onClick="this.select();"
+                       (valueChanged)="onChangeItem($event,i)"
+                       max-num-list="20"
+                       min-chars="0"
+                       style="width:250px;"
+                       id="{{'item-box'+i}}"
+                       [grid-sort]="'ItemName'"
+                       match-formatted="true"
+                       (keyup.enter)="switchTextBox(i)" />
+                <input *ngIf="!row.enableItmSearch" disabled class="form-control" style="width:250px;" type="text" [(ngModel)]="row.ItemName" />
+                <div class="color-red font-sm" *ngIf="row.IsDuplicateItem">Duplicate Item not allowed</div></td>
+              <td><label style="width:100px ; " min="0" type="date" value="">{{row.ExpiryDate | date}}</label></td>
+              <td><input [(ngModel)]="row.BatchNo" style="width:80px ; " min="0" class="form-control" type="text" value="" disabled></td>
+              <td><a (click)="AddRowRequestOnClick(i)"><i class="fa fa-plus btn btn-success"></i></a></td>
+              <td><input [(ngModel)]="row.Quantity " style="width:80px ; " min="0" class="form-control" type="number" value="" disabled></td>
+              <td><input [(ngModel)]="row.TotalQty" style="width:80px ; " min="0" class="form-control" type="number" value="" disabled></td>
+              <td><input [(ngModel)]="row.DispatchedQty"
+                       (ngModelChange)="ValueChanged(i)"
+                       style="width:80px ; "
+                       min="0" class="form-control"
+                       type="number" onwheel="this.blur()"
+                       value="" id="{{ 'qty-box'+i }}"
+                       (keyup.enter)="AddRowRequestOnClick(i)"
+                       onClick="this.select();" />
+                <span class="error-msg" *ngIf="row.TotalQty<row.DispatchedQty"> Qty Should be less than Total Qty </span> <span class="error-msg" *ngIf="row.notValid"> Not Valid quantity</span></td>
+              <td><input [(ngModel)]="row.MRP" (ngModelChange)="ValueChanged(i)" style="width:80px ;" min="0" class="form-control" type="number" value="" disabled></td>
+              <td><input [(ngModel)]="row.SubTotal" style="width:80px ; " min="0" class="form-control" type="number" value="" disabled></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="row">
+          <div class="col-md-4 col-md-offset-8">
+            <div class="mt20 t-wrap">
+              <table class="inv_table">
+                <tr> 
+                  
+                  <!--            <td class="col-sm-offset-8 col-sm-2"></td>-->
+                  
+                  <td>SubTotal: </td>
+                  <td><div class="form-group">
+                      <input [(ngModel)]="subTotal" disabled class="form-control" name="SubTotal" type="number">
+                    </div></td>
+                </tr>
+                <tr class="dot"> 
+                  <!--            <td></td>-->
+                  <td>In Words : </td>
+                  <td class="text-capitalize"><b>{{subTotal | NumberInWords}} </b>&nbsp; Only. </td>
+                </tr>
+                <tr> 
+                  
+                  <!--            <td></td>-->
+                  
+                  <td>Received By<sup>*</sup>:</td>
+                  <td class="text-capitalize"><form [formGroup]="wardReqDispatch.DispatchValidator">
+                      <div class="form-group">
+                        <input [(ngModel)]="wardReqDispatch.ReceivedBy" formControlName="ReceivedBy" name="receivedby" style="
+    width: 100%;
+"/>
+                        <span class="color-red font-sm" *ngIf="wardReqDispatch.IsDirty('ReceivedBy')" [hidden]="wardReqDispatch.IsValidCheck('ReceivedBy','required')">Received By User Is Compulsory</span></div>
+                    </form></td>
+                </tr>
+                <tr> 
+                  
+                  <!--            <td></td>-->
+                  
+                  <td>Remark:</td>
+                  <td class="text-capitalize"><div class="form-group">
+                      <textarea [(ngModel)]="wardReqDispatch.Remark" name="remark" id="remark" style="
+    width: 100%;
+"></textarea>
+                    </div></td>
+                </tr>
+                <tr class="text-right"> 
+                  <!--            <td class="col-sm-offset-8 col-sm-2"> </td>-->
+                  <td></td>
+                  <td><input type="button" class="btn btn-success" value="Save" (click)="Save()" [disabled]="loading" />
+                    <span></span>
+                    <input type="button" class="btn btn-danger" [disabled]="loading" (click)="Cancel()" value="Cancel">
+                    <span></span></td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

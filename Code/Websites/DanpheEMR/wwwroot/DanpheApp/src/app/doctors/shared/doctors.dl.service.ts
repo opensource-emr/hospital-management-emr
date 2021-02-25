@@ -1,4 +1,4 @@
-﻿import { Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient,HttpHeaders} from '@angular/common/http';
 
 @Injectable()
@@ -32,6 +32,7 @@ public options =  {
     GetPatientPreview(patientId: number, patientVisitId: number) {
         return this.http.get<any>("/api/Doctors?reqType=patientOverview&patientId=" + patientId + "&patientVisitId=" + patientVisitId, this.options)
     }
+
     GetPatientOtherRequests(patientId: number, patientVisitId: number){
         return this.http.get<any>("/api/Doctors?reqType=otherRequestsOfPatient&patientId=" + patientId + "&patientVisitId=" + patientVisitId, this.options)
     }

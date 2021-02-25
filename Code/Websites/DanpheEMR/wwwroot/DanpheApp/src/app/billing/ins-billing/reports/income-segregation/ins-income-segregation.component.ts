@@ -19,8 +19,8 @@ import { CoreService } from '../../../../core/shared/core.service';
 
 export class INSIncomeSegregationComponent {
 
-  public fromDate: Date = null;
-  public toDate: Date = null;
+  public fromDate: string = null;
+  public toDate: string = null;
 
   public tot_Price: number = 0;
   public tot_Tax: number = 0;
@@ -74,11 +74,16 @@ export class INSIncomeSegregationComponent {
       this.tot_CreditReceived = this.tot_CreditSales = this.tot_NetCashCollection = this.tot_Receivable =
       this.tot_CancelTax = this.tot_CancelAmount = 0;
 
-    this.dlService.Read("/BillingReports/IncomeSegregationStaticReport?FromDate="
-      + this.currentIncomeSegregation.fromDate + "&ToDate=" + this.currentIncomeSegregation.toDate + "&IsInsurance=true")
-      .map(res => res)
-      .subscribe(res => this.Success(res),
-        res => this.Error(res));
+    if (this.currentIncomeSegregation.fromDate != null && this.currentIncomeSegregation.toDate != null) {
+      this.dlService.Read("/BillingReports/IncomeSegregationStaticReport?FromDate="
+        + this.currentIncomeSegregation.fromDate + "&ToDate=" + this.currentIncomeSegregation.toDate + "&IsInsurance=true")
+        .map(res => res)
+        .subscribe(res => this.Success(res),
+          res => this.Error(res));
+    } else {
+      this.msgBoxServ.showMessage("error", ['Dates Provided is not Proper']);
+    }
+    
   }
   Error(err) {
     this.msgBoxServ.showMessage("error", [err]);
@@ -214,4 +219,12 @@ export class INSIncomeSegregationComponent {
 
   }
 
+  //Anjana:11June'20--reusable From-ToDate-In Reports..
+  OnFromToDateChange($event) {
+    this.fromDate = $event ? $event.fromDate : this.fromDate;
+    this.toDate = $event ? $event.toDate : this.toDate;
+
+    this.currentIncomeSegregation.fromDate = this.fromDate;
+    this.currentIncomeSegregation.toDate = this.toDate;
+  }
 }

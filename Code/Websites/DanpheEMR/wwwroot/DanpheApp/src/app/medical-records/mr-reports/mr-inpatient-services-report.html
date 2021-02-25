@@ -1,0 +1,135 @@
+<style type="text/css">
+  .Selected {
+    border-collapse: collapse;
+    border-spacing: 5px;
+  }
+
+  .Selected {
+    border: 1px solid black;
+    padding: 5px;
+  }
+</style>
+<button class="btn btn-primary" (click)="Back()">Back</button>
+<div class="row">
+  <div class="col-lg-12 col-sm-12">
+    <div class="row table-responsive">
+      <form [formGroup]="currentInpatientOutcome.DyanamicValidator" class="hm-form clearfix">
+        <div class="form-body">
+          <div class="col-md-12">
+            <div class="caption custom-caption">
+              <i class="glyphicon glyphicon-asterisk"></i>
+              <span class="caption-subject">Inpatient Outcome</span>
+            </div>           
+          </div>
+			<div class="col-md-12"><div class="row">
+				 <div class="col-md-4 col-xs-12">
+              <div class="form-group row clearfix">
+                <label class="control-label col-md-4">From Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                <div class="col-md-8">
+                  <danphe-date-picker [(ngModel)]="currentInpatientOutcome.fromDate" ngDefaultControl [CalendarTypes]="'en,np'" formControlName="fromDate">
+                  </danphe-date-picker>
+                  <span class="color-red font-sm" *ngIf="currentInpatientOutcome.IsDirty('fromDate')" [hidden]="currentInpatientOutcome.IsValidCheck('fromDate','required')"> From Date is required</span>
+                  <span class="color-red font-sm" *ngIf="currentInpatientOutcome.IsDirty('fromDate')" [hidden]="currentInpatientOutcome.IsValidCheck('fromDate','wrongDate')"> Enter Valid Date</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4 col-xs-12">
+              <div class="form-group row clearfix">
+                <label class="control-label col-md-4">To Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                <div class="col-md-8">
+                  <danphe-date-picker [(ngModel)]="currentInpatientOutcome.toDate" ngDefaultControl [CalendarTypes]="'en,np'" formControlName="toDate">
+                  </danphe-date-picker>
+                  <span class="color-red font-sm" *ngIf="currentInpatientOutcome.IsDirty('toDate')" [hidden]="currentInpatientOutcome.IsValidCheck('toDate','required')"> To Date is required</span>
+                  <span class="color-red font-sm" *ngIf="currentInpatientOutcome.IsDirty('toDate')" [hidden]="currentInpatientOutcome.IsValidCheck('toDate','wrongDate')"> Can't select future date</span>
+
+                </div>
+              </div>
+            </div>
+            <div class="col-md-2 col-xs-12">
+              <div class="form-group">
+                <button class="btn blue" type="button" (click)="Load()" [disabled]="">
+                  <i class="fa fa-search"></i>
+                  Show Report
+                </button>
+              </div>
+            </div>
+			</div></div>
+        </div>
+      </form>
+      <br />
+      <br />
+      <div *ngIf="displayReport">
+        <div id="printpage">
+          <table style="width:100%">
+            <tr>
+              <td>
+                <table border="1" class="Selected" style="width:100%" align="center">
+                  <tr>
+                    <td class="Selected" align="center" colspan="17"><b>1. Summary of Indoor Services</b></td>
+                  </tr>
+                  <tr>
+                    <td class="Selected" align="center" colspan="17"><b>A. Inpatient Outcome</b></td>
+                  </tr>
+                  <tr>
+                    <td class="Selected" align="center" rowspan="2">Age Group</td>
+                    <td class="Selected" align="center" colspan="2">Admitted</td>
+                    <td class="Selected" align="center" colspan="2">Cured</td>
+                    <td class="Selected" align="center" colspan="2">Not Cured</td>
+                    <td class="Selected" align="center" colspan="2">Referred Out</td>
+                    <td class="Selected" align="center" colspan="2">DOR/LAMA/DAMA</td>
+                    <td class="Selected" align="center" colspan="2">Absconded</td>
+                    <td class="Selected" align="center" colspan="2">Death < 48 Hours</td>
+                    <td class="Selected" align="center" colspan="2">Death >= 48 Hours</td>
+                  </tr>
+                  <tr>
+                    <td class="Selected" align="center">Male</td>
+                    <td class="Selected" align="center">Female</td>
+                    <td class="Selected" align="center">Male</td>
+                    <td class="Selected" align="center">Female</td>
+                    <td class="Selected" align="center">Male</td>
+                    <td class="Selected" align="center">Female</td>
+                    <td class="Selected" align="center">Male</td>
+                    <td class="Selected" align="center">Female</td>
+                    <td class="Selected" align="center">Male</td>
+                    <td class="Selected" align="center">Female</td>
+                    <td class="Selected" align="center">Male</td>
+                    <td class="Selected" align="center">Female</td>
+                    <td class="Selected" align="center">Male</td>
+                    <td class="Selected" align="center">Female</td>
+                    <td class="Selected" align="center">Male</td>
+                    <td class="Selected" align="center">Female</td>
+                  </tr>
+                  <tr *ngFor="let o of InpatientOutcomeTable">
+                    <td class="Selected" align="center">{{o.AgeRange}}</td>
+                    <td class="Selected" align="center">{{o.MalePatients}}</td>
+                    <td class="Selected" align="center">{{o.FemalePatients}}</td>
+                    <td class="Selected" align="center">{{o.D1MalePatients}}</td>
+                    <td class="Selected" align="center">{{o.D1FemalePatients}}</td>
+                    <td class="Selected" align="center">{{o.D2MalePatients}}</td>
+                    <td class="Selected" align="center">{{o.D2FemalePatients}}</td>
+                    <td class="Selected" align="center">{{o.D3MalePatients}}</td>
+                    <td class="Selected" align="center">{{o.D3FemalePatients}}</td>
+                    <td class="Selected" align="center">{{o.D4MalePatients}}</td>
+                    <td class="Selected" align="center">{{o.D4FemalePatients}}</td>
+                    <td class="Selected" align="center">{{o.D5MalePatients}}</td>
+                    <td class="Selected" align="center">{{o.D5FemalePatients}}</td>
+                    <td class="Selected" align="center">{{o.D6MalePatients}}</td>
+                    <td class="Selected" align="center">{{o.D6FemalePatients}}</td>
+                    <td class="Selected" align="center">{{o.D7MalePatients}}</td>
+                    <td class="Selected" align="center">{{o.D7FemalePatients}}</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <p style="text-align:center;">
+          <button class="btn blue" (click)="Print()">
+            Print Report
+            <i class="glyphicon glyphicon-print"></i>
+          </button>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

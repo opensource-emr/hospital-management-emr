@@ -20,6 +20,10 @@ using RefactorThis.GraphDiff;//for entity-update.
 using System.Collections.ObjectModel;
 using DanpheEMR.Security;
 using System.IO;
+using System.Data;
+using DanpheEMR.Services;
+using DanpheEMR.ServerModel.NotificationModels;
+using DanpheEMR.ViewModel;
 
 // For more information on enabling Web API for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -28,10 +32,10 @@ namespace DanpheEMR.Controllers
 
     public class InventoryController : CommonController
     {
-
-        public InventoryController(IOptions<MyConfiguration> _config) : base(_config)
+        private IVerificationService _verificationService;
+        public InventoryController(IOptions<MyConfiguration> _config, IVerificationService verificationService) : base(_config)
         {
-
+            _verificationService = verificationService;
         }
         // GET: api/values
         [HttpGet]
@@ -46,14 +50,18 @@ namespace DanpheEMR.Controllers
             int ReqForQuotationItemById,
             int QuotationItemById,
             int ReqForQuotationId,
+            int DispatchId,
             DateTime FromDate,
-            DateTime ToDate)
+            DateTime ToDate,
+            int FiscYrId,
+            int GoodsReceiptNo)
         {
             DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
 
             try
             {
                 InventoryDbContext inventoryDbContext = new InventoryDbContext(connString);
+                PharmacyDbContext phrmdbcontext = new PharmacyDbContext(connString);
                 MasterDbContext masterDbContext = new MasterDbContext(connString);
                 responseData.Status = "OK";
                 #region Get All Items from ItemMaster table
@@ -61,10 +69,39 @@ namespace DanpheEMR.Controllers
                 {
                     string returnValue = string.Empty;
 
-                    List<ItemMasterModel> ItemList = new List<ItemMasterModel>();
+                    //List<ItemMasterModel> ItemList = new List<ItemMasterModel>();
 
-                    ItemList = (from item in inventoryDbContext.Items
-                                select item).ToList();
+                    //ItemList = (from item in inventoryDbContext.Items
+                    //            select item).ToList();
+                    var ItemList = (from item in inventoryDbContext.Items
+                                    join subCat in inventoryDbContext.ItemSubCategoryMaster on item.SubCategoryId equals subCat.SubCategoryId
+                                    join unit in inventoryDbContext.UnitOfMeasurementMaster on item.UnitOfMeasurementId equals unit.UOMId into ps
+                                    from unit in ps.DefaultIfEmpty()
+                                    select new
+                                    {
+                                        item.ItemId,
+                                        item.Code,
+                                        item.CompanyId,
+                                        item.ItemCategoryId,
+                                        item.SubCategoryId,
+                                        subCat.SubCategoryName,
+                                        item.PackagingTypeId,
+                                        item.UnitOfMeasurementId,
+                                        item.ItemName,
+                                        item.ItemType,
+                                        item.Description,
+                                        item.ReOrderQuantity,
+                                        item.VAT,
+                                        item.MinStockQuantity,
+                                        item.BudgetedQuantity,
+                                        item.StandardRate,
+                                        item.UnitQuantity,
+                                        item.CreatedBy,
+                                        item.CreatedOn,
+                                        item.IsActive,
+                                        item.IsVATApplicable,
+                                        unit.UOMName
+                                    }).ToList();
                     responseData.Results = ItemList;
                 }
                 if (reqType == "VendorList")
@@ -72,7 +109,10 @@ namespace DanpheEMR.Controllers
                     string returnValue = string.Empty;
 
                     List<VendorMasterModel> VendorList = inventoryDbContext.Vendors.ToList();
-
+                    foreach (VendorMasterModel vendor in VendorList)
+                    {
+                        vendor.DefaultItem = DanpheJSONConvert.DeserializeObject<List<int>>(vendor.DefaultItemJSON);
+                    }
                     responseData.Status = "OK";
                     responseData.Results = VendorList;
                 }
@@ -100,7 +140,7 @@ namespace DanpheEMR.Controllers
                                   {
                                       ItemId = p.Key.ItemId,
                                       ItemName = p.Key.ItemName,
-                                      Quantity = p.Sum(a => (double)Math.Ceiling(a.Quantity) - a.ReceivedQuantity)
+                                      Quantity = p.Sum(a => (double)(a.Quantity) - a.ReceivedQuantity)
                                   }).ToList();
                     var stks = (from stk in inventoryDbContext.Stock
                                 group stk by new
@@ -149,17 +189,20 @@ namespace DanpheEMR.Controllers
                                           join items in inventoryDbContext.Items on stock.ItemId equals items.ItemId
                                           join grItems in inventoryDbContext.GoodsReceiptItems on stock.ItemId equals grItems.ItemId
                                           where stock.AvailableQuantity > 0
-                                          group items by new { items.ItemId, items.ItemName, items.StandardRate, items.VAT, grItems.ItemRate } into itms
+                                          group items by new { items.ItemId, items.Code, items.ItemName, items.StandardRate, items.VAT, grItems.ItemRate } into itms
                                           select new
                                           {
                                               ItemId = itms.Key.ItemId,
                                               ItemName = itms.Key.ItemName,
+                                              Rate = itms.Key.ItemRate,
                                               //StandardRate=itms.Key.StandardRate,
                                               //StandardRate = itms.Key.ItemRate,
-                                              VAT = itms.Key.VAT
+                                              VAT = itms.Key.VAT,
+                                              Code = itms.Key.Code
+
 
                                           }
-                                       ).ToList();
+                                       ).OrderBy(a => a.ItemName).ToList();
 
                     responseData.Results = requestDetails;
 
@@ -170,13 +213,14 @@ namespace DanpheEMR.Controllers
                 {
                     //this for get employee Name
 
-                    var requistionDate = (from req in inventoryDbContext.Requisitions
-                                         where req.RequisitionId == RequisitionId
-                                         select req.RequisitionDate).FirstOrDefault();
+                    var reqdetail = inventoryDbContext.Requisitions.Where(req => req.RequisitionId == RequisitionId).Select(req => new { req.RequisitionDate, req.RequisitionNo, req.IssueNo, req.RequisitionStatus, req.Remarks, req.VerificationId }).FirstOrDefault();
+
                     var requisitionItems = (from reqItems in inventoryDbContext.RequisitionItems
                                             join itm in inventoryDbContext.Items on reqItems.ItemId equals itm.ItemId
-                                            // join emp in masterDbContext.Employee on reqItems.CreatedBy equals emp.EmployeeId
-                                            where reqItems.RequisitionId == RequisitionId
+                                            join grplj in inventoryDbContext.GoodsReceiptItems on itm.ItemId equals grplj.ItemId into reqItemLJ
+                                            where reqItems.RequisitionId == RequisitionId && (reqdetail.RequisitionStatus == "withdrawn" || reqItems.IsActive == true)
+                                            from reqItm in reqItemLJ.DefaultIfEmpty()
+                                                // join emp in masterDbContext.Employee on reqItems.CreatedBy equals emp.EmployeeId
                                             select new
                                             {
                                                 reqItems.ItemId,
@@ -186,12 +230,20 @@ namespace DanpheEMR.Controllers
                                                 reqItems.Remark,
                                                 reqItems.ReceivedQuantity,
                                                 reqItems.CreatedBy,
+                                                reqItems.CancelQuantity,
+                                                reqItems.CancelBy,
+                                                reqItems.CancelOn,
+                                                reqItems.CancelRemarks,
                                                 // CreatedByName= emp.FirstName +' '+emp.LastName,
-                                                CreatedOn = requistionDate,
+                                                CreatedOn = reqdetail.RequisitionDate,
                                                 reqItems.RequisitionItemStatus,
                                                 itm.ItemName,
                                                 itm.Code,
-                                                reqItems.RequisitionId
+                                                reqItems.RequisitionId,
+                                                reqdetail.IssueNo,
+                                                reqdetail.RequisitionNo,
+                                                ItemRate = (reqItm != null) ? reqItm.ItemRate : 0,
+                                                reqItems.IsActive
                                             }
                                          ).ToList();
                     var employeeList = (from emp in inventoryDbContext.Employees select emp).ToList();
@@ -204,6 +256,7 @@ namespace DanpheEMR.Controllers
                                           {
                                               reqItem.ItemId,
                                               PendingQuantity = reqItem.PendingQuantity,
+                                              DispatchedQuantity = dispTemp.Where(a => a.RequisitionItemId == reqItem.RequisitionItemId).Select(x => x.DispatchedQuantity).LastOrDefault(),
                                               reqItem.Quantity,
                                               reqItem.Remark,
                                               ReceivedQuantity = disp == null ? 0 : (reqItem.Quantity - (decimal)Convert.ToDecimal(reqItem.PendingQuantity)),
@@ -212,42 +265,142 @@ namespace DanpheEMR.Controllers
                                               reqItem.CreatedOn,
                                               reqItem.RequisitionItemStatus,
                                               reqItem.ItemName,
+                                              reqItem.CancelQuantity,
+                                              CancelBy = reqItem.CancelBy != null ? VerificationBL.GetNameByEmployeeId(reqItem.CancelBy ?? 0, inventoryDbContext) : "",
+                                              reqItem.CancelOn,
+                                              reqItem.CancelRemarks,
                                               reqItem.Code,
+                                              TotalAmount = reqItem.ItemRate * (decimal)(dispTemp.Where(a => a.RequisitionItemId == reqItem.RequisitionItemId).Select(x => x.DispatchedQuantity).LastOrDefault()),
+                                              reqdetail.RequisitionNo,
+                                              reqdetail.IssueNo,
+                                              Remarks = reqdetail.Remarks, //this is the main remark against the whole requisition.
                                               reqItem.RequisitionId,
                                               ReceivedBy = disp == null ? "" : disp.ReceivedBy,
-                                              DispatchedByName = disp == null ? "" : employeeList.Find(a => a.EmployeeId == disp.CreatedBy).FullName
+                                              DispatchRemarks = disp == null ? "" : disp.Remarks,
+                                              DispatchedByName = disp == null ? "" : employeeList.Find(a => a.EmployeeId == disp.CreatedBy).FullName,
+                                              RequisitionItemId = reqItem.RequisitionItemId,
+                                              reqItem.IsActive
                                           }
                         ).ToList().GroupBy(a => a.ItemId).Select(g => new
                         {
                             ItemId = g.Key,
                             PendingQuantity = g.Select(a => a.PendingQuantity).FirstOrDefault(),
                             Quantity = g.Select(a => a.Quantity).FirstOrDefault(),
+                            DispatchedQuantity = g.Select(a => a.DispatchedQuantity).FirstOrDefault(),
                             Remark = g.Select(a => a.Remark).FirstOrDefault(),
+                            Remarks = g.Select(a => a.Remarks).FirstOrDefault(),
                             ReceivedQuantity = g.Select(a => a.ReceivedQuantity).FirstOrDefault(),
+                            CancelQuantity = g.Select(a => a.CancelQuantity).FirstOrDefault(),
                             CreatedBy = g.Select(a => a.CreatedBy).FirstOrDefault(),
+                            CancelBy = g.Select(a => a.CancelBy).FirstOrDefault(),
+                            CancelOn = g.Select(a => a.CancelOn).FirstOrDefault(),
+                            CancelRemarks = g.Select(a => a.CancelRemarks).FirstOrDefault(),
                             CreatedByName = g.Select(a => a.CreatedByName).FirstOrDefault(),
                             CreatedOn = g.Select(a => a.CreatedOn).FirstOrDefault(),
                             RequisitionItemStatus = g.Select(a => a.RequisitionItemStatus).FirstOrDefault(),
                             ItemName = g.Select(a => a.ItemName).FirstOrDefault(),
-                            Code = g.Select(a=>a.Code).FirstOrDefault(),
+                            Code = g.Select(a => a.Code).FirstOrDefault(),
+                            TotalAmount = g.Select(a => a.TotalAmount).LastOrDefault(),
+                            RequisitionNo = g.Select(a => a.RequisitionNo).FirstOrDefault(),
+                            IssueNo = g.Select(a => a.IssueNo).FirstOrDefault(),
                             RequisitionId = g.Select(a => a.RequisitionId).FirstOrDefault(),
                             ReceivedBy = g.Select(a => a.ReceivedBy).FirstOrDefault(),
-                            DispatchedByName = g.Select(a => a.DispatchedByName).FirstOrDefault()
+                            DispatchRemarks = g.Select(a => a.DispatchRemarks).FirstOrDefault(),
+                            DispatchedByName = g.Select(a => a.DispatchedByName).FirstOrDefault(),
+                            RequisitionItemId = g.Select(a => a.RequisitionItemId).FirstOrDefault(),
+                            IsActive = g.Select(a => a.IsActive).FirstOrDefault()
                         }).ToList();
-                    // List<RequisitionItemsModel> requisitionItems = new List<RequisitionItemsModel>();
-                    // requisitionItems = (from reqItems in inventoryDbContext.RequisitionItems
-                    //                     where reqItems.RequisitionId==RequisitionId
-                    //                     select reqItems
-                    //                     ).ToList();
-                    //responseData.Results = requisitionItems;
+
+                    var verifiers = (reqdetail.VerificationId != null) ? VerificationBL.GetVerifiersList(reqdetail.VerificationId ?? 0, inventoryDbContext) : null;
+                    var dispatchers = VerificationBL.GetDispatchersList(RequisitionId, inventoryDbContext);
+                    responseData.Results = new { requestDetails, Verifiers = verifiers, Dispatchers = dispatchers };
+                }
+                #endregion
+                #region //Get dIspatch Details
+                else if (reqType != null && reqType.ToLower() == "dispatchview")
+                {
+                    var DispatchList = InventoryBL.GetDispatchesFromRequisitionId(RequisitionId, inventoryDbContext);
+                    responseData.Results = DispatchList;
+                }
+                #endregion
+
+                #region //Get Cancel Details
+                else if (reqType != null && reqType.ToLower() == "cancelview")
+                {
+                    var requisitionItems = (from reqItems in inventoryDbContext.RequisitionItems
+                                            where reqItems.RequisitionId == RequisitionId && reqItems.CancelQuantity > 0
+                                            select reqItems).ToList();
+                    var employeeList = (from emp in inventoryDbContext.Employees select emp).ToList();
+
+                    var requestDetails = (from reqItem in requisitionItems
+                                          join emp in inventoryDbContext.Employees on reqItem.CancelBy equals emp.EmployeeId
+                                          join itm in inventoryDbContext.Items on reqItem.ItemId equals itm.ItemId
+                                          // join dispt in inventoryDbContext.DispatchItems on reqItem.RequisitionItemId equals dispt.RequisitionItemId into dispTemp
+                                          // from disp in dispTemp.DefaultIfEmpty()
+                                          select new
+                                          {
+                                              CreatedByName = emp.FullName,
+                                              reqItem.CancelOn,
+                                              // reqItem.CancelBy,
+                                              // disp.CreatedOn,
+                                              reqItem.RequisitionId,
+                                              reqItem.ItemId,
+                                              itm.ItemName
+                                              // disp.DispatchId,
+                                              // ReceivedBy = disp == null ? null : disp.ReceivedBy,
+                                              // DispatchedByName = disp == null ? null : employeeList.Find(a => a.EmployeeId == disp.CreatedBy).FullName
+                                          }
+                        ).ToList().GroupBy(a => a.ItemId).Select(g => new
+                        {
+                            CancelByName = g.Select(a => a.CreatedByName).FirstOrDefault(),
+                            CancelOn = g.Select(a => a.CancelOn).FirstOrDefault(),
+                            RequisitionId = g.Select(a => a.RequisitionId).FirstOrDefault(),
+                            ItemId = g.Select(a => a.ItemId).FirstOrDefault(),
+                            ItemName = g.Select(a => a.ItemName).FirstOrDefault()
+                            //  DispatchId = g.Select(a => a.DispatchId).FirstOrDefault(),
+                            // ReceivedBy = g.Select(a => a.ReceivedBy).FirstOrDefault(),
+                            //  DispatchedByName = g.Select(a => a.DispatchedByName).FirstOrDefault()
+                        }).ToList();
                     responseData.Results = requestDetails;
                 }
                 #endregion
 
+                #region //Get dIspatch Details
+                else if (reqType != null && reqType.ToLower() == "dispatchviewbydispatchid")
+                {
+                    InventoryReportingDbContext invreportingDbContext = new InventoryReportingDbContext(connString);
+                    var dispatchDetails = invreportingDbContext.DispatchDetail(DispatchId);
+                    //var dispatchDetails = (from disp in inventoryDbContext.DispatchItems
+                    //                       where DispatchId == disp.DispatchId
+                    //                       join item in inventoryDbContext.Items on disp.ItemId equals item.ItemId
+                    //                       join reqitm in inventoryDbContext.RequisitionItems on disp.RequisitionItemId equals reqitm.RequisitionItemId
+                    //                       join dep in inventoryDbContext.Departments on disp.DepartmentId equals dep.DepartmentId
+                    //                       join emp in inventoryDbContext.Employees on disp.CreatedBy equals emp.EmployeeId
+                    //                       select new
+                    //                       {
+                    //                           CreatedByName = emp.Salutation + ". " + emp.FirstName + " " + (string.IsNullOrEmpty(emp.MiddleName) ? "" : emp.MiddleName + " ") + emp.LastName,
+                    //                           disp.CreatedOn,
+                    //                           RequisitionDate = reqitm.CreatedOn,
+                    //                           item.ItemName,
+                    //                           item.StandardRate,
+                    //                           disp.ItemId,
+                    //                           item.Code,
+                    //                           dep.DepartmentName,
+                    //                           disp.DispatchedQuantity,
+                    //                           reqitm.RequisitionId,
+                    //                           disp.DispatchId,
+                    //                           ReceivedBy = disp == null ? null : disp.ReceivedBy
+                    //                       }
+                    //    ).ToList();
+                    responseData.Results = dispatchDetails;
+                }
+                #endregion
+
+
                 #region // Get All Authorized purchase Order List from INV_TXN_PurchaseOrder where POStatus = active
                 else if (reqType != null && reqType == "returnItemDetails")
                 {
-                    var returnList = inventoryDbContext.ReturnToVendorItems.Where(r => r.CreatedOn == CreatedOn && r.VendorId == vendorId).ToList();
+                    var returnList = inventoryDbContext.ReturnToVendorItems.ToList().Where(r => r.CreatedOn == CreatedOn && r.VendorId == vendorId);
                     var returnItemList = (from list in returnList
                                           join grItem in inventoryDbContext.GoodsReceipts on list.GoodsReceiptId equals grItem.GoodsReceiptID
                                           join vendor in inventoryDbContext.Vendors on list.VendorId equals vendor.VendorId
@@ -286,29 +439,35 @@ namespace DanpheEMR.Controllers
                     //in this there is 2 join  ..
                     // first join to get vendors name and second one to check the status 
                     //and second join is with poStatus because it has all the status the need to be checked...
-                    var requestDetails = (from po in inventoryDbContext.PurchaseOrders
-                                          join v in inventoryDbContext.Vendors on po.VendorId equals v.VendorId
-                                          join stat in poStatuses
-                                          on po.POStatus equals stat
-                                          where po.CreatedOn > FromDate && po.CreatedOn < testdate
-                                          orderby po.PoDate descending
-                                          select new
-                                          {
-                                              PurchaseOrderId = po.PurchaseOrderId,
-                                              VendorId = po.VendorId,
-                                              PoDate = po.PoDate,
-                                              POStatus = po.POStatus,
-                                              SubTotal = po.SubTotal,
-                                              TotalAmount = po.TotalAmount,
-                                              VAT = po.VAT,
-                                              VendorName = v.VendorName,
-                                              VendorContact = v.ContactNo
+                    var POList = (from po in inventoryDbContext.PurchaseOrders
+                                  join v in inventoryDbContext.Vendors on po.VendorId equals v.VendorId
+                                  join stat in poStatuses on po.POStatus equals stat
+                                  join pr in inventoryDbContext.PurchaseRequest on po.RequisitionId equals pr.PurchaseRequestId into prJ
+                                  from prLJ in prJ.DefaultIfEmpty()
+                                  join verif in inventoryDbContext.Verifications on po.VerificationId equals verif.VerificationId into verifJ
+                                  from verifLJ in verifJ.DefaultIfEmpty()
+                                  where po.CreatedOn > FromDate && po.CreatedOn < testdate
+                                  orderby po.PoDate descending
+                                  select new
+                                  {
+                                      PurchaseOrderId = po.PurchaseOrderId,
+                                      VendorId = po.VendorId,
+                                      PoDate = po.PoDate,
+                                      POStatus = po.POStatus,
+                                      SubTotal = po.SubTotal,
+                                      TotalAmount = po.TotalAmount,
+                                      VAT = po.VAT,
+                                      VendorName = v.VendorName,
+                                      VendorContact = v.ContactNo,
+                                      PRNumber = prLJ.PRNumber,
+                                      IsVerificationEnabled = po.IsVerificationEnabled,
+                                      VerifierIds = po.VerifierIds,
+                                      MaxVerificationLevel = 0,
+                                      CurrentVerificationLevelCount = (verifLJ == null) ? 0 : verifLJ.CurrentVerificationLevelCount,
 
-                                          }
-                                          ).ToList();
-
-
-                    responseData.Results = requestDetails;
+                                  }
+                                    ).OrderByDescending(a => a.PurchaseOrderId).ToList();
+                    responseData.Results = POList;
                 }
                 #endregion
                 #region // Get all Purchase Order Items which are authorized and pending for Goods receipt 
@@ -325,13 +484,9 @@ namespace DanpheEMR.Controllers
                                           .FirstOrDefault();
 
 
-                    for (int i = requestDetails.PurchaseOrderItems.Count - 1; i >= 0; i--)
-                    {
-                        if (requestDetails.PurchaseOrderItems[i].POItemStatus == "complete"
-                            || requestDetails.PurchaseOrderItems[i].POItemStatus == "initiated"
-                            || requestDetails.PurchaseOrderItems[i].POItemStatus == "cancel")
-                        { requestDetails.PurchaseOrderItems.RemoveAt(i); }
-                    }
+                    string[] BadPOItemStatus = { "complete", "cancel", "cancelled", "withdrawn" };
+                    requestDetails.PurchaseOrderItems = requestDetails.PurchaseOrderItems.Where(POI => BadPOItemStatus.Contains(POI.POItemStatus) == false || POI.IsActive == true).ToList();
+
                     responseData.Results = requestDetails;
                 }
                 #endregion
@@ -343,7 +498,7 @@ namespace DanpheEMR.Controllers
                     //Getting Requisition and Requisition Items by Requisition Id
                     //Which RequisitionStatus and requisitionItemsStatus is not 'complete','cancel' and 'initiated'
                     List<RequisitionModel> requisitionDetails = (from requisition in inventoryDbContext.Requisitions
-                                                                 where (requisition.RequisitionStatus == "partial" ||
+                                                                 where (requisition.RequisitionStatus == "partial" || requisition.RequisitionStatus == "approved" ||
                                                                  requisition.RequisitionStatus == "active") && requisition.RequisitionId == RequisitionId
                                                                  select requisition)
                                                                 .Include(rItems => rItems.RequisitionItems.Select(i => i.Item))
@@ -369,7 +524,7 @@ namespace DanpheEMR.Controllers
                         stockItems = (from stock in inventoryDbContext.Stock
                                       where (stock.ItemId == itemId && stock.AvailableQuantity > 0)
                                       select stock
-                                              ).OrderByDescending(s => s.ExpiryDate).ToList();
+                                              ).OrderBy(s => s.TransactionDate).ToList();
                         if (stockItems.Count > 0)
                         {
                             foreach (var i in stockItems)
@@ -385,6 +540,29 @@ namespace DanpheEMR.Controllers
                     responseData.Results = requisitionStockVM;
                 }
                 #endregion
+
+                #region Requisition-Items for View (in Internal-Requisition page)
+
+                else if (reqType != null && reqType.ToLower() == "get-requisitionitems-for-view")
+                {
+                    //this stored proc returns two tables: 1. RequisitionItemsInfo and 2. Dispatch info.
+                    DataSet dsReqDetails = DALFunctions.GetDatasetFromStoredProc("INV_TXN_VIEW_GetRequisitionItemsInfoForView",
+                        new List<SqlParameter>() { new SqlParameter("@RequisitionId", RequisitionId) },
+                        inventoryDbContext
+                        );
+                    var verificationId = inventoryDbContext.Requisitions.Where(R => R.RequisitionId == RequisitionId).Select(R => R.VerificationId).FirstOrDefault();
+                    List<VerificationActor> verifiers = null;
+                    if (verificationId != null)
+                    {
+                        verifiers = VerificationBL.GetVerifiersList(verificationId ?? 0, inventoryDbContext);
+                    }
+                    var dispatchers = VerificationBL.GetDispatchersList(RequisitionId, inventoryDbContext);
+                    // return anynomous type and handle further in clilent side.. 
+                    responseData.Results = new { RequisitionItemsInfo = dsReqDetails.Tables[0], DispatchInfo = dsReqDetails.Tables[1], Verifiers = verifiers, Dispatchers = dispatchers };
+
+                }
+                #endregion
+
                 #region GET : Internal > Dispatch-All : get all requisition items by ItemId
                 //getting requisition items by item id for DISPATCH-ALL
                 else if (reqType != null && reqType.ToLower() == "requisitionbyitemid")
@@ -443,6 +621,8 @@ namespace DanpheEMR.Controllers
                 {
                     var writeOffItemList = (from writeOff in inventoryDbContext.WriteOffItems
                                             join item in inventoryDbContext.Items on writeOff.ItemId equals item.ItemId
+                                            join unit in inventoryDbContext.UnitOfMeasurementMaster on item.UnitOfMeasurementId equals unit.UOMId into ps
+                                            from unit in ps.DefaultIfEmpty()
                                             select new
                                             {
                                                 ItemName = item.ItemName,
@@ -451,7 +631,9 @@ namespace DanpheEMR.Controllers
                                                 WriteOffDate = writeOff.WriteOffDate,
                                                 ItemRate = writeOff.ItemRate,
                                                 TotalAmount = writeOff.TotalAmount,
-                                                Remark = writeOff.Remark
+                                                Remark = writeOff.Remark,
+                                                unit.UOMName,
+                                                Code = item.Code
                                             }).ToList();
                     responseData.Status = "OK";
                     responseData.Results = writeOffItemList;
@@ -540,7 +722,7 @@ namespace DanpheEMR.Controllers
                                               DepartmentId = rep.DepartmentId,
                                               RequisitionStatus = rep.RequisitionStatus,
                                               DepartmentName = dep.DepartmentName,
-                                              Quantity = (double)Math.Ceiling(reqItem.Quantity) - reqItem.ReceivedQuantity
+                                              Quantity = (double)(reqItem.Quantity) - reqItem.ReceivedQuantity
                                           }).ToList();
 
                     for (var i = 0; i < requestDetails.Count; i++)
@@ -595,31 +777,37 @@ namespace DanpheEMR.Controllers
                 #region GET: External > GoodsReceiptList : get list of goodsreceipt for grid
                 else if (reqType == "goodsreceipt")
                 {
-                    var Sno = 0;
                     var testdate = ToDate.AddDays(1);//to include ToDate, 1 day was added--rusha 07/15/2019
-                    var goodsReceiptList = inventoryDbContext.GoodsReceipts.Where(a => a.IsCancel == false).ToList().GroupJoin(inventoryDbContext.Vendors.ToList(), a => a.VendorId, b => b.VendorId, (a, b) =>
-                           new
-                           {
-                               GoodsReceiptID = a.GoodsReceiptID,
-                               PurchaseOrderId = a.PurchaseOrderId,
-                               GoodsReceiptDate = a.GoodsReceiptDate,
-                               TotalAmount = a.TotalAmount,
-                               Remarks = a.Remarks,
-                               VendorName = b.Select(s => s.VendorName).FirstOrDefault(),
-                               ContactNo = b.Select(s => s.ContactNo),
-                           }).ToList().GroupBy(a => a.GoodsReceiptID).OrderByDescending(a => goodsReceiptId).Select(
+                    var goodsReceiptList = inventoryDbContext.GoodsReceipts
+                        .Join(inventoryDbContext.Vendors, a => a.VendorId, b => b.VendorId, (a, b) => new { gr = a, vendor = b })
+                        .Join(inventoryDbContext.FiscalYears, a => a.gr.FiscalYearId, b => b.FiscalYearId, (a, b) => new { gr = a.gr, vendor = a.vendor, fiscalYear = b })
+                        .GroupJoin(inventoryDbContext.Verifications, a => a.gr.VerificationId, b => b.VerificationId, (a, b) => new { gr = a.gr, vendor = a.vendor, fiscalYear = a.fiscalYear, verif = b })
+                        .SelectMany(a => a.verif.DefaultIfEmpty(), (grJ, verifLj) => new { gr = grJ.gr, vendor = grJ.vendor, fiscalYear = grJ.fiscalYear, verif = verifLj })
+                        .GroupBy(a => a.gr.GoodsReceiptID).Select(
                          a => new
                          {
-                             Sno = ++Sno,
-                             GoodsReceiptID = a.Select(s => s.GoodsReceiptID).FirstOrDefault(),
-                             TotalAmount = a.Sum(s => s.TotalAmount),
-                             Remarks = a.Select(s => s.Remarks),
-                             VendorName = a.Select(s => s.VendorName).FirstOrDefault(),
-                             GoodReceiptDate = a.Select(s => s.GoodsReceiptDate).FirstOrDefault(),
-                             PurchaseOrderId = a.Select(s => s.PurchaseOrderId).FirstOrDefault(),
-                             ContactNo = a.Select(s => s.ContactNo).FirstOrDefault(),
+                             BillNo = a.Select(b => b.gr.BillNo).FirstOrDefault(),
+                             GoodsReceiptID = a.Select(s => s.gr.GoodsReceiptID).FirstOrDefault(),
+                             GoodsReceiptNo = a.Select(s => s.gr.GoodsReceiptNo).FirstOrDefault(),
+                             GRCategory = a.Select(s => s.gr.GRCategory).FirstOrDefault(),
+                             TotalAmount = a.Sum(s => s.gr.TotalAmount),
+                             Remarks = a.Select(s => s.gr.Remarks),
+                             VendorName = a.Select(s => s.vendor.VendorName).FirstOrDefault(),
+                             CreatedOn = a.Select(s => s.gr.CreatedOn).FirstOrDefault(),
+                             GoodReceiptDate = a.Select(s => s.gr.GoodsReceiptDate).FirstOrDefault(),
+                             ReceivedDate = a.Select(s => s.gr.ReceivedDate).FirstOrDefault(),
+                             PurchaseOrderId = a.Select(s => s.gr.PurchaseOrderId).FirstOrDefault(),
+                             ContactNo = a.Select(s => s.vendor.ContactNo).FirstOrDefault(),
+                             IsCancel = a.Select(s => s.gr.IsCancel).FirstOrDefault(),
+                             PaymentMode = a.Select(s => s.gr.PaymentMode).FirstOrDefault(),//sud: 4May'20--needed to show this in frontend..
+                             CurrentFiscalYear = a.Select(s => s.fiscalYear.FiscalYearFormatted).FirstOrDefault(),
+                             GRStatus = a.Select(s => s.gr.GRStatus).FirstOrDefault(),
+                             IsVerificationEnabled = a.Select(s => s.gr.IsVerificationEnabled).FirstOrDefault(),
+                             VerifierIds = a.Select(s => s.gr.VerifierIds).FirstOrDefault(),
+                             MaxVerificationLevel = 0,
+                             CurrentVerificationLevelCount = a.Select(s => (s.verif == null) ? 0 : s.verif.CurrentVerificationLevel).FirstOrDefault()
                          }
-                        );
+                        ).OrderByDescending(a => a.GoodsReceiptID).Where(a => a.GoodReceiptDate > FromDate && a.GoodReceiptDate < testdate);
                     responseData.Status = "OK";
                     responseData.Results = goodsReceiptList;
                 }
@@ -693,77 +881,95 @@ namespace DanpheEMR.Controllers
                 #region GET: External > GoodsReceiptDetails : get detail of goodsreceipt for id
                 else if (reqType == "GRItemsDetailsByGRId")
                 {
-                    //sanjit: if any changes is made here, it also affect goods-receipt-add.component.ts->ShowGoodsReceiptDetails() function.  So please make the respective change.
-                    var gritems = (from gritms in inventoryDbContext.GoodsReceiptItems
-                                   join itms in inventoryDbContext.Items on gritms.ItemId equals itms.ItemId into itmsGroup
-                                   from itm in itmsGroup.DefaultIfEmpty()
-                                   join category in inventoryDbContext.ItemCategoryMaster on itm.ItemCategoryId equals category.ItemCategoryId into ctgGroup
-                                   from ctg in ctgGroup.DefaultIfEmpty()
-                                   where gritms.GoodsReceiptId == goodsReceiptId
-                                   select new
-                                   {
-                                       ItemName = itm.ItemName,
-                                       ItemCode = itm.Code,
-                                       ItemCategory = ctg.ItemCategoryName,
-                                       BatchNo = gritms.BatchNO,
-                                       ExpiryDate = gritms.ExpiryDate,
-                                       ReveivedQuantity = gritms.ReceivedQuantity,
-                                       FreeQuantity = gritms.FreeQuantity,
-                                       GRItemRate = gritms.ItemRate,
-                                       VATAmount = gritms.VATAmount,
-                                       CcAmount = gritms.CcAmount,
-                                       DiscountAmount = gritms.DiscountAmount,
-                                       ItemTotalAmount = gritms.TotalAmount,
-                                       OtherCharge = gritms.OtherCharge,
-                                       GoodsReceiptId = gritms.GoodsReceiptId,
-                                       GoodsReceiptItemId = gritms.GoodsReceiptItemId
-                                   }
-                                               ).ToList();
-                    var grdetails = (from gr in inventoryDbContext.GoodsReceipts
-                                     join ven in inventoryDbContext.Vendors on gr.VendorId equals ven.VendorId
-                                     where gr.GoodsReceiptID == goodsReceiptId
-                                     select new
-                                     {
-                                         GoodsReceiptID = gr.GoodsReceiptID,
-                                         PurchaseOrderId = gr.PurchaseOrderId,
-                                         GoodsReceiptDate = gr.GoodsReceiptDate,
-                                         ReceivedDate = gr.ReceivedDate,
-                                         BillNo = gr.BillNo,
-                                         TotalAmount = gr.TotalAmount,
-                                         SubTotal = gr.SubTotal,
-                                         DiscountAmount = gr.DiscountAmount,
-                                         TDSAmount = gr.TDSAmount,
-                                         TotalWithTDS = gr.TotalWithTDS,
-                                         CcCharge = gr.CcCharge,
-                                         VATTotal = gr.VATTotal,
-                                         Remarks = gr.Remarks,
-                                         VendorName = ven.VendorName,
-                                         VendorNo = ven.ContactNo,
-                                         CreditPeriod = gr.CreditPeriod,
-                                         PaymentMode = gr.PaymentMode,
-                                         OtherCharges = gr.OtherCharges,
-                                         InsuranceCharge = gr.InsuranceCharge,
-                                         CarriageFreightCharge = gr.CarriageFreightCharge,
-                                         PackingCharge = gr.PackingCharge,
-                                         TransportCourierCharge = gr.TransportCourierCharge,
-                                         OtherCharge = gr.OtherCharge,
-                                         IsTransferredToACC = gr.IsTransferredToACC == null ? false : gr.IsTransferredToACC,
-                                         CreatedBy = gr.CreatedBy
-                                     }
-                                            ).ToList();
-                    var CreatedById = grdetails[0].CreatedBy;
-                    var creator = (from emp in masterDbContext.Employees
-                                   join r in masterDbContext.EmployeeRole on emp.EmployeeRoleId equals r.EmployeeRoleId into roleTemp
-                                   from role in roleTemp.DefaultIfEmpty()
-                                   where emp.EmployeeId == CreatedById
-                                   select new
-                                   {
-                                       Name = emp.Salutation + ". " + emp.FirstName + " " + (string.IsNullOrEmpty(emp.MiddleName) ? "" : emp.MiddleName + " ") + emp.LastName,
-                                       Role = role.EmployeeRoleName
-                                   }).FirstOrDefault();
-                    var goodsreceiptDetails = new { grItems = gritems, grDetails = grdetails, creator = creator };
-                    responseData.Status = "OK";
-                    responseData.Results = goodsreceiptDetails;
+                    try
+                    {
+                        //sanjit: if any changes is made here, it also affect goods-receipt-add.component.ts->ShowGoodsReceiptDetails() function.  So please make the respective change.
+                        var gritems = (from gritms in inventoryDbContext.GoodsReceiptItems
+                                       join itms in inventoryDbContext.Items on gritms.ItemId equals itms.ItemId into itmsGroup
+                                       from itm in itmsGroup.DefaultIfEmpty()
+                                       join category in inventoryDbContext.ItemCategoryMaster on itm.ItemCategoryId equals category.ItemCategoryId into ctgGroup
+                                       from ctg in ctgGroup.DefaultIfEmpty()
+                                       where gritms.GoodsReceiptId == goodsReceiptId
+                                       select new
+                                       {
+                                           ItemId = itm.ItemId,
+                                           ItemName = itm.ItemName,
+                                           ItemCode = itm.Code,
+                                           ItemCategory = ctg.ItemCategoryName,
+                                           BatchNo = gritms.BatchNO,
+                                           ExpiryDate = gritms.ExpiryDate,
+                                           ReveivedQuantity = gritms.ReceivedQuantity,
+                                           FreeQuantity = gritms.FreeQuantity,
+                                           GRItemRate = gritms.ItemRate,
+                                           VATAmount = gritms.VATAmount,
+                                           CcAmount = gritms.CcAmount,
+                                           DiscountAmount = gritms.DiscountAmount,
+                                           ItemTotalAmount = gritms.TotalAmount,
+                                           OtherCharge = gritms.OtherCharge,
+                                           GoodsReceiptId = gritms.GoodsReceiptId,
+                                           GoodsReceiptItemId = gritms.GoodsReceiptItemId,
+                                           IsTransferredToACC = gritms.IsTransferredToACC
+                                       }
+                                                   ).ToList();
+                        var grdetails = (from gr in inventoryDbContext.GoodsReceipts
+                                         join ven in inventoryDbContext.Vendors on gr.VendorId equals ven.VendorId
+                                         join fy in inventoryDbContext.FiscalYears on gr.FiscalYearId equals fy.FiscalYearId
+                                         where gr.GoodsReceiptID == goodsReceiptId
+                                         select new
+                                         {
+                                             GoodsReceiptID = gr.GoodsReceiptID,
+                                             GoodsReceiptNo = gr.GoodsReceiptNo,
+                                             PurchaseOrderId = gr.PurchaseOrderId,
+                                             GoodsReceiptDate = gr.GoodsReceiptDate,
+                                             ReceivedDate = gr.ReceivedDate,
+                                             BillNo = gr.BillNo,
+                                             TotalAmount = gr.TotalAmount,
+                                             SubTotal = gr.SubTotal,
+                                             DiscountAmount = gr.DiscountAmount,
+                                             TDSAmount = gr.TDSAmount,
+                                             TotalWithTDS = gr.TotalWithTDS,
+                                             CcCharge = gr.CcCharge,
+                                             VATTotal = gr.VATTotal,
+                                             IsCancel = gr.IsCancel,
+                                             Remarks = gr.Remarks,
+                                             VendorName = ven.VendorName,
+                                             VendorNo = ven.ContactNo,
+                                             CreditPeriod = gr.CreditPeriod,
+                                             PaymentMode = gr.PaymentMode,
+                                             OtherCharges = gr.OtherCharges,
+                                             InsuranceCharge = gr.InsuranceCharge,
+                                             CarriageFreightCharge = gr.CarriageFreightCharge,
+                                             PackingCharge = gr.PackingCharge,
+                                             TransportCourierCharge = gr.TransportCourierCharge,
+                                             OtherCharge = gr.OtherCharge,
+                                             IsTransferredToACC = gr.IsTransferredToACC == null ? false : gr.IsTransferredToACC,
+                                             CancelRemarks = gr.CancelRemarks,
+                                             CreatedBy = gr.CreatedBy,
+                                             CreatedOn = gr.CreatedOn,
+                                             CurrentFiscalYear = fy.FiscalYearFormatted,
+                                             IsVerificationEnabled = gr.IsVerificationEnabled,
+                                             VerifierIds = gr.VerifierIds
+                                         }).FirstOrDefault();
+                        var CreatedById = grdetails.CreatedBy;
+                        var creator = (from emp in masterDbContext.Employees
+                                       join r in masterDbContext.EmployeeRole on emp.EmployeeRoleId equals r.EmployeeRoleId into roleTemp
+                                       from role in roleTemp.DefaultIfEmpty()
+                                       where emp.EmployeeId == CreatedById
+                                       select new
+                                       {
+                                           Name = emp.Salutation + ". " + emp.FirstName + " " + (string.IsNullOrEmpty(emp.MiddleName) ? "" : emp.MiddleName + " ") + emp.LastName,
+                                           Role = role.EmployeeRoleName
+                                       }).FirstOrDefault();
+                        var canUserEditDate = gritems.Any(g => inventoryDbContext.StockTransactions.Where(t => t.GoodsReceiptItemId == g.GoodsReceiptItemId && t.TransactionType != "goodreceipt-items").Count() > 0) == false;
+                        var goodsreceiptDetails = new { grItems = gritems, grDetails = grdetails, creator = creator, canUserEditDate };
+                        responseData.Status = "OK";
+                        responseData.Results = goodsreceiptDetails;
+                    }
+                    catch (Exception ex)
+                    {
+                        responseData.Status = "Failed";
+                        responseData.ErrorMessage = "Something Went Wrong. " + ex.Message;
+                    }
                 }
                 #endregion
                 #region GET: External > PurchaseOrderDetails : get detail of purchaseorder for id
@@ -771,6 +977,8 @@ namespace DanpheEMR.Controllers
                 {
                     var poitems = (from poitms in inventoryDbContext.PurchaseOrderItems
                                    join itms in inventoryDbContext.Items on poitms.ItemId equals itms.ItemId
+                                   join uom in inventoryDbContext.UnitOfMeasurementMaster on itms.UnitOfMeasurementId equals uom.UOMId into uomJoin
+                                   from uomLeftJoin in uomJoin.DefaultIfEmpty()
                                    where poitms.PurchaseOrderId == purchaseOrderId
                                    select new
                                    {
@@ -779,6 +987,9 @@ namespace DanpheEMR.Controllers
                                        ReceivedQuantity = poitms.ReceivedQuantity,
                                        POItemStatus = poitms.POItemStatus,
                                        StandardRate = poitms.StandardRate,
+                                       Code = itms.Code,
+                                       VATAmount = poitms.VATAmount,
+                                       UOMName = uomLeftJoin.UOMName,
                                        ItemTotalAmount = poitms.TotalAmount,
                                        ItemRemark = poitms.Remark,
                                        DeliveryDays = poitms.DeliveryDays,
@@ -787,6 +998,8 @@ namespace DanpheEMR.Controllers
                                    }).ToList();
                     var podetails = (from po in inventoryDbContext.PurchaseOrders
                                      join ven in inventoryDbContext.Vendors on po.VendorId equals ven.VendorId
+                                     join verif in inventoryDbContext.Verifications on po.VerificationId equals verif.VerificationId into verifJ
+                                     from verifLJ in verifJ.DefaultIfEmpty()
                                      where po.PurchaseOrderId == purchaseOrderId
                                      select new
                                      {
@@ -798,11 +1011,16 @@ namespace DanpheEMR.Controllers
                                          POStatus = po.POStatus,
                                          SubTotal = po.SubTotal,
                                          VATAmount = po.VAT,
+                                         IsCancel = po.IsCancel,
                                          TotalAmount = po.TotalAmount,
                                          PORemark = po.PORemark,
                                          CreatedbyId = po.CreatedBy,
                                          Terms = po.TermsConditions,
-                                         VendorEmail = ven.Email
+                                         VendorEmail = ven.Email,
+                                         IsVerificationEnabled = po.IsVerificationEnabled,
+                                         CurrentVerificationLevelCount = (verifLJ == null) ? 0 : verifLJ.CurrentVerificationLevelCount,
+                                         VerifierIds = po.VerifierIds,
+                                         po.InvoiceHeaderId,
                                      }).FirstOrDefault();
                     var creator = (from emp in masterDbContext.Employees
                                    join r in masterDbContext.EmployeeRole on emp.EmployeeRoleId equals r.EmployeeRoleId into roleTemp
@@ -846,7 +1064,7 @@ namespace DanpheEMR.Controllers
                                   {
                                       ItemId = p.Key.ItemId,
                                       ItemName = p.Key.ItemName,
-                                      Quantity = p.Sum(a => (double)Math.Ceiling(a.Quantity) - a.ReceivedQuantity),
+                                      Quantity = p.Sum(a => (double)(a.Quantity) - a.ReceivedQuantity),
                                       StandardRate = p.Key.StandardRate,
                                       VAT = p.Key.VAT
                                   }).ToList();
@@ -882,14 +1100,22 @@ namespace DanpheEMR.Controllers
                 {
                     var stock = (from stk in inventoryDbContext.Stock
                                  join itm in inventoryDbContext.Items on stk.ItemId equals itm.ItemId
-                                 where stk.AvailableQuantity > 0
-                                 group new { stk, itm } by new { stk.ItemId, itm.ItemName, itm.MinStockQuantity } into stocks
+                                 join SubCat in inventoryDbContext.ItemSubCategoryMaster on itm.SubCategoryId equals SubCat.SubCategoryId
+                                 join uom in inventoryDbContext.UnitOfMeasurementMaster on itm.UnitOfMeasurementId equals uom.UOMId into uomJoined
+                                 from uomLeftJoined in uomJoined.DefaultIfEmpty()
+                                 where stk.AvailableQuantity >= 0
+                                 group new { stk, itm, uomLeftJoined, SubCat } by new { stk.ItemId, itm.ItemName, itm.MinStockQuantity } into stocks
                                  select new
                                  {
                                      ItemId = stocks.Key.ItemId,
                                      ItemName = stocks.Key.ItemName,
                                      AvailQuantity = stocks.Sum(a => a.stk.AvailableQuantity),
-                                     MinQuantity = stocks.Sum(a => a.itm.MinStockQuantity)
+                                     MinQuantity = stocks.Key.MinStockQuantity,
+                                     ItemCode = stocks.Select(a => a.itm.Code).FirstOrDefault(),
+                                     ItemType = stocks.Select(a => a.itm.ItemType).FirstOrDefault(),
+                                     SubCategoryName = stocks.Select(a => a.SubCat.SubCategoryName).FirstOrDefault(),
+                                     UnitOfMeasurementId = stocks.Select(a => a.uomLeftJoined.UOMId).FirstOrDefault(),
+                                     UOMName = stocks.Select(a => a.uomLeftJoined.UOMName).FirstOrDefault()//sud: 19Feb'20-- added UOMName since it's needed in stock list page..
                                  }).ToList();
                     responseData.Status = "OK";
                     responseData.Results = stock;
@@ -900,9 +1126,12 @@ namespace DanpheEMR.Controllers
                 {
                     var stockDetails = (from stk in inventoryDbContext.Stock
                                         join gritm in inventoryDbContext.GoodsReceiptItems on stk.GoodsReceiptItemId equals gritm.GoodsReceiptItemId
+                                        join gr in inventoryDbContext.GoodsReceipts on gritm.GoodsReceiptId equals gr.GoodsReceiptID
                                         where (stk.ItemId == ItemId && stk.AvailableQuantity > 0)
                                         select new
                                         {
+                                            gr.GoodsReceiptNo,
+                                            gr.GoodsReceiptDate,
                                             BatchNo = stk.BatchNO,
                                             AvailQuantity = stk.AvailableQuantity,
                                             ItemRate = gritm.ItemRate,
@@ -915,21 +1144,31 @@ namespace DanpheEMR.Controllers
                 #region GET: Stock > get list of StockManage by ItemId
                 else if (reqType == "stockManage")
                 {
+                    
                     var stockManage = (from stk in inventoryDbContext.Stock
+                                       join gri in inventoryDbContext.GoodsReceiptItems on stk.GoodsReceiptItemId equals gri.GoodsReceiptItemId
+                                       join gr in inventoryDbContext.GoodsReceipts on gri.GoodsReceiptId equals gr.GoodsReceiptID
                                        where (stk.ItemId == ItemId && stk.AvailableQuantity > 0)
                                        select new
                                        {
                                            StockId = stk.StockId,
+                                           GoodsReceiptNo = gr.GoodsReceiptNo,
+                                           GoodsReceiptDate = gr.GoodsReceiptDate,
                                            BatchNo = stk.BatchNO,
                                            curQuantity = stk.AvailableQuantity,
                                            ModQuantity = stk.AvailableQuantity,
                                            ReceivedQty = stk.ReceivedQuantity
                                        }).ToList();
+                    //TODO: Remove the zero quantity query from here, as we are not using it anymore.
                     var stockZeroManage = (from stk in inventoryDbContext.Stock
+                                           join gri in inventoryDbContext.GoodsReceiptItems on stk.GoodsReceiptItemId equals gri.GoodsReceiptItemId
+                                           join gr in inventoryDbContext.GoodsReceipts on gri.GoodsReceiptId equals gr.GoodsReceiptID
                                            where (stk.ItemId == ItemId && stk.AvailableQuantity == 0)
                                            select new
                                            {
                                                StockId = stk.StockId,
+                                               GoodsReceiptNo = gr.GoodsReceiptNo,
+                                               GoodsReceiptDate = gr.GoodsReceiptDate,
                                                BatchNo = stk.BatchNO,
                                                curQuantity = stk.AvailableQuantity,
                                                ModQuantity = stk.AvailableQuantity,
@@ -948,8 +1187,9 @@ namespace DanpheEMR.Controllers
                                          join gritms in inventoryDbContext.GoodsReceiptItems on stk.GoodsReceiptItemId equals gritms.GoodsReceiptItemId
                                          join gr in inventoryDbContext.GoodsReceipts on gritms.GoodsReceiptId equals gr.GoodsReceiptID
                                          join vndr in inventoryDbContext.Vendors on gr.VendorId equals vndr.VendorId
-                                         where (vndr.VendorId == vendorId && stk.AvailableQuantity > 0)
-                                         group new { stk, itm, gritms, gr, vndr } by new
+                                         join fs in inventoryDbContext.FiscalYears on gr.FiscalYearId equals fs.FiscalYearId
+                                         where (vndr.VendorId == vendorId && stk.AvailableQuantity > 0) && (gr.GoodsReceiptNo == GoodsReceiptNo) && (gr.FiscalYearId == FiscYrId)
+                                         group new { stk, itm, gritms, gr, vndr, fs } by new
                                          {
                                              itm.ItemId,
                                              itm.ItemName,
@@ -960,6 +1200,7 @@ namespace DanpheEMR.Controllers
                                              ItemId = s.Key.ItemId,
                                              ItemName = s.Key.ItemName,
                                              VAT = s.Key.VAT,
+                                             FiscalYearFormatted = s.Select(stock => stock.fs.FiscalYearFormatted).FirstOrDefault(),
                                              BatchDetails = s.Select(a => new ReturnToVendorItemsVM.BatchDetail
                                              {
                                                  BatchNo = a.stk.BatchNO,
@@ -968,6 +1209,7 @@ namespace DanpheEMR.Controllers
                                                  StockId = a.stk.StockId,
                                                  GRId = a.gritms.GoodsReceiptItemId,
                                                  GoodsReceiptId = a.gr.GoodsReceiptID
+
                                              }).ToList(),
                                          }).ToList();
                     var vendorDetail = (from vndr in inventoryDbContext.Vendors
@@ -1265,8 +1507,108 @@ namespace DanpheEMR.Controllers
                         responseData.Results = result;
                     }
                 }
+                else if (reqType == "getcreditnoteno")
+                {
+                    List<ReturnToVendorItemsModel> crNoRecords = (from inv in inventoryDbContext.ReturnToVendorItems
+                                                                  select inv).ToList();
+                    if (crNoRecords.Count == 0)
+                    {
+                        responseData.Results = 1;
+                    }
+                    else
+                    {
+                        var crNo = (from inv in crNoRecords.AsEnumerable() select inv.CreditNoteNo).ToList().Max();
+                        responseData.Results = crNo + 1;
+                    }
 
+                    //responseData.Results = (CreditNoteNo > 0) ? CreditNoteNo + 1 : 1;
+                    responseData.Status = "OK";
+                }
+
+                #region Get all PO Requisition
+                else if (reqType == "PORequisition")
+                {
+                    var realToDate = ToDate.AddDays(1);
+                    var purchaseRequests = inventoryDbContext.PurchaseRequest.Where(PR => PR.RequestDate > FromDate && PR.RequestDate < realToDate).OrderByDescending(a => a.PurchaseRequestId).ToList();
+                    purchaseRequests.ForEach(
+                        PR =>
+                        {
+                            PR.RequestedByName = VerificationBL.GetNameByEmployeeId(PR.CreatedBy, inventoryDbContext);
+                            PR.VendorName = VerificationBL.GetInventoryVendorNameById(inventoryDbContext, PR.VendorId ?? 0);
+                            var param = VerificationBL.GetPurchaseRequestVerificationSetting(inventoryDbContext);
+                            if (param != null)
+                            {
+                                PR.MaxVerificationLevel = param.VerificationLevel;
+                                if (PR.VerificationId != null)
+                                {
+                                    PR.CurrentVerificationLevelCount = VerificationBL.GetNumberOfVerificationDone(inventoryDbContext, PR.VerificationId ?? 0);
+                                }
+                                else
+                                {
+                                    PR.CurrentVerificationLevelCount = 0;
+                                }
+                            }
+                            else
+                            {
+                                PR.MaxVerificationLevel = 0;
+                            }
+                        }
+                        );
+
+                    responseData.Results = purchaseRequests;
+                    responseData.Status = "OK";
+                }
+                #endregion
+                #region Get PO Requisition by ID
+                else if (reqType == "PORequisitionItemsById")
+                {
+                    var PurchaseRequest = inventoryDbContext.PurchaseRequest.Where(PR => PR.PurchaseRequestId == RequisitionId).FirstOrDefault();
+                    PurchaseRequest.VendorName = inventoryDbContext.Vendors.Where(V => V.VendorId == PurchaseRequest.VendorId).Select(V => V.VendorName).FirstOrDefault();
+                    PurchaseRequest.MaxVerificationLevel = VerificationBL.GetPurchaseRequestVerificationSetting(inventoryDbContext).VerificationLevel;
+                    PurchaseRequest.CurrentVerificationLevelCount = VerificationBL.GetNumberOfVerificationDone(inventoryDbContext, PurchaseRequest.VerificationId ?? 0);
+                    var ItemsRequesterVerifiersDetail = VerificationBL.GetInventoryPurchaseRequestDetails(RequisitionId, inventoryDbContext);
+                    var combinedResult = new { PurchaseRequest, ItemsRequesterVerifiersDetail.RequestedItemList, ItemsRequesterVerifiersDetail.RequestingUser, ItemsRequesterVerifiersDetail.Verifiers };
+                    responseData.Results = combinedResult;
+                    responseData.Status = "OK";
+                }
+                #endregion
+                #region Get Requisition by ReqiuisstionID
+                else if (reqType == "Requisition")
+                {
+
+                    RequisitionModel requisition = inventoryDbContext.Requisitions.Where(R => R.RequisitionId == RequisitionId).Include(a => a.RequisitionItems).FirstOrDefault();
+
+                    foreach (var reqItem in requisition.RequisitionItems)
+                    {
+                        var reqdetail = inventoryDbContext.Requisitions.Where(req => req.RequisitionId == reqItem.RequisitionId).Select(req => new { req.RequisitionDate, req.RequisitionNo, req.IssueNo }).FirstOrDefault();
+
+
+                        var itemDetail = inventoryDbContext.Items.Where(item => item.ItemId == reqItem.ItemId).Select(item => new { item.ItemName, item.Code, item.UnitOfMeasurementId }).FirstOrDefault();
+                        reqItem.ItemName = itemDetail.ItemName;
+                        reqItem.Code = itemDetail.Code;
+                        reqItem.RequisitionNo = reqdetail.RequisitionNo;
+                        reqItem.IssueNo = reqdetail.IssueNo;
+                        reqItem.Quantity = reqItem.Quantity;
+                        reqItem.UOMName = inventoryDbContext.UnitOfMeasurementMaster.Where(uom => uom.UOMId == itemDetail.UnitOfMeasurementId).Select(uom => uom.UOMName).FirstOrDefault();
+
+                    }
+
+                    responseData.Results = requisition;
+                    responseData.Status = "OK";
+                }
+                #endregion
+                #region Get Store Name for DailyItemDispatch Report!!
+                else if (reqType == "StoreList")
+                {
+                    string returnValue = string.Empty;
+                    // PharmacyDbContext phrmdbcontext = new PharmacyDbContext(connString);
+                    List<PHRMStoreModel> StoreList = phrmdbcontext.PHRMStore.ToList();
+                    responseData.Status = "OK";
+                    responseData.Results = StoreList;
+                }
+                #endregion                                
             }
+
             catch (Exception ex)
             {
                 responseData.Status = "Failed";
@@ -1280,6 +1622,329 @@ namespace DanpheEMR.Controllers
         public string Get(int id)
         {
             return "value";
+        }
+
+        // GET api/values/5
+        [HttpGet("~/api/Inventory/GetSubstoreRequistionList/{FromDate}/{ToDate}/{StoreId}")]
+        public IActionResult GetSubstoreRequistionList([FromRoute]DateTime FromDate, [FromRoute]DateTime ToDate, [FromRoute]int StoreId)
+        {
+            InventoryDbContext inventoryDbContext = new InventoryDbContext(connString);
+            DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
+            var RealToDate = ToDate.AddDays(1);
+
+            try
+            {
+                //string[] requisitionStatus = Status.Split(',');
+                var RequisitionList = (from requ in inventoryDbContext.Requisitions
+                                           //join stat in requisitionStatus on requ.RequisitionStatus equals stat
+                                       join store in inventoryDbContext.StoreMasterModel on requ.StoreId equals store.StoreId
+                                       where requ.StoreId == StoreId & requ.RequisitionDate > FromDate & requ.RequisitionDate < RealToDate
+                                       orderby requ.RequisitionId descending
+                                       select new
+                                       {
+                                           RequisitionId = requ.RequisitionId,
+                                           RequisitionNo = requ.RequisitionNo,
+                                           RequisitionDate = requ.RequisitionDate,
+                                           RequisitionStatus = requ.RequisitionStatus,
+                                           StoreName = store.Name,
+                                           MaxVerificationLevel = store.MaxVerificationLevel,
+                                           VerificationId = requ.VerificationId,
+                                       }).AsNoTracking().ToList().Select(R => new RequisitionModel
+                                       {
+                                           RequisitionId = R.RequisitionId,
+                                           RequisitionNo = R.RequisitionNo,
+                                           RequisitionDate = R.RequisitionDate,
+                                           RequisitionStatus = R.RequisitionStatus,
+                                           StoreId = StoreId,
+                                           StoreName = R.StoreName,
+                                           MaxVerificationLevel = R.MaxVerificationLevel,
+                                           VerificationId = R.VerificationId,
+                                       }).ToList();
+                foreach (var Requisition in RequisitionList)
+                {
+                    Requisition.NewDispatchAvailable = InventoryBL.CheckIfNewDispatchAvailable(inventoryDbContext, Requisition.RequisitionId);
+                    if (Requisition.VerificationId != null)
+                    {
+                        Requisition.CurrentVerificationLevelCount = VerificationBL.GetNumberOfVerificationDone(inventoryDbContext, Requisition.VerificationId ?? 0);
+                    }
+                }
+                responseData.Status = "OK";
+                responseData.Results = RequisitionList;
+            }
+            catch (Exception)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = "Something went wrong...";
+            }
+            return Ok(responseData);
+        }
+        [HttpGet("~/api/Inventory/GetAllSubstoreRequistionList/{FromDate}/{ToDate}")]
+        public IActionResult GetAllSubstoreRequistionList([FromRoute]DateTime FromDate, [FromRoute]DateTime ToDate)
+        {
+            InventoryDbContext inventoryDbContext = new InventoryDbContext(connString);
+            MasterDbContext masterDbContext = new MasterDbContext(connString);
+            DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
+            var RealToDate = ToDate.AddDays(1);
+            //string[] requisitionStatus = Status.Split(',');
+
+            try
+            {
+                var RequisitionList = (from requ in inventoryDbContext.Requisitions
+                                           //join stat in requisitionStatus on requ.RequisitionStatus equals stat
+                                       join store in inventoryDbContext.StoreMasterModel on requ.StoreId equals store.StoreId
+                                       where requ.RequisitionDate > FromDate & requ.RequisitionDate < RealToDate & requ.RequisitionStatus != "withdrawn"
+                                       orderby requ.RequisitionId descending
+                                       select new
+                                       {
+                                           RequisitionId = requ.RequisitionId,
+                                           RequisitionNo = requ.RequisitionNo,
+                                           RequisitionDate = requ.RequisitionDate,
+                                           RequisitionStatus = requ.RequisitionStatus,
+                                           StoreId = requ.StoreId,
+                                           StoreName = store.Name,
+                                           MaxVerificationLevel = store.MaxVerificationLevel,
+                                           VerificationId = requ.VerificationId,
+                                       }).AsNoTracking().ToList().Select(R => new RequisitionModel
+                                       {
+                                           RequisitionId = R.RequisitionId,
+                                           RequisitionNo = R.RequisitionNo,
+                                           RequisitionDate = R.RequisitionDate,
+                                           RequisitionStatus = R.RequisitionStatus,
+                                           StoreId = R.StoreId,
+                                           StoreName = R.StoreName,
+                                           MaxVerificationLevel = R.MaxVerificationLevel,
+                                           VerificationId = R.VerificationId,
+                                       }).ToList();
+                foreach (var Requisition in RequisitionList)
+                {
+                    if (Requisition.VerificationId != null)
+                    {
+                        Requisition.CurrentVerificationLevelCount = VerificationBL.GetNumberOfVerificationDone(inventoryDbContext, Requisition.VerificationId ?? 0);
+                    }
+                }
+                responseData.Status = "OK";
+                responseData.Results = RequisitionList;
+            }
+            catch (Exception)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = "Something went wrong...";
+            }
+            return Ok(responseData);
+        }
+        [HttpGet]
+        [Route("~/api/Inventory/GetAllPOVerifiers")]
+        public IActionResult GetAllPOVerifiers()
+        {
+            DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
+            RbacDbContext db = new RbacDbContext(connString);
+            try
+            {
+                List<POVerifier> VerifiersList = VerificationBL.GetAllPOVerifiers(db);
+                if (VerifiersList != null || VerifiersList.Count() > 0)
+                {
+                    responseData.Status = "OK";
+                    responseData.Results = VerifiersList;
+                }
+                else
+                {
+                    responseData.Status = "Failed";
+                    responseData.ErrorMessage = "No Verifiers Found";
+                }
+                return Ok(responseData);
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                return BadRequest(responseData);
+            }
+        }
+
+        [HttpGet]
+        [Route("~/api/Inventory/TrackRequisitionById/{RequisitionId}")]
+        public IActionResult TrackRequisitionById(int RequisitionId)
+        {
+            var dbContext = new InventoryDbContext(connString);
+            var rbacDbContext = new RbacDbContext(connString);
+            var responseData = new DanpheHTTPResponse<TrackRequisitionViewModel>();
+
+            try
+            {
+                var inventoryRequisitionVM = new TrackRequisitionViewModel();
+                RequisitionModel requisition = dbContext.Requisitions.Find(RequisitionId);
+
+                inventoryRequisitionVM.RequisitionId = RequisitionId;
+                inventoryRequisitionVM.CreatedBy = dbContext.Employees.Find(requisition.CreatedBy).FullName;
+                inventoryRequisitionVM.RequisitionDate = ((DateTime)requisition.RequisitionDate);
+                inventoryRequisitionVM.Status = requisition.RequisitionStatus;
+                inventoryRequisitionVM.MaxVerificationLevel = dbContext.StoreMasterModel.Find(requisition.StoreId).MaxVerificationLevel;
+                inventoryRequisitionVM.StoreId = requisition.StoreId;
+                inventoryRequisitionVM.StoreName = dbContext.StoreMasterModel.Find(requisition.StoreId).Name;
+
+                inventoryRequisitionVM.Verifiers = SubstoreBL.GetVerifiersByStoreId(requisition.StoreId, rbacDbContext);
+
+
+                if (requisition.VerificationId != null)
+                {
+                    var VerificationDetail = this._verificationService.GetVerificationViewModel((int)requisition.VerificationId);
+                    foreach (var verifier in inventoryRequisitionVM.Verifiers)
+                    {
+                        var verificationDetail = VerificationDetail.FirstOrDefault(v => v.CurrentVerificationLevel == verifier.CurrentVerificationLevel);
+                        if (verificationDetail != null)
+                        {
+                            verifier.VerificationId = verificationDetail.VerificationId;
+                            verifier.VerificationStatus = verificationDetail.VerificationStatus;
+                            verifier.VerifiedOn = verificationDetail.VerifiedOn;
+                            verifier.VerifiedBy = verificationDetail.VerifiedBy;
+                            verifier.VerificationRemarks = verificationDetail.VerificationRemarks;
+                        }
+                    }
+                }
+
+                inventoryRequisitionVM.Dispatchers = VerificationBL.GetDispatchersList(RequisitionId, dbContext);
+
+                responseData.Status = "OK";
+                responseData.Results = inventoryRequisitionVM;
+
+            }
+            catch (Exception)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = "Something went wrong!";
+            }
+            return Ok(responseData);
+        }
+        [HttpGet]
+        [Route("~/api/Inventory/GetPurchaseRequestItemsById/{PurchaseRequestId}")]
+        public async Task<IActionResult> GetPurchaseRequestItemsById(int PurchaseRequestId)
+        {
+            var _context = new InventoryDbContext(connString);
+            var responseData = new DanpheHTTPResponse<object>();
+            try
+            {
+                var purchaseRequestItems = await _context.PurchaseRequestItems.Where(item => item.PurchaseRequestId == PurchaseRequestId && item.IsActive == true)
+                    .Select(item => new { item.PurchaseRequestItemId, item.ItemId, item.VendorId, item.RequestedQuantity, item.PurchaseRequestId, item.Remarks }).ToListAsync();
+                var PRDetail = await _context.PurchaseRequest.Where(PR => PR.PurchaseRequestId == PurchaseRequestId).Select(PR => new { PR.RequestDate, PR.Remarks }).FirstOrDefaultAsync();
+                if (purchaseRequestItems == null)
+                {
+                    responseData.Status = "Failed";
+                    responseData.ErrorMessage = "Purchase request record not found.";
+                    return NotFound(responseData);
+                }
+                responseData.Status = "OK";
+                responseData.Results = new { purchaseRequestItems, PRDetail.RequestDate, PRDetail.Remarks };
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return Ok(responseData);
+        }
+        [HttpGet]
+        [Route("~/api/Inventory/GetAllItemPriceHistory")]
+        public async Task<IActionResult> GetAllItemPriceHistory()
+        {
+            var inventoryDb = new InventoryDbContext(connString);
+            var responseData = new DanpheHTTPResponse<object>();
+            try
+            {
+                var itemPriceHistory = await (from GRI in inventoryDb.GoodsReceiptItems
+                                              join GR in inventoryDb.GoodsReceipts on GRI.GoodsReceiptId equals GR.GoodsReceiptID
+                                              join V in inventoryDb.Vendors on GR.VendorId equals V.VendorId
+                                              select new
+                                              {
+                                                  GRI.ItemId,
+                                                  GRI.ItemRate,
+                                                  V.VendorName,
+                                                  GR.GoodsReceiptDate
+                                              }).OrderByDescending(GRI => GRI.GoodsReceiptDate).ToListAsync();
+                if (itemPriceHistory == null || itemPriceHistory.Count() == 0)
+                {
+                    responseData.Status = "Failed";
+                    responseData.ErrorMessage = "No price history found.";
+                    return NotFound(responseData);
+                }
+                responseData.Results = itemPriceHistory;
+                responseData.Status = "OK";
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = $"Failed to obtain price history. Message: {ex.Message}";
+                return BadRequest(responseData);
+            }
+            return Ok(responseData);
+        }
+        [HttpGet]
+        [Route("~/api/Inventory/GetAllInventoryFiscalYears")]
+        public async Task<IActionResult> GetAllInventoryFiscalYears()
+        {
+            var db = new InventoryDbContext(connString);
+            var responseData = new DanpheHTTPResponse<object>();
+            try
+            {
+                var fiscalYearList = await db.InventoryFiscalYears.ToListAsync();
+                if (fiscalYearList == null || fiscalYearList.Count() == 0)
+                {
+                    responseData.Status = "Failed";
+                    responseData.ErrorMessage = "No fiscal year found.";
+                    return NotFound(responseData);
+                }
+                responseData.Results = fiscalYearList;
+                responseData.Status = "OK";
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = $"Failed to obtain fiscal years. Message: {ex.Message}";
+                return BadRequest(responseData);
+            }
+            return Ok(responseData);
+        }
+
+        [HttpGet]
+        [Route("~/api/Inventory/GetAllGRVendorBillingHistory")]
+        public async Task<IActionResult> GetAllGRVendorBillingHistory()
+        {
+            var inventoryDb = new InventoryDbContext(connString);
+            var responseData = new DanpheHTTPResponse<object>();
+            try
+            {
+                DateTime dateBefor1Yr = DateTime.Now.AddYears(-1);
+
+                var GRVendorBH = await (from gr in inventoryDb.GoodsReceipts
+                                        join v in inventoryDb.Vendors on gr.VendorId equals v.VendorId
+                                        where gr.IsCancel == false
+                                        && gr.GoodsReceiptDate > dateBefor1Yr // sud:24Jun'20-taking data of last 1 year.
+                                        select new
+                                        {
+                                            gr.VendorId,
+                                            gr.BillNo,
+                                            gr.GoodsReceiptDate,
+                                            v.VendorName,
+                                            gr.GoodsReceiptNo
+                                        }).OrderByDescending(a => a.GoodsReceiptDate).ToListAsync();
+
+
+                if (GRVendorBH == null || GRVendorBH.Count() == 0)
+                {
+                    responseData.Status = "Failed";
+                    responseData.ErrorMessage = "No GR Vendor Billing history found.";
+                    return NotFound(responseData);
+                }
+                responseData.Results = GRVendorBH;
+                responseData.Status = "OK";
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                //sud:24Jun'20- We shouldn't hide Exception details in server side until we have Exeption Logging mechanism in place.
+                //responseData.ErrorMessage = "Failed to obtain GR Vendor Billing history.";
+                responseData.ErrorMessage = ex.Message;
+                return BadRequest(responseData);
+            }
+            return Ok(responseData);
         }
 
         // POST api/values
@@ -1302,6 +1967,7 @@ namespace DanpheEMR.Controllers
                     {
                         poFromClient.PurchaseOrderItems.ForEach(item =>
                         {
+                            item.PendingQuantity = item.Quantity - item.ReceivedQuantity;
                             item.CreatedOn = DateTime.Now;
                             //remove it when Maker-Checker concept is added.
                             //and get the actual authorizedon value when it's authorized.<sudarshan:20Jun'17>
@@ -1312,53 +1978,103 @@ namespace DanpheEMR.Controllers
                         {
                             poFromClient.PoDate = DateTime.Now;
                         }
+                        //check if verification enabled
+                        poFromClient.VerifierIds = (poFromClient.IsVerificationEnabled == true) ? InventoryBL.SerializeProcurementVerifiers(poFromClient.VerifierList) : "";
                         inventoryDbContext.PurchaseOrders.Add(poFromClient);
                         inventoryDbContext.SaveChanges();
                         responseData.Results = poFromClient.PurchaseOrderId;
                     }
                 }
-                #endregion
-
-                #region this for editing the PO and POitems
-                if (reqType != null && reqType == "UpdatePurchaseOrder")
+                #endregion               
+                #region//this for saving the PO Requisition
+                if (reqType != null && reqType == "PostPORequisition")
                 {
                     string Str = this.ReadPostData();
-                    PurchaseOrderModel poFromClient = DanpheJSONConvert.DeserializeObject<PurchaseOrderModel>(Str);
-                    if (poFromClient != null && poFromClient.PurchaseOrderItems != null && poFromClient.PurchaseOrderItems.Count > 0)
+                    PurchaseRequestModel reqFromClient = DanpheJSONConvert.DeserializeObject<PurchaseRequestModel>(Str);
+                    RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
+                    if (reqFromClient != null && reqFromClient.PurchaseRequestItems != null && reqFromClient.PurchaseRequestItems.Count > 0)
                     {
-                        using (var dbTransaction = inventoryDbContext.Database.BeginTransaction())
+                        var PRListForCount = inventoryDbContext.PurchaseRequest.ToList();
+                        if (PRListForCount.Count() == 0)
                         {
-                            try
-                            {
-                                inventoryDbContext.PurchaseOrders.Attach(poFromClient);
-                                inventoryDbContext.Entry(poFromClient).State = EntityState.Modified;
-                                inventoryDbContext.Entry(poFromClient).Property(x => x.CreatedOn).IsModified = false;
-                                inventoryDbContext.Entry(poFromClient).Property(x => x.CreatedBy).IsModified = false;
-                                inventoryDbContext.Entry(poFromClient).Property(x => x.VendorId).IsModified = false;
-                                inventoryDbContext.SaveChanges();
-                                poFromClient.PurchaseOrderItems.ForEach(itm =>
-                                {
-                                    inventoryDbContext.PurchaseOrderItems.Attach(itm);
-                                    inventoryDbContext.Entry(itm).State = EntityState.Modified;
-                                    inventoryDbContext.Entry(itm).Property(x => x.PurchaseOrderId).IsModified = false;
-                                    inventoryDbContext.Entry(itm).Property(x => x.AuthorizedOn).IsModified = false;
-                                    inventoryDbContext.Entry(itm).Property(x => x.AuthorizedBy).IsModified = false;
-                                    inventoryDbContext.Entry(itm).Property(x => x.CreatedOn).IsModified = false;
-                                    inventoryDbContext.Entry(itm).Property(x => x.CreatedBy).IsModified = false;
-                                    inventoryDbContext.SaveChanges();
-                                });
-                                dbTransaction.Commit();
-                                responseData.Results = poFromClient.PurchaseOrderId; ;
-                            }
-                            catch (Exception Ex)
-                            {
-                                dbTransaction.Rollback();
-                                throw Ex;
-                            }
+                            reqFromClient.PRNumber = 1;
                         }
+                        else
+                            reqFromClient.PRNumber = PRListForCount.OrderByDescending(a => a.PurchaseRequestId).First().PRNumber + 1;
+
+                        reqFromClient.CreatedBy = currentUser.EmployeeId;
+                        reqFromClient.CreatedOn = DateTime.Now;
+                        inventoryDbContext.PurchaseRequest.Add(reqFromClient);
+                        inventoryDbContext.SaveChanges();
+                        var reqId = reqFromClient.PurchaseRequestId;
+                        reqFromClient.PurchaseRequestItems.ForEach(item =>
+                        {
+                            item.CreatedOn = DateTime.Now;
+                            item.PurchaseRequestId = reqId;
+                            inventoryDbContext.SaveChanges();
+                        });
+                        var PRSettings = VerificationBL.GetPurchaseRequestVerificationSetting(inventoryDbContext);
+                        if (PRSettings.EnableVerification == true && PRSettings.VerificationLevel > 0)
+                        {
+                            var NotificationDB = new NotiFicationDbContext(connString);
+                            List<int> PRVerifiersRoleIds = new List<int>();
+                            PRSettings.PermissionIds.ForEach(P => PRVerifiersRoleIds.AddRange(RBAC.GetAllRoleIdsByPermissionId(P)));
+                            PRVerifiersRoleIds.ForEach(RoleId =>
+                            {
+                                InventoryBL.CreateNotificationForPRVerifiers(reqFromClient.PurchaseRequestId, RoleId, NotificationDB);
+
+                            });
+                        }
+                        responseData.Results = reqFromClient.PurchaseRequestId;
                     }
                 }
                 #endregion
+                #region cancel purchase order and post to inventory txn purchase order table
+                else if (reqType == "cancel-purchase-order")
+                {
+
+                    RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
+                    string POIdstr = this.ReadQueryStringData("purchaseOrderId");
+                    int poId = int.Parse(POIdstr);
+                    string CancelRemarks = this.ReadPostData();
+                    bool flag = true;
+                    flag = InventoryBL.CancelPurchaseOrderById(inventoryDbContext, poId, CancelRemarks, currentUser);
+                    if (flag)
+                    {
+                        responseData.Status = "OK";
+                        responseData.Results = 1;
+                    }
+                    else
+                    {
+                        responseData.ErrorMessage = "Purchase Order Cancellation Failed !!!";
+                        responseData.Status = "Failed";
+                    }
+                }
+                #endregion
+
+
+                //#region cancel goods receipt and post to inventory txn goods receipt table
+                //else if (reqType == "cancel-goods-receipt")
+                //{
+                //    //sanjit: 25Mar'2020 This function has been migrated to a new HttpPost Request CancelGoodsReceipt()
+                //    RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
+                //    string Str = this.ReadPostData();
+                //    int grId = int.Parse(Str);
+                //    bool flag = true;
+                //    var EmptyString = "";
+                //    flag = InventoryBL.CancelGoodsReceipt(inventoryDbContext, grId, EmptyString, currentUser);
+                //    if (flag)
+                //    {
+                //        responseData.Status = "OK";
+                //        responseData.Results = 1;
+                //    }
+                //    else
+                //    {
+                //        responseData.ErrorMessage = "Goods Receipt Cancellation Failed !!!";
+                //        responseData.Status = "Failed";
+                //    }
+                //}
+                //#endregion
                 if (reqType != null && reqType == "ReqForQuotation")
                 {
                     string Str = this.ReadPostData();
@@ -1510,6 +2226,11 @@ namespace DanpheEMR.Controllers
 
                     });
                     GoodsReceiptFromClient.CreatedOn = DateTime.Now;
+                    //GoodsReceiptFromClient.GoodsReceiptNo = InventoryBL.GetGoodReceiptNo(inventoryDbContext);
+                    //GoodsReceiptNo max+1 increment logic.
+                    // var currentDate = DateTime.Now.Date;
+                    // GoodsReceiptFromClient.FiscalYearId = NewMethod(inventoryDbContext, currentDate);
+                    // GoodsReceiptFromClient.GoodsReceiptNo = inventoryDbContext.GoodsReceipts.Where(G => G.FiscalYearId == GoodsReceiptFromClient.FiscalYearId).Select(G => G.GoodsReceiptNo).DefaultIfEmpty(0).Max();
                     inventoryDbContext.GoodsReceipts.Add(GoodsReceiptFromClient);
 
                     //Save Goods Receipt to DB
@@ -1531,7 +2252,7 @@ namespace DanpheEMR.Controllers
                             stockItem.ExpiryDate = item.ExpiryDate;
                             stockItem.ReceivedQuantity = item.ReceivedQuantity;
                             stockItem.AvailableQuantity = item.ReceivedQuantity;
-                            stockItem.ReceiptDate = GoodsReceiptFromClient.GoodsReceiptDate;
+                            stockItem.TransactionDate = GoodsReceiptFromClient.GoodsReceiptDate;
                             stockItem.CreatedBy = item.CreatedBy;
                             stockItem.CreatedOn = item.CreatedOn;
                             inventoryDbContext.Stock.Add(stockItem);
@@ -1547,41 +2268,32 @@ namespace DanpheEMR.Controllers
                 #region Post(save) Dispatched Items to database
                 else if (reqType != null && reqType.ToLower() == "dispatchitems")
                 {
+                    RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
                     string Str = this.ReadPostData();
                     RequisitionStockVM requisitionStockVMFromClient = DanpheJSONConvert.DeserializeObject<RequisitionStockVM>(Str);
 
                     if (requisitionStockVMFromClient.dispatchItems != null && requisitionStockVMFromClient.dispatchItems.Count > 0)
                     {
-                        Boolean Flag = false;
-                        Flag = InventoryBL.DispatchItemsTransaction(requisitionStockVMFromClient, inventoryDbContext);
-                        if (Flag)
+                        int DispatchId = 0;
+                        using (var dbContextTransaction = inventoryDbContext.Database.BeginTransaction())
                         {
-                            responseData.Status = "OK";
-                            responseData.Results = 1;
+                            try
+                            {
+                                DispatchId = InventoryBL.DispatchItemsTransaction(requisitionStockVMFromClient, inventoryDbContext, currentUser);
+
+                                dbContextTransaction.Commit();
+                            }
+                            catch (Exception ex)
+                            {
+                                //Rollback all transaction if exception occured
+                                dbContextTransaction.Rollback();
+                                throw ex;
+                            }
                         }
-                    }
-                    else
-                    {
-                        responseData.ErrorMessage = "Dispatch Items is null";
-                        responseData.Status = "Failed";
-                    }
-                }
-                #endregion
-
-                #region Post(save) Dispatched Items to database (DISPATCH-ALL)
-                else if (reqType != null && reqType.ToLower() == "dispatchallitems")
-                {
-                    string Str = this.ReadPostData();
-                    RequisitionsStockVM requisitionsStockVMFromClient = DanpheJSONConvert.DeserializeObject<RequisitionsStockVM>(Str);
-
-                    if (requisitionsStockVMFromClient.dispatchItems != null && requisitionsStockVMFromClient.dispatchItems.Count > 0)
-                    {
-                        Boolean Flag = false;
-                        Flag = InventoryBL.DispatchAllTransaction(requisitionsStockVMFromClient, inventoryDbContext);
-                        if (Flag)
+                        if (DispatchId > 0)
                         {
                             responseData.Status = "OK";
-                            responseData.Results = 1;
+                            responseData.Results = DispatchId;
                         }
                     }
                     else
@@ -1619,7 +2331,10 @@ namespace DanpheEMR.Controllers
                 else if (reqType != null && reqType == "ReturnToVendor")
                 {
                     string Str = this.ReadPostData();
-                    List<ReturnToVendorItemsModel> retrnToVendor = DanpheJSONConvert.DeserializeObject<List<ReturnToVendorItemsModel>>(Str);
+                    //List<ReturnToVendorModel> retrnToVendor = DanpheJSONConvert.DeserializeObject<List<ReturnToVendorModel>>(Str);
+
+                    ReturnToVendorModel retrnToVendor = DanpheJSONConvert.DeserializeObject<ReturnToVendorModel>(Str);
+                    //List<ReturnToVendorItemsModel> retrnToVendor = DanpheJSONConvert.DeserializeObject<List<ReturnToVendorItemsModel>>(Str);
 
                     if (retrnToVendor != null)
                     {
@@ -1656,14 +2371,35 @@ namespace DanpheEMR.Controllers
 
                     //removing the RequisitionItems from RequisitionFromClient because RequisitionItems will be saved later 
                     RequisitionFromClient.RequisitionItems = null;
+                    var maxRequisitionList = inventoryDbContext.Requisitions.ToList();
+                    if (maxRequisitionList.Count() == 0)
+                    {
+                        RequisitionFromClient.RequisitionNo = 1;
+                    }
+                    else
+                        RequisitionFromClient.RequisitionNo = maxRequisitionList.OrderByDescending(a => a.RequisitionNo).First().RequisitionNo + 1;
 
+                    requisition.IssueNo = RequisitionFromClient.IssueNo;
                     //asigining the value to POFromClient with POitems= null
                     requisition = RequisitionFromClient;
                     requisition.CreatedOn = DateTime.Now;
+                    //sanjit: 8 Apr'20: added to maintain history table.
+                    requisition.ModifiedBy = requisition.CreatedBy;
+                    requisition.ModifiedOn = requisition.CreatedOn;
                     if (requisition.RequisitionDate == null)
                     {
                         requisition.RequisitionDate = DateTime.Now;
                     }
+                    else
+                    {
+                        var currDateTime = System.DateTime.Now;
+                        var diff = currDateTime.Subtract(requisition.RequisitionDate.Value).Days;
+                        diff = diff * (-1);
+                        requisition.RequisitionDate = currDateTime.AddDays(diff);
+                    }
+
+
+
                     inventoryDbContext.Requisitions.Add(requisition);
 
                     //this is for requisition only
@@ -1671,14 +2407,20 @@ namespace DanpheEMR.Controllers
 
                     //getting the lastest RequistionId 
                     int lastRequId = requisition.RequisitionId;
-
+                    int lastRequNo = requisition.RequisitionNo;
+                    int? issueNo = requisition.IssueNo;
                     //assiging the RequisitionId and CreatedOn i requisitionitem list
                     requisitionItems.ForEach(item =>
                     {
                         item.RequisitionId = lastRequId;
+                        item.RequisitionNo = lastRequNo;
+                        item.IssueNo = issueNo;
                         item.CreatedOn = DateTime.Now;
+                        item.ModifiedBy = item.CreatedBy;
+                        item.ModifiedOn = item.CreatedOn;
                         item.AuthorizedOn = DateTime.Now;
                         item.PendingQuantity = (double)item.Quantity;
+                        item.CancelQuantity = (double)item.CancelQuantity;
                         inventoryDbContext.RequisitionItems.Add(item);
 
                     });
@@ -1697,14 +2439,106 @@ namespace DanpheEMR.Controllers
             }
             return DanpheJSONConvert.SerializeObject(responseData, true);
         }
+        [HttpPost]
+        [Route("~/api/Inventory/WithdrawRequisitionById/{RequisitionId}")]
+        public IActionResult WithdrawRequisitionById([FromRoute] int RequisitionId)
+        {
 
+            RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
+            DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
+            InventoryDbContext db = new InventoryDbContext(connString);
 
+            string RequisitionStatus = "withdrawn";
+            string WithdrawRemarks = this.ReadPostData();
+            bool flag = true;
+            flag = InventoryBL.CancelSubstoreRequisition(db, RequisitionId, WithdrawRemarks, currentUser, null, RequisitionStatus); //since it is cancelled in substore level, verificationId is not created.
+            if (flag)
+            {
+                responseData.Status = "OK";
+                responseData.Results = 1;
+            }
+            else
+            {
+                responseData.ErrorMessage = "Requisition Cancellation Failed !!!";
+                responseData.Status = "Failed";
+            }
+
+            return Ok(responseData);
+        }
+
+        [HttpPost]
+        [Route("~/api/Inventory/CancelGoodsReceipt/{GoodsReceiptId}")]
+        public IActionResult CancelGoodsReceipt([FromRoute]int GoodsReceiptId)
+        {
+            //sanjit: 25Mar'2020 This function was migrated from reqtype='cancel-goods-receipt'.
+            var currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
+            var inventoryDbContext = new InventoryDbContext(connString);
+            var responseData = new DanpheHTTPResponse<object>();
+            string CancelRemarks = this.ReadPostData().ToString();
+            bool flag = true;
+            flag = InventoryBL.CancelGoodsReceipt(inventoryDbContext, GoodsReceiptId, CancelRemarks, currentUser);
+            if (flag)
+            {
+                responseData.Status = "OK";
+                responseData.Results = 1;
+            }
+            else
+            {
+                responseData.ErrorMessage = "Goods Receipt Cancellation Failed !!! Check Stock.";
+                responseData.Status = "Failed";
+            }
+            return Ok(responseData);
+        }
+        [HttpPost]
+        [Route("~/api/Inventory/WithdrawPurchaseRequestById/{PurchaseRequestId}")]
+        public IActionResult WithdrawPurchaseRequestById(int PurchaseRequestId)
+        {
+            var context = new InventoryDbContext(connString);
+            var responseData = new DanpheHTTPResponse<object>();
+            var currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
+            try
+            {
+                string RequestStatus = "withdrawn";
+                string WithdrawRemarks = this.ReadPostData();
+                var flag = InventoryBL.CancelPurchaseRequestById(context, PurchaseRequestId, WithdrawRemarks, currentUser, null, RequestStatus);
+                responseData.Status = "OK";
+                responseData.Results = PurchaseRequestId;
+            }
+            catch (Exception)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = "Something went wrong";
+            }
+            return Ok();
+        }
+        [HttpPost]
+        [Route("~/api/Inventory/PostDirectDispatch")]
+        public IActionResult PostDirectDispatch([FromBody]RequisitionStockVM requisition)
+        {
+            var responseData = new DanpheHTTPResponse<object>();
+            var inventoryDb = new InventoryDbContext(connString);
+            var currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
+            try
+            {
+                InventoryBL.DirectDispatch(requisition, inventoryDb, currentUser);
+                responseData.Status = "OK";
+                responseData.Results = requisition.requisition.RequisitionId;
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.ToString();
+
+            }
+            return Ok(responseData);
+        }
         // PUT api/values/5
         [HttpPut]
         public string Put()
         {
 
             DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
+            RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
             responseData.Status = "OK";
             try
             {
@@ -1742,16 +2576,81 @@ namespace DanpheEMR.Controllers
                     responseData.Results = "Purchase Order Status Changed successfully.";
                 }
                 #endregion
+
+                #region PUT Update Requisition and Requisition status after Requisition dispatch
+                //
+                else if (reqType != null && reqType.ToLower() == "updaterequisitionstatus")
+                {
+                    RequisitionModel RequistionFromClient = DanpheJSONConvert.
+                       DeserializeObject<RequisitionModel>(str);
+                    // map all the entities we want to update.
+                    // OwnedCollection for list, OwnedEntity for one-one navigational property
+                    // test it thoroughly, also with sql-profiler on how it generates the code
+
+
+                    RequistionFromClient.ModifiedOn = DateTime.Now;
+                    RequistionFromClient.ModifiedBy = currentUser.EmployeeId;
+                    inventorygDbContext.Requisitions.Attach(RequistionFromClient);
+                    inventorygDbContext.Entry(RequistionFromClient).Property(x => x.RequisitionStatus).IsModified = true;
+                    inventorygDbContext.Entry(RequistionFromClient).Property(x => x.ModifiedBy).IsModified = true;
+                    inventorygDbContext.Entry(RequistionFromClient).Property(x => x.ModifiedOn).IsModified = true;
+
+                    foreach (var ReqItem in RequistionFromClient.RequisitionItems)
+                    {
+                        ReqItem.ModifiedBy = RequistionFromClient.ModifiedBy;
+                        ReqItem.ModifiedOn = RequistionFromClient.ModifiedOn;
+                        inventorygDbContext.RequisitionItems.Attach(ReqItem);
+                        inventorygDbContext.Entry(ReqItem).Property(x => x.ReceivedQuantity).IsModified = true;
+                        inventorygDbContext.Entry(ReqItem).Property(x => x.PendingQuantity).IsModified = true;
+                        inventorygDbContext.Entry(ReqItem).Property(x => x.RequisitionItemStatus).IsModified = true;
+                        inventorygDbContext.Entry(ReqItem).Property(x => x.ModifiedBy).IsModified = true;
+                        inventorygDbContext.Entry(ReqItem).Property(x => x.ModifiedOn).IsModified = true;
+                    }
+
+                    inventorygDbContext.SaveChanges();
+                    responseData.Status = "OK";
+                    responseData.Results = "Requisition Status Changed successfully.";
+                }
+                #endregion
                 #region PUT : Stock Manage
                 else if (reqType == "stockManage")
                 {
                     List<StockModel> stkData = DanpheJSONConvert.DeserializeObject<List<StockModel>>(str);
                     //stkData.ForEach(a=> a)
 
-                    stkData.ForEach(item =>
+                    stkData.ForEach(stk =>
                     {
-                        inventorygDbContext.Stock.Attach(item);
-                        inventorygDbContext.Entry(item).Property(x => x.AvailableQuantity).IsModified = true;
+                        inventorygDbContext.Stock.Attach(stk);
+                        inventorygDbContext.Entry(stk).Property(x => x.AvailableQuantity).IsModified = true;
+
+                        //to store it in store Transaction table
+                        var StockTxn = new StockTransactionModel();
+                        StockTxn.StockId = stk.StockId;
+                        StockTxn.ReferenceNo = stk.StockId;
+                        StockTxn.CreatedBy = currentUser.EmployeeId;
+                        StockTxn.CreatedOn = DateTime.Now;
+                        StockTxn.ItemId = stk.ItemId;
+                        var stockData = inventorygDbContext.Stock.Where(S => S.StockId == stk.StockId).Select(S => new { S.MRP, S.Price, S.GoodsReceiptItemId }).FirstOrDefault();
+                        StockTxn.Price = stockData.Price;
+                        StockTxn.MRP = stockData.MRP;
+                        StockTxn.GoodsReceiptItemId = stockData.GoodsReceiptItemId;
+                        StockTxn.TransactionType = "stockmanaged-items";
+                        StockTxn.IsTransferredToACC = null;
+                        StockTxn.TransactionDate = StockTxn.CreatedOn;
+                        StockTxn.FiscalYearId = InventoryBL.GetFiscalYear(inventorygDbContext).FiscalYearId;
+                        StockTxn.IsActive = true;
+                        if (stk.AvailableQuantity < stk.curQuantity)
+                        {
+                            StockTxn.InOut = "out";
+                            StockTxn.Quantity = stk.curQuantity - stk.AvailableQuantity;
+                        }
+                        else if (stk.AvailableQuantity > stk.curQuantity)
+                        {
+                            StockTxn.InOut = "in";
+                            StockTxn.Quantity = stk.AvailableQuantity - stk.curQuantity;
+                        }
+                        inventorygDbContext.StockTransactions.Add(StockTxn);
+                        inventorygDbContext.SaveChanges();
                     });
                     inventorygDbContext.SaveChanges();
                     responseData.Status = "OK";
@@ -1781,6 +2680,277 @@ namespace DanpheEMR.Controllers
 
                 }
                 #endregion
+                #region this for editing the PO and POitems
+                else if (reqType != null && reqType == "UpdatePurchaseOrder")
+                {
+                    string Str = this.ReadPostData();
+                    PurchaseOrderModel poFromClient = DanpheJSONConvert.DeserializeObject<PurchaseOrderModel>(Str);
+                    if (poFromClient != null && poFromClient.PurchaseOrderItems != null && poFromClient.PurchaseOrderItems.Count > 0)
+                    {
+                        using (var dbTransaction = inventorygDbContext.Database.BeginTransaction())
+                        {
+                            try
+                            {
+                                //to assign POID if new item has been added.
+                                var PoId = poFromClient.PurchaseOrderId;
+                                //if any old item has been deleted, we need to compare POitemidlist
+                                List<int> POItmIdList = inventorygDbContext.PurchaseOrderItems.Where(a => a.PurchaseOrderId == PoId).Select(a => a.PurchaseOrderItemId).ToList();
+                                //check if verifiers are needed to be set again.
+                                poFromClient.VerifierIds = (poFromClient.IsVerificationEnabled == true) ? InventoryBL.SerializeProcurementVerifiers(poFromClient.VerifierList) : "";
+                                inventorygDbContext.PurchaseOrders.Attach(poFromClient);
+                                inventorygDbContext.Entry(poFromClient).State = EntityState.Modified;
+                                inventorygDbContext.Entry(poFromClient).Property(x => x.CreatedOn).IsModified = false;
+                                inventorygDbContext.Entry(poFromClient).Property(x => x.CreatedBy).IsModified = false;
+                                inventorygDbContext.Entry(poFromClient).Property(x => x.VendorId).IsModified = false;
+                                inventorygDbContext.Entry(poFromClient).Property(x => x.ModifiedOn).IsModified = true;
+                                inventorygDbContext.Entry(poFromClient).Property(x => x.ModifiedBy).IsModified = true;
+                                inventorygDbContext.Entry(poFromClient).Property(x => x.VerifierIds).IsModified = true;
+                                inventorygDbContext.Entry(poFromClient).Property(x => x.RequisitionId).IsModified = false;
+                                inventorygDbContext.SaveChanges();
+                                poFromClient.PurchaseOrderItems.ForEach(itm =>
+                                {
+
+                                    if (itm.PurchaseOrderItemId > 0) //old elememnt will have the purchaseOrderItemId
+                                    {
+                                        itm.PendingQuantity = itm.Quantity;
+                                        itm.VATAmount = itm.VATAmount;
+                                        inventorygDbContext.PurchaseOrderItems.Attach(itm);
+                                        inventorygDbContext.Entry(itm).State = EntityState.Modified;
+                                        inventorygDbContext.Entry(itm).Property(x => x.PurchaseOrderId).IsModified = false;
+                                        inventorygDbContext.Entry(itm).Property(x => x.AuthorizedOn).IsModified = false;
+                                        inventorygDbContext.Entry(itm).Property(x => x.AuthorizedBy).IsModified = false;
+                                        inventorygDbContext.Entry(itm).Property(x => x.CreatedOn).IsModified = false;
+                                        inventorygDbContext.Entry(itm).Property(x => x.CreatedBy).IsModified = false;
+                                        inventorygDbContext.Entry(itm).Property(x => x.VATAmount).IsModified = true;
+                                        inventorygDbContext.SaveChanges();
+                                        //delete the present POitemid from the list, so later we can delete the remaining item in the list.
+                                        POItmIdList = POItmIdList.Where(a => a != itm.PurchaseOrderItemId).ToList();
+                                    }
+
+                                    else //new items wont have PurchaseOrderItemId
+                                    {
+                                        //for adding new reqitm
+                                        itm.CreatedOn = DateTime.Now;
+                                        itm.CreatedBy = currentUser.EmployeeId;
+                                        itm.PurchaseOrderId = PoId;
+                                        itm.AuthorizedOn = DateTime.Now;
+                                        itm.AuthorizedBy = currentUser.EmployeeId;
+                                        itm.PendingQuantity = itm.Quantity;
+                                        itm.POItemStatus = "active";
+                                        inventorygDbContext.PurchaseOrderItems.Add(itm);
+                                        inventorygDbContext.SaveChanges();
+                                    }
+                                });
+
+                                //for deleting old element
+                                if (POItmIdList.Any())
+                                {
+                                    foreach (int poitmid in POItmIdList)
+                                    {
+                                        var poitm = inventorygDbContext.PurchaseOrderItems.Find(poitmid);
+                                        inventorygDbContext.Entry(poitm).State = EntityState.Deleted;
+                                    }
+
+                                    inventorygDbContext.SaveChanges();
+                                }
+                                dbTransaction.Commit();
+                                responseData.Results = poFromClient.PurchaseOrderId; ;
+                            }
+                            catch (Exception Ex)
+                            {
+                                dbTransaction.Rollback();
+                                throw Ex;
+                            }
+                        }
+                    }
+                }
+                #endregion
+                #region//this for editing the PO Requisition
+                else if (reqType != null && reqType == "UpdatePORequisition")
+                {
+                    string Str = this.ReadPostData();
+                    PurchaseRequestModel purchaseRequestFromClient = DanpheJSONConvert.DeserializeObject<PurchaseRequestModel>(Str);
+                    if (purchaseRequestFromClient != null && purchaseRequestFromClient.PurchaseRequestItems != null && purchaseRequestFromClient.PurchaseRequestItems.Count > 0)
+                    {
+                        purchaseRequestFromClient.ModifiedOn = DateTime.Now;
+                        purchaseRequestFromClient.ModifiedBy = currentUser.EmployeeId;
+                        var reqId = purchaseRequestFromClient.PurchaseRequestId;
+                        //if any old item has been deleted, we need to compare requisitionitemidlist
+                        List<int> ReqItmIdList = inventorygDbContext.PurchaseRequestItems.Where(a => a.PurchaseRequestId == reqId && a.IsActive == true).Select(a => a.PurchaseRequestItemId).ToList();
+                        purchaseRequestFromClient.PurchaseRequestItems.ForEach(item =>
+                        {
+                            if (item.PurchaseRequestItemId > 0) //old elememnt will have the requisitionItemId
+                            {
+                                //for updating old element
+                                item.ModifiedBy = currentUser.EmployeeId;
+                                item.ModifiedOn = DateTime.Now;
+                                inventorygDbContext.PurchaseRequestItems.Attach(item);
+                                inventorygDbContext.Entry(item).Property(a => a.ItemId).IsModified = true;
+                                inventorygDbContext.Entry(item).Property(a => a.VendorId).IsModified = true;
+                                inventorygDbContext.Entry(item).Property(a => a.RequestedQuantity).IsModified = true;
+                                inventorygDbContext.Entry(item).Property(a => a.Remarks).IsModified = true;
+                                inventorygDbContext.Entry(item).Property(a => a.ModifiedBy).IsModified = true;
+                                inventorygDbContext.Entry(item).Property(a => a.ModifiedBy).IsModified = true;
+                                inventorygDbContext.SaveChanges();
+                                //cancel the present POitemid from the list, so later we can delete the remaining item in the list.
+                                ReqItmIdList = ReqItmIdList.Where(a => a != item.PurchaseRequestItemId).ToList();
+                            }
+                            else //new items wont have requisitionItemId
+                            {
+                                //for adding new reqitm
+                                item.CreatedOn = DateTime.Now;
+                                item.CreatedBy = currentUser.EmployeeId;
+                                item.PurchaseRequestId = reqId;
+                                item.RequestItemStatus = "active";
+                                item.VendorId = purchaseRequestFromClient.VendorId;
+                                inventorygDbContext.PurchaseRequestItems.Add(item);
+                                inventorygDbContext.SaveChanges();
+                            }
+                        });
+                        //for cancelling old element
+                        if (ReqItmIdList.Any())
+                        {
+                            foreach (int reqitmid in ReqItmIdList)
+                            {
+                                var reqitm = inventorygDbContext.PurchaseRequestItems.Find(reqitmid);
+                                reqitm.IsActive = false;
+                                reqitm.CancelledBy = currentUser.EmployeeId;
+                                reqitm.CancelledOn = DateTime.Now;
+                                reqitm.RequestItemStatus = "withdrawn";
+                                inventorygDbContext.PurchaseRequestItems.Attach(reqitm);
+                                inventorygDbContext.Entry(reqitm).Property(a => a.IsActive).IsModified = true;
+                                inventorygDbContext.Entry(reqitm).Property(a => a.CancelledOn).IsModified = true;
+                                inventorygDbContext.Entry(reqitm).Property(a => a.CancelledBy).IsModified = true;
+                                inventorygDbContext.Entry(reqitm).Property(a => a.RequestItemStatus).IsModified = true;
+                                inventorygDbContext.SaveChanges();
+                            }
+
+                            inventorygDbContext.SaveChanges();
+                        }
+                        inventorygDbContext.PurchaseRequest.Attach(purchaseRequestFromClient);
+                        inventorygDbContext.Entry(purchaseRequestFromClient).Property(a => a.RequestDate).IsModified = true;
+                        inventorygDbContext.Entry(purchaseRequestFromClient).Property(a => a.VendorId).IsModified = true;
+                        inventorygDbContext.Entry(purchaseRequestFromClient).Property(a => a.Remarks).IsModified = true;
+                        inventorygDbContext.Entry(purchaseRequestFromClient).Property(a => a.ModifiedOn).IsModified = true;
+                        inventorygDbContext.Entry(purchaseRequestFromClient).Property(a => a.ModifiedOn).IsModified = true;
+                        inventorygDbContext.SaveChanges();
+                        responseData.Results = purchaseRequestFromClient.PurchaseRequestId;
+                    }
+                }
+                #endregion
+                #region//this for updating the PO Requisition after PO creation
+                else if (reqType != null && reqType == "UpdatePORequisitionAfterPOCreation")
+                {
+                    string Str = this.ReadPostData();
+                    int? reqId = DanpheJSONConvert.DeserializeObject<int?>(Str);
+                    if (reqId != null && reqId > 0)
+                    {
+                        var req = inventorygDbContext.PurchaseRequest.Where(P => P.PurchaseRequestId == reqId).Include(a => a.PurchaseRequestItems).FirstOrDefault();
+                        req.IsPOCreated = true;
+                        req.RequestStatus = "complete";
+                        req.PurchaseRequestItems.ForEach(item => item.RequestItemStatus = "complete");
+                        inventorygDbContext.SaveChanges();
+                        responseData.Results = reqId;
+                    }
+                }
+                #endregion
+                #region Cancel remaning itms
+                else if (reqType != null && reqType == "cancelRequisitionItems")
+                {
+
+                    RequisitionModel reqFromClientC = DanpheJSONConvert.DeserializeObject<RequisitionModel>(str);
+                    if (reqFromClientC != null && reqFromClientC.RequisitionId != 0 && reqFromClientC.CancelledItems != null && reqFromClientC.CancelledItems.Count > 0)
+                    {
+                        try
+                        {
+
+                            //get list of all items inside current requisition and use it locally.
+                            List<RequisitionItemsModel> reqItemsListFromDb = inventorygDbContext.RequisitionItems.Where(rqItm => rqItm.RequisitionId == reqFromClientC.RequisitionId).ToList();
+
+                            //loop in the reqItems from client and update the values to reqItems from Db accordingly.
+                            reqFromClientC.CancelledItems.ForEach(reqItmFromClient =>
+                                                        {
+                                                            RequisitionItemsModel currReqItmModel_Db = reqItemsListFromDb.Find(a => a.RequisitionItemId == reqItmFromClient.RequisitionItemId);
+                                                            if (currReqItmModel_Db != null)
+                                                            {
+                                                                currReqItmModel_Db.CancelQuantity = reqItmFromClient.CancelQuantity;
+                                                                currReqItmModel_Db.PendingQuantity = reqItmFromClient.PendingQuantity;//this comes as ZERO from client side in case of cancellation.
+                                                                currReqItmModel_Db.ReceivedQuantity = reqItmFromClient.ReceivedQuantity;
+                                                                currReqItmModel_Db.CancelRemarks = reqItmFromClient.CancelRemarks;
+                                                                currReqItmModel_Db.CancelOn = DateTime.Now;
+                                                                currReqItmModel_Db.CancelBy = currentUser.EmployeeId;//this is taken from server side.
+                                                                currReqItmModel_Db.ModifiedOn = currReqItmModel_Db.CancelOn;
+                                                                currReqItmModel_Db.ModifiedBy = currReqItmModel_Db.CancelBy;
+                                                                if (reqItmFromClient.ReceivedQuantity == 0)
+                                                                {
+                                                                    currReqItmModel_Db.IsActive = false;
+                                                                    currReqItmModel_Db.RequisitionItemStatus = "cancelled";//if not a single item has been dispatched, item status must be cancelled.
+                                                                }
+                                                                else
+                                                                {
+                                                                    currReqItmModel_Db.RequisitionItemStatus = "complete";//after cancelled, status becomes 'complete' so that it can't be dispatched later on.
+                                                                }
+                                                                inventorygDbContext.RequisitionItems.Attach(currReqItmModel_Db);
+
+                                                                //inventorygDbContext.Entry(currreqModel).State = EntityState.Modified;
+                                                                inventorygDbContext.Entry(currReqItmModel_Db).Property(a => a.CancelQuantity).IsModified = true;
+                                                                inventorygDbContext.Entry(currReqItmModel_Db).Property(a => a.PendingQuantity).IsModified = true;
+                                                                inventorygDbContext.Entry(currReqItmModel_Db).Property(a => a.ReceivedQuantity).IsModified = true;
+                                                                inventorygDbContext.Entry(currReqItmModel_Db).Property(a => a.CancelOn).IsModified = true;
+                                                                inventorygDbContext.Entry(currReqItmModel_Db).Property(a => a.CancelBy).IsModified = true;
+                                                                inventorygDbContext.Entry(currReqItmModel_Db).Property(a => a.CancelRemarks).IsModified = true;
+                                                                inventorygDbContext.Entry(currReqItmModel_Db).Property(a => a.ModifiedBy).IsModified = true;
+                                                                inventorygDbContext.Entry(currReqItmModel_Db).Property(a => a.ModifiedOn).IsModified = true;
+                                                                inventorygDbContext.Entry(currReqItmModel_Db).Property(a => a.IsActive).IsModified = true;
+                                                                inventorygDbContext.Entry(currReqItmModel_Db).Property(a => a.RequisitionItemStatus).IsModified = true;
+                                                            }
+                                                        });
+
+                            //if status of all items inside this requisition is 'complete' then update the status of requisition to 'complete', else do nothing.
+                            if (reqItemsListFromDb.All(a => a.RequisitionItemStatus == "complete" || a.RequisitionItemStatus == "cancelled"))
+                            {
+                                RequisitionModel reqData = inventorygDbContext.Requisitions.Where(a => a.RequisitionId == reqFromClientC.RequisitionId).FirstOrDefault();
+                                if (reqItemsListFromDb.All(a => a.RequisitionItemStatus == "cancelled"))
+                                {
+                                    reqData.RequisitionStatus = "cancelled";
+                                    reqData.IsCancel = true;
+                                }
+                                else
+                                {
+                                    reqData.RequisitionStatus = "complete";
+                                }
+                                reqData.ModifiedBy = currentUser.EmployeeId;
+                                reqData.ModifiedOn = DateTime.Now;
+                                inventorygDbContext.Requisitions.Attach(reqData);
+                                inventorygDbContext.Entry(reqData).Property(x => x.RequisitionStatus).IsModified = true;
+                                inventorygDbContext.Entry(reqData).Property(x => x.IsCancel).IsModified = true;
+                                inventorygDbContext.Entry(reqData).Property(x => x.ModifiedBy).IsModified = true;
+                                inventorygDbContext.Entry(reqData).Property(x => x.ModifiedOn).IsModified = true;
+                            }
+                            inventorygDbContext.SaveChanges();
+                        }
+                        catch (Exception ex)
+                        {
+                            responseData.Status = "Failed";
+                            responseData.ErrorMessage = ex.Message + " exception details:" + ex.ToString();
+                        }
+                    }
+                    else
+                    {
+                        responseData.Status = "Failed";
+                        responseData.Results = null;
+                        responseData.ErrorMessage = "Requisition details not found for cancellation.";
+                    }
+
+
+                }
+                #endregion
+                else
+                {
+                    responseData.Status = "Failed";
+                    responseData.ErrorMessage = "Request Not Found!";
+                }
+
             }
             catch (Exception ex)
             {

@@ -32,6 +32,8 @@ import { SettlementsMainComponent } from '../billing/bill-settlements/settlement
 import { AuthGuardService } from '../security/shared/auth-guard.service';
 import { BillingDenominationComponent } from './bill-denomination/bill-denomination.component';
 import { DuplicateProvisionalReceiptComponent } from './bill-duplicate-prints/duplicate-provisional-receipt.component';
+import { QrBillingComponent } from '../shared/qr-code/billing/qr-billing.component';
+import { PageNotFound } from '../404-error/404-not-found.component';
 
 //import { INSBillingMainComponent } from './ins-billing/ins-billing-main.component';
 
@@ -53,18 +55,20 @@ import { DuplicateProvisionalReceiptComponent } from './bill-duplicate-prints/du
           { path: 'BillingTransactionItem', component: BillingTransactionItemComponent, canActivate: [AuthGuardService] },
           { path: 'UnpaidBills', component: ProvisionalBillingComponent, canActivate: [AuthGuardService, ResetPatientcontextGuard] },
           //{ path: 'InsuranceProvisional', component: InsuranceProvisionalBillingComponent, canActivate: [AuthGuardService, ResetPatientcontextGuard] },
-          { path: 'ReceiptPrint', component: ReceiptPrintMainComponent, canActivate: [AuthGuardService] },
+          { path: 'ReceiptPrint', component: ReceiptPrintMainComponent, canActivate: [AuthGuardService, ResetPatientcontextGuard] },
           { path: 'BillOrderRequest', component: BillOrderRequestComponent, canActivate: [AuthGuardService, ResetPatientcontextGuard] },
           { path: 'BillingDeposit', component: BillingDepositComponent, canActivate: [AuthGuardService, BillingSelectPatientCanActivateGuard] },
           { path: 'BillCancellationRequest', component: BillCancellationRequestComponent, canActivate: [AuthGuardService, ResetPatientcontextGuard] },
           { path: 'BillReturnRequest', component: BillReturnRequestComponent, canActivate: [AuthGuardService, ResetPatientcontextGuard] },
-          { path: 'CounterActivate', component: BillingCounterActivateComponent, canActivate: [AuthGuardService] },
-          { path: 'EditDoctor', component: EditDoctorFeatureComponent, canActivate: [AuthGuardService] },
+          { path: 'CounterActivate', component: BillingCounterActivateComponent, canActivate: [AuthGuardService, ResetPatientcontextGuard] },
+          { path: 'EditDoctor', component: EditDoctorFeatureComponent, canActivate: [AuthGuardService, ResetPatientcontextGuard] },
           {
             path: 'Settlements', component: SettlementsMainComponent,
             children: [
               { path: '', redirectTo: 'BillSettlements', pathMatch: 'full' },
-              { path: 'BillSettlements', component: BillSettlementsComponent }
+              { path: 'BillSettlements', component: BillSettlementsComponent },
+              { path: "**", component: PageNotFound }
+
             ]
             , canActivate: [ResetPatientcontextGuard]
           },
@@ -76,17 +80,25 @@ import { DuplicateProvisionalReceiptComponent } from './bill-duplicate-prints/du
               { path: 'DepositReceipt', component: DuplicateDepositReceiptComponent, canActivate: [AuthGuardService] },
               { path: 'CreditSettlementReceipt', component: DuplicateCreditSettlementReceiptComponent, canActivate: [AuthGuardService] },
               { path: 'DepositSettlementReceipt', component: DuplicateDepositSettlementReceiptPrintComponent, canActivate: [AuthGuardService] },
-              { path: 'ProvisionalReceipt', component: DuplicateProvisionalReceiptComponent, canActivate: [AuthGuardService] }
+              { path: 'ProvisionalReceipt', component: DuplicateProvisionalReceiptComponent, canActivate: [AuthGuardService] },
+              { path: "**", component: PageNotFound }
+
+              
             ]
             , canActivate: [AuthGuardService, ResetPatientcontextGuard]
           },
+
           //{ path: 'InpatBilling', loadChildren: '/compiled-js/app/billing/ip-billing/ip-billing.module#IpBillingModule' },
-          { path: 'InpatBilling', component: IpBillMainComponent },
-          { path: 'BillingDenomination', component: BillingDenominationComponent },
+          { path: 'InpatBilling', component: IpBillMainComponent, canActivate: [AuthGuardService, ResetPatientcontextGuard] },
+          { path: 'BillingDenomination', component: BillingDenominationComponent, canActivate: [AuthGuardService, ResetPatientcontextGuard] },
 
           { path: 'InsuranceMain', loadChildren: '../billing/ins-billing/ins-billing.module#InsuranceBillingModule' },
+          { path: 'QrBilling', component: QrBillingComponent, canActivate: [AuthGuardService] },
+          { path: "**", component: PageNotFound },
         ]
-      }
+      },
+      { path: "**", component: PageNotFound }
+
     ])
   ],
   exports: [

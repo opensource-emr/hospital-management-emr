@@ -1,7 +1,7 @@
 .info-item {
   padding: 5px;
 }
-.add-res-table-holder{
+.add-res-table-holder {
   width: 100%;
 }
 .msg-icn-err {
@@ -39,27 +39,29 @@ a.cke_button__maximize {
   z-index: 1111;
 }
 
-.fullscreen, .remove {
+.fullscreen,
+.remove {
   opacity: 1;
   margin-right: 7px;
 }
 
-  .fullscreen:after, .remove:after {
-    display: inline-block;
-    top: 0px;
-    position: relative;
-    font-size: 16px;
-    font-family: FontAwesome;
-    color: #fff;
-    content: "\f065";
-    width: 24px;
-    height: 24px;
-    text-align: center;
-    background: #3d3e3e;
-  }
+.fullscreen:after,
+.remove:after {
+  display: inline-block;
+  top: 0px;
+  position: relative;
+  font-size: 16px;
+  font-family: FontAwesome;
+  color: #fff;
+  content: "\f065";
+  width: 24px;
+  height: 24px;
+  text-align: center;
+  background: #3d3e3e;
+}
 
-  .remove:after {
-  }
+.remove:after {
+}
 
 .font-cross-md {
   font-size: 16px;
@@ -81,25 +83,55 @@ a.cke_button__maximize {
   color: #000;
   font-weight: 600;
   background: #116587;
-  color: #fff; 
+  color: #fff;
 }
 .bg-grad-header {
-  background: -moz-linear-gradient(to bottom, rgb(234, 234, 234) 0%, rgb(222, 222, 222) 100%);
-  background: -webkit-gradient(to bottom, rgb(234, 234, 234) 0%, rgb(222, 222, 222) 100%);
-  background: -webkit-linear-gradient(to bottom, rgb(234, 234, 234) 0%, rgb(222, 222, 222) 100%);
-  background: -o-linear-gradient(to bottom, rgb(234, 234, 234) 0%, rgb(222, 222, 222) 100%);
-  background: -ms-linear-gradient(to bottom, rgb(234, 234, 234) 0%, rgb(222, 222, 222) 100%);
-  background: linear-gradient(to bottom, rgb(234, 234, 234) 0%, rgb(222, 222, 222) 100%);
+  background: -moz-linear-gradient(
+    to bottom,
+    rgb(234, 234, 234) 0%,
+    rgb(222, 222, 222) 100%
+  );
+  background: -webkit-gradient(
+    to bottom,
+    rgb(234, 234, 234) 0%,
+    rgb(222, 222, 222) 100%
+  );
+  background: -webkit-linear-gradient(
+    to bottom,
+    rgb(234, 234, 234) 0%,
+    rgb(222, 222, 222) 100%
+  );
+  background: -o-linear-gradient(
+    to bottom,
+    rgb(234, 234, 234) 0%,
+    rgb(222, 222, 222) 100%
+  );
+  background: -ms-linear-gradient(
+    to bottom,
+    rgb(234, 234, 234) 0%,
+    rgb(222, 222, 222) 100%
+  );
+  background: linear-gradient(
+    to bottom,
+    rgb(234, 234, 234) 0%,
+    rgb(222, 222, 222) 100%
+  );
 }
 .align-vertical-mid {
   vertical-align: middle;
 }
-.top-0{margin-top: 0;}
-.font-600{font-weight: 600;}
+.top-0 {
+  margin-top: 0;
+}
+.font-600 {
+  font-weight: 600;
+}
 .test-infos-detail {
   background: #e8e8e8;
 }
-.txt-black{color: #000;}
+.txt-black {
+  color: #000;
+}
 
 @media only screen and (min-width: 1024px) {
   .test-name-ellipsis {
@@ -111,35 +143,43 @@ a.cke_button__maximize {
   }
 }
 
-
-.component-name, .specimen-name {
+.component-name,
+.specimen-name {
   line-height: 28px;
 }
 
 .single-test-add {
 }
 
-.test-data-input-box{
-  
+.test-data-input-box {
 }
 
 input.cstm-res-input {
   width: 85%;
   padding: 2px 8px;
   border: 1px solid #d2d2d2;
-  height: 28px;
+  height: 30px;
+  line-height: 30px;
 }
 
 .test-error-msg {
   margin-left: 5px;
 }
-.test-error-msg i.fa{line-height: 28px;}
-.cstm-res-autocomplete{width: 85%;}
+.test-error-msg i.fa {
+  line-height: 28px;
+}
+.cstm-res-autocomplete {
+  width: 85%;
+}
 .cstm-res-autocomplete input {
   width: 100%;
 }
-.tbl-templatewise{margin-bottom: 20px;}
-textarea.no-resize{resize: none;}
+.tbl-templatewise {
+  margin-bottom: 20px;
+}
+textarea.no-resize {
+  resize: none;
+}
 .html-tmplate-holder {
   display: table;
   width: 100%;
@@ -151,7 +191,10 @@ textarea.no-resize{resize: none;}
 .test-title {
   color: #006687;
 }
-.lbl-no-growth{margin-right: 10px; line-height: 18px;}
+.lbl-no-growth {
+  margin-right: 10px;
+  line-height: 18px;
+}
 .vender-detail {
   background: #ff6060;
   color: #f7f7f7;
@@ -159,4 +202,25 @@ textarea.no-resize{resize: none;}
 
 .green {
   color: green;
+}
+
+.culture-ip-wrapper,
+.culture-ip-wrapper .test-data-input-box {
+  display: flex;
+}
+.pos-rel {
+  position: relative;
+}
+.remove-group {
+  background: #f12e2e;
+  border: none;
+  padding: 0px 10px;
+  color: #fff;
+  position: absolute;
+  right: 25px;
+  top: 0;
+  bottom: 0;
+}
+.cltr-cstm-res-input {
+  width: 85%;
 }

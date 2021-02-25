@@ -31,7 +31,10 @@ export class LabTestsPendingResultsComponent {
     public PatientLabInfo: LabSticker = new LabSticker();
     //@ViewChild('searchBox') someInput: ElementRef;
 
-    public verificationRequired: boolean = false;
+  public verificationRequired: boolean = false;
+  public showPrintEmptySheet: boolean = false;
+  public showEmptySheet: boolean = false;
+  public allReqIdListForPrint: Array<number> = [];
 
     constructor(public patientService: PatientService,public coreService: CoreService,
         public msgBoxServ: MessageboxService,
@@ -167,6 +170,28 @@ export class LabTestsPendingResultsComponent {
                 }
                 break;
 
+          case "print-empty-sheet":
+            {
+
+              this.requisitionIdList = [];
+              $event.Data.Tests.forEach(reqId => {
+                if (this.requisitionIdList && this.requisitionIdList.length) {
+                  if (!this.requisitionIdList.includes(reqId.RequisitionId)) {
+                    this.requisitionIdList.push(reqId.RequisitionId);
+                  }
+                }
+                else {
+                  this.requisitionIdList.push(reqId.RequisitionId);
+                }
+              });          
+
+              this.showEmptySheet = false;
+              this.changeDetector.detectChanges();
+              this.showEmptySheet = true;
+
+            }
+            break;
+
 
             case "labsticker":
                 {
@@ -254,6 +279,15 @@ export class LabTestsPendingResultsComponent {
     if ($event.cancel) {
       this.BackToGrid();
     }
-
   }
+  
+  public CloseEmptyReportSheetPopUp($event) {
+    if ($event.close) { this.CloseEmptySheet(); }
+  }
+
+  public CloseEmptySheet() {
+    this.showEmptySheet = false;
+  }
+
+
 }

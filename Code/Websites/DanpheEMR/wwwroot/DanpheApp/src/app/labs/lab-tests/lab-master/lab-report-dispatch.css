@@ -1,0 +1,52 @@
+.fixed-header {
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+  .fixed-header tbody {
+    overflow: auto;
+    height: 100px;
+  }
+
+  .fixed-header thead {
+    background: #126587;
+    color: #fff;
+  }
+
+  .fixed-header th, .fixed-header td {
+    padding: 4px 5px;
+    text-align: left;
+    font-size: 11px;
+  }
+
+  .fixed-header tbody {
+    display: block;
+    overflow: auto;
+    height: 400px;
+    width: 100%;
+  }
+
+  .fixed-header thead tr {
+    display: block;
+  }
+
+.wd-130 {
+  width: 130px;
+}
+
+.wd-60 {
+  width: 60px;
+}
+
+.wd-120 {
+  width: 120px;
+}
+
+.wd-270 {
+  width: 270px;
+}
+
+.highlightbg {
+  background: #c1c1c1;
+  color: #080808;
+}

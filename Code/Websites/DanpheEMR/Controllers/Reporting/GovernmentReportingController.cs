@@ -9,6 +9,9 @@ using DanpheEMR.Core.Configuration;
 using DanpheEMR.ServerModel.ReportingModels;
 using DanpheEMR.CommonTypes;
 using DanpheEMR.Utilities;
+using System.Data.SqlClient;
+using System.Data;
+using DanpheEMR.ServerModel.LabModels;
 // For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace DanpheEMR.Controllers.Reporting
@@ -61,59 +64,129 @@ namespace DanpheEMR.Controllers.Reporting
         #region Laboratory Services
         public string GetLaboratoryServices(DateTime FromDate, DateTime ToDate)
         {
-
-            LaboratoryServices labServices = new LaboratoryServices();
-            // DanpheHTTPResponse<DynamicReport> responseData1 = new DanpheHTTPResponse<DynamicReport>();
-            DanpheHTTPResponse<LaboratoryServices> responseData = new DanpheHTTPResponse<LaboratoryServices>();
+            DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
             try
             {
-                GovernmentReportDbContext govreportingDbContext = new GovernmentReportDbContext(connString);
-                LaboratoryServices HaematologyResult = govreportingDbContext.GetHaematology(FromDate, ToDate);
-                labServices.HaematologyModel0 = HaematologyResult.HaematologyModel0;
-                labServices.HaematologyModel1 = HaematologyResult.HaematologyModel1;
+                LabDbContext labDbContext = new LabDbContext(connString);                
+                List<LabGovReportItemModel> allItemsInGovReport = labDbContext.LabGovReport.ToList();
+                Dictionary<string, Dictionary<string, dynamic>> formattedGovLabResult = new Dictionary<string, Dictionary<string, dynamic>>();
+                foreach (var test in allItemsInGovReport)
+                {
+                    var categoryName = test.GroupName.Replace(" ", "_");
 
-                LaboratoryServices ImmunologyResult = govreportingDbContext.GetImmunology(FromDate, ToDate);
-                labServices.ImmunologyModel0 = ImmunologyResult.ImmunologyModel0;
-                labServices.ImmunologyModel1 = ImmunologyResult.ImmunologyModel1;
+                    //Add the Category Name first if Not Added
+                    if (!formattedGovLabResult.ContainsKey(categoryName))
+                    {
+                        formattedGovLabResult.Add(categoryName, new Dictionary<string, object>());
+                    }
 
-                LaboratoryServices BiochemistryResult = govreportingDbContext.GetBiochemistry(FromDate, ToDate);
-                labServices.BiochemistryModel0 = BiochemistryResult.BiochemistryModel0;
-                labServices.BiochemistryModel1 = BiochemistryResult.BiochemistryModel1;
+                    var testKeyName = test.TestName.Replace(" ", "_");
 
-                LaboratoryServices BacteriologyResult = govreportingDbContext.GetBacteriology(FromDate, ToDate);
-                labServices.BacteriologyModel0 = BacteriologyResult.BacteriologyModel0;
+                    //if it has inner Item then we need another dictionary that refers to those innerItems result
+                    if (test.HasInnerItems.HasValue && test.HasInnerItems.Value == true)
+                    {
+                        var innerTestKeyName = test.InnerTestGroupName.Replace(" ", "_");
+                        if (!formattedGovLabResult[categoryName].ContainsKey(innerTestKeyName))
+                        {
+                            formattedGovLabResult[categoryName].Add(innerTestKeyName, new Dictionary<string, object>());
+                        }
+                        formattedGovLabResult[categoryName][innerTestKeyName].Add(testKeyName, test);
+                    }
+                    else
+                    {
+                        formattedGovLabResult[categoryName].Add(testKeyName, test);
+                    }
+                }
 
-                LaboratoryServices CytologyResult = govreportingDbContext.GetCytology(FromDate, ToDate);
-                labServices.CytologyModel0 = CytologyResult.CytologyModel0;
+                List<SqlParameter> paramList = new List<SqlParameter>() {  new SqlParameter("@FromDate",FromDate),
+                        new SqlParameter("@ToDate", ToDate) };
+                DataSet dts = DALFunctions.GetDatasetFromStoredProc("SP_LAB_TestCount_GovernmentReport", paramList, labDbContext);
 
-                LaboratoryServices VirologyResult = govreportingDbContext.GetVirology(FromDate, ToDate);
-                labServices.VirologyModel0 = VirologyResult.VirologyModel0;
 
-                LaboratoryServices ImmunohistochemistryResult = govreportingDbContext.GetImmunohistochemistry(FromDate, ToDate);
-                labServices.ImmunohistochemistryModel0 = ImmunohistochemistryResult.ImmunohistochemistryModel0;
+                var allMappedTests = dts.Tables[0];
+                string groupName;
+                string testName;
+                string innerTestName;
+                bool hasInnerItems;
+                string innerTestGroupName;
 
-                LaboratoryServices HistologyResult = govreportingDbContext.GetHistology(FromDate, ToDate);
-                labServices.HistologyModel0 = HistologyResult.HistologyModel0;
+                foreach (DataRow row in allMappedTests.Rows)
+                {
+                    groupName = row["GroupName"].ToString().Replace(" ", "_");
+                    testName = row["TestName"].ToString().Replace(" ", "_");
+                    hasInnerItems = row["HasInnerItems"].ToString().ToLower() == "true";
+                    innerTestGroupName = row["InnerTestGroupName"].ToString().Replace(" ", "_");
+                    if (hasInnerItems)
+                    {
+                        formattedGovLabResult[groupName][innerTestGroupName][testName].Count += Convert.ToInt32(row["Total"].ToString());
+                    }
+                    else
+                    {
+                        formattedGovLabResult[groupName][testName].Count += Convert.ToInt32(row["Total"].ToString());
+                    }
+                }
 
-                LaboratoryServices ParasitologyResult = govreportingDbContext.GetParasitology(FromDate, ToDate);
-                labServices.ParasitologyModel0 = ParasitologyResult.ParasitologyModel0;
-
-                LaboratoryServices CardiacenzymesResult = govreportingDbContext.GetCardiacenzymes(FromDate, ToDate);
-                labServices.CardiacenzymesModel0 = CardiacenzymesResult.CardiacenzymesModel0;
-
-                LaboratoryServices HormonesendocrinologyResult = govreportingDbContext.GetHormonesendocrinology(FromDate, ToDate);
-                labServices.HormonesendocrinologyModel0 = HormonesendocrinologyResult.HormonesendocrinologyModel0;
-
+                responseData.Results = formattedGovLabResult;
                 responseData.Status = "OK";
-                responseData.Results = labServices;
             }
             catch (Exception ex)
             {
-                //Insert exception details into database table.
                 responseData.Status = "Failed";
                 responseData.ErrorMessage = ex.Message;
             }
             return DanpheJSONConvert.SerializeObject(responseData);
+            //LaboratoryServices labServices = new LaboratoryServices();
+            //// DanpheHTTPResponse<DynamicReport> responseData1 = new DanpheHTTPResponse<DynamicReport>();
+            //DanpheHTTPResponse<LaboratoryServices> responseData = new DanpheHTTPResponse<LaboratoryServices>();
+            //try
+            //{
+            //    GovernmentReportDbContext govreportingDbContext = new GovernmentReportDbContext(connString);
+            //    LaboratoryServices HaematologyResult = govreportingDbContext.GetHaematology(FromDate, ToDate);
+            //    labServices.HaematologyModel0 = HaematologyResult.HaematologyModel0;
+            //    labServices.HaematologyModel1 = HaematologyResult.HaematologyModel1;
+
+            //    LaboratoryServices ImmunologyResult = govreportingDbContext.GetImmunology(FromDate, ToDate);
+            //    labServices.ImmunologyModel0 = ImmunologyResult.ImmunologyModel0;
+            //    labServices.ImmunologyModel1 = ImmunologyResult.ImmunologyModel1;
+
+            //    LaboratoryServices BiochemistryResult = govreportingDbContext.GetBiochemistry(FromDate, ToDate);
+            //    labServices.BiochemistryModel0 = BiochemistryResult.BiochemistryModel0;
+            //    labServices.BiochemistryModel1 = BiochemistryResult.BiochemistryModel1;
+
+            //    LaboratoryServices BacteriologyResult = govreportingDbContext.GetBacteriology(FromDate, ToDate);
+            //    labServices.BacteriologyModel0 = BacteriologyResult.BacteriologyModel0;
+
+            //    LaboratoryServices CytologyResult = govreportingDbContext.GetCytology(FromDate, ToDate);
+            //    labServices.CytologyModel0 = CytologyResult.CytologyModel0;
+
+            //    LaboratoryServices VirologyResult = govreportingDbContext.GetVirology(FromDate, ToDate);
+            //    labServices.VirologyModel0 = VirologyResult.VirologyModel0;
+
+            //    LaboratoryServices ImmunohistochemistryResult = govreportingDbContext.GetImmunohistochemistry(FromDate, ToDate);
+            //    labServices.ImmunohistochemistryModel0 = ImmunohistochemistryResult.ImmunohistochemistryModel0;
+
+            //    LaboratoryServices HistologyResult = govreportingDbContext.GetHistology(FromDate, ToDate);
+            //    labServices.HistologyModel0 = HistologyResult.HistologyModel0;
+
+            //    LaboratoryServices ParasitologyResult = govreportingDbContext.GetParasitology(FromDate, ToDate);
+            //    labServices.ParasitologyModel0 = ParasitologyResult.ParasitologyModel0;
+
+            //    LaboratoryServices CardiacenzymesResult = govreportingDbContext.GetCardiacenzymes(FromDate, ToDate);
+            //    labServices.CardiacenzymesModel0 = CardiacenzymesResult.CardiacenzymesModel0;
+
+            //    LaboratoryServices HormonesendocrinologyResult = govreportingDbContext.GetHormonesendocrinology(FromDate, ToDate);
+            //    labServices.HormonesendocrinologyModel0 = HormonesendocrinologyResult.HormonesendocrinologyModel0;
+
+            //    responseData.Status = "OK";
+            //    responseData.Results = labServices;
+            //}
+            //catch (Exception ex)
+            //{
+            //    //Insert exception details into database table.
+            //    responseData.Status = "Failed";
+            //    responseData.ErrorMessage = ex.Message;
+            //}
+            //return DanpheJSONConvert.SerializeObject(responseData);
 
         }
         //[DanpheViewFilter("reports-laboratoryservices-view")]

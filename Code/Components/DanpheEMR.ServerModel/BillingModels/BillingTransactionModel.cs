@@ -22,7 +22,6 @@ namespace DanpheEMR.ServerModel
         public double? DiscountPercent { get; set; }
         public double? DiscountAmount { get; set; }
         public double? TaxTotal { get; set; }
-
         public double? TotalAmount { get; set; }
         public double? PaidAmount { get; set; }
         public double? DepositAmount { get; set; }
@@ -74,21 +73,27 @@ namespace DanpheEMR.ServerModel
         public DateTime? InsuranceClaimedDate { get; set; }
         public int? InsuranceProviderId { get; set; }
         //Yubraj: 22nd April '19 for credit organization 
-        public int? ExchangeRate { get; set; }//Sanjit: 5-17-19 added for foreign exchange
+        public double? ExchangeRate { get; set; }//Sanjit: 5-17-19 added for foreign exchange
         public int? OrganizationId { get; set; } 
         [NotMapped]
         public string OrganizationName{ get; set; }
 
         [NotMapped]//Yubraj 16th Jan '19
         public int? ReceiptNo { get; set; }
-
+        [NotMapped]//shankar 14th nov '19
+        public int? CreditNoteNumber { get; set; }
         //sud: 19Jul'19-- For Insurance Transaction Date for MNK-Specific.
         public DateTime? InsTransactionDate { get; set; }
         public DateTime? PrintedOn { get; set; } //Yubraj: 13th August'19
         public int? PrintedBy { get; set; } //Yubraj: 13th August'19
 
+        public int? PartialReturnTxnId { get; set; } // Rajesh:7Aug19
+        public decimal? AdjustmentTotalAmount { get; set; }
         [NotMapped]
         public string BillingUserName { get; set; }//Yubaraj:28June'19--needed for Billing receipt to return current logged in user.
+
+        public string InvoiceType { get; set; }// pratik:29April 2020-- needed for partial payment invoice in ipbilling
+
         public static BillingTransactionModel GetCloneWithItems(BillingTransactionModel txnToClone)
         {
             BillingTransactionModel retTxnModel = new BillingTransactionModel()
@@ -127,7 +132,8 @@ namespace DanpheEMR.ServerModel
                 Change = txnToClone.Change,
                 PrintCount = txnToClone.PrintCount,
                 Tender = txnToClone.Tender,
-                ReturnStatus = txnToClone.ReturnStatus
+                ReturnStatus = txnToClone.ReturnStatus,
+                InvoiceType = txnToClone.InvoiceType
             };
             return retTxnModel;
         }

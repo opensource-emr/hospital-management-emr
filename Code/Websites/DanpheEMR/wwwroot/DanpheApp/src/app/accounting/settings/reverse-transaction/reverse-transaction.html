@@ -1,0 +1,63 @@
+<style>
+  .modelbox-div {
+    border: none;
+  }
+</style>
+<div class="popup-static portlet box portlet-fullscreen inv_modal">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-6 col-md-offset-3">
+        <div class="modelbox-div clearfix">
+          <div class="caption lb-caption">
+            <h3 style='text-decoration: underline;font-weight: bold; margin: 5px 0px 12px 0px;'>UNDO ACCOUNTING
+              TRANSACTION</h3>
+            <h5 style="font-weight: bold; color: red;"> !!Allert : after reverse transaction you can't get detail again.
+            </h5>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+
+          </div>
+          <div class="hm-form form-horizontal">
+            <div class="form-body">
+              <div class="form-group">
+                <label class="control-label col-md-3">Transaction Date<sup>*</sup><b>:</b></label>
+                <div class="col-md-8">
+                  <!-- <danphe-date-picker [(ngModel)]="transaction.TransactionDate" ngDefaultControl
+                    [CalendarTypes]="calType"> </danphe-date-picker>
+                     -->
+                 <fiscal-year-calendar [showSingleDatePicker]="true" [showAllFiscalYear]="false" (fiscalYearDate)="selectDate($event)"> </fiscal-year-calendar>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-3">Select Module<sup>*</sup><b>:</b></label>
+                <div class="col-md-8">
+                  <select [(ngModel)]="transaction.Section" id="sectionid" [ngModelOptions]="{standalone: true}"
+                    >
+                    <!-- <option value="1">Inventory</option>
+                    <option value="2">Billing</option>
+                    <option value="3">Pharmacy</option>
+                    <option value="5">Incentive</option> -->
+
+                    <option *ngFor="let s of sectionList" value="{{s.SectionId}}">{{s.SectionName}}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-3">Reason<sup>*</sup> <b>:</b> </label>
+                <div class="col-md-8">
+                  <textarea class="form-control" type="text" [ngModelOptions]="{standalone: true}" [(ngModel)]="
+                    transaction.Reason" id="Description"
+                    placeholder="enter proper reason(min 20 char) for undo/reverse transaction">
+                                        </textarea>
+                </div>
+              </div>
+              <div class="form-actions">
+                <input type="button" class="btn primary-btn" (click)="UndoTransaction();" value="Save" />
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

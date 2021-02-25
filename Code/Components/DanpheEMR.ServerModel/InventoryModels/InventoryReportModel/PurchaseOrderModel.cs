@@ -18,6 +18,8 @@ namespace DanpheEMR.ServerModel.ReportingModels
         public Nullable<decimal> StandardRate { get; set; }
         public DateTime DueDate { get; set; }
 
+        public string Code { get; set; }
+        public string UOMName { get; set; }
 
 
 

@@ -27,10 +27,22 @@ namespace DanpheEMR.ServerModel
         public DateTime? CreatedOn { get; set; }
         public string Remark { get; set; }
         public string POItemStatus { get; set; }
-
+        public decimal? VATAmount { get; set; }
         public int? ModifiedBy { get; set; }
         public DateTime? ModifiedOn { get; set; }
         public PurchaseOrderModel PurchaseOrder { get; set; }
-        public virtual ItemMasterModel Item { get; set; }    
+        public virtual ItemMasterModel Item { get; set; }
+        [NotMapped]
+        public String ItemName { get; set; }
+        [NotMapped]
+        public string Code { get; set; }
+        [NotMapped]
+        public string UOMName { get; set; }
+        [NotMapped]
+        public bool IsEdited { get; set; }
+        public bool IsActive { get; set; }
+        public int? CancelledBy { get; set; }
+        public DateTime? CancelledOn { get; set; }
+        public string CancelRemarks { get; set; }
     }
 }

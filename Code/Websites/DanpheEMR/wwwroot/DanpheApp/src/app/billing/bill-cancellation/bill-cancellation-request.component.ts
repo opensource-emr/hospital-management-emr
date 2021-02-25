@@ -14,18 +14,24 @@ import { GridEmitModel } from "../../shared/danphe-grid/grid-emit.model";
 import GridColumnSettings from '../../shared/danphe-grid/grid-column-settings.constant';
 import { CallbackService } from '../../shared/callback.service';
 import * as moment from 'moment/moment';
+import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from "../../shared/danphe-grid/NepaliColGridSettingsModel";
 
 @Component({
   templateUrl: "./bill-cancellation-request.html" //"/BillingView/BillCancellationRequest"
 })
 export class BillCancellationRequestComponent {
+    public ProvisionalItemsGridColumns: Array<any> = [];
+    public currCounterId: number = 0;  
+    public provisionalItemList: Array<any> = [];
+    public fromDate: string = '';
+    public toDate: string = '';
+    public cancelRemarks: string = null;
+    public selectedBillForCancel: any;
+    public selIndexForCancel: number;
+    public showConfirmationBox: boolean = false;
+    public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
+    public dateRange:any ;
 
-    public creditlist: any;
-    public patCreditDetails: Array<BillingTransactionItem> = new Array<BillingTransactionItem>();
-    public currCounterId: number = 0;
-    public index: number = 0;
-    public showAllPatient: boolean = true;
-    public CreditGridColumns: Array<any> = null;
     constructor(public BillingBLService: BillingBLService,
         public visitService: VisitService,
         public billingService: BillingService,
@@ -39,127 +45,124 @@ export class BillCancellationRequestComponent {
         this.currCounterId = this.securityService.getLoggedInCounter().CounterId;
         //go back to counter activation page if none of the counter is activated.
         if (this.currCounterId < 1) {
-            this.callbackservice.CallbackRoute = '/Billing/BillCancellationRequest'
+            this.callbackservice.CallbackRoute = '/Billing/BillCancellationRequest';
             this.router.navigate(['/Billing/CounterActivate']);
         }
         else {
-            this.CreditGridColumns = GridColumnSettings.CreditCancelSearch;
-            this.LoadCreditBills();
+          this.ProvisionalItemsGridColumns = GridColumnSettings.ProvisionalCancelSearch;
         }
 
+        this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('RequisitionDate', true));
     }
 
-    // -----------------------------------to cancel the credit bills----------------------------------------
-    LoadCreditBills(): void {
-        this.BillingBLService.GetUnpaidTotalBills()
-            .subscribe(res => {
-                if (res.Status == "OK") {
-                    this.creditlist = res.Results
-                }
-                else {
-                    this.msgBoxServ.showMessage("error", [res.ErrorMessage]);
-                    console.log(res.ErrorMessage);
-                }
+    //-----------------------------------to cancel the credit bills----------------------------------------
+    //LoadCreditBills(): void {
+    //    this.BillingBLService.GetUnpaidTotalBills()
+    //        .subscribe(res => {
+    //            if (res.Status == "OK") {
+    //                this.creditlist = res.Results
+    //            }
+    //            else {
+    //                this.msgBoxServ.showMessage("error", [res.ErrorMessage]);
+    //                console.log(res.ErrorMessage);
+    //            }
 
-            });
-    }
+    //        });
+    //}
 
-
-    ShowPatientCreditDetails(row): void {
-        this.showAllPatient = false;//this hides the grid of all patients.
-        var selPatient = this.patientService.CreateNewGlobal();
-        selPatient.ShortName = row.ShortName;
-        selPatient.PatientCode = row.PatientCode;
-        selPatient.DateOfBirth = row.DateOfBirth;
-        selPatient.PatientId = row.PatientId;
-        selPatient.Gender = row.Gender;
-        selPatient.Address = row.Address;
-        selPatient.PhoneNumber = row.PhoneNumber;
-        selPatient.PANNumber = row.PANNumber;
-        this.BillingBLService.GetCreditForCancellationbyPatientIdonBillTxnItems(selPatient.PatientId)
-            .subscribe(res => {
-                if (res.Status == "OK") {
-                    this.patCreditDetails = res.Results;
-                    //changed: sudarshan: 29Jul--formatting the date..
-                    if (this.patCreditDetails && this.patCreditDetails.length > 0) {
-                        this.patCreditDetails.forEach(currRow => {
-                            currRow.RequisitionDate = moment(currRow.RequisitionDate).format("YYYY-MM-DD HH:mm");
-                        });
-                    }
-                    else {
-                        this.patCreditDetails = new Array<BillingTransactionItem>();
-                        this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
-                    }
-                }
-
-            }, err => {
-
-            });
-    }
-
-
-
-
-    CallBackCancelCreditRequestedBills(srvResponse, cancelledItem: BillingTransactionItem) {
-        if (srvResponse.Status == "OK") {
-
-            this.msgBoxServ.showMessage("success", ["Item cancelled successfully."]);
-            //let deptsDistinct = new Array<string>();
-            let srvDeptName = cancelledItem.ServiceDepartmentName;
-            this.BillingBLService.PutBillStatusForDepartmentRequisition([cancelledItem], srvDeptName, "cancel")
-                .subscribe(res => {
-                    //do your logic here if something has to be done.. 
-                });
-        }
-        else {
-            this.msgBoxServ.showMessage("failed", ["Failed to cancel this item. Please check log for details."], srvResponse.ErrorMessaage);
-        }
-    }
-    CancelRequestedCreditBills(currCreditTxnItm: BillingTransactionItem, index: number) {
-        if (currCreditTxnItm.CancelRemarks) {
-            var a = window.confirm("are you sure you want to cancel?")
-            if (!a) {
-                this.router.navigate(['/Billing/BillCancellationRequest'])
+    LoadProvisionalBills(fromDate,toDate): void {
+      this.BillingBLService.LoadAllProvisionalBills(fromDate, toDate)
+        .subscribe(res => {
+            if (res.Status == "OK") {
+              this.provisionalItemList = res.Results
             }
             else {
-
-                currCreditTxnItm.CancelledBy = this.securityService.GetLoggedInUser().EmployeeId;
-                //remove current item from the patient's credit list
-                this.patCreditDetails.splice(index, 1);
-
-                this.BillingBLService.PutBillStatusOnBillTxnItemCancellation(currCreditTxnItm)
-                    .subscribe((res) => {
-                        this.CallBackCancelCreditRequestedBills(res, currCreditTxnItm);
-                    });
-                this.LoadCreditBills();
+                this.msgBoxServ.showMessage("error", [res.ErrorMessage]);
+                console.log(res.ErrorMessage);
             }
-        }
-        else {
-            this.msgBoxServ.showMessage("failed", ["Remarks is mandatory."]);
-        }
+
+        });
     }
 
 
-    CreditBillGridActions($event: GridEmitModel) {
-        switch ($event.Action) {
-            case "showCreditDetails":
-                {
-                    var data = $event.Data;
-                    this.ShowPatientCreditDetails(data);
-                }
-                break;
-            default:
-                break;
+  onGridDateChange($event) {
+    console.log("called");
+    this.fromDate = $event.fromDate;
+    this.toDate = $event.toDate;
+    this.LoadProvisionalBills(this.fromDate, this.toDate);
+  }
+
+//Cancel Grid Actions - Anjana 08-19-2020 
+CancelGridActions($event: GridEmitModel){
+  switch ($event.Action){
+    case "showCreditDetails":{
+      this.cancelRemarks = "";
+      this.selectedBillForCancel = $event.Data;
+      this.selIndexForCancel = this.provisionalItemList.findIndex(
+        (p) => 
+          p.BillingTransactionItemId == this.selectedBillForCancel.BillingTransactionItemId
+        );
+        if(this.selectedBillForCancel && this.selIndexForCancel > -1){
+          this.showConfirmationBox = true;
         }
+      
+    }    
+    
+  }
+}
+
+cancelRequest(billTransactionItem, index: number){
+  billTransactionItem.CancelRemarks = this.cancelRemarks.trim();
+  if(billTransactionItem.CancelRemarks && billTransactionItem.CancelRemarks.length){
+    var cancelItemOfCurrentPatient = window.confirm("Are you sure you want to cancel this item for this Patient?");
+
+    if(cancelItemOfCurrentPatient){
+      billTransactionItem.CounterId = this.currCounterId;
+      billTransactionItem.ItemIntegrationName = billTransactionItem.IntegrationName;
+      if(billTransactionItem.ItemIntegrationName && billTransactionItem.ItemIntegrationName.toLowerCase() == "radiology"){
+        this.BillingBLService.CancelItemRequest(billTransactionItem).subscribe((res) => {
+          if(res.Status == "OK"){
+            this.provisionalItemList.splice(index, 1);
+            this.provisionalItemList.slice();
+            this.msgBoxServ.showMessage("success", ["The selected item has been canceled."]);
+            this.showConfirmationBox = false;
+            this.LoadProvisionalBills(this.fromDate, this.toDate);
+
+          }else {
+            this.msgBoxServ.showMessage("failed", ["Please try again later"]);
+          }
+          
+        });
+      }else if(billTransactionItem.ItemIntegrationName && billTransactionItem.ItemIntegrationName.toLowerCase() == "lab"){
+        this.BillingBLService.CancelItemRequest(billTransactionItem).subscribe((res) => {
+          if(res.Status == "OK"){
+            this.provisionalItemList.splice(index, 1);
+            this.provisionalItemList.slice();
+            this.msgBoxServ.showMessage("success", ["The selected item has been canceled."]);
+            this.showConfirmationBox = false;
+            this.LoadProvisionalBills(this.fromDate, this.toDate);
+          }else{
+            this.msgBoxServ.showMessage("failed", ["Please try again later"]);
+          }         
+          
+        });
+      }else {
+        this.BillingBLService.CancelBillRequest(billTransactionItem).subscribe((res) => {
+          if(res.Status == "OK"){
+            this.provisionalItemList.splice(index, 1);
+            this.provisionalItemList.slice();
+            this.msgBoxServ.showMessage("success", ["The selected item has been canceled."]);
+            this.showConfirmationBox = false;
+            this.LoadProvisionalBills(this.fromDate, this.toDate);
+          }else{
+            this.msgBoxServ.showMessage("failed", ["Please try again later"]);
+          } 
+        });
+      }
     }
-
-    BackToGrid() {
-        this.showAllPatient = true;
-        //reset current patient value on back button.. 
-        this.patientService.CreateNewGlobal();
-    }
-
-    // to cancel the credit bills
-
+  }else {
+    this.msgBoxServ.showMessage("failed", ["Please Write Cancellation Remarks"]);
+  }
+}
 
 }

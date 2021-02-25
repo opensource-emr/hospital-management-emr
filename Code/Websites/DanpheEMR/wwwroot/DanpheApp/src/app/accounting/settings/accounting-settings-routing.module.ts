@@ -11,7 +11,9 @@ import { FiscalYearListComponent } from './fiscalyear/fiscalyear-list';
 import { CostCenterItemListComponent } from './costcenter/cost-center-item-list';
 import { LedgerGroupCategoryListComponent } from './ledgersgroupcategory/ledger-group-category-list';
 import { VoucherHeadListComponent} from './voucherhead/voucher-head-list';
-
+import { ReverseTransaction } from "./reverse-transaction/reverse-transaction.component";
+import { SectionListComponent } from './section/section-list';
+import { COAListComponent } from './coa/coa-list.component';
 
 @NgModule({
     imports: [
@@ -29,6 +31,9 @@ import { VoucherHeadListComponent} from './voucherhead/voucher-head-list';
                     { path: 'CostCenterItemList', component: CostCenterItemListComponent },
                     { path: 'LedgerGroupCategoryList', component: LedgerGroupCategoryListComponent },
                     { path: 'VoucherHeadList', component: VoucherHeadListComponent },
+                    {path: 'ReverseTransaction', component:ReverseTransaction },
+                    {path: 'SectionList', component:SectionListComponent },
+                    {path: 'COAList',component:COAListComponent}
                 ]
             }
         ])

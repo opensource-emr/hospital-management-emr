@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Audit.EntityFramework;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -8,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace DanpheEMR.ServerModel
 {
+    [AuditInclude]
     public class PHRMInvoiceTransactionModel
     {
         [Key]
@@ -43,6 +45,7 @@ namespace DanpheEMR.ServerModel
         public string PaymentMode { get; set; }
 
         public int? FiscalYearId { get; set; }
+
         [NotMapped]
         public string FiscalYear { get; set; }
         [NotMapped]
@@ -55,5 +58,44 @@ namespace DanpheEMR.ServerModel
 
         [NotMapped]
         public double? DepositBalance { get; set; }
+
+        public int? SettlementId { get; set; }
+        public DateTime? PaidDate { get; set; }
+        public DateTime? Creditdate { get; set; }
+        public int? OrganizationId { get; set; }
+        [NotMapped]
+        public virtual PHRMPatient SelectedPatient { get; set; }
+        public static PHRMInvoiceTransactionModel GetCloneWithItems(PHRMInvoiceTransactionModel txnToClone)
+        {
+            PHRMInvoiceTransactionModel retTxnModel = new PHRMInvoiceTransactionModel()
+            {
+                InvoiceId = txnToClone.InvoiceId,
+                InvoiceItems = txnToClone.InvoiceItems,
+                FiscalYearId = txnToClone.FiscalYearId,               
+                InvoicePrintId = txnToClone.InvoicePrintId,
+                SubTotal = txnToClone.SubTotal,
+                DiscountAmount = txnToClone.DiscountAmount,
+                SettlementId = txnToClone.SettlementId,
+                BilStatus = txnToClone.BilStatus,
+                PaymentMode = txnToClone.PaymentMode,
+                CreateOn = txnToClone.CreateOn,
+                CreatedBy = txnToClone.CreatedBy,
+                CounterId = txnToClone.CounterId,
+                DepositAmount = txnToClone.DepositAmount,
+                DepositBalance = txnToClone.DepositBalance,
+                PatientId = txnToClone.PatientId,
+                IsRealtime = txnToClone.IsRealtime,
+                IsRemoteSynced = txnToClone.IsRemoteSynced,
+                Remark = txnToClone.Remark,
+                PaidAmount = txnToClone.PaidAmount,
+                PaidDate = txnToClone.PaidDate,
+                TotalAmount = txnToClone.TotalAmount,
+                TotalQuantity = txnToClone.TotalQuantity,
+                Change = txnToClone.Change,
+                PrintCount = txnToClone.PrintCount,
+                Tender = txnToClone.Tender,
+            };
+            return retTxnModel;
+        }
     }
 }

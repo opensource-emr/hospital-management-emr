@@ -86,7 +86,7 @@ export class DanpheCache {
         }
         break;       
         case MasterType.Employee:{
-          url = '/api/Settings?reqType=employee';            
+          url = '/api/EmployeeSettings?reqType=get-employee';            
         }
         break;
         case MasterType.PhrmCounter:{

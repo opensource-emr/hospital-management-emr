@@ -21,6 +21,7 @@ namespace DanpheEMR.ServerModel
         public int? ModifiedBy { get; set; }
         public DateTime? ModifiedOn { get; set; }
         public bool? IsActive { get; set; }
+        public string CommunityName { get; set; }//sundeep:7Nov'19
     }
 
 }

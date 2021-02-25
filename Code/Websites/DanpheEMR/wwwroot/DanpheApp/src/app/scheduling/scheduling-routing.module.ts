@@ -8,6 +8,7 @@ import { ManageSchedulingComponent } from "./manage/manage-schedules.component";
 import { ManageMainComponent } from "./manage/manage-main.component";
 import { ManageWorkingHours } from "./manage/manage-working-hours.component";
 import { AuthGuardService } from '../security/shared/auth-guard.service';
+import { PageNotFound } from '../404-error/404-not-found.component';
 
 @NgModule({
     imports: [
@@ -22,7 +23,9 @@ import { AuthGuardService } from '../security/shared/auth-guard.service';
                           { path: '', redirectTo: 'ManageSchedules', pathMatch: 'full' },
                           { path: 'ManageSchedules', component: ManageSchedulingComponent, canActivate: [AuthGuardService] },
                           { path: '', redirectTo: 'ManageWorkingHours', pathMatch: 'full' },
-                          { path: 'ManageWorkingHours', component: ManageWorkingHours, canActivate: [AuthGuardService] }, 
+                          { path: 'ManageWorkingHours', component: ManageWorkingHours, canActivate: [AuthGuardService] },
+                          { path: "**", component: PageNotFound }
+
                         ]
                     },
                     {
@@ -30,11 +33,14 @@ import { AuthGuardService } from '../security/shared/auth-guard.service';
                         component: SettingMainComponent,
                         children: [
                             { path: '', redirectTo: 'ShiftsManage', pathMatch: 'full' },
-                          { path: 'ShiftsManage', component: ShiftsManageComponent, canActivate: [AuthGuardService]}
+                          { path: 'ShiftsManage', component: ShiftsManageComponent, canActivate: [AuthGuardService] },
+                          { path: "**", component: PageNotFound }
+
                         ]
                     },
                 ]
-            }
+          },
+          { path: "**", component: PageNotFound }
         ])
     ],
     exports: [

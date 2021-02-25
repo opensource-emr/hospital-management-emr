@@ -73,6 +73,15 @@ namespace DanpheEMR.ServerModel
             public int ReportTemplateId { get; set; }
             public string ReportTemplateShortName { get; set; }
             public string RunNumberType { get; set; }
+            public int? SampleCollectedBy { get; set; }
+            public int? VerifiedBy { get; set; }
+            public int? ResultAddedBy { get; set; }
+            public int? PrintedBy { get; set; }
+            public int? PrintCount { get; set; }
+            public string BillingStatus { get; set; }
+            public bool ValidTestToPrint { get; set; }
+            public int? LabCategoryId { get; set; }
+            public int? LabReportId { get; set; }
         }
 
         public string PatientName { get; set; }
@@ -240,10 +249,12 @@ namespace DanpheEMR.ServerModel
         public string NegativeResultText { get; set; }
         public string ReportingName { get; set; }
         public string Interpretation { get; set; }
+        public int? VerifiedBy { get; set; }
 
         //Test Component Result
         public Int64? TestComponentResultId { get; set; }
         public Int64 RequisitionId { get; set; }
+        public int ResultingVendorId { get; set; }
         public string Value { get; set; }
         public string Unit { get; set; }
         public string Range { get; set; }
@@ -254,6 +265,7 @@ namespace DanpheEMR.ServerModel
         public bool? IsNegativeResult { get; set; }
         public bool? IsAbnormal { get; set; }
         public bool? IsActive_Component { get; set; }
+        public int? ResultGroup { get; set; }
 
 
         //LabReportTemplateModel
@@ -297,6 +309,10 @@ namespace DanpheEMR.ServerModel
 
         public LabVendorsModel VendorDetail { get; set; }
         public bool? HasInsurance { get; set; }
+        public string BillingStatus{ get; set; }
+        public int? VerifiedBy { get; set; }
+        public int ResultingVendorId { get; set; }
+        public int? MaxResultGroup { get; set; }
     }
 
     //end: sud: 12Sept'18 -- for Lab-Result and Reports formatting

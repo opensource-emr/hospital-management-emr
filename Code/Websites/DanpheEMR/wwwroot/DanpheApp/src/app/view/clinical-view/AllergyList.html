@@ -1,22 +1,23 @@
-﻿<style>
-    .icheck-inline > label:first-child {
-        margin-left: 15px;
+<style>
+    .icheck-inline > label{
+        margin-right: 15px;
+        margin-left:0;
     }
 
     .icheck-inline label {
         color: #fff;
     }
 </style>
+
 <div class="row">
 
-    <div class="column-left">
+    <div class="col-md-12">
 
         <div class="form-body">
             <div id="allergySection">
-                <div class="col-md-12" style="padding-left: 0px;">
                     <div class="row">
 
-                        <div class="col-md-7 col-xs-12">
+                        <div class="col-md-8 col-xs-12">
 
                             <div class="portlet cstm-portlet portlet-with-collapse">
                                 <div class="portlet-title cstm-pt-title">
@@ -32,7 +33,7 @@
 
                                 <div class="cstm-portlet-body">
                                     <div class="table-responsive">
-                                        <table class="table table-bordered table-striped table-condensed flip-content" style="margin-bottom: 0px;">
+                                        <table class="table doc-tbl flip-content" style="margin-bottom: 0px;">
                                             <thead>
                                                 <tr>
                                                     <th>Recorded On</th>
@@ -66,7 +67,7 @@
 
 
                         </div>
-                        <div class="col-md-5">
+                        <div class="col-md-4">
                             <allergy-add [showAllergyAddBox]="showAllergyAddBox"
                                          [selected-allergy]="selectedAllergy"
                                          (callback-addupdate)="CallBackAddUpdate($event)"></allergy-add>
@@ -74,8 +75,6 @@
 
 
                     </div>
-
-                </div>
             </div>
         </div>
 

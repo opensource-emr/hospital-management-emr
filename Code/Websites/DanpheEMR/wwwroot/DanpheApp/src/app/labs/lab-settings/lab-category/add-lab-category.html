@@ -1,0 +1,76 @@
+<div class="popup-static portlet box portlet-fullscreen">
+  <div class="portlet-body form">
+    <div class="col-md-4 col-md-offset-4">
+      <div class="modelbox-div lab_modal_box">
+        <div class="modelbox-header">
+          <h4 class="margin-0-vr">
+            <span *ngIf="!update">Add Lab Category</span>
+            <span *ngIf="update">Update Lab Category</span>
+          </h4>
+        </div>
+        <div class="modelbox-body hm-form">
+          <div class="row">
+            <div class="col-md-4">
+              <label for="categoryName" class="control-label"
+                >Category Name <b>:</b></label
+              >
+            </div>
+            <div class="col-md-8">
+              <input
+                type="text"
+                placeholder="Category Name"
+                value=""
+                id="categoryName"
+                [(ngModel)]="labCategory.TestCategoryName"
+              />
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-8">
+              <div style="padding-left: 15px;" class="icheck-inline">
+                <label class="mt-checkbox mt-checkbox-outline">
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="labCategory.IsDefault"
+                    [ngModelOptions]="{standalone: true}"
+                  />
+                  <span></span>Is Default?</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modelbox-footer">
+          <div class="all-buttons text-right">
+            <button
+              type="button"
+              class="btn btn-primary margin-7-hr"
+              *ngIf="!update"
+              [disabled]="loading"
+              (click)="loading=true;AddNewCategory()"
+            >
+              Add
+            </button>
+            <button
+              type="button"
+              class="btn primary-btn margin-7-hr"
+              *ngIf="update"
+              [disabled]="loading"
+              (click)="loading=true;UpdateNewCategory()"
+            >
+              Update
+            </button>
+            <!-- <button type="button" class="btn btn-cancel btn-outline margin-7-hr" (click)="Close()">
+              Close
+            </button> -->
+          </div>
+        </div>
+        <div class="close-modelbox lb-close-btn">
+          <button class="btn btn-danger" (click)="Close()">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

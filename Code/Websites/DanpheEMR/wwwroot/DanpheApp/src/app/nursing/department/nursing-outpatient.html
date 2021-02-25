@@ -1,48 +1,234 @@
-<!-- 
-<div class="row" style="width: 100%; margin-bottom: 25px;">
-    <div class="col-md-5 col-xs-12">
-        <div class="form-group">
-            <label class="control-label col-md-4">From Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
-            <div class="col-md-8">
-                <danphe-date-picker [(ngModel)]="fromDate" ngDefaultControl [CalendarTypes]="'en,np'">
-                </danphe-date-picker>
-            </div>
-        </div>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    background-color: #ffffff;
+    font-weight: normal;
+  }
 
+  .container {
+    max-width: 960px;
+    margin: 15px auto;
+  }
+
+  .danphe-tab-wrapper .nav-tabs>li.active>a,
+  .danphe-tab-wrapper .nav-tabs>li.active>a:focus,
+  .danphe-tab-wrapper .nav-tabs>li.active>a:hover {
+    background-image: linear-gradient(to top, #48c6ef 0%, #6f86d6 100%);
+    border: 1px solid #5c79bf;
+    border-bottom: none;
+    color: #fff;
+  }
+
+  .danphe-tab-wrapper .nav-tabs>li>a {
+    background-image: linear-gradient(to top, #e6e9f0 0%, #eef1f5 100%);
+    border: 1px solid #8c8c8e;
+    color: #696969;
+    font-style: normal;
+    font-size: 14px;
+    padding: 7px 25px;
+    margin: 0 -1px 0px 0;
+    border-top-left-radius: 7px;
+    border-top-right-radius: 7px;
+    /*    border-left: none;*/
+  }
+
+  .danphe-tab-wrapper .nav-tabs>li:first-child a {}
+
+  .danphe-tab-wrapper .nav-tabs {
+    border-bottom: 1px solid #49a0ca;
+    position: relative
+  }
+
+  .danphe-tab-wrapper .nav-tabs li {}
+
+  .danphe-tab-wrapper .nav-tabs:before {
+    content: "";
+    width: 100%;
+    height: 5px;
+    display: block;
+    position: absolute;
+    top: auto;
+    bottom: -5px;
+    left: 0;
+    background: #48c5ee;
+    border-bottom: 1px solid #49a0ca;
+    border-left: 1px solid #446ea0;
+  }
+
+  .danphe-tab-wrapper table {
+    /*		margin: 15px 0;*/
+  }
+
+  .danphe-tab-wrapper table thead tr th {
+    position: sticky;
+    top: 0;
+    left: 0;
+    background: #0773bc;
+    color: #fff;
+    border: 1px solid #07609c !important;
+  }
+
+  .danphe-tab-wrapper .tab-pane {
+    padding: 15px 0;
+  }
+</style>
+<div class="sub-navtab">
+  <ul class="nav nav-tabs">
+    <li><a [ngClass]="{'a-tab-active':currentTab=='today'}" (click)="ToggleCurrentTab('today');">Today</a></li>
+    <li><a [ngClass]="{'a-tab-active':currentTab=='pastDays'}" (click)="ToggleCurrentTab('pastDays'); showAll();">Past
+        Days</a></li>
+  </ul>
+</div>
+<div class="form-body">
+  <!--<div class="row pt10">
+    <div class="col-md-5 col-xs-12">
+      <div class="form-group">
+        <div class="row">
+          <label class="control-label col-md-3">From Date<sup> *</sup><b style="float:right;">:</b></label>
+          <div class="col-md-9">
+            <danphe-date-picker [(ngModel)]="fromDate" ngDefaultControl [CalendarTypes]="'np,en'"> </danphe-date-picker>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="col-md-5 col-xs-12">
-        <div class="form-group">
-            <label class="control-label col-md-4">To Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
-            <div class="col-md-8">
-                <danphe-date-picker [(ngModel)]="toDate" ngDefaultControl [CalendarTypes]="'en,np'">
-                </danphe-date-picker>
-            </div>
+      <div class="form-group">
+        <div class="row">
+          <label class="control-label col-md-3">To Date <sup> *</sup><b style="float:right;">:</b></label>
+          <div class="col-md-9">
+            <danphe-date-picker [(ngModel)]="toDate" ngDefaultControl [CalendarTypes]="'np,en'"> </danphe-date-picker>
+          </div>
         </div>
-
+      </div>
     </div>
-
     <div class="col-md-2 col-xs-12">
-        <div class="form-group">
-            <button class="btn blue" type="button" (click)="LoadOutPatient()">
-                <i class="fa fa-search"></i>
-                Show Patient
-            </button>
+      <div class="form-group">
+        <button class="btn blue" type="button" (click)="LoadVisitList('')"> <i class="fa fa-search"></i> Show Patient </button>
+      </div>
+    </div>
+  </div>-->
+
+
+
+  <div class="danphe-tab-wrapper">
+    <!--<ul class="nav nav-tabs" role="tablist">
+      <li role="presentation" class="active"><a href="#today" aria-controls="today" role="tab" data-toggle="tab">Today</a></li>
+      <li role="presentation" class=""><a href="#pastDays" aria-controls="pastDays" role="tab" data-toggle="tab">Past Days</a></li>
+    </ul>-->
+
+    <div>
+      <div *ngIf="(currentTab=='today')">
+        <div class="danphe-tab-wrapper">
+          <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active">
+              <a href="#pending" aria-controls="pending" role="tab" data-toggle="tab" style="background-image: linear-gradient(to top, orange 0%, orange 100%);">
+                Triage Pending
+              </a>
+            </li>
+            <li role="presentation" class="">
+              <a href="#taken" aria-controls="taken" role="tab" data-toggle="tab" style="background-image: linear-gradient(to top, lightgreen 0%, lightgreen 100%);">
+                Triage Done
+              </a>
+            </li>
+          </ul>
         </div>
+
+        <div class="tab-content">
+          <div role="tabpanel" class="tab-pane active" id="pending">
+            <danphe-grid [grid-colDefaults]="nurOPDGridColumnSettings" [grid-data]="opdListZero"
+              (grid-actions)="NurOPDListGridActions($event)" [NepaliDateInGridParams]="NepaliDateInGridSettings">
+            </danphe-grid>
+          </div>
+          <div role="tabpanel" class="tab-pane" id="taken">
+            <danphe-grid [grid-colDefaults]="nurOPDGridColumnSettings" [grid-data]="opdListOne"
+              (grid-actions)="NurOPDListGridActions($event)" [NepaliDateInGridParams]="NepaliDateInGridSettings">
+            </danphe-grid>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="currentTab=='pastDays'">
+        <div class="row">
+          <div class="col-md-5">
+            <div class="active col-md-3" (click)="showAll()">
+              <label><input type="radio" name="optradio" checked style="margin-right:5px;" />ALL</label>
+            </div>
+            <div class=" col-md-4" (click)="showTriaged()">
+              <label><input type="radio" name="optradio" style="margin-right:5px;" />Triage Done</label>
+            </div>
+            <div class=" col-md-5" (click)="showNotTriaged()">
+              <label><input type="radio" name="optradio" style="margin-right:5px;" />Triage Pending</label>
+            </div>
+          </div>
+          <div class="col-md-7">
+
+          </div>
+
+        </div>
+
+        <!--<div class="row">
+          <div class="col-md-7 col-xs-12">
+            <from-to-date-select (on-change)="OnFromToDateChange($event)">
+            </from-to-date-select>
+          </div>
+        </div>-->
+
+        <div>
+          <danphe-grid *ngIf="showAllData" [grid-colDefaults]="nurOPDGridColumnSettings" [grid-data]="opdListPastDays"
+            (grid-actions)="NurOPDListGridActions($event)" [NepaliDateInGridParams]="NepaliDateInGridSettings"
+            [rangeType]="dateRange" (onDateChange)="onGridDateChange($event)" [date-range-options]="'1W,1M,3M'"
+            [show-CustomDate]="true"> </danphe-grid>
+          <danphe-grid *ngIf="showTriagedData" [grid-colDefaults]="nurOPDGridColumnSettings"
+            [grid-data]="opdListOnePastDays" (grid-actions)="NurOPDListGridActions($event)"
+            [NepaliDateInGridParams]="NepaliDateInGridSettings" [rangeType]="dateRange"
+            (onDateChange)="onGridDateChange($event)" [date-range-options]="'1W,1M,3M'" [show-CustomDate]="true">
+          </danphe-grid>
+          <danphe-grid *ngIf="showNotTriagedData" [grid-colDefaults]="nurOPDGridColumnSettings"
+            [grid-data]="opdListZeroPastDays" (grid-actions)="NurOPDListGridActions($event)"
+            [NepaliDateInGridParams]="NepaliDateInGridSettings" [rangeType]="dateRange"
+            (onDateChange)="onGridDateChange($event)" [date-range-options]="'1W,1M,3M'" [show-CustomDate]="true">
+          </danphe-grid>
+        </div>
+
+      </div>
     </div>
-</div> -->
+  </div>
 
-
-<danphe-grid [grid-colDefaults]="nurOPDGridColumnSettings" [grid-data]="opdList" (grid-actions)="NurOPDListGridActions($event)"  
-[show-ServerSideSearch]="false"
-[api-type]="patGirdDataApi">
-</danphe-grid>
-<div class="row">
+  <div>
     <div *ngIf="showDocumentsDetails">
-        <patient-upload-files [isShowUploadMode]="isShowUploadMode"
-                              [isShowListMode]="isShowListMode"
-                              [patientId]="patientId">
-        </patient-upload-files>
+      <patient-upload-files [isShowUploadMode]="isShowUploadMode" [isShowListMode]="isShowListMode"
+        [patientId]="patientId"> </patient-upload-files>
     </div>
+  </div>
 </div>
 
 
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showOpdTriage">
+  <div class="portlet-body form">
+    <div class="col-md-12">
+      <div class="modelbox-div">
+        <div class="modelbox-header">
+          <h3 class="margin-0-vr text-warning text-center">
+            <strong *ngIf="globalPatient && globalPatient.ShortName">
+              OPD Triage of
+              {{globalPatient.ShortName}}
+            </strong>
+          </h3>
+        </div>
+        <div class="modelbox-body">
+          <div class="row">
+            <opd-triage [isEditMode]="triageEdit" [currentPatInfo]="patientInfo"
+              (opdTriagedCallback)=OPDTriagedCallback($event)>
+            </opd-triage>
+          </div>
+        </div>
+        <div class="close-modelbox">
+          <button class="btn btn-danger" (click)="ClosePopUp()">
+            X
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

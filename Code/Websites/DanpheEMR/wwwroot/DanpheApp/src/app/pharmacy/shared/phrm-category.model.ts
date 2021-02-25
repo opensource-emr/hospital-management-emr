@@ -1,4 +1,4 @@
-﻿import {
+import {
     NgForm,
     FormGroup,
     FormControl,
@@ -10,7 +10,7 @@ import * as moment from 'moment/moment';
 
 export class PHRMCategoryModel {
     public CategoryId: number = 0;
-    public CategoryName: string = null;
+    public CategoryName: string = "";
     public Description: string = null;
     public CreatedBy: number = 0;
     public CreatedOn: string = null;

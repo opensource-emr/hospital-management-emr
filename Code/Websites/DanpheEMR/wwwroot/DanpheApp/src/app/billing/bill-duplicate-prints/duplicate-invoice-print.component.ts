@@ -15,6 +15,8 @@ import { APIsByType } from '../../shared/search.service';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { DanpheLoadingInterceptor } from '../../shared/danphe-loader-intercepter/danphe-loading.services';
 import { CoreService } from '../../core/shared/core.service';
+import { NepaliDateInGridColumnDetail, NepaliDateInGridParams } from '../../shared/danphe-grid/NepaliColGridSettingsModel';
+import { ENUM_InvoiceType } from '../../shared/shared-enums';
 @Component({
   selector: 'duplicate-invoice',
   templateUrl: './duplicate-invoice-print.html',
@@ -43,15 +45,22 @@ export class DuplicateInvoicePrintComponent {
   previousInvoiceNo: any;
   nextInvoiceNo: any;
   public patGirdDataApi: string = "";
+  searchText:string='';
+  public enableServerSideSearch: boolean = false;
+
+  public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
+
   constructor(
     public BillingBLService: BillingBLService,
     public msgBoxServ: MessageboxService, public billingService: BillingService, public coreService: CoreService) {
-    this.dateRange = "None";
+    this.dateRange = "last1Week";
     this.duplicateBillPrintGridColumns = GridColumnSettings.DuplicateInvoiceList;
+    this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('TransactionDate',false));
     // this.GetInvoiceListForDuplicatebill(this.fromDate,this.toDate);
     this.GetDoctorsList();
     this.patGirdDataApi = APIsByType.BillingDuplicatePrint;
-    this.GetInvoiceListForDuplicatebill();
+    this.getParamter();
+    //this.GetInvoiceListForDuplicatebill();
   }
   // onDateChange($event) {
   //     this.fromDate = $event.fromDate;
@@ -61,13 +70,21 @@ export class DuplicateInvoicePrintComponent {
   //     }
   // }
   GetInvoiceListForDuplicatebill() {
-    this.BillingBLService.GetInvoiceDetailsForDuplicatebill()
+    this.BillingBLService.GetInvoiceDetailsForDuplicatebill(this.fromDate, this.toDate)
       .subscribe(res => {
         this.transactionList = res.Results;
       });
   }
 
-
+  getParamter(){
+    let parameterData = this.coreService.Parameters.find(p => p.ParameterGroupName == "Common" && p.ParameterName == "ServerSideSearchComponent").ParameterValue;
+    var data= JSON.parse(parameterData);
+    this.enableServerSideSearch = data["BillingDuplicatePrint"];
+  }
+  serverSearchTxt(searchTxt) {
+    this.searchText = searchTxt;
+    //this.GetInvoiceListForDuplicatebill(this.searchText);
+}
   DuplicateBillPrintGridActions($event: GridEmitModel) {
     switch ($event.Action) {
       case "showDetails":
@@ -125,6 +142,14 @@ export class DuplicateInvoicePrintComponent {
           if (this.invoice.ReceiptType == "ip-receipt" && this.billingService.ShowIPBillSeparately()) {
             this.showInpatientReceipt = true;
             this.showNormalReceipt = false;
+            //if (this.invoice.tran InvoiceType != ENUM_InvoiceType.inpatientPartial) {
+            //  this.showInpatientReceipt = true;
+            //  this.showNormalReceipt = false;
+            //}
+            //else {
+            //  this.showIPReceipt = false;
+            //  this.showNormalReceipt = true;
+            //}
           }
           else {
             this.showInpatientReceipt = false;
@@ -206,6 +231,18 @@ export class DuplicateInvoicePrintComponent {
           this.msgBoxServ.showMessage('Failed', ["unable to get Doctors list.. check log for more details."]);
           console.log(err.ErrorMessage);
         });
+  }
+
+  onGridDateChange($event) {
+    this.fromDate = $event.fromDate;
+    this.toDate = $event.toDate;
+    if (this.fromDate != null && this.toDate != null) {
+      if (moment(this.fromDate).isBefore(this.toDate) || moment(this.fromDate).isSame(this.toDate)) {
+        this.GetInvoiceListForDuplicatebill()
+      } else {
+        this.msgBoxServ.showMessage("failed", ['Please enter valid From date and To date']);
+      }
+    }
   }
 
 }

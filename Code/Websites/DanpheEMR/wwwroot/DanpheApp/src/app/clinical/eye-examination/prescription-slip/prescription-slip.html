@@ -1,0 +1,300 @@
+<style>
+.eye-center {
+	display: grid;
+	justify-content: center;
+}
+</style>
+<div class="row em_module">
+  <div class="col-md-12">
+    <div class="em_title clearfix">
+      <h4>Prescription History </h4>
+      <textarea ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.History.History" style="min-width: 100%"></textarea>
+    </div>
+  </div>
+  <div class="col-md-12">
+    <div class="row">
+      <div class="col-sm-6 ">
+        <div class="em_title">
+          <h4> PGP </h4>
+        </div>
+        <FORM METHOD="POST" ACTION="">
+          <TABLE>
+            <TR>
+              <th> </th>
+              <th>Sph</th>
+              <th>Cyl </th>
+              <th>Axis</th>
+              <th>Va</th>
+            </TR>
+            <TR>
+              <th>OD</th>
+              <TD><INPUT TYPE="TEXT" NAME="SphOD" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.Plup.SphOD" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+              <TD><INPUT TYPE="TEXT" NAME="CylOD" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.Plup.CylOD" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+              <TD><INPUT TYPE="TEXT" NAME="AxisOD" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.Plup.AxisOD" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+              <TD><INPUT TYPE="TEXT" NAME="VaOD" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.Plup.VaOD" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+            </TR>
+            <TR>
+              <th>OS</th>
+              <TD><INPUT TYPE="TEXT" NAME="SphOS" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.Plup.SphOS" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+              <TD><INPUT TYPE="TEXT" NAME="CylOS" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.Plup.CylOS" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+              <TD><INPUT TYPE="TEXT" NAME="AxisOS" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.Plup.AxisOS" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+              <TD><INPUT TYPE="TEXT" NAME="VaOS" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.Plup.VaOS" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+            </TR>
+          </TABLE>
+        </FORM>
+      </div>
+      <div class="col-sm-6 ">
+        <div class="em_title">
+          <h4> VA Unaided </h4>
+        </div>
+        <FORM METHOD="POST" ACTION="">
+          <TABLE>
+            <TR>
+              <th>OD </th>
+              <TD><INPUT TYPE="TEXT" NAME="SphOD" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.VaUnaided.OD" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+            </TR>
+            <TR>
+              <th>OS </th>
+              <TD><INPUT TYPE="TEXT" NAME="SphOS" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.VaUnaided.OS" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+            </TR>
+          </TABLE>
+        </FORM>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-12">
+    <div class="row ">
+      <div class="col-sm-6 ">
+        <div class="em_title">
+          <h4>Retinoscopy </h4>
+        </div>
+        <FORM METHOD="POST" ACTION="">
+          <TABLE>
+            <TR>
+              <th> </th>
+              <th>Sph</th>
+              <th>Cyl </th>
+              <th>Axis</th>
+              <th>Va</th>
+            </TR>
+            <TR>
+              <th>OD</th>
+              <TD><INPUT TYPE="TEXT" NAME="SphOD" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.Retinoscopy.SphOD" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+              <TD><INPUT TYPE="TEXT" NAME="CylOD" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.Retinoscopy.CylOD" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+              <TD><INPUT TYPE="TEXT" NAME="AxisOD" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.Retinoscopy.AxisOD" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+              <TD><INPUT TYPE="TEXT" NAME="VaOD" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.Retinoscopy.VaOD" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+            </TR>
+            <TR>
+              <th>OS</th>
+              <TD><INPUT TYPE="TEXT" NAME="SphOS" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.Retinoscopy.SphOS" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+              <TD><INPUT TYPE="TEXT" NAME="CylOS" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.Retinoscopy.CylOS" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+              <TD><INPUT TYPE="TEXT" NAME="AxisOS" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.Retinoscopy.AxisOS" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+              <TD><INPUT TYPE="TEXT" NAME="VaOD" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.Retinoscopy.VaOS" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+            </TR>
+          </TABLE>
+        </FORM>
+      </div>
+      <div class="col-sm-6 ">
+        <div class="em_title">
+          <h4>Acceptance </h4>
+        </div>
+        <FORM METHOD="POST" ACTION="">
+          <TABLE>
+            <TR>
+              <th> </th>
+              <th>Sph</th>
+              <th>Cyl </th>
+              <th>Axis</th>
+              <th>Va</th>
+            </TR>
+            <TR>
+              <th>OD</th>
+              <TD><INPUT TYPE="TEXT" NAME="SphOD" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.Acceptance.SphOD" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+              <TD><INPUT TYPE="TEXT" NAME="CylOD" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.Acceptance.CylOD" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+              <TD><INPUT TYPE="TEXT" NAME="AxisOD" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.Acceptance.AxisOD" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+              <TD><INPUT TYPE="TEXT" NAME="VaOD" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.Acceptance.VaOD" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+            </TR>
+            <TR>
+              <th>OS</th>
+              <TD><INPUT TYPE="TEXT" NAME="SphOS" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.Acceptance.SphOS" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+              <TD><INPUT TYPE="TEXT" NAME="CylOS" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.Acceptance.CylOS" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+              <TD><INPUT TYPE="TEXT" NAME="AxisOS" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.Acceptance.AxisOS" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+              <TD><INPUT TYPE="TEXT" NAME="VaOS" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.Acceptance.VaOS" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+            </TR>
+          </TABLE>
+        </FORM>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-12">
+    <div class="row">
+      <div class="col-md-6">
+        <div class="em_title">
+          <h4>Anterior Segment Right </h4>
+        </div>
+        <div class="logo"> <img class="img-responsive" src="\themes\theme-default\images\eye\EyeAnterior.jpg" /> </div>
+      </div>
+      <div class="col-md-6">
+        <div class="pull-right">
+          <div class="em_title">
+            <h4>Anterior Segment Left </h4>
+          </div>
+          <div class="logo"> <img class="img-responsive" src="\themes\theme-default\images\eye\EyeAnterior.jpg" /> </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-12">
+    <div class="row">
+      <div class="col-sm-6 ">
+        <div class="em_title">
+          <h4> Dilate</h4>
+        </div>
+        <form action="">
+          <div class="icheck-inline">
+            <label class="mt-checkbox mt-checkbox-outline">
+              <input type="checkbox" name="Tplus" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.Dilate.Tplus" value="Tplus">
+              <span></span>T+ </label>
+            <label class="mt-checkbox mt-checkbox-outline">
+              <input type="checkbox" name="CP" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.Dilate.CP" value="CP">
+              <span></span>CP </label>
+            <label class="mt-checkbox mt-checkbox-outline">
+              <input type="checkbox" name="CTC" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.Dilate.CTC" value="CTC">
+              <span></span>CTC </label>
+            <label class="mt-checkbox mt-checkbox-outline">
+              <input type="checkbox" name="Atropine" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.Dilate.Atropine" value="Atropine">
+              <span></span>Atropine </label>
+          </div>
+          <!--
+            <input type="checkbox" name="Tplus" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.Dilate.Tplus" value="Tplus">
+            T+
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="checkbox" name="CP" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.Dilate.CP" value="CP">
+            CP <br>
+            <input type="checkbox" name="CTC" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.Dilate.CTC" value="CTC">
+            CTC
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="checkbox" name="Atropine" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.Dilate.Atropine" value="Atropine">
+            Atropine
+-->
+        </form>
+      </div>
+      <div class="col-sm-6">
+        <div class="em_title">
+          <h4>IOP </h4>
+        </div>
+        <FORM METHOD="POST" ACTION="">
+          <TABLE>
+            <TR>
+              <th>OD </th>
+              <TD><INPUT TYPE="TEXT" NAME="IOPOD" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.IOP.OD" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+            </TR>
+            <TR>
+              <th>OS </th>
+              <TD><INPUT TYPE="TEXT" NAME="IOPOS" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.IOP.OS" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+            </TR>
+          </TABLE>
+        </FORM>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-12">
+    <div class="row">
+      <div class="col-md-6">
+        <div class="em_title">
+          <h4>Posterior Segment Right </h4>
+        </div>
+        <div class="logo"> <img class="img-responsive" src="\themes\theme-default\images\eye\EyePosterior.jpg" /> </div>
+      </div>
+      <div class="col-md-6">
+        <div class="pull-right">
+          <div class="em_title">
+            <h4>Posterior Segment Left </h4>
+          </div>
+          <div class="logo"> <img class="img-responsive" src="\themes\theme-default\images\eye\EyePosteriorLeft.jpg" /> </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-12">
+    <div class="row">
+      <div class="col-sm-6">
+        <div class="em_title">
+          <div class="em_title">
+            <h4> Schirmer Test</h4>
+          </div>
+        </div>
+        <FORM METHOD="POST" ACTION="">
+          <TABLE>
+            <TR>
+              <th>OD </th>
+              <TD><INPUT TYPE="TEXT" NAME="Tplus" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.Schrime.OD" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+            </TR>
+            <TR>
+              <th>OS </th>
+              <TD><INPUT TYPE="TEXT" NAME="OS" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.Schrime.OS" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+            </TR>
+          </TABLE>
+        </FORM>
+      </div>
+      <div class="col-sm-6">
+        <div class="em_title">
+          <h4>TBUT </h4>
+        </div>
+        <FORM METHOD="POST" ACTION="">
+          <TABLE>
+            <TR>
+              <th>OD </th>
+              <TD><INPUT TYPE="TEXT" NAME="IOPOD" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.TBUT.OD" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+            </TR>
+            <TR>
+              <th>OS </th>
+              <TD><INPUT TYPE="TEXT" NAME="IOPOS" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.TBUT.OS" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+            </TR>
+          </TABLE>
+        </FORM>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-12 ">
+    <div class="em_title">
+      <h4>Final Class Prescription </h4>
+    </div>
+    <FORM METHOD="POST" ACTION="">
+      <TABLE>
+        <TR>
+          <th> </th>
+          <th>Sph</th>
+          <th>Cyl </th>
+          <th>Axis</th>
+          <th>Va</th>
+        </TR>
+        <TR>
+          <th>OD</th>
+          <TD><INPUT TYPE="TEXT" NAME="SphOD" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.FinalClass.SphOD" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+          <TD><INPUT TYPE="TEXT" NAME="CylOD" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.FinalClass.CylOD" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+          <TD><INPUT TYPE="TEXT" NAME="AxisOD" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.FinalClass.AxisOD" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+          <TD><INPUT TYPE="TEXT" NAME="VaOD" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.FinalClass.VaOD" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+        </TR>
+        <TR>
+          <th>OS</th>
+          <TD><INPUT TYPE="TEXT" NAME="SphOS" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.FinalClass.SphOS" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+          <TD><INPUT TYPE="TEXT" NAME="CylOS" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.FinalClass.CylOS" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+          <TD><INPUT TYPE="TEXT" NAME="AxisOS" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.FinalClass.AxisOS" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+          <TD><INPUT TYPE="TEXT" NAME="VaOS" ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.FinalClass.VaOS" [ngModelOptions]="{standalone:true}" SIZE="11"></TD>
+        </TR>
+      </TABLE>
+    </FORM>
+  </div>
+  <div class="col-md-12">
+    <div class="em_title">
+      <h4>Advice & Diagnosis </h4>
+    </div>
+    <textarea ngDefaultControl [(ngModel)]="PrescriptionSlipMaster.AdviceDiagnosis.AdviceDiagnosis"></textarea>
+  </div>
+  <div class="col-md-12 " id="saveallbutton">
+    <button (click)="SaveAll()" class="btn btn-flickr primary-btn">Save All</button>
+  </div>
+</div>
+<!--<div class="col-md-12 clearfix"> </div>--> 
+

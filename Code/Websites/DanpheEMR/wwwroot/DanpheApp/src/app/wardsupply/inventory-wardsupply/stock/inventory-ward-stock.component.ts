@@ -6,13 +6,15 @@ import WARDGridColumns from '../../shared/ward-grid-cloumns';
 import { Router } from '@angular/router';
 import * as moment from 'moment/moment'
 import { GridEmitModel } from '../../../shared/danphe-grid/grid-emit.model';
+import { SecurityService } from '../../../security/shared/security.service';
 @Component({
   templateUrl: "./inventory-ward-stock.html" // "/WardSupplyView/Stock"
 })
 export class WardInventoryStockComponent {
   public inventoryStockGridColumns: Array<WARDGridColumns> = []
   public inventoryStockDetailsList: Array<WardStockModel> = []
-  public DepartmentId: any;
+  public DepartmentId: number = 0;
+  public CurrentStoreId: number = 0;
   public rowIndex: number = null;
   public selectedStock: WardStockModel = new WardStockModel();
   public showStockTransfer: boolean = false;
@@ -20,13 +22,29 @@ export class WardInventoryStockComponent {
   public availableDepartmentList: Array<any> = new Array<any>();
   public transferBackToInventory: boolean = false;
 
-  constructor(public wardSupplyBLService: WardSupplyBLService,
+  constructor(public securityService: SecurityService,
+    public wardSupplyBLService: WardSupplyBLService,
     public msgBoxServ: MessageboxService,
     public changeDetector: ChangeDetectorRef,
     public router: Router) {
-    this.inventoryStockGridColumns = WARDGridColumns.WARDInventoryStockDetailsList;
-    this.GetDepartmentList();
-    this.GetInventoryStockDetailsList();
+    this.CheckForSubstoreActivation();
+  }
+
+  CheckForSubstoreActivation() {
+    this.CurrentStoreId = this.securityService.getActiveStore().StoreId;
+    try {
+      if (!this.CurrentStoreId) {
+        //routeback to substore selection page.
+        this.router.navigate(['/WardSupply']);
+      }
+      else {
+        //write whatever is need to be initialise in constructor here.
+        this.inventoryStockGridColumns = WARDGridColumns.WARDInventoryStockDetailsList;
+        this.GetInventoryStockDetailsList();
+      }
+    } catch (exception) {
+      this.msgBoxServ.showMessage("Error", [exception]);
+    }
   }
 
   gridExportOptions = {
@@ -47,38 +65,15 @@ export class WardInventoryStockComponent {
         break;
     }
   }
-
-  GetDepartmentList() {
-    try {
-      this.wardSupplyBLService.GetDepartments()
-        .subscribe(res => {
-          if (res.Status == "OK") {
-            if (res.Results.length) {
-              this.departmentList = res.Results;
-            }
-            else {
-              this.msgBoxServ.showMessage("Failed", ["Ward List is not available."]);
-              console.log(res.Errors);
-            }
-          }
-        });
-
-    } catch (exception) {
-      this.ShowCatchErrMessage(exception);
-    }
-  }
   GetInventoryStockDetailsList() {
     try {
-      this.wardSupplyBLService.GetInventoryStockDetailsList()
+      this.wardSupplyBLService.GetInventoryStockByStoreId(this.CurrentStoreId)
         .subscribe(res => {
           if (res.Status == "OK") {
             if (res.Results.length) {
               this.inventoryStockDetailsList = [];
               this.inventoryStockDetailsList = res.Results;
               this.inventoryStockDetailsList = this.inventoryStockDetailsList.filter(a => a.Quantity > 0);
-              if (this.DepartmentId > 0) {
-                this.inventoryStockDetailsList = this.inventoryStockDetailsList.filter(a => a.DepartmentId == this.DepartmentId);
-              }
             }
             else {
               this.msgBoxServ.showMessage("Empty", ["No stock Available."]);
@@ -90,10 +85,6 @@ export class WardInventoryStockComponent {
     } catch (exception) {
       this.ShowCatchErrMessage(exception);
     }
-  }
-
-  OnDepartmentChange() {
-    this.GetInventoryStockDetailsList();
   }
   transferStock(StockData) {
     this.selectedStock.DepartmentId = StockData.DepartmentId;

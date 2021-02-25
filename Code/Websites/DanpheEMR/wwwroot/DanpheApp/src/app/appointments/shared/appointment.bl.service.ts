@@ -1,4 +1,4 @@
-﻿import { Injectable, Directive } from '@angular/core';
+import { Injectable, Directive } from '@angular/core';
 import { RouterModule, Router } from '@angular/router';
 
 import { Appointment } from "../shared/appointment.model";
@@ -46,21 +46,21 @@ export class AppointmentBLService {
     }
 
     //gets selected patient's appointment list.
-    public CheckForClashingAppointment(patientId: number, apptDate: string, providerId: number) {
-        if (patientId) {
-            return this.appointmentDLService.CheckForClashingAppointment(patientId, apptDate, providerId)
-                .map(res => res);
-        }
-        else {
-            return this.appointmentDLService.CheckForClashingAppointment(0, apptDate, providerId)
-                .map(res => res);
-        }
+  public CheckForClashingAppointment(patientId: number, apptDate: string, providerId: number) {
+    if (patientId) {
+      return this.appointmentDLService.CheckForClashingAppointment(patientId, apptDate, providerId)
+        .map(res => res);
     }
+    else {
+      return this.appointmentDLService.CheckForClashingAppointment(0, apptDate, providerId)
+        .map(res => res);
+    }
+  }
 
     //gets list of all appointments with status ="new"
-    public LoadAppointmentList() {
+  public LoadAppointmentList(fromDate, toDate, providerid) {
         status = "new";
-        return this.appointmentDLService.GetAppointmentList(status)
+    return this.appointmentDLService.GetAppointmentList(fromDate, toDate, providerid, status)
             .map(res => res);
     }
     // getting the CountrySubDivision from dropdown
@@ -70,8 +70,8 @@ export class AppointmentBLService {
 
     }
     // getting patients 
-    public GetPatients() {
-        return this.patientDLService.GetPatients()
+    public GetPatients(searchTxt) {
+        return this.patientDLService.GetPatients(searchTxt)
             .map(res => { return res })
 
     }
@@ -98,8 +98,14 @@ export class AppointmentBLService {
         return this.appointmentDLService.GetTotalAmountByProviderId(providerId)
             .map(res => { return res })
 
-    }
+  }
+  //pupdate  for  phonebook appointment
+  public PutAppointment(currentAppointment) {
+    var temp = _.omit(currentAppointment, ['AppointmentValidator']);
+    return this.appointmentDLService.PutAppointment(temp)
+      .map(res => res);
 
+  }
 
     //post new appointment.
     public AddAppointment(currentAppointment: Appointment) {

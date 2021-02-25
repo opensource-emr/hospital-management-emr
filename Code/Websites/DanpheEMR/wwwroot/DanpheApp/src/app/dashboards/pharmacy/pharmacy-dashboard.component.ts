@@ -1,4 +1,4 @@
-﻿import { Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterOutlet, RouterModule, Router } from '@angular/router';
 import { DanpheChartsService } from '../../dashboards/shared/danphe-charts.service';
 import { PHRMItemMasterModel } from "../../pharmacy/shared/phrm-item-master.model"
@@ -69,10 +69,10 @@ export class PharmacyDashboardComponent {
     LoadStatus(status) {
         ///check status == sales
         if (status == "sales") {
-            this.Status = "sales";
+            this.Status = "Sales";
         }
         else {
-            this.Status = "purchase";
+            this.Status = "Purchase";
         }
     }
     
@@ -217,7 +217,11 @@ export class PharmacyDashboardComponent {
         this.dlService.Read("/PharmacyReport/PHRM_Daily_StockValue")
             .map(res => res)
             .subscribe(res => {
-                let dataToParse = JSON.parse(res.Results.JsonData);
+                let dataToParse = [];
+                if (res.Results && res.Results.JsonData) {
+                    dataToParse = JSON.parse(res.Results.JsonData);
+                }
+                
              
                 this.danpheCharts.Pharmacy_Line_DailyStockValue("dvPHRMDailyValueTrend", dataToParse);
             },

@@ -1,9 +1,0 @@
-﻿<base href="/">
-<div class="page-bar">
-    <ul class="page-breadcrumb" *ngIf="validRoutes != undefined">
-        <li *ngFor="let route of validRoutes">
-            <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'link3-active'">{{route.DisplayName}}<i class="{{route.Css}}"></i></a>
-        </li>
-    </ul>
-</div>
-<router-outlet></router-outlet>

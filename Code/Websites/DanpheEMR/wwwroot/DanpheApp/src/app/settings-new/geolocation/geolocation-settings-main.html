@@ -1,0 +1,24 @@
+<!--<div class="sub-navtab">
+    <ul class="nav nav-tabs">
+        <li><a [ngClass]="{'a-tab-active': showCountryList==true}" (click)="updateView(0)">Manage Country</a></li>
+        <li><a [ngClass]="{'a-tab-active': showSubDivision==true}" (click)="updateView(1)">Manage SubDivision</a></li>
+    </ul>
+</div>
+
+<div class="row">
+  <div class="col-md-12">
+    <country-list *ngIf="showCountryList"></country-list>
+    <country-subdivision-list *ngIf="showSubDivision"></country-subdivision-list>
+  </div>
+</div>-->
+
+<div class="sub-navtab">
+  <ul class="nav nav-tabs" *ngIf="validRoutes != undefined">
+    <li *ngFor="let route of validRoutes">
+      <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'a-tab-active'">{{route.DisplayName}}<i class="{{route.Css}}"></i></a>
+    </li>
+  </ul>
+</div>
+<router-outlet>
+
+</router-outlet>

@@ -1,10 +1,10 @@
-﻿import { Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { Component, ChangeDetectorRef } from '@angular/core';
 
 import { SecurityService } from '../../security/shared/security.service';
 
 import { BillingTransactionItem } from "../../billing/shared/billing-transaction-item.model";
-import { BillingItem } from '../../billing/shared/billing-item.model';
+import { BillItemPriceVM } from '../../billing/shared/billing-view-models';
 import { BillingBLService } from '../../billing/shared/billing.bl.service';
 import { NursingBLService } from "../shared/nursing.bl.service"
 
@@ -22,6 +22,7 @@ import { ImagingItemRequisition } from '../../radiology/shared/imaging-item-requ
 import { LabTestRequisition } from '../../labs/shared/lab-requisition.model';
 import { BillingService } from '../../billing/shared/billing.service';
 import { DanpheHTTPResponse } from "../../shared/common-models";
+import { ENUM_BillingStatus } from '../../shared/shared-enums';
 
 @Component({
     selector: 'nursing-order',
@@ -36,7 +37,7 @@ export class NursingOrderComponent {
     public CurrentNursingOrderItem: BillingTransactionItem = null;
     public rowCount: number = 0;
     public ItemList: any;
-    public serviceDeptItemsMap = new Array<{ ServiceDepartmentId: number, ItemList: Array<BillingItem> }>();
+  public serviceDeptItemsMap = new Array<{ ServiceDepartmentId: number, ItemList: Array<BillItemPriceVM> }>();
     //declare boolean loading variable for disable the double click event of button
     loading: boolean = false;
     public allServiceDepts: Array<ServiceDepartmentVM> = null;
@@ -80,7 +81,7 @@ export class NursingOrderComponent {
     NewBillingTransactionItem(): BillingTransactionItem {
         let newReq: BillingTransactionItem = new BillingTransactionItem();
         newReq.PatientId = this.patientService.getGlobal().PatientId;
-        newReq.BillStatus = "unpaid";
+      newReq.BillStatus = ENUM_BillingStatus.unpaid;// "unpaid";
         return newReq;
     }
     Clear() {

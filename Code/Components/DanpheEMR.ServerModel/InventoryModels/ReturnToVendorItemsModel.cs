@@ -10,9 +10,9 @@ namespace DanpheEMR.ServerModel
 {
    public  class ReturnToVendorItemsModel
     {
-
         [Key]
         public int ReturnToVendorItemId { get; set; }
+        public int? ReturnToVendorId { get; set; }
         public int VendorId { get; set; }
         public int ItemId { get; set; }
         public int GoodsReceiptItemId { get; set; }

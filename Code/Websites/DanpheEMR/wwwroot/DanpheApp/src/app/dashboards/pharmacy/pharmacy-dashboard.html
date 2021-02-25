@@ -36,7 +36,7 @@
             <div class="portlet-body" style="padding-top: 0px;">
                 <p style="background-color:#e7ecf1;padding-left:15px;">
                     <b>Select Date</b>&nbsp;&nbsp;:&nbsp;&nbsp;<input type="date" placeholder="date" [(ngModel)]="counterDayDate" (change)="LoadAllSaleRecord()"/>
-                    <button class="btn btn-sm blue" disabled type="button" style="margin-left:15px;">
+                    <button class="btn btn-sm blue" type="button" style="margin-left:15px;">
                         <i class="fa fa-search"></i>
                         Search
                     </button>
@@ -46,28 +46,36 @@
                     <p>
                       <b> User collection on </b>{{counterDayDate}}
                     </p>
+                    <div style="padding-top:15px; padding-bottom:10px">
+                        <h4 class="label label-success">Gross Total Sales</h4> <b>:  {{SelectedData.TotalSale}}</b>
+                      </div>
+                      <p></p>
+                      <div style="padding-top:15px; padding-bottom:10px">
+                        <h4 class="label label-success">Deposit Amount</h4> <b>:  {{SelectedData.TotalDeposit}}</b>
+                      </div>
+                      <p> </p>
+                      <div style="padding-top:15px; padding-bottom:10px">
+                        <h4 class="label label-success">Deposit Returned</h4> <b>:  {{SelectedData.DepositReturned}}</b>
+                      </div>
+                      <p> </p>
+                      <div style="padding-top:15px; padding-bottom:10px">
+                        <h4 class="label label-success">Credit Sale</h4> <b>:  {{SelectedData.CreditAmount}}</b>
+                      </div>
+                      <p> </p>
+                      <div style="padding-top:15px; padding-bottom:10px">
+                        <h4 class="label label-success">Credit Return</h4> <b>:  {{SelectedData.CreditReturn}}</b>
+                      </div>
+                      <p> </p>
+                      <div style="padding-top:15px; padding-bottom:10px">
+                        <h4 class="label label-success">Cash Return</h4> <b>:  {{SelectedData.TotalReturn}}</b>
+                      </div>
+                      <p> </p>
                     <div *ngFor="let usr of SelectedData.UserCollection" style="padding-top:15px; padding-bottom:10px">
                       <h4 class="label label-success">{{usr.UserName}}</h4> <b>:  {{usr.UserSale}}</b>
                     </div>
                     <p></p>
                     <div style="padding-top:15px; padding-bottom:10px">
-                      <h4 class="label label-success">Total Collection</h4> <b>:  {{SelectedData.TotalSale}}</b>
-                    </div>
-                    <p></p>
-                    <div style="padding-top:15px; padding-bottom:10px">
-                      <h4 class="label label-success">Total Return</h4> <b>:  {{SelectedData.TotalReturn}}</b>
-                    </div>
-                    <p> </p>
-                    <div style="padding-top:15px; padding-bottom:10px">
-                      <h4 class="label label-success">Net Collection</h4> <b>:  {{SelectedData.NetSale}}</b>
-                    </div>
-                    <p></p>
-                    <div style="padding-top:15px; padding-bottom:10px">
-                      <h4 class="label label-success">Deposit Amount</h4> <b>:  {{SelectedData.TotalDeposit}}</b>
-                    </div>
-                    <p> </p>
-                    <div style="padding-top:15px; padding-bottom:10px">
-                      <h4 class="label label-success">Deposit Returned</h4> <b>:  {{SelectedData.DepositReturned}}</b>
+                      <h4 class="label label-success">Net Cash Collection</h4> <b>:  {{SelectedData.NetSale}}</b>
                     </div>
                   </div>
                     <div class="col-md-6">
@@ -79,8 +87,7 @@
                         </div>
                     </div>
                 </div>
-
-
+            
                 <div class="row">
                  
                 </div>

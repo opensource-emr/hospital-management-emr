@@ -37,4 +37,18 @@ namespace DanpheEMR.ServerModel.LabModels
         public string RunNumberType { get; set; }
         public string WardName { get; set; }
     }
+
+    public class LabSampleVM
+    {
+        public long RequisitionId { get; set; }
+        public DateTime? SampleDate { get; set; }
+        public int? SampleCode { get; set; }
+        public int PatientId { get; set; }
+        public int? BarCodeNumber { get; set; }
+        public string SampleCodeFormatted { get; set; }
+        public string RunNumberType { get; set; }
+        public string VisitType { get; set; }
+
+        public LabRequisitionModel ExistingDetail { get; set; }
+    }
 }

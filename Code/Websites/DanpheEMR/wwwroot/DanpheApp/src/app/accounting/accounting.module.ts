@@ -22,31 +22,37 @@ import { SharedModule } from '../shared/shared.module';
 import { AccountingSyncBaseComponent } from './sync/accounting-sync-base.component';
 import { LedgersAddReusableComponent } from './transactions/shared/create-ledger-reusable/ledger-add-reusable.component';
 import { LedgerGroupAddReusableComponent } from './transactions/shared/create-ledger-group-reusable/ledger-group-add-reusable.component';
-
+import { LoaderComponent } from '../shared/danphe-loader-intercepter/danphe-loader';
+import { ManualVoucherEditComponent } from './transactions/manual-voucher-edit.component'
+import { AccountingService } from './shared/accounting.service';
+import { ActivateAccountingHospitalComponent } from './activate-hospital/accounting-hospital-activate.component';
+import { AccHospitalSelectionGuardService } from './shared/hospital-selection.guard';
 @NgModule({
-    providers: [AccountingDLService, AccountingBLService,
-        { provide: LocationStrategy, useClass: HashLocationStrategy }],
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        FormsModule,
-        HttpClientModule,
-        
-        DanpheAutoCompleteModule,
-        AccountingSharedModule,
-      AccountingRoutingModule,
-      AccountingSettingsModule
-    ],
-    declarations: [
-        AccountingComponent,
-        TransactionsMainComponent,
-        VoucherEntryComponent,
-        AccountClosureComponent,
-        TransferToAccountingComponent,
-      AccountingSyncBaseComponent,
-      LedgersAddReusableComponent,
-      LedgerGroupAddReusableComponent
-    ],
-    bootstrap: []
+  providers: [AccountingDLService, AccountingBLService, AccountingService, AccHospitalSelectionGuardService,
+    { provide: LocationStrategy, useClass: HashLocationStrategy }],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule,
+    HttpClientModule,
+
+    DanpheAutoCompleteModule,
+    AccountingSharedModule,
+    AccountingRoutingModule,
+    AccountingSettingsModule
+  ],
+  declarations: [
+    AccountingComponent,
+    TransactionsMainComponent,
+    VoucherEntryComponent,
+    AccountClosureComponent,
+    TransferToAccountingComponent,
+    AccountingSyncBaseComponent,
+    LedgersAddReusableComponent,
+    LedgerGroupAddReusableComponent,
+    ManualVoucherEditComponent,
+    ActivateAccountingHospitalComponent
+  ],
+  bootstrap: []
 })
 export class AccountingModule { }

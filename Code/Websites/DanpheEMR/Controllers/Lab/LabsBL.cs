@@ -5,10 +5,11 @@ using System.Threading.Tasks;
 using DanpheEMR.Core.Caching;
 using DanpheEMR.ServerModel;
 using DanpheEMR.DalLayer;
-//using DanpheEMR.Sync.IRDNepal.Models;
+using DanpheEMR.Sync.IRDNepal.Models;
 using Newtonsoft.Json;
 using System.Configuration;
 using DanpheEMR.ServerModel.LabModels;
+using DanpheEMR.Enums;
 /*File: LabsBL.cs
 * created: 12Sept'18 <sud>
 * Description: This class contains common functions used in Labs-Controllers.
@@ -19,8 +20,10 @@ namespace DanpheEMR.Labs
 {
     public class LabsBL
     {
+        public static List<EmployeeModel> empList;
         public static LabReportVM GetLabReportVMForReqIds(LabDbContext labDbContext, List<Int64> reqIdList)
         {
+            empList = labDbContext.Employee.ToList();
             List<LabResult_Denormalized_VM> resultsDenormalized = GetResultsDenormalized(labDbContext, reqIdList);
             LabReportVM retReport = FormatResultsForLabReportVM(resultsDenormalized, labDbContext);
             return retReport;
@@ -55,12 +58,14 @@ namespace DanpheEMR.Labs
                                      Address = pat.Address,
                                      ReferredById = (int?)req.ProviderId,
                                      //ashim: 06Sep2018 : Report details are saved only in final report. So we don't have report details in pending report.
-                                     ReferredBy = rept == null ? (req.ProviderId != null ? doc.LongSignature : "SELF") : rept.ReferredByDr,
-                                     ReceivingDate = rept == null ? ((req.RunNumberType.ToLower() == "histo" || req.RunNumberType.ToLower() == "cyto") ? req.OrderDateTime : req.SampleCreatedOn) : rept.ReceivingDate,
+                                     //ReferredByName will be: LongSignature (for internal), Or FullName (for external), or SELF for NULL, or Existing value based on conditions.
+                                     ReferredBy = rept == null ? (req.ProviderId != null ? (string.IsNullOrEmpty(doc.LongSignature) ? doc.FullName : doc.LongSignature) : "SELF") : rept.ReferredByDr,
+                                     ReceivingDate = rept == null ? ((req.RunNumberType.ToLower() == ENUM_LabRunNumType.histo || req.RunNumberType.ToLower() == ENUM_LabRunNumType.cyto) ? req.OrderDateTime : req.SampleCreatedOn) : rept.ReceivingDate,
+                                     //ReceivingDate = rept == null ? ((req.RunNumberType.ToLower() == "histo" || req.RunNumberType.ToLower() == "cyto") ? req.OrderDateTime : req.SampleCreatedOn) : rept.ReceivingDate,
                                      ReportingDate = rept == null ? DateTime.Now : rept.ReportingDate,
                                      SampleDate = req.SampleCreatedOn,
                                      SampleCode = req.SampleCode,
-                                     SampleCodeFormatted = "",
+                                     SampleCodeFormatted = req.SampleCodeFormatted,
                                      BillingStatus = req.BillingStatus,
                                      Specimen = req.LabTestSpecimen,
                                      ColSettingsJSON = template.ColSettingsJSON,
@@ -85,32 +90,7 @@ namespace DanpheEMR.Labs
                                      IsNegativeResult = comp.IsNegativeResult,
                                      IsPrinted = rept.IsPrinted,
                                      LabReportId = rept.LabReportId,
-                                     LabTestComponentsJSON = (from labtest in labDbContext.LabTests
-                                                              join componentMap in labDbContext.LabTestComponentMap on labtest.LabTestId equals componentMap.LabTestId
-                                                              join component in labDbContext.LabTestComponents on componentMap.ComponentId equals component.ComponentId
-                                                              where labtest.LabTestId == test.LabTestId && componentMap.IsActive == true
-                                                              select new
-                                                              {
-                                                                  ComponentId = component.ComponentId,
-                                                                  ComponentName = component.ComponentName,
-                                                                  Unit = component.Unit,
-                                                                  ValueType = component.ValueType,
-                                                                  ControlType = component.ControlType,
-                                                                  Range = component.Range,
-                                                                  RangeDescription = component.RangeDescription,
-                                                                  Method = component.Method,
-                                                                  ValueLookup = component.ValueLookup,
-                                                                  MinValue = component.MinValue,
-                                                                  MaxValue = component.MaxValue,
-                                                                  DisplayName = component.DisplayName,
-                                                                  DisplaySequence = componentMap.DisplaySequence,
-                                                                  IndentationCount = componentMap.IndentationCount,
-                                                                  ComponentMapId = componentMap.ComponentMapId,
-                                                                  MaleRange = component.MaleRange,
-                                                                  FemaleRange = component.FemaleRange,
-                                                                  ChildRange = component.ChildRange,
-                                                                  GroupName = componentMap.GroupName
-                                                              }).ToList(),
+                                     LabTestComponentsJSON = new object(),
                                      LabTestId = test.LabTestId,
                                      LabTestName = test.LabTestName,
                                      LabTestSpecimen = test.LabTestSpecimen,
@@ -134,9 +114,12 @@ namespace DanpheEMR.Labs
                                      ReportTemplateShortName = template.ReportTemplateShortName,
                                      RequisitionId = req.RequisitionId,
                                      RequisitionRemarks = req.RequisitionRemarks,
+                                     ResultGroup = comp.ResultGroup,
+                                     ResultingVendorId = req.ResultingVendorId,
                                      SampleCreatedBy = req.SampleCreatedBy,
                                      SampleCreatedOn = req.SampleCreatedOn,
                                      Signatories = rept.Signatories,
+                                     VerifiedBy = req.VerifiedBy,
                                      TemplateHTML = template.TemplateHTML,
                                      TemplateId = template.ReportTemplateID,
                                      TemplateType = template.TemplateType,
@@ -152,12 +135,10 @@ namespace DanpheEMR.Labs
                                      PrintCount = rept.PrintCount,
                                      PrintedBy = rept.PrintedBy,
                                      PrintedOn = rept.PrintedOn,
-                                     PrintedByName = (from emp in labDbContext.Employee
-                                                      where emp.EmployeeId == rept.PrintedBy
-                                                      select emp.FirstName +" " + emp.LastName).FirstOrDefault()
+                                     PrintedByName = ""
                                  }).ToList();
 
-            
+
             return resultDetails;
         }
 
@@ -181,7 +162,9 @@ namespace DanpheEMR.Labs
                                        ReportCreatedOn = r.ReportCreatedOn,
                                        PrintCount = r.PrintCount,
                                        PrintedBy = r.PrintedBy,
-                                       PrintedByName = r.PrintedByName,
+                                       PrintedByName = (from emp in empList
+                                                        where emp.EmployeeId == r.PrintedBy
+                                                        select emp.FirstName + " " + emp.LastName).FirstOrDefault(),
                                        PrintedOn = r.PrintedOn
                                    }).GroupBy(tmp => tmp.TemplateType).Select(group => group.First()).FirstOrDefault();
 
@@ -267,7 +250,7 @@ namespace DanpheEMR.Labs
                                                  ReportingName = r.ReportingName,
                                                  LabTestId = r.LabTestId,
                                                  Comments = r.Comments,
-                                                 ComponentJSON = r.LabTestComponentsJSON,
+                                                 ComponentJSON = new object(),
                                                  DisplaySequence = r.TestDisplaySequence,
                                                  HasNegativeResults = r.HasNegativeResults,
                                                  Interpretation = r.Interpretation,
@@ -276,24 +259,56 @@ namespace DanpheEMR.Labs
                                                  RequisitionId = r.RequisitionId,
                                                  Components = null,
                                                  Specimen = r.Specimen,
-                                                 VendorDetail = (from tst in labDbContext.Requisitions
-                                                                        join vendor in labDbContext.LabVendors on tst.ResultingVendorId equals vendor.LabVendorId
-                                                                        where tst.RequisitionId == r.RequisitionId
-                                                                        select vendor).FirstOrDefault(),
-                                                 SampleCollectedBy = (from employee in labDbContext.Employee
-                                                                     where employee.EmployeeId == r.SampleCreatedBy
-                                                                     select employee.FirstName + " " + (string.IsNullOrEmpty(employee.MiddleName) ? "": employee.MiddleName + " ") + employee.LastName).FirstOrDefault(),
+                                                 BillingStatus = r.BillingStatus,
+                                                 ResultingVendorId = r.ResultingVendorId,
+                                                 VendorDetail = new LabVendorsModel(),
+                                                 SampleCollectedBy = (from employee in empList
+                                                                      where employee.EmployeeId == r.SampleCreatedBy
+                                                                      select employee.FirstName + " " + (string.IsNullOrEmpty(employee.MiddleName) ? "" : employee.MiddleName + " ") + employee.LastName).FirstOrDefault(),
                                                  SampleCollectedOn = r.SampleCreatedOn,
-                                                 HasInsurance = r.HasInsurance
-                                             }).GroupBy(tmp => tmp.RequisitionId).Select(group => group.First()).OrderBy(test => test.DisplaySequence).ToList();                                           
-                                             //Removed this to get same test for Multiple times for same patient
-                                             //.GroupBy(tmp => tmp.LabTestId).Select(group => group.First()).OrderBy(test => test.DisplaySequence).ToList();
+                                                 HasInsurance = r.HasInsurance,
+                                                 VerifiedBy = r.VerifiedBy
+                                             }).GroupBy(tmp => tmp.RequisitionId).Select(group => group.First()).OrderBy(test => test.DisplaySequence).ToList();
+            //Removed this to get same test for Multiple times for same patient
+            //.GroupBy(tmp => tmp.LabTestId).Select(group => group.First()).OrderBy(test => test.DisplaySequence).ToList();
 
             if (retData != null && retData.Count > 0)
             {
                 foreach (var tst in retData)
                 {
+                    tst.VendorDetail = (from vendor in labDbContext.LabVendors
+                                        where vendor.LabVendorId == tst.ResultingVendorId
+                                        select vendor).FirstOrDefault();
+                    tst.ComponentJSON = (from labtest in labDbContext.LabTests
+                                         join componentMap in labDbContext.LabTestComponentMap on labtest.LabTestId equals componentMap.LabTestId
+                                         join component in labDbContext.LabTestComponents on componentMap.ComponentId equals component.ComponentId
+                                         where labtest.LabTestId == tst.LabTestId && componentMap.IsActive == true
+                                         select new
+                                         {
+                                             ComponentId = component.ComponentId,
+                                             ComponentName = component.ComponentName,
+                                             Unit = component.Unit,
+                                             ValueType = component.ValueType,
+                                             ControlType = component.ControlType,
+                                             Range = component.Range,
+                                             RangeDescription = component.RangeDescription,
+                                             Method = component.Method,
+                                             ValueLookup = component.ValueLookup,
+                                             MinValue = component.MinValue,
+                                             MaxValue = component.MaxValue,
+                                             DisplayName = component.DisplayName,
+                                             DisplaySequence = componentMap.DisplaySequence,
+                                             IndentationCount = componentMap.IndentationCount,
+                                             ShowInSheet = componentMap.ShowInSheet,
+                                             ComponentMapId = componentMap.ComponentMapId,
+                                             MaleRange = component.MaleRange,
+                                             FemaleRange = component.FemaleRange,
+                                             ChildRange = component.ChildRange,
+                                             GroupName = componentMap.GroupName
+                                         }).ToList();
                     tst.Components = GetResulsOfTestRequisition(resultSets, tst.RequisitionId);
+                    tst.MaxResultGroup = tst.Components.Max(v => v.ResultGroup);
+                    tst.MaxResultGroup = tst.MaxResultGroup.HasValue ? tst.MaxResultGroup.Value : 1;
                 }
             }
 
@@ -318,7 +333,8 @@ namespace DanpheEMR.Labs
                                                         IsAbnormal = r.IsAbnormal,
                                                         AbnormalType = r.AbnormalType,
                                                         IsNegativeResult = r.IsNegativeResult,
-                                                        Method = r.Method
+                                                        Method = r.Method,
+                                                        ResultGroup = r.ResultGroup
                                                     }).ToList();
             if (retData != null && retData.Count > 0 && retData[0].TestComponentResultId == 0)
             {

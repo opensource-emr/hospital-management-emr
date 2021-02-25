@@ -12,7 +12,7 @@ import { PackagingTypeListComponent } from './packagingtype/packaging-type-list'
 import { UnitOfMeasurementListComponent } from './unitofmeasurement/unit-of-measurement-list';
 import { ItemListComponent } from './item/item-list';
 import { CurrencyListComponent } from './currency/currency-list';
-import { TermsListComponent } from '../../inventory/settings/termsconditions/terms-list.component';
+import {MappingListComponent } from './Mapping/mapping-list';
 
 import { SharedModule } from '../../shared/shared.module';
 import { InventorySharedModule } from '../shared/inventory-shared.module';
@@ -39,9 +39,9 @@ import { ItemSubCategoryListComponent } from './itemsubcategory/item-subcategory
     PackagingTypeListComponent,
     UnitOfMeasurementListComponent,
     ItemListComponent,
-    CurrencyListComponent,
+      CurrencyListComponent,
+      MappingListComponent,
     CompanyListComponent,
-    TermsListComponent,
     VendorsManageComponent,
     ItemSubCategoryListComponent
   ],

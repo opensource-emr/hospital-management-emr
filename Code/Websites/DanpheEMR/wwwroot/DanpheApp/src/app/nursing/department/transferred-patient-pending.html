@@ -1,0 +1,58 @@
+<div *ngIf="isValidUser && TransferPatPendingList && TransferPatPendingList.length > 0">
+  <div class="well ipd-title">
+    <div class="row clearfix">
+      <div class="col-md-6 col-sm-6">
+        <div class="left">
+          <a class="label label-default btn btn-default" data-toggle="collapse" href="#toBeReceivedPatGrid"
+            role="button" aria-expanded="false" aria-controls="toBeReceivedPatGrid"><i class="fa fa-hourglass"></i>
+            Pending Transfer List</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="collapse" id="toBeReceivedPatGrid">
+    <div class="row clearfix">
+      <danphe-grid [grid-colDefaults]="TransferPatPendingListColums" [grid-data]="TransferPatPendingList"
+        [resizeColumnToFit]="true" (grid-actions)="TransferPatPendingListGridActions($event)">
+      </danphe-grid>
+    </div>
+  </div>
+</div>
+
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="isValidUser && showUndoPopUp && selectedPatVisitId">
+  <div class="portlet-body form">
+    <div class="col-md-4 col-md-offset-4">
+      <div class="modelbox-div">
+        <div class="modelbox-header">
+          <h4 class="margin-0-vr text-warning text-center">
+            <strong>Transferred Patient Undo Window</strong>
+          </h4>
+        </div>
+        <div class="modelbox-body">
+          <div class="row">
+            <!-- Body Content-->
+            <p style="margin-bottom: 10px;">Remarks <span style="color:green;"> [ required ]</span></p>
+            <textarea style="width: 100%;" [(ngModel)]="remarks"></textarea>
+          </div>
+        </div>
+        <div class="modelbox-footer">
+          <div class="all-buttons text-right">
+            <button [disabled]="!remarks || !remarks.trim().length > 0" type="button"
+              class="btn btn-primary btn-sm margin-7-hr" (click)="UndoTransfer();showUndoPopUp=false">
+              Proceed Transfer Undo
+            </button>
+            <button type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="ClosePopUp()">
+              Cancel
+            </button>
+          </div>
+        </div>
+        <div class="close-modelbox">
+          <button class="btn btn-danger" (click)="ClosePopUp()">
+            X
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

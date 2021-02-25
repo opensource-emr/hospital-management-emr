@@ -1,113 +1,127 @@
-﻿<div class="popup-static portlet box portlet-fullscreen">
-    <div class="portlet-body form" style="text-align: center;">
-        <div class="modelbox-div" style="width:70%;display: inline-block;">
-            <div style="width: 100%; float: left;background: #fff;padding:10px;">
-                <i class="btn btn-danger" style="float: right" (click)="CloseGroupDiscountPopUp()">X</i>
-                <div class="col-md-12" *ngIf="admissionInfo">
-                    <table>
-                        <tr>
-                            <td colspan="2" width="400">
-                                <b style="float:left;text-decoration:underline;font-size:15px">{{admissionInfo.PatientName}}({{admissionInfo.PatientNo}})</b>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td width="100">Age/Sex<b style="float:right;">: </b></td>
-                            <td width="50">{{admissionInfo.DateOfBirth | DanpheDateTime:'age'}} / {{admissionInfo.Gender}}</td>
-                        </tr>
-                        <tr>
-                            <td width="100">Contact<b style="float:right;">: </b></td>
-                            <td width="50"> {{admissionInfo.PhoneNumber}}</td>
-                        </tr>
-                    </table>
-                </div>
-                <div class="col-md-12  pat-hdr" style="max-height:300px;overflow-y:scroll;padding:10px">
-                    <table class="table-striped table-hover data-table" style="width:100%;" border="0">
-                        <thead style="background-color: #d0d9d0;">
-                            <tr>
-                                <th align="right" width="90">
-                                    Select All <input style="width: 18px;height: 18px;float:right" type="checkbox" name="selectAllItem" [(ngModel)]="isAllItemsSelected" (ngModelChange)="OnChangeSelectAll()" />
-                                </th>
-                                <th align="center">
-                                    SNo.
-                                </th>
-                                <th>
-                                    ItemName
-                                </th>
-                                <th>
-                                    Quantity
-                                </th>
-                                <th>
-                                    Sub Total
-                                </th>
-                                <th>
-                                    Discount %
-                                </th>
-                                <th>
-                                    Total Amount
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr *ngFor="let itm of discountGroupItems;let i=index;">
-                                <td>
-                                    <input style="width: 18px;height: 18px;float:right" type="checkbox" name="selectItems" [(ngModel)]="itm.IsSelected" (ngModelChange)="OnChangeItemSelect()" />
-                                </td>
-                                <td>
-                                    {{i+1}}
-                                </td>
-                                <td align="left">
-                                    {{itm.ItemName}}
-                                    <div *ngIf="itm.ProviderId">
-                                        <span style="font-size: 12px;font-weight: bold;">
-                                            ({{itm.ProviderName}})
-                                        </span>
-                                    </div>
-                                </td>
-                                <td>
-                                    {{itm.Quantity}}
-                                </td>
-                                <td>
-                                    {{itm.SubTotal}}
-                                </td>
-                                <td>
-                                    {{itm.DiscountPercent}}
-                                </td>
-                                <td>
-                                    {{itm.TotalAmount}}
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="col-md-12" style="padding-top:5px;padding-right:0px;">
-                    <div class="col-md-12">
-                        <table align="center">
-                            <tr>
-                                <td><b>Group Discount (%) : </b></td>
-                                <td width="90">
-                                    <input type="number"
-                                           [(ngModel)]="groupDiscountPercent"
-                                           min="0"
-                                           max="100"
-                                           (ngModelChange)="ItemGroupDiscount()"
-                                           class="form-control"
-                                           name="DiscountPercent">
+<style>
+.padding-0-hr {
+	padding-left: 0px;
+	padding-right: 0px;
+}
+.member-select .padding-0-hr .col-md-5 .control-label {
+	display: block;
+	width: 100%;
+}
+.custom_table td, .custom_table th {
+	border: 1px solid #ccc !important;
+}
+.custom_table th {
+	position: sticky;
+	top: 0;
+	left: 0;
+}
+</style>
 
-                                </td>
-                                <td align="left"> <b>%</b><sub><b>(percent)</b></sub></td>
-                                <label class="color-red font-sm" *ngIf="showMessage">Enter Valid number.
-                                </label>
-                            </tr>
-                        </table>
-                        <!--<input type="text" width="300" />-->
+<div class="popup-static portlet box portlet-fullscreen inv_modal">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        <div class="modelbox-div clearfix">
+          <div style="width: 100%;">
+            <div class="caption lb-caption">
+              <h3><span>Group Discount For</span></h3>
+              <a class="btn btn-danger btn-round" (click)="CloseGroupDiscountPopUp()" style="padding: 0 !important; display: block;">X</a> </div>
+            <div class="p1">
+              <div class="row no-gutters">
+                <div class="col-md-12" *ngIf="admissionInfo">
+                  <div class="tbl-primary">
+                    <div class="row mb10 no-gutters">
+                      <div class="col-md-6">
+                        <h1 class="header inner-header"><i class="fa fa-user"></i>{{admissionInfo.PatientName}}({{admissionInfo.PatientNo}})</h1>
+                      </div>
+                      <div class="col-md-6 text-right">
+                        <p class="text-muted"><span><i class="fa fa-male"></i>{{admissionInfo.DateOfBirth | DanpheDateTime:'age'}} / {{admissionInfo.Gender}}</span> | <i class="fa fa-phone"></i>{{admissionInfo.PhoneNumber}}</p>
+                      </div>
                     </div>
+                  </div>
                 </div>
-                <div class="col-md-12">
-                    <div class="col-md-12" style="padding-top:5px;padding-right:0px;">
-                        <input type="button" class="btn btn-sm blue" value="Submit Group Discount" (click)="SubmitGroupDiscount()" [disabled]="showMessage" />
+                <div class="col-md-12 pat-hdr table-wrapper">
+                  <table class="table doc-tbl table-bordered custom_table padLess_table" style="width:100%;" border="0">
+                    <thead style="background-color: #d0d9d0;">
+                      <tr>
+                        <th align="right" width="20"> <label class="mt-checkbox mt-checkbox-outline">
+                            <input type="checkbox" name="selectAllItem" [(ngModel)]="isAllItemsSelected" (change)="OnChangeSelectAll()" />
+                            <span></span> </label>
+                        </th>
+                        <th align="center"> SNo. </th>
+                        <th> ItemName </th>
+                        <th> Quantity </th>
+                        <th> Sub Total </th>
+                        <th> Discount % </th>
+                        <th> Total Amount </th>
+                      </tr>
+                    </thead>
+                    <tbody *ngIf="groupDiscountItems">
+                      <tr *ngFor="let itm of groupDiscountItems;let i=index;">
+                        <td><i *ngIf="!itm.DiscountApplicable && discTypeToUse=='scheme'" style="color: yellowgreen;" class="fa fa-warning" title="Discount Scheme Not Applicable for this item."></i>
+                          <label class="mt-checkbox mt-checkbox-outline">
+                            <input type="checkbox" name="selectItems"
+                         [(ngModel)]="itm.IsSelected" (change)="OnChangeItemSelect(itm)" [disabled]="!itm.DiscountApplicable && discTypeToUse=='scheme'" />
+                            <span></span> </label></td>
+                        <td> {{i+1}} </td>
+                        <td align="left"> {{itm.ItemName}}
+                          <div *ngIf="itm.ProviderId"> <span style="font-size: 12px;font-weight: bold;"> ({{itm.ProviderName}}) </span> </div></td>
+                        <td> {{itm.Quantity}} </td>
+                        <td> {{itm.SubTotal}} </td>
+                        <td><span> {{itm.DiscountPercent}} </span></td>
+                        <td> {{itm.TotalAmount}} </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="col-md-12 margin-20-tp">
+                  <div class="action-bar" style="box-shadow: none;">
+                    <div class="col-md-4 padding-0-hr" *ngIf="enableGroupDiscount">
+                      <div class="row no-gutters">
+                        <div class="col-md-7">
+                          <label>Group Discount (%) :</label>
+                        </div>
+                        <div class="col-md-4">
+                          <input type="number"
+                       [disabled]="discTypeToUse!='group'"
+                       [(ngModel)]="groupDiscountPercent"
+                       min="0"
+                       max="100"
+                       (ngModelChange)="GroupDiscountOnChange()"
+                       class="form-control"
+                       name="DiscountPercent">
+                          <label class="color-red font-sm" *ngIf="showMessage"> Enter Valid number. </label>
+                        </div>
+                      </div>
                     </div>
+                    <div *ngIf="enableDiscScheme" class="col-md-3 padding-0-hr member-select">
+                      <membership-select *ngIf="isMembershipInfoLoaded" [selected-id]="DiscountSchemaId" (on-membership-change)="OnDiscountSchemeChange($event)"
+                                 [show-community]="membershipSchemeParam.ShowCommunity" [is-mandatory]="membershipSchemeParam.IsMandatory"
+                                 [disabled]="discTypeToUse !='scheme'"
+                                 [labels-info]="{ CommunityLabel: 'Community', SchemeLabel: 'Scheme'}"> </membership-select>
+                    </div>
+                  </div>
+                  <div class="col-md-3" *ngIf="enableGroupDiscount">
+                    <label for="discType_group" class="mt-radio mt-radio-outline">
+                      <input type="radio" id="discType_group" [(ngModel)]="discTypeToUse" name="disc-type" value="group" (ngModelChange)="OnDiscTypeChanged()" />
+                      <span></span>Use Group Discount</label>
+                  </div>
+                  <div class="col-md-3" *ngIf="enableDiscScheme">
+                    <label for="discType_scheme" class="mt-radio mt-radio-outline">
+                      <input type="radio" id="discType_scheme" [(ngModel)]="discTypeToUse" name="disc-type" value="scheme" (ngModelChange)="OnDiscTypeChanged()" />
+                      <span></span>Use Discount Scheme</label>
+                  </div>
                 </div>
+              </div>
             </div>
+            <div class="panel-footer">
+              <div>
+                <input type="button" class="btn btn-sm blue" value="Save Items" (click)="SubmitGroupDiscount()" [disabled]="showMessage" />
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 </div>

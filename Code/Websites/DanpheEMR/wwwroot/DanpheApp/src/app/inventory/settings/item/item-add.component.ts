@@ -13,8 +13,26 @@ import { CompanyModel } from "../shared/company/company.model";
 import { CompanyService } from "../shared/company/company.service";
 import { ItemSubCategoryListComponent } from "../itemsubcategory/item-subcategory-list";
 import { ItemSubCategoryModel } from "../shared/item-subcategory.model";
+import { InventoryService } from "../../shared/inventory.service";
+import { CoreService } from "../../../core/shared/core.service";
+import { trigger, transition, style, animate } from "@angular/animations";
+import { UnitOfMeasurementModel } from "../shared/unit-of-measurement.model";
 @Component({
   selector: 'item-add',
+  animations: [
+    trigger(
+      'enterAnimation', [
+      transition(':enter', [
+        style({ transform: 'translateY(0)', opacity: 0 }),
+        animate('500ms', style({ transform: 'translateY(10%)', opacity: 1 }))
+      ]),
+      transition(':leave', [
+        style({ transform: 'translateY(10%)', opacity: 1 }),
+        animate('500ms', style({ transform: 'translateY(0)', opacity: 0 }))
+      ])
+    ]
+    )
+  ],
   templateUrl: './item-add.html'
 })
 export class ItemAddComponent {
@@ -29,8 +47,8 @@ export class ItemAddComponent {
   public itemList: Array<ItemModel> = new Array<ItemModel>();
   public GetAccountHeadList: Array<ItemModel> = new Array<ItemModel>();
   public GetPackagingTypeList: Array<ItemModel> = new Array<ItemModel>();
-  public GetUnitOfMeasurementList: Array<ItemModel> = new Array<ItemModel>();
-  public GetItemCategoryList: Array<ItemCategoryModel> = new Array<ItemCategoryModel>();
+  public UOMList: Array<UnitOfMeasurementModel> = new Array<UnitOfMeasurementModel>();
+  public ItemCategoryList: Array<ItemCategoryModel> = new Array<ItemCategoryModel>();
   public ItemSubCategoryList: Array<ItemSubCategoryModel> = new Array<ItemSubCategoryModel>();
   public filteredSubCategoryList: Array<ItemSubCategoryModel> = new Array<ItemSubCategoryModel>();
   public GetCompanyList: Array<CompanyModel> = new Array<CompanyModel>();
@@ -45,18 +63,22 @@ export class ItemAddComponent {
   public showAddPackagingTypePopUp: boolean = false;
   public showAddUnitOfMeasurementPopUp: boolean = false;
   public showAddSubCategoryPopUp: boolean = false;
+  public VATPercent: number = 0;
+  public loading: boolean = false;
 
   constructor(
     public invSettingBL: InventorySettingBLService,
+    public inventoryService: InventoryService,
     public securityService: SecurityService,
     public changeDetector: ChangeDetectorRef,
     public msgBoxServ: MessageboxService,
     public companyServ: CompanyService,
+    public coreService: CoreService,
     public router: Router) {
     this.GetItemList();
     this.GetItemCategory();
     this.GetItemSubCategoryList();
-    this.GetAccountHead();
+    //this.GetAccountHead();
     this.GetPackagingType();
     this.GetUnitOfMeasurement();
     this.GetCompany();
@@ -68,7 +90,7 @@ export class ItemAddComponent {
       this.update = true;
       this.CurrentItem = Object.assign(this.CurrentItem, this.selectedItem);
       this.CurrentItem.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
-      this.itemList = this.itemList.filter(item => (item.ItemId != this.selectedItem.ItemId));
+      this.CurrentItem.ModifiedBy = this.securityService.GetLoggedInUser().EmployeeId;
       this.filterSubCategory();
       this.CurrentItem = Object.assign(this.CurrentItem, this.selectedItem);//to show the subcategoryId selected
       this.trackSubCategoryId = this.CurrentItem.SubCategoryId;
@@ -81,15 +103,14 @@ export class ItemAddComponent {
     }
   }
   GetItemList() {
-    this.invSettingBL.GetItem()
-      .subscribe(res => {
-        if (res.Status == "OK") {
-          this.itemList = res.Results;
-        }
-        else {
-          this.msgBoxServ.showMessage("error", [res.ErrorMessage]);
-        }
-      });
+    try {
+      this.itemList = this.inventoryService.allItemList;
+      if (this.itemList.length == 0) {
+        this.msgBoxServ.showMessage("Failed", ["No items found."])
+      }
+    } catch (ex) {
+      this.msgBoxServ.showMessage("Failed", ["Something went wrong while loading the item list."])
+    }
   }
   GetCompany() {
     this.companyServ.GetCompanyList()
@@ -106,10 +127,19 @@ export class ItemAddComponent {
     this.invSettingBL.GetAccountHead(true)
       .subscribe(res => {
         if (res.Status == 'OK') {
-          this.GetAccountHeadList = res.Results;
+          this.GetAccountHeadList = res.Results.filter(a=> a.IsActive == true);
         }
         else {
           this.msgBoxServ.showMessage("error", [res.ErrorMessage]);
+        }
+      });
+  }
+  //Get Account ledger List
+  public getMappedledgerlist() {
+    this.invSettingBL.getMappedledgerlist('inventorysubcategory')
+      .subscribe(res => {
+        if (res.Status == "OK") {
+          this.GetAccountHeadList = res.Results;
         }
       });
   }
@@ -117,7 +147,7 @@ export class ItemAddComponent {
     this.invSettingBL.GetPackagingType()
       .subscribe(res => {
         if (res.Status == 'OK') {
-          this.GetPackagingTypeList = res.Results;
+          this.GetPackagingTypeList = res.Results.filter(a=> a.IsActive == true);
         }
         else {
           this.msgBoxServ.showMessage("error", [res.ErrorMessage]);
@@ -128,7 +158,7 @@ export class ItemAddComponent {
     this.invSettingBL.GetUnitOfMeasurement()
       .subscribe(res => {
         if (res.Status == 'OK') {
-          this.GetUnitOfMeasurementList = res.Results;
+          this.UOMList = res.Results.filter(a=> a.IsActive == true);
           //this.CurrentVendor.DefaultCurrencyId = 1;
         } else {
           this.msgBoxServ.showMessage("error", [res.ErrorMessage]);
@@ -140,7 +170,7 @@ export class ItemAddComponent {
     this.invSettingBL.GetItemCategory()
       .subscribe(res => {
         if (res.Status == 'OK') {
-          this.GetItemCategoryList = res.Results;
+          this.ItemCategoryList = res.Results;
           //this.CurrentVendor.DefaultCurrencyId = 1;
         } else {
           this.msgBoxServ.showMessage("error", [res.ErrorMessage]);
@@ -151,7 +181,7 @@ export class ItemAddComponent {
     this.invSettingBL.GetItemSubCategory()
       .subscribe(res => {
         if (res.Status == 'OK') {
-          this.ItemSubCategoryList = res.Results;
+          this.ItemSubCategoryList = res.Results.filter(a => a.IsActive);
         } else {
           this.msgBoxServ.showMessage("error", [res.ErrorMessage]);
         }
@@ -159,45 +189,69 @@ export class ItemAddComponent {
   }
   //adding new Item
   AddItem() {
+    var checkIsValid = true;
+    if (this.CurrentItem.IsVATApplicable == true && this.CurrentItem.VAT == null) {
+      this.showMessageBox("Warning", "VAT is required.");
+      checkIsValid = false;
+    }
     //for checking validations, marking all the fields as dirty and checking the validity.
     for (var i in this.CurrentItem.ItemValidator.controls) {
       this.CurrentItem.ItemValidator.controls[i].markAsDirty();
       this.CurrentItem.ItemValidator.controls[i].updateValueAndValidity();
     }
-    if (this.CurrentItem.IsValidCheck(undefined, undefined)) {
+    if (this.CurrentItem.IsValidCheck(undefined, undefined) && checkIsValid) {
+      this.loading = true;
       //adding ItemType hardcode for now, as discussed Ramavtar 17-Jan-18
-      this.CurrentItem.ItemType = this.GetItemCategoryList.find(a => a.ItemCategoryId == this.CurrentItem.ItemCategoryId).ItemCategoryName;
+      this.CurrentItem.ItemType = this.ItemCategoryList.find(a => a.ItemCategoryId == this.CurrentItem.ItemCategoryId).ItemCategoryName;
       this.CurrentItem.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
+      //this.CurrentItem.ModifiedBy =null;
+      this.CurrentItem.ModifiedOn = null;
       this.invSettingBL.AddItem(this.CurrentItem)
         .subscribe(
           res => {
-            this.showMessageBox("success", "Item Added");
-            this.CurrentItem = new ItemModel();
-            this.CallBackAddItem(res)
+            if (res.Status == "OK") {
+              this.showMessageBox("success", "Item Added");
+              this.CurrentItem = new ItemModel();
+              this.CallBackAddItem(res)
+            }
+            else {
+              this.showMessageBox("Failed", "Item Add Failed.");
+            }
+            this.loading = false;
           },
           err => {
             this.logError(err);
+            this.loading = false;
           });
     }
   }
   //adding new Item
   Update() {
+    var checkIsValid = true;
+    if (this.CurrentItem.IsVATApplicable == true && this.CurrentItem.VAT == null) {
+      this.showMessageBox("Warning", "VAT is required.");
+      checkIsValid = false;
+    }
     //for checking validations, marking all the fields as dirty and checking the validity.
     for (var i in this.CurrentItem.ItemValidator.controls) {
       this.CurrentItem.ItemValidator.controls[i].markAsDirty();
       this.CurrentItem.ItemValidator.controls[i].updateValueAndValidity();
     }
-    if (this.CurrentItem.IsValidCheck(undefined, undefined)) {
-      this.CurrentItem.ItemType = this.GetItemCategoryList.find(a => a.ItemCategoryId == this.CurrentItem.ItemCategoryId).ItemCategoryName
+    if (this.CurrentItem.IsValidCheck(undefined, undefined) && checkIsValid) {
+      this.loading = true;
+      this.CurrentItem.ItemType = this.ItemCategoryList.find(a => a.ItemCategoryId == this.CurrentItem.ItemCategoryId).ItemCategoryName
+      this.CurrentItem.ModifiedBy = this.securityService.GetLoggedInUser().EmployeeId;
       this.invSettingBL.UpdateItem(this.CurrentItem)
         .subscribe(
           res => {
             this.showMessageBox("success", "Item Updated");
             this.CurrentItem = new ItemModel();
             this.CallBackAddItem(res);
+            this.loading = false;
           },
           err => {
             this.logError(err);
+            this.loading = false;
           });
     }
   }
@@ -207,20 +261,38 @@ export class ItemAddComponent {
     this.update = false;
     this.filteredSubCategoryList = null;
     this.trackSubCategoryCode = "";
-    this.trackSubCategoryId = 0;
+    this.trackSubCategoryId = null;
     this.showAddPage = false;
   }
   //after adding Item is succesfully added  then this function is called.
   CallBackAddItem(res) {
     if (res.Status == "OK") {
-      this.itemList.push(res.Results);
-      this.callbackAdd.emit({ item: res.Results });
+      // this.inventoryService.allItemList.push(res.Results);
+      ////since itemList is already referencing to the allItemList, it automatically pushed newly added item to allItemList.
+      var item: ItemModel = res.Results;
+      item.UOMName = this.UOMList.find(uom => uom.UOMId == item.UnitOfMeasurementId).UOMName;
+      //find the index of currently added/updated item in the list of all items (grid)
+      this.AddtoGlobalItemList(item);
+      this.callbackAdd.emit({ item: item });
     }
     else {
       this.showMessageBox("error", "Check log for details");
       console.log(res.ErrorMessage);
     }
   }
+  public AddtoGlobalItemList(item: ItemModel) {
+    let index = this.itemList.findIndex(a => a.ItemId == item.ItemId);
+    //index will be -1 when this item is currently added. 
+    if (index < 0) {
+      this.itemList.splice(0, 0, item); //this will add this item to 0th index.
+    }
+    else {
+      this.itemList.splice(index, 1, item);
+    }
+    this.itemList = this.itemList.slice();
+    this.inventoryService.LoadAllItemList(this.itemList);
+  }
+
   showMessageBox(status: string, message: string) {
     this.msgBoxServ.showMessage(status, [message]);
   }
@@ -230,20 +302,19 @@ export class ItemAddComponent {
   }
   //filter the subcategory once category is selected
   filterSubCategory() {
-    var categoryName = this.GetItemCategoryList.find(a => a.ItemCategoryId == this.CurrentItem.ItemCategoryId).ItemCategoryName;
     if (this.CurrentItem.ItemCategoryId == 1) {
       this.filteredSubCategoryList = this.ItemSubCategoryList.filter(a => a.IsConsumable == false);
     }
     else {
       this.filteredSubCategoryList = this.ItemSubCategoryList.filter(a => a.IsConsumable == true);
     }
-    this.CurrentItem.SubCategoryId = (this.CurrentItem.SubCategoryId == null) ? 0 : null; //this line of code stops the first subcategory in the fiteredSubCategoryList to be selected in html form.
+    this.CurrentItem.SubCategoryId = (this.update == false) ? null : this.CurrentItem.SubCategoryId;
   }
   //Assign AccountHead to CurrentItem once the SubCategory is selected
-  AssignAccountHeadandItemCode() {
-    var AccountHeadId = this.filteredSubCategoryList.find(a => a.SubCategoryId == this.CurrentItem.SubCategoryId).AccountHeadId;
-    this.CurrentItem.AccountHeadId = AccountHeadId;
-    if (this.CurrentItem.SubCategoryId != 0 || this.CurrentItem.SubCategoryId != null) {
+  AssignItemCode() {
+    // var AccountHeadId = this.filteredSubCategoryList.find(a => a.SubCategoryId == this.CurrentItem.SubCategoryId).AccountHeadId;
+    // this.CurrentItem.AccountHeadId = AccountHeadId;
+    if (this.CurrentItem.SubCategoryId != null && this.CurrentItem.SubCategoryId > 0) {
       var filteredItemList = this.itemList.filter(a => a.SubCategoryId == this.CurrentItem.SubCategoryId);
       var num = filteredItemList.length + 1;
       var formattednumber = "000" + num;
@@ -256,6 +327,18 @@ export class ItemAddComponent {
       this.CurrentItem.Code = this.trackSubCategoryCode;
     }
   }
+
+  GetVatValue(event) {
+
+    if (event.currentTarget.checked) {
+      this.VATPercent = this.coreService.Parameters.find(p => p.ParameterName == "DefaultVATPercentage" && p.ParameterGroupName == "Inventory").ParameterValue;
+      this.CurrentItem.VAT = this.VATPercent;
+    }
+    else {
+      this.VATPercent = 0;
+      this.CurrentItem.VAT = 0;
+    }
+  }
   AddCompanyPopUp() {
     this.showAddCompanyPopUp = false;
     this.changeDetector.detectChanges();
@@ -266,6 +349,7 @@ export class ItemAddComponent {
     var Company = $event.newCompany;
     this.GetCompanyList.push(Company);
     this.GetCompanyList.slice();
+    this.CurrentItem.CompanyId = Company.CompanyId;
   }
   AddCategoryPopUp() {
     this.showAddCategoryPopUp = false;
@@ -275,8 +359,9 @@ export class ItemAddComponent {
   OnNewCategoryAdded($event) {
     this.showAddCategoryPopUp = false;
     var Category = $event.itemcategory;
-    this.GetItemCategoryList.push(Category);
-    this.GetItemCategoryList.slice();
+    this.ItemCategoryList.push(Category);
+    this.ItemCategoryList.slice();
+    this.CurrentItem.ItemCategoryId = Category.ItemCategoryId;
   }
   AddSubCategoryPopUp() {
     this.showAddSubCategoryPopUp = false;
@@ -289,6 +374,7 @@ export class ItemAddComponent {
     this.ItemSubCategoryList.push(SubCategory);
     this.ItemSubCategoryList.slice();
     this.filterSubCategory();
+    this.CurrentItem.SubCategoryId = SubCategory.SubCategoryId;
   }
   AddAccountHeadPopUp() {
     this.showAddAccountHeadPopUp = false;
@@ -308,9 +394,10 @@ export class ItemAddComponent {
   }
   OnNewPackagingTypeAdded($event) {
     this.showAddPackagingTypePopUp = false;
-    var PackagingType = $event.itemcategory;
+    var PackagingType = $event.packagingtype;
     this.GetPackagingTypeList.push(PackagingType);
     this.GetPackagingTypeList.slice();
+    this.CurrentItem.PackagingTypeId = PackagingType.PackagingTypeId;
   }
   AddUnitOfMeasurementPopUp() {
     this.showAddUnitOfMeasurementPopUp = false;
@@ -320,7 +407,8 @@ export class ItemAddComponent {
   OnNewUnitOfMeasurementAdded($event) {
     this.showAddUnitOfMeasurementPopUp = false;
     var UnitOfMeasurement = $event.unitofmeasurement;
-    this.GetUnitOfMeasurementList.push(UnitOfMeasurement);
-    this.GetUnitOfMeasurementList.slice();
+    this.UOMList.push(UnitOfMeasurement);
+    this.UOMList = this.UOMList.slice();
+    this.CurrentItem.UnitOfMeasurementId = UnitOfMeasurement.UOMId;
   }
 }

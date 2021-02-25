@@ -1,0 +1,417 @@
+<input type="button" class="btn btn-primary" (click)="AddItem()" value="Add Item" />
+<input type="button" class="btn btn-primary" (click)="Addcccharge()" value="Add C.C Charges" style="margin-left: 5PX;" />
+<div class="row">
+  <div class="col-md-12 col-xs-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="itemGridColumns" [grid-data]="itemList" (grid-actions)="ItemGridActions($event)"> </danphe-grid>
+  </div>
+</div>
+<!-- <div class="popup-static portlet box portlet-fullscreen" *ngIf="showAddCCcharge"></div>
+<a style="float:right;  margin-top:-13px;" class="btn btn-danger" (click)="Closecccharcge()" title="Cancel">X</a> -->
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showAddCCcharge">
+  <div class="portlet-body form">
+    <!--Model Box Body Start-->
+    <form [formGroup]="CurrentItem.ItemValidator" class="form-horizontal">
+      <div class="form-body">
+        <div class="col-md-12">
+          <div class="col-md-1 hidden-xs hidden-sm" style="margin-right: 24px;"> </div>
+          <div class="col-md-10 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
+            <div class="col-md-12">
+              <div class="caption" style="color:blue; margin-top:10px;"> <span>Add C.C Charges</span> <span style="margin-left: 100px;">Current C.C Charges {{CurrentItem.CCCharge}}</span> </div>
+              <a style="float:right;  margin-top:-13px;" class="btn btn-danger" (click)="Closecccharcge()" title="Cancel">X</a>
+              <hr />
+            </div>
+            <br />
+            <div class="col-md-12">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label class="control-label col-md-4">C.C Charge %<b>:</b></label>
+                  <div class="col-md-8">
+                    <input [(ngModel)]="paramerter.ParameterValue" placeholder="C.C Charge" [ngModelOptions]="{standalone: true} " />
+                    <!-- <input *ngIf="" danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)" [(ngModel)]="CurrentItem.CCcharge "
+                                          [source]="genericList" placeholder="Generic Name" display-property-name="GenericName" value-property-name="GenericId" (valueChanged)="AssignSelectedGenName()"
+                                              [list-formatter]="GenNamesListFormatter" max-num-list="15" [ngModelOptions]="{standalone: true} " /> -->
+                    <!-- <span class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('GenericId','required') || !(CurrentItem.IsDirty('GenericId'))">Generic
+                    Name is required</span> -->
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-12" style="padding-bottom: 18px;">
+              <div class="form-actions">
+                <input type="button" class="btn btn-primary" (click)="saveCCcharges()" value="Save" />
+              </div>
+            </div>
+          </div>
+          <div class="col-md-1 hidden-xs hidden-sm" style="margin-right: 24px;"> </div>
+        </div>
+      </div>
+    </form>
+    <!--form end-->
+    <!--Model Box Body End-->
+  </div>
+</div>
+
+<!--Model Box Starting Here-->
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showItemAddPage">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div clearfix">
+          <div class="caption lb-caption">
+            <h3> <span *ngIf="!update">Add Item</span> <span *ngIf="update">Update Item</span> </h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel"><i class="fa fa-times"></i></a>
+          </div>
+          <!--Model Box Body Start-->
+          <form [formGroup]="CurrentItem.ItemValidator" class="form-horizontal hm-form">
+            <div class="form-body">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <div class="row no-margin">
+                      <label class="control-label col-md-4">Select Sales Category <sup>*</sup><b>:</b></label>
+                      <div class="col-md-8">
+                        <input danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)"
+                               [(ngModel)]="selCategory"
+                               [source]="salesCategoryList"
+                               placeholder="Category Type"
+                               formControlName="SalesCategoryId"
+                               display-property-name="Name"
+                               value-property-name="Name"
+                               (valueChanged)="AssignSelectedCategory()"
+                               [list-formatter]="SalesCategoryListFormatter"
+                               max-num-list="15" style="width: 100%;" />
+                        <div class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('SalesCategoryId','required') || !(CurrentItem.IsDirty('SalesCategoryId'))">Category is required</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="row no-margin">
+                      <label class="control-label col-md-4">Item Name <sup>*</sup><b>:</b></label>
+                      <div class="col-md-8">
+                        <input *ngIf="update" disabled class="form-control" type="text" maxlength="50" [(ngModel)]="CurrentItem.ItemName" value="" formControlName="ItemName" placeholder="Enter name of Item" />
+                        <input *ngIf="!update" class="form-control" type="text" maxlength="50" [(ngModel)]="CurrentItem.ItemName" value="" formControlName="ItemName" placeholder="Enter name of Item" />
+                        <span class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('ItemName','required') || !(CurrentItem.IsDirty('ItemName'))">
+                          name
+                          of item is required
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="row no-margin">
+                      <label class="control-label col-md-4">Item Code<b>:</b></label>
+                      <div class="col-md-8">
+                        <input class="form-control" type="text" maxlength="50" [(ngModel)]="CurrentItem.ItemCode" [ngModelOptions]="{standalone: true}" value="" placeholder="Enter code of Item" />
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="row no-margin">
+                      <label class="control-label col-md-4">Select Company <sup>*</sup><b>:</b></label>
+                      <div class="col-md-8">
+                        <input danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)" [(ngModel)]="selCompany" [source]="companyList" placeholder="Company Name" formControlName="CompanyId" display-property-name="CompanyName" value-property-name="CompanyName" (valueChanged)="AssignSelectedCompany()" [list-formatter]="CompaniesListFormatter" max-num-list="15" style="width: 100%;" />
+                        <div class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('CompanyId','required') || !(CurrentItem.IsDirty('SalesCategoryId'))"> Category is required</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="row no-margin">
+                      <label class="control-label col-md-4">Item Type<sup>*</sup><b>:</b></label>
+                      <div class="col-md-8">
+                        <input danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)" [(ngModel)]="selItemType" [source]="itemtypeList" placeholder="Item Type" formControlName="ItemTypeId" display-property-name="ItemTypeName" value-property-name="ItemTypeName" (valueChanged)="AssignSelectedItemType()" [list-formatter]="ItemTypesListFormatter" max-num-list="15" style="width: 100%;" />
+                        <div class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('ItemTypeId','required') || !(CurrentItem.IsDirty('ItemTypeId'))"> Item type is required</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="row no-margin">
+                      <label class="control-label col-md-4">Select Unit<sup>*</sup><b>:</b></label>
+                      <div class="col-md-8">
+                        <input danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)" [(ngModel)]="selUOM" [source]="uomList" placeholder="Unit Of Measurement" formControlName="UOMId" display-property-name="UOMName" value-property-name="UOMName" (valueChanged)="AssignSelectedUOM()" [list-formatter]="UOMListFormatter" max-num-list="8" style="width: 100%;" />
+                        <span class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('UOMId','required') || !(CurrentItem.IsDirty('UOMId'))">
+                          Unit
+                          is
+                          required
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="row no-margin">
+                      <label class="control-label col-md-4">Generic Name<sup>*</sup><b>:</b></label>
+                      <div class="col-md-8">
+                        <input danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)" [(ngModel)]="selGenName" [source]="genericList" placeholder="Generic Name" display-property-name="GenericName" value-property-name="GenericId" (valueChanged)="AssignSelectedGenName()"
+                               [list-formatter]="GenNamesListFormatter" max-num-list="15" formControlName="GenericId" style="width: 100%;" />
+                        <span class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('GenericId','required') || !(CurrentItem.IsDirty('GenericId'))">
+                          Generic
+                          Name is required
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="row no-margin">
+                      <label class="control-label col-md-4" for="chk_isActive">Is Active<b>:</b></label>
+                      <div class="col-md-7">
+                        <div class="input-group">
+                          <div class="icheck-inline">
+                            <label class="mt-checkbox mt-checkbox-outline">
+                              <input id="chk_isActive" name="IsActive" type="checkbox" value="IsActive"
+                                     [(ngModel)]="CurrentItem.IsActive"
+                                     [ngModelOptions]="{standalone: true}">
+                              <span></span>
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="row no-margin">
+                      <label class="control-label col-md-4" for="chk_isInternationalBrand">Is International Brand<b>:</b></label>
+                      <div class="col-md-8">
+                        <div class="input-group">
+                          <div class="icheck-inline">
+                            <label class="mt-checkbox mt-checkbox-outline">
+                              <input name="IsActive" id="chk_isInternationalBrand" type="checkbox" value="IsActive"
+                                     [(ngModel)]="CurrentItem.IsInternationalBrand"
+                                     (change)="getCCchargevalue($event)"
+                                     [ngModelOptions]="{standalone: true}">
+                              <span></span>
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="row no-margin">
+                      <label class="control-label col-md-4">C.C Charge %<b>:</b></label>
+
+                      <!-- <input [(ngModel)]="CurrentItem.CCCharge" placeholder="C.C Charge" [ngModelOptions]="{standalone: true} " /> -->
+                      <div class="col-md-8">
+                        <input danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)" display-property-name="CCChargevalue" value-property-name="CCChargevalue" [(ngModel)]="ccchargeData" [source]="ccChargelist" placeholder="CC Charge" (valueChanged)="AssignSelectedccCharge()"
+                               [list-formatter]="CCchargeListFormatter" max-num-list="15" [ngModelOptions]="{standalone: true} " />
+
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="row no-margin">
+                      <label class="control-label col-md-4" for="chk_isNarcotic">IsNarcotic<b>:</b></label>
+                      <div class="col-md-8">
+                        <div class="input-group">
+                          <div class="icheck-inline">
+                            <label class="mt-checkbox mt-checkbox-outline">
+                              <input id="chk_isNarcotic" name="IsNarcotic" type="checkbox" value="CurrentItem.IsNarcotic"
+                                     [(ngModel)]="CurrentItem.IsNarcotic"
+                                     [ngModelOptions]="{standalone: true}">
+                              <span></span>
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <div class="row no-margin">
+                      <label class="control-label col-md-4">
+                        Re-Order Quantity<b>:</b><br />
+                      </label>
+                      <div class="col-md-8">
+                        <input class="form-control" type="text" maxlength="10" [(ngModel)]="CurrentItem.ReOrderQuantity" formControlName="ReOrderQuantity" value="" placeholder="Enter re-order quantity" />
+                        <span class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('ReOrderQuantity','required') || !(CurrentItem.IsDirty('ReOrderQuantity'))">
+                          re-order
+                          quantity is required
+                        </span> <span class="color-red font-sm" *ngIf="CurrentItem.IsDirty('ReOrderQuantity')" [hidden]="CurrentItem.IsValidCheck('ReOrderQuantity','pattern')">
+                          re-order
+                          quantity in numbers
+                          only
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="row no-margin">
+                      <label class="control-label col-md-4">
+                        Min-Stock Quantity<b>:</b>
+                      </label>
+                      <div class="col-md-8">
+                        <input class="form-control" type="text" maxlength="10" [(ngModel)]="CurrentItem.MinStockQuantity" formControlName="MinStockQuantity" value="" placeholder="Enter min-stock quantity" />
+                        <span class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('MinStockQuantity','required') || !(CurrentItem.IsDirty('MinStockQuantity'))">
+                          Min-stock
+                          quantity is required
+                        </span> <span class="color-red font-sm" *ngIf="CurrentItem.IsDirty('MinStockQuantity')" [hidden]="CurrentItem.IsValidCheck('MinStockQuantity','pattern')">
+                          Min-stock
+                          quantity in numbers
+                          only
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="row no-margin">
+                      <label class="control-label col-md-4">Dosage <b>:</b></label>
+                      <div class="col-md-8">
+                        <input class="form-control" type="text" maxlength="10" [(ngModel)]="CurrentItem.Dosage" [ngModelOptions]="{standalone: true}" value="" placeholder="Enter dosage" />
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="row no-margin">
+                      <label class="control-label col-md-4">
+                        Budgeted Quantity<b>:</b>
+                      </label>
+                      <div class="col-md-8">
+                        <input class="form-control" type="text" maxlength="10" [(ngModel)]="CurrentItem.BudgetedQuantity" formControlName="BudgetedQuantity" value="" placeholder="Enter budgeted quantity" />
+                        <span class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('BudgetedQuantity','required') || !(CurrentItem.IsDirty('BudgetedQuantity'))">
+                          Budgeted
+                          quantity is required
+                        </span> <span class="color-red font-sm" *ngIf="CurrentItem.IsDirty('BudgetedQuantity')" [hidden]="CurrentItem.IsValidCheck('BudgetedQuantity','pattern')">
+                          Budgeted
+                          quantity in numbers
+                          only
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <!--<div class="form-group">
+                    <div class="row no-margin">
+                      <label class="control-label col-md-4">VAT Percentage<b>:</b></label>
+                      <div class="col-md-8">
+                        <input class="form-control" type="text" maxlength="10" [(ngModel)]="CurrentItem.VATPercentage" formControlName="VATPercentage" value="" placeholder="Enter VAT Percentage" />
+                        <span class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('VATPercentage','required') || !(CurrentItem.IsDirty('VATPercentage'))">
+                          VAT
+                          Percentage is required
+                        </span> <span class="color-red font-sm" *ngIf="CurrentItem.IsDirty('VATPercentage')" [hidden]="CurrentItem.IsValidCheck('VATPercentage','pattern')">
+                          Percentage is
+                          not proper
+                        </span>
+                      </div>
+                    </div>
+                  </div>-->
+                  <div class="form-group">
+                    <div class="row no-margin">
+                      <label class="control-label col-md-4" for="chk_isVatApplicable">Is VAT Applicable<b>:</b></label>
+                      <div class="col-md-8">
+                        <div class="input-group">
+                          <div class="icheck-inline">
+                            <label class="mt-checkbox mt-checkbox-outline">
+                              <input name="IsActive" type="checkbox" value="IsVATApplicable" id="chk_isVatApplicable"
+                                     [(ngModel)]="CurrentItem.IsVATApplicable"
+                                     [ngModelOptions]="{standalone: true}">
+                              <span></span>
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <label class="control-label col-md-4">Select Packing<b>:</b></label>
+                    <div class="col-md-8">
+                      <div class="div-relative">
+                        <select class="form-control" [(ngModel)]="CurrentItem.PackingTypeId" [ngModelOptions]="{standalone: true}">
+                          <option *ngFor="let data of packingtypeList" [value]="data.PackingTypeId"> {{data.PackingName}} </option>
+                        </select>
+                        <!--<span class="color-red font-sm" [hidden]="CurrentItem.IsValidCheck('PackagingTypeId','required') || !(CurrentItem.IsDirty('PackagingTypeId'))">Packaging TypeId is required</span>-->
+                        <a *ngIf="!CurrentItem.PackingTypeId" class="fa fa-question" (click)="AddPackingTypePopUp(i)" title="Unable to find PackingType? Click to add"></a>
+                      </div>
+                    </div>
+                  </div>
+                  <br>
+                  <div class="form-group">
+                    <div class="row no-margin">
+                      <label class="control-label col-md-4">A,B or C<b>:</b></label>
+                      <div class="col-md-8">
+                        <select class="form-control" [(ngModel)]="CurrentItem.ABCCategory" [ngModelOptions]="{standalone: true}">
+                          <!--@*<option value="null">--Choose Category--</option>*@-->
+                          <option *ngFor="let abc of abcCategory" value="{{abc.value}}"> {{abc.text}} </option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="row no-margin">
+                      <label class="control-label col-md-4">V,E or D<b>:</b></label>
+                      <div class="col-md-8">
+                        <select class="form-control" [(ngModel)]="CurrentItem.VED" [ngModelOptions]="{standalone: true}">
+                          <option *ngFor="let ved of vedCategory" value="{{ved.value}}"> {{ved.text}} </option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <div class="form-actions">
+                    <input type="button" class="btn primary-btn" *ngIf="!update" (click)="Add()" value="Add" />
+                    <input type="button" class="btn primary-btn" *ngIf="update" (click)="Update()" value="Update" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+          <!--form end-->
+          <!--Model Box Body End-->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showAddToRackPage">
+  <div class="portlet-body form" style="background-color:white">
+    <!--Model Box Body Start-->
+    <form [formGroup]="" class="form-horizontal">
+      <div class="form-body">
+        <div class="col-md-8">
+          <div class="col-md-1 hidden-xs hidden-sm" style="margin-right: 24px;"> </div>
+          <div class="col-md-8 col-sm-10 col-xs-10 modelbox-div" style="margin-right: 24px;">
+            <div class="col-md-12">
+              <div class="caption" style="color:blue; margin-top:10px;"> <span>Add Item to Rack</span> </div>
+              <a style="float:right;  margin-top:-13px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+              <hr />
+            </div>
+            <br />
+            <div class="col-md-12">
+              <div class="col-md-12">
+                <div class="form-group">
+                  <label class="control-label col-md-4">Select Rack for Dispensary<b>:</b></label>
+                  <div class="col-md-8">
+                    <select class="form-control" [(ngModel)]="rackId" [ngModelOptions]="{standalone: true}">
+                      <option *ngFor="let rack of DispensaryRackList" value="{{rack.RackId}}"> {{rack.Name}} </option>
+                    </select>
+                    <!--<span class="color-red font-sm" [hidden]="rackList.IsValid('Name','required') || !(rackList.IsDirty('Name'))">Select Rack Name</span>-->
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-12">
+                <div class="form-group">
+                  <label class="control-label col-md-4">Select Rack for Store<b>:</b></label>
+                  <div class="col-md-8">
+                    <select class="form-control" [(ngModel)]="CurrentItem.StoreRackId" [ngModelOptions]="{standalone: true}">
+                      <option *ngFor="let rack of StoreRackList" value="{{rack.RackId}}"> {{rack.Name}} </option>
+                    </select>
+                    <!--<span class="color-red font-sm" [hidden]="rackList.IsValid('Name','required') || !(rackList.IsDirty('Name'))">Select Rack Name</span>-->
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-12" style="padding-bottom: 18px;">
+              <div class="form-actions">
+                <input type="button" class="btn btn-primary" style="float:right;" (click)="AddtoRack()" value="Add To Rack" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+    <!--form end-->
+    <!--Model Box Body End-->
+  </div>
+</div>
+<packingtype-add *ngIf="showPackingTypeAddPopUp"
+                 [showAddPage]="showPackingTypeAddPopUp"
+                 (callback-add)="OnNewPackingTypeAdded($event)"></packingtype-add>

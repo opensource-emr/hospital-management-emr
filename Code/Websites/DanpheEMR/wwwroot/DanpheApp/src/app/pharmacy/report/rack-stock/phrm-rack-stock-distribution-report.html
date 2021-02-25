@@ -1,0 +1,129 @@
+<style>
+    select {
+        width: 200px;
+        margin-bottom: 7px;
+    }
+
+    /*filter search*/
+    .activeFilterBox {
+        background: rgba(24, 29, 31, .07);
+        border-radius: 24px !important;
+        height: 24px;
+        padding: 0 6px;
+        margin: 0 12px;
+    }
+
+    .activeFilterText {
+        margin: 0 6px;
+    }
+
+    .search-form {
+        background-color: #b1d6e77a;
+        padding: 10px;
+    }
+</style>
+<div class="">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="caption custom-caption"> <i class="glyphicon glyphicon-asterisk"></i> <span
+                    class="caption-subject">Rack Stock Distribution Report</span> </div>
+            <div class="row"><div class="col-md-4">
+                <div class="row"><label class="control-label col-md-5">Location:</label>
+                <div class="col-md-7"><select [(ngModel)]="locationId"
+                    (change)="FilterRackBasedOnLocation()">
+                    <option *ngFor="let location of locationList | keyvalue"
+                        value="{{location.key}}">{{location.value}}</option>
+                </select></div></div>
+            </div>
+            <div class="col-md-4">
+                <div class="row"><label class="control-label col-md-5">Parent Rack:</label>
+                <div class="col-md-7"><select [(ngModel)]="selectedParentRackId"
+                    (change)=SelectAllChildRackByParentId()>
+                    <option value="null"
+                        selected
+                        disabled
+                        hidden>
+                        Select an Option
+                    </option>
+                    <option *ngFor="let parentRack of parentRackListFiltered"
+                        [value]="parentRack.RackId">{{parentRack.Name}}</option>
+                </select></div></div>
+            </div>
+            <div class="col-md-4">
+                <div class="row"><label class="control-label col-md-5">Child Rack:</label>
+                <div class="col-md-7"><select [(ngModel)]="selectedChildRackId"
+                    (change)=SelectChildRack()>
+                    <option value="null"
+                        selected
+                        disabled
+                        hidden>
+                        Select an Option
+                    </option>
+                    <option *ngFor="let childRack of childRackListFiltered"
+                        [value]="childRack.RackId">{{childRack.Name}}</option>
+                </select></div></div>
+            </div></div>
+            <div class="inv_substore_search m2">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="search-form">
+                            <label>Selected Rack:</label>
+                            <span *ngFor="let rack of selectedRacks">
+                                <span class="activeFilterBox">
+                                    <span class="activeFilterText">{{rack.Name}}</span>
+                                    <span>
+                                        <a style="margin-left:6px"
+                                            disabled="loading"
+                                            (click)="RemoveRack(rack.RackId)">
+                                            <span class="fa fa-close"></span>
+                                        </a>
+                                    </span>
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <button class="btn btn-primary"
+                    (click)=LoadRackReport()>Load</button>
+                <button class="btn btn-primary"
+                    (click)=ClearSelectedRack()>Clear All</button>
+            </div>
+        </div>
+        <div class="col-lg-12 col-sm-12"
+            id="totalValuationCards">
+            <div class="information-container inv_substore_list">
+                <div class="row clearfix"
+                    *ngIf="TotalEvaluation !=null">
+                    <div class="col-md-6 col-xs-6">
+                        <div class="card">
+                            <div class="card-desc">
+                                <div class="center-align">{{TotalEvaluation.TotalAvailableQuantity}}
+                                </div>
+                            </div>
+                            <div class="card-title">Total Stock</div>
+                            <div class="card-icon"> <i class="fa fa-home fa-2x"></i> </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-xs-6">
+                        <div class="card bg-danger">
+                            <div class="card-desc">
+                                <div class="center-align">Rs.
+                                    {{TotalEvaluation.TotalStockValuation | number:'1.0-2'}}</div>
+                            </div>
+                            <div class="card-title">Total Value</div>
+                            <div class="card-icon"> <i class="fa fa-dollar fa-2x"></i> </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <danphe-grid [grid-colDefaults]="PHRMRackStockDistributionReportColumns"
+                [grid-data]="PHRMRackStockDistributionReportData"
+                [grid-showExportNew]="true"
+                (grid-onExport)="OnGridExport($event)">
+            </danphe-grid>
+        </div>
+    </div>
+</div>

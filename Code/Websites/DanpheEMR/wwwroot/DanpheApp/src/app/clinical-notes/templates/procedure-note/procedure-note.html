@@ -1,0 +1,44 @@
+<style>
+  table tr td {
+      padding: 5px;
+  }
+  table {
+    background: #fff;
+  }
+</style>
+<div class="row hm-f-note">
+  <div class="col-md-12">
+    <div class="form-group">
+      <h3 class="text-head" style="text-align:center">Lines&Invasive Procedure Note</h3>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <!--<th></th>-->
+            <th><b>Date</b></th>
+            <!--<th></th>-->
+            <th><b>Lines/Prose</b></th>
+            <th><b>Site</b></th>
+            <th><b>Remarks</b></th>
+          </tr>
+        </thead>
+        <tbody *ngFor="let selectedItem of SelecetdItemList">
+          <tr>
+            <!--<td>
+              <a (click)="DeleteRow(i)"><i class="btn btn-danger fa" style="float:left;padding: 2px 8px !important;">X</i></a>
+            </td>-->
+            <td><input style="width:100%" type="date" [(ngModel)]="procedureNote.Date" [ngModelOptions]="{standalone :true}" /></td>
+            <!--<td>
+              <a (click)="AddRow()"><i class="glyphicon glyphicon-plus btn btn-success" style="padding: 2px 8px !important;"></i></a>
+            </td>-->
+            <td><input style="width:100%" type="text" (focusout)="Focusit()" [(ngModel)]="procedureNote.LinesProse" /></td>
+            <td><input style="width:100%" type="text" (focusout)="Focusit()" [(ngModel)]="procedureNote.Site" /></td>
+            <td><input style="width:100%" type="text" (focusout)="Focusit()" [(ngModel)]="procedureNote.Remarks" placeholder="Remarks......." /></td>
+          </tr>
+          <tr rowspan="6">
+            <td colspan="6"><textarea style="height: 100px;width:100%" (focusout)="Focusit()" [(ngModel)]="procedureNote.FreeText" placeholder="Free Text"></textarea></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+    </div>

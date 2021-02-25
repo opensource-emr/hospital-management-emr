@@ -23,13 +23,16 @@ export class PurchaseOrderListComponent {
   public showVendorwise: boolean = false;
   public fromDate: string = '';
   public toDate: string = '';
+  public dateRange: string = null;
   public poListfiltered: Array<PurchaseOrder> = new Array<PurchaseOrder>();
+  //public poDateFiltered: Array<PurchaseOrder> = new Array<PurchaseOrder>();
   public showDetails: any;
+  //public Status: string;
 
   constructor(
     public InventoryBLService: InventoryBLService,
     public inventoryService: InventoryService,
-    public router: Router,
+    public router: Router, 
     public messageBoxService: MessageboxService) {
     this.polistVendorwiseGridColumns = GridColumnSettings.POlistVendorwise;
     this.purchaseOrdersGridColumns = GridColumnSettings.POList;
@@ -41,6 +44,20 @@ export class PurchaseOrderListComponent {
     //load 'pending' at first: This is also default selection in the cshtml.
     this.LoadPOListByStatus("all");
   }
+
+  onDateChange($event) {
+    this.fromDate = $event.fromDate;
+    this.toDate = $event.toDate;
+    if (this.fromDate != null && this.toDate != null) {
+      if (moment(this.fromDate).isBefore(this.toDate) || moment(this.fromDate).isSame(this.toDate)) {
+        this.LoadPOListByStatus("all");
+      } else {
+        this.messageBoxService.showMessage('failed', ['Please enter valid From date and To date']);
+      }
+
+    }
+  }
+
   //this function will load PO -> vendor wise..
   LoadPOVendorwise() {
     this.showVendorwise = true;
@@ -62,13 +79,16 @@ export class PurchaseOrderListComponent {
     //like in pending we have to check the active and partial both...
     var Status = "";
     if (status == "pending") {
-      Status = "active,partial";
+      Status = "active,pending,partial";
     }
     else if (status == "complete") {
       Status = "complete";
     }
+    else if (status == "cancelled") {
+      Status = "cancelled";
+    }
     else if (status == "all") {
-      Status = "active,partial,complete,initiated";
+      Status = "active,pending,partial,complete,initiated,cancelled";
     }
     else {
       Status = "initiated"
@@ -78,6 +98,12 @@ export class PurchaseOrderListComponent {
       .subscribe(res => {
         if (res.Status == "OK") {
           this.purchaseOrderList = res.Results;
+          this.purchaseOrderList.forEach(PO => {
+            if (PO.IsVerificationEnabled == true) {
+              var VerifierIdsParsed: any[] = JSON.parse(PO.VerifierIds);
+              PO.MaxVerificationLevel = VerifierIdsParsed.length;
+            }
+          });
           this.poListfiltered = this.purchaseOrderList;
         }
         else {
@@ -99,6 +125,10 @@ export class PurchaseOrderListComponent {
         {
           this.RouteToViewDetails($event.Data.PurchaseOrderId)
           break;
+        }
+      case 'CreateCopy':
+        {
+          this.RouteToRecreatePO($event.Data.PurchaseOrderId);
         }
       default:
         break;
@@ -122,11 +152,19 @@ export class PurchaseOrderListComponent {
   }
   //route to create PO page
   CreatePurchaseOrder() {
+    this.inventoryService.PurchaseRequestId = 0;
+    this.inventoryService.POId = 0;
+    this.inventoryService.POIdforCopy = 0;
+    this.router.navigate(['/Inventory/ProcurementMain/PurchaseOrderItems']);
+  }
+  //route to recreate PO page
+  RouteToRecreatePO(id){
+    this.inventoryService.POIdforCopy=id;
     this.router.navigate(['/Inventory/ProcurementMain/PurchaseOrderItems']);
   }
   RouteToViewDetails(id) {
     //pass the purchaseorderID to purchaseorderDetails page
-    this.inventoryService.Id = id;
+    this.inventoryService.POId = id;//sud:3Mar'20-Property Rename in InventoryService
     this.router.navigate(['/Inventory/ProcurementMain/PurchaseOrderDetails']);
   }
 

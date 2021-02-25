@@ -1,4 +1,4 @@
-﻿import {
+import {
     NgForm,
     FormGroup,
     FormControl,
@@ -24,17 +24,21 @@ export class WardConsumptionModel {
     public Remark: string = '';
     public CreatedBy: number = 0;
     public CreatedOn: string = '';
-    public CounterId: number = 0;
+    public ModifiedBy: number = 0;
+    public ModifiedOn: Date = null;
+    public ModifiedByName: string = ''; 
+    public StoreId: number = 0;
     //OnClient side
     public AvailableQuantity: number = 0;
     public SelectedItem: any;
     public selectedPatient: Patient = new Patient();
 
     public ConsumptionValidator: FormGroup = null;
+    public TotalAmount: any;
+    public User: any;
     constructor() {
         var _formBuilder = new FormBuilder();
         this.ConsumptionValidator = _formBuilder.group({
-            'Medicine': ['', Validators.compose([Validators.required])],
             'Quantity': ['', Validators.compose([Validators.required])]
         });
     }

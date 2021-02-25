@@ -17,6 +17,7 @@ export class CompanyAddComponent {
     @Input("selected-company")
     public CurrentCompany: CompanyModel;
     public showAddPage: boolean = false;
+    public loading: boolean = false;
 
     @Output("callback-add")
     callbackAdd: EventEmitter<Object> = new EventEmitter<Object>();
@@ -49,15 +50,18 @@ export class CompanyAddComponent {
         }
 
         if (this.CurrentCompany.IsValidCheck(undefined, undefined)) {
+            this.loading = true;
             this.companyService.AddCompany(this.CurrentCompany)
                 .subscribe(
                     res => {
                         this.showMessageBox("success", "Company Added");
                         this.CurrentCompany = new CompanyModel();
                         this.callbackAdd.emit({ 'newCompany': res.Results });
+                        this.loading = false;
                     },
                     err => {
                         this.logError(err);
+                        this.loading = false;
                     });
         }
     }
@@ -71,6 +75,7 @@ export class CompanyAddComponent {
         }
 
         if (this.CurrentCompany.IsValidCheck(undefined, undefined)) {
+            this.loading = true;
             this.companyService.UpdateCompany(this.CurrentCompany.CompanyId, this.CurrentCompany)
                 .subscribe(
                     res => {
@@ -78,9 +83,11 @@ export class CompanyAddComponent {
                         this.showAddPage = false;
                         //this.CurrentCompany = new PhrmCompanyModel();
                         this.callbackAdd.emit({ 'newCompany': res.Results });
+                        this.loading = false;
                     },
                     err => {
                         this.logError(err);
+                        this.loading = false;
                     });
         }
     }

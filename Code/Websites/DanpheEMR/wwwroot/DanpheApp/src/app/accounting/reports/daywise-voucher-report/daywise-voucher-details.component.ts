@@ -4,6 +4,7 @@ import { TransactionViewModel } from "../../transactions/shared/transaction.mode
 import { AccountingReportsBLService } from "./../shared/accounting-reports.bl.service";
 import { MessageboxService } from "../../../shared/messagebox/messagebox.service";
 import { CommonFunctions } from "../../../shared/common.functions";
+import { CoreService } from "../../../core/shared/core.service";
 @Component({
   selector: 'voucher-report-details-view',
   templateUrl: './daywise-voucher-details.html',
@@ -34,12 +35,16 @@ export class DaywiseVoucherDetailsComponent {
   public voucherNum: number = 0;
   public voucherid: number = 0;
   public dayvoucherNumber: string = "";
+  public showExportbtn : boolean=false;
+
   public userCashCollection: Array<{ UserName, SalesDr, SalesCr, DepositDr, DepositCr, Total }> = [];
   constructor(public accBLService: AccountingReportsBLService,
     public msgBoxServ: MessageboxService,
+    public coreservice : CoreService,
     public changeDetector: ChangeDetectorRef) {
     this.fromDate = moment().format('YYYY-MM-DD');
     this.toDate = moment().format('YYYY-MM-DD');
+    this.showExport();
   }
   // public GetTxn(transactionId: number) {
   //     try {
@@ -63,9 +68,10 @@ export class DaywiseVoucherDetailsComponent {
   public GetTxnbyVoucher() {
     try {
       let vouchernumber = this.voucherNum;
-      let voucher = this.voucherid
+      let voucher = this.voucherid;
+      var secId = parseInt(localStorage.getItem("SectionId"));
       if (voucher > 0) {
-        this.accBLService.GetDaywiseVoucherDetailsbyDayVoucherNo(vouchernumber, voucher)
+        this.accBLService.GetDaywiseVoucherDetailsbyDayVoucherNo(vouchernumber, voucher,secId)
           .subscribe(res => {
             if (res.Status == "OK") {
               let data = res.Results;
@@ -298,8 +304,9 @@ export class DaywiseVoucherDetailsComponent {
       popupWinindow.document.open();
 
       let documentContent = "<html><head>";
-      documentContent += '<link rel="stylesheet" type="text/css" media="print" href="../../themes/theme-default/DanphePrintStyle.css"/>';
-      documentContent += '<link rel="stylesheet" type="text/css" href="../../themes/theme-default/DanpheStyle.css"/>';
+    //  documentContent += '<link rel="stylesheet" type="text/css" media="print" href="../../themes/theme-default/DanphePrintStyle.css"/>';
+      // documentContent += '<link rel="stylesheet" type="text/css" href="../../themes/theme-default/DanpheStyle.css"/>';
+      documentContent += '<link rel="stylesheet" type="text/css" href="../../themes/theme-default/PrintStyle.css"/>';
       documentContent += '<link rel="stylesheet" type="text/css" href="../../../assets/global/plugins/bootstrap/css/bootstrap.min.css"/>';
       documentContent += '</head>';
       documentContent += '<body onload="window.print()">' + printContents + '</body></html>'
@@ -382,4 +389,14 @@ export class DaywiseVoucherDetailsComponent {
     else
       return "";
   }
+  showExport(){
+
+    let exportshow = this.coreservice.Parameters.find(a => a.ParameterName =="AllowSingleVoucherExport" && a.ParameterGroupName == "Accounting").ParameterValue;
+        if ( exportshow== "true"){
+          this.showExportbtn =true;     
+        }
+        else{
+            this.showExportbtn = false;
+        }
+      }
 }

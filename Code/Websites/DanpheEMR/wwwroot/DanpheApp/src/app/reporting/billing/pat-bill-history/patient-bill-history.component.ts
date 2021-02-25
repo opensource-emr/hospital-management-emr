@@ -9,6 +9,7 @@ import { MessageboxService } from '../../../shared/messagebox/messagebox.service
 import { DLService } from "../../../shared/dl.service"
 import { HttpClient } from '@angular/common/http';
 import * as moment from 'moment/moment';
+import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from '../../../shared/danphe-grid/NepaliColGridSettingsModel';
 @Component({
   templateUrl: "./patient-bill-history.html"
 
@@ -30,6 +31,7 @@ export class RPT_BIL_PatientBillHistoryComponent {
   PaidBillColumns: Array<any> = null;
   UnpaidBillColumns: Array<any> = null;
   ReturnedBillColumns: Array<any> = null;
+  public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
 
   dlService: DLService = null;
   http: HttpClient = null;
@@ -46,6 +48,9 @@ export class RPT_BIL_PatientBillHistoryComponent {
     this.dlService = _dlService;
     this.fromDate = moment().format('YYYY-MM-DD');
     this.toDate = moment().format('YYYY-MM-DD');
+    //this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail("PaidDate", false));
+    //this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail("Date", false));
+    //this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail("ReturnDate", false));
   }
 
   gridExportOptions = {
@@ -59,11 +64,17 @@ export class RPT_BIL_PatientBillHistoryComponent {
     this.selToDate = this.toDate;
     this.selPatientCode = this.patientCode;
 
-    this.dlService.Read("/BillingReports/PatientBillHistory?FromDate=" + this.selFromDate
-      + "&ToDate=" + this.selToDate + "&PatientCode=" + this.selPatientCode)
-      .map(res => res)
-      .subscribe(res => this.AssignBillHistoryData(res),
-        err => this.Error(err));
+    if (this.selFromDate != null && this.selToDate != null) {
+      this.dlService.Read("/BillingReports/PatientBillHistory?FromDate=" + this.selFromDate
+        + "&ToDate=" + this.selToDate + "&PatientCode=" + this.selPatientCode)
+        .map(res => res)
+        .subscribe(res => this.AssignBillHistoryData(res),
+          err => this.Error(err));
+    }
+    else {
+      this.msgBoxServ.showMessage("error", ['Dates Provided is not Proper']);
+    }
+    
   }
 
   AssignBillHistoryData(res) {
@@ -84,5 +95,14 @@ export class RPT_BIL_PatientBillHistoryComponent {
   }
   Error(err) {
     this.msgBoxServ.showMessage("error", [err.ErrorMessage]);
+  }
+
+  //Anjana:11June'20--reusable From-ToDate-In Reports..
+  OnFromToDateChange($event) {
+    this.fromDate = $event ? $event.fromDate : this.fromDate;
+    this.toDate = $event ? $event.toDate : this.toDate;
+
+    //this.currentdepartmentsales.fromDate = this.fromDate;
+    //this.currentdepartmentsales.toDate = this.toDate;
   }
 }

@@ -20,6 +20,8 @@ using DanpheEMR.Core;
 using DanpheEMR.Core.Parameters;
 using System.IO;
 using DanpheEMR.Security;
+using DanpheEMR.Enums;
+
 // For more information on enabling Web API for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 //this is the cotroller
 namespace DanpheEMR.Controllers
@@ -122,7 +124,7 @@ namespace DanpheEMR.Controllers
         //no the paramter name, querystring parameters are passed as key-value format.
 
         [HttpGet]
-        public string Get(int patientId, string reqType, string firstName, string lastName, string phoneNumber,
+        public string Get(int patientId, string reqType, string firstName, string lastName, string phoneNumber, string Age, string Gender,
             string patientCode, string search, string admitStatus, bool IsInsurance, string IMISCode)
         {
 
@@ -165,6 +167,17 @@ namespace DanpheEMR.Controllers
                         var activeAdmissions = returnPatient.Admissions.Where(adm => adm.AdmissionStatus != "discharged").ToList();
                         returnPatient.Admissions = activeAdmissions;
                     }
+                    var membershipDetails = (from pat in patDbContext.Patients
+                                             join memType in patDbContext.MembershipTypes
+                                             on pat.MembershipTypeId equals memType.MembershipTypeId
+                                             where pat.PatientId == patientId
+                                             select new
+                                             {
+                                                 memType.MembershipTypeName,
+                                                 memType.DiscountPercent
+                                             }).FirstOrDefault();
+                    returnPatient.MembershipTypeName = membershipDetails.MembershipTypeName;
+                    returnPatient.MembershipDiscountPercent = membershipDetails.DiscountPercent;
 
                     responseData.Results = returnPatient;
                 }
@@ -222,12 +235,15 @@ namespace DanpheEMR.Controllers
                     result = (from pat in patDbContext.Patients
                                   //.Include("Insurances")
                               join membership in patDbContext.MembershipTypes on pat.MembershipTypeId equals membership.MembershipTypeId
-                              where (pat.FirstName.ToLower() == firstName.ToLower() && pat.LastName.ToLower() == lastName.ToLower())
-                              || (pat.PhoneNumber == phoneNumber)
-                              //if current patient is coming from insurance, then match IMIS code of that patient
-                              //|| (IsInsurance ? (pat.Insurances.FirstOrDefault() != null ? pat.Insurances.FirstOrDefault().IMISCode == IMISCode : false) : false)
-                              || (pat.FirstName.ToLower() == firstName.ToLower() && pat.LastName.ToLower() == lastName.ToLower()
-                                      && pat.PhoneNumber == phoneNumber)
+                              //where (pat.FirstName.ToLower() == firstName.ToLower() && pat.LastName.ToLower() == lastName.ToLower())
+                              //|| (pat.PhoneNumber == phoneNumber && pat.PhoneNumber != "0")
+                              ////if current patient is coming from insurance, then match IMIS code of that patient
+                              ////|| (IsInsurance ? (pat.Insurances.FirstOrDefault() != null ? pat.Insurances.FirstOrDefault().IMISCode == IMISCode : false) : false)
+                              //|| (pat.FirstName.ToLower() == firstName.ToLower() && pat.LastName.ToLower() == lastName.ToLower()
+                              //        && pat.PhoneNumber == phoneNumber && pat.PhoneNumber != "0")
+
+                              where (pat.FirstName.ToLower() == firstName.ToLower() && pat.LastName.ToLower() == lastName.ToLower() && pat.Age.ToLower() == Age.ToLower() && pat.Gender.ToLower() == Gender.ToLower())
+                              || (pat.PhoneNumber == phoneNumber && pat.PhoneNumber != "0" && pat.Gender.ToLower() == Gender.ToLower())
                               select new
                               {
                                   PatientId = pat.PatientId,
@@ -268,7 +284,7 @@ namespace DanpheEMR.Controllers
                                       Description = patFile.Description,
                                       ROWGUID = patFile.ROWGUID,
                                       FileExtention = patFile.FileExtention,
-                                      FileBinaryData = patFile.FileBinaryData,
+                                      //FileBinaryData = patFile.FileBinaryData,
                                       patFile.UploadedOn,
                                       UploadedBy = emp.FirstName + " " + (string.IsNullOrEmpty(emp.MiddleName) ? "" : emp.MiddleName + " ") + emp.LastName,
                                   }).ToList().OrderByDescending(k => k.UploadedOn);
@@ -343,123 +359,197 @@ namespace DanpheEMR.Controllers
 
                 else if (reqType == "patientsWithVisitsInfo")//sud: need to replace existing one with this one .. 14Mar'19
                 {
-                    if (search == null)
-                    {  // Vikas: 17th June 2019 :added real time search.
-                        var allPats = (from pat in patDbContext.Patients.Include("Visits")
-                                       join country in patDbContext.CountrySubdivisions
-                                       on pat.CountrySubDivisionId equals country.CountrySubDivisionId
 
-                                       join memType in patDbContext.MembershipTypes
-                                       on pat.MembershipTypeId equals memType.MembershipTypeId
-                                       where pat.IsActive == true
-                                       select new
-                                       {
-                                           PatientId = pat.PatientId,
-                                           PatientCode = pat.PatientCode,
-                                           ShortName = pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName,
-                                           FirstName = pat.FirstName,
-                                           LastName = pat.LastName,
-                                           MiddleName = pat.MiddleName,
-                                           Age = pat.Age,
-                                           Gender = pat.Gender,
-                                           PhoneNumber = pat.PhoneNumber,
-                                           DateOfBirth = pat.DateOfBirth,
-                                           Address = pat.Address,
-                                           IsOutdoorPat = pat.IsOutdoorPat,
-                                           CreatedOn = pat.CreatedOn,//for issued-date:healthcard-anish
-                                           CountryId = pat.CountryId,
-                                           CountrySubDivisionId = pat.CountrySubDivisionId,
-                                           CountrySubDivisionName = country.CountrySubDivisionName,
-                                           pat.MembershipTypeId,
-                                           MembershipTypeName = memType.MembershipTypeName,
-                                           MembershipDiscountPercent = memType.DiscountPercent,
-                                           PANNumber = pat.PANNumber,
-                                           DialysisCode = pat.DialysisCode,
-                                           pat.BloodGroup,
-                                           IsAdmitted = (from adm in patDbContext.Admissions
-                                                         where adm.PatientId == pat.PatientId && adm.AdmissionStatus == "admitted"
-                                                         select adm.AdmissionStatus).FirstOrDefault() == null ? false : true   //ram--> getting IsAdmitted status of patient                                   
+                    // START : Vikas: 2nd Jan 2020 : modify logic for real time search.                    
+                    CoreDbContext coreDbContext = new CoreDbContext(connString);
+                    search = search == null ? string.Empty : search.ToLower();
+                    var allPats = (from pat in patDbContext.Patients.Include("Visits")
+                                   join country in patDbContext.CountrySubdivisions
+                                   on pat.CountrySubDivisionId equals country.CountrySubDivisionId
+                                   join countryMain in patDbContext.Countries on country.CountryId equals countryMain.CountryId
+                                   join memType in patDbContext.MembershipTypes
+                                   on pat.MembershipTypeId equals memType.MembershipTypeId
+                                   where pat.IsActive == true && ((pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName + " " + pat.Address + " " + pat.PhoneNumber + " " + pat.Address + pat.FirstName + " " + pat.Address + pat.PatientCode).ToLower().Contains(search))
+                                   select new
+                                   {
+                                       PatientId = pat.PatientId,
+                                       PatientCode = pat.PatientCode,
+                                       ShortName = pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName,
+                                       FirstName = pat.FirstName,
+                                       LastName = pat.LastName,
+                                       MiddleName = pat.MiddleName,
+                                       Age = pat.Age,
+                                       CountryName = countryMain.CountryName,
+                                       Gender = pat.Gender,
+                                       PhoneNumber = pat.PhoneNumber,
+                                       DateOfBirth = pat.DateOfBirth,
+                                       Address = pat.Address,
+                                       IsOutdoorPat = pat.IsOutdoorPat,
+                                       CreatedOn = pat.CreatedOn,//for issued-date:healthcard-anish
+                                       CountryId = pat.CountryId,
+                                       CountrySubDivisionId = pat.CountrySubDivisionId,
+                                       CountrySubDivisionName = country.CountrySubDivisionName,
+                                       pat.MembershipTypeId,
+                                       MembershipTypeName = memType.MembershipTypeName,
+                                       MembershipDiscountPercent = memType.DiscountPercent,
+                                       PANNumber = pat.PANNumber,
+                                       pat.BloodGroup,
+                                       DialysisCode = pat.DialysisCode,
+                                       IsAdmitted = (from adm in patDbContext.Admissions
+                                                     where adm.PatientId == pat.PatientId && adm.AdmissionStatus == "admitted"
+                                                     select adm.AdmissionStatus).FirstOrDefault() == null ? false : true,   //ram--> getting IsAdmitted status of patient                                   
+                                                                                                                            //Insurance Details
+                                       Insurance = (from ins in patDbContext.Insurances
+                                                    join insProvider in patDbContext.InsuranceProviders on ins.InsuranceProviderId equals insProvider.InsuranceProviderId
+                                                    where insProvider.InsuranceProviderName == "Government Insurance" && ins.PatientId == pat.PatientId
+                                                    select ins.CurrentBalance
+                                                    ).FirstOrDefault(),
+                                   }).OrderByDescending(p => p.PatientId).AsQueryable();
 
-                                           //Insurance Details
-                                           ,
-                                           Insurance = (from ins in patDbContext.Insurances
-                                                        join insProvider in patDbContext.InsuranceProviders on ins.InsuranceProviderId equals insProvider.InsuranceProviderId
-                                                        where insProvider.InsuranceProviderName == "Government Insurance" && ins.PatientId == pat.PatientId
-                                                        select ins.CurrentBalance
-                                                        ).FirstOrDefault(),
-                                       }).OrderByDescending(p => p.PatientId).Take(200).ToList();
-
-                        responseData.Results = allPats;
-                    }
-                    else
+                    if (CommonFunctions.GetCoreParameterBoolValue(coreDbContext, "Common", "ServerSideSearchComponent", "BillingSearchPatient") == true && search == "")
                     {
-
-                        var allPats = (from pat in patDbContext.Patients.Include("Visits")
-                                       join country in patDbContext.CountrySubdivisions
-                                       on pat.CountrySubDivisionId equals country.CountrySubDivisionId
-                                       join memType in patDbContext.MembershipTypes
-                                       on pat.MembershipTypeId equals memType.MembershipTypeId
-                                       where pat.IsActive == true && pat.IsActive == true && ((pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName + " " + pat.Address + " " + pat.PhoneNumber + " " + pat.Address + pat.FirstName + " " + pat.Address + pat.PatientCode).Contains(search))
-                                       select new
-                                       {
-                                           PatientId = pat.PatientId,
-                                           PatientCode = pat.PatientCode,
-                                           ShortName = pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName,
-                                           FirstName = pat.FirstName,
-                                           LastName = pat.LastName,
-                                           MiddleName = pat.MiddleName,
-                                           Age = pat.Age,
-                                           Gender = pat.Gender,
-                                           PhoneNumber = pat.PhoneNumber,
-                                           DateOfBirth = pat.DateOfBirth,
-                                           Address = pat.Address,
-                                           IsOutdoorPat = pat.IsOutdoorPat,
-                                           CreatedOn = pat.CreatedOn,//for issued-date:healthcard-anish
-                                           CountryId = pat.CountryId,
-                                           CountrySubDivisionId = pat.CountrySubDivisionId,
-                                           CountrySubDivisionName = country.CountrySubDivisionName,
-                                           pat.MembershipTypeId,
-                                           MembershipTypeName = memType.MembershipTypeName,
-                                           MembershipDiscountPercent = memType.DiscountPercent,
-                                           PANNumber = pat.PANNumber,
-                                           pat.BloodGroup,
-                                           DialysisCode = pat.DialysisCode,
-                                           IsAdmitted = (from adm in patDbContext.Admissions
-                                                         where adm.PatientId == pat.PatientId && adm.AdmissionStatus == "admitted"
-                                                         select adm.AdmissionStatus).FirstOrDefault() == null ? false : true   //ram--> getting IsAdmitted status of patient                                   
-
-                                           //Insurance Details
-                                           ,
-                                           Insurance = (from ins in patDbContext.Insurances
-                                                        join insProvider in patDbContext.InsuranceProviders on ins.InsuranceProviderId equals insProvider.InsuranceProviderId
-                                                        where insProvider.InsuranceProviderName == "Government Insurance" && ins.PatientId == pat.PatientId
-                                                        select ins.CurrentBalance
-                                                        ).FirstOrDefault(),
-                                       }).OrderByDescending(p => p.PatientId).ToList();
-
-                        //if (admitStatus == "IP")
-                        //{                           
-                        //    responseData.Results = allPats.Where(p=>p.IsAdmitted==true).ToList();
-                        //}
-                        //else if (admitStatus == "OP")
-                        //{                           
-                        //    responseData.Results = allPats.Where(p => p.IsAdmitted == false).ToList();
-                        //}
-                        //else {
-                        responseData.Results = allPats;
-                        //}
-                        // allPats.Select(p=>p.IsAdmitted==true).
+                        allPats = allPats.Take(CommonFunctions.GetCoreParameterIntValue(coreDbContext, "Common", "ServerSideSearchListLength"));
                     }
+                    var finalResults = allPats.ToList();
+                    responseData.Results = finalResults;
+
+                    // END : Vikas: 2nd Jan 2020 : modify logic for real time search.
+
+                    //if (search == null)
+                    //{  // Vikas: 17th June 2019 :added real time search.
+                    //    var allPats = (from pat in patDbContext.Patients.Include("Visits")
+                    //                   join country in patDbContext.CountrySubdivisions
+                    //                   on pat.CountrySubDivisionId equals country.CountrySubDivisionId
+
+                    //                   join memType in patDbContext.MembershipTypes
+                    //                   on pat.MembershipTypeId equals memType.MembershipTypeId
+                    //                   where pat.IsActive == true
+                    //                   select new
+                    //                   {
+                    //                       PatientId = pat.PatientId,
+                    //                       PatientCode = pat.PatientCode,
+                    //                       ShortName = pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName,
+                    //                       FirstName = pat.FirstName,
+                    //                       LastName = pat.LastName,
+                    //                       MiddleName = pat.MiddleName,
+                    //                       Age = pat.Age,
+                    //                       Gender = pat.Gender,
+                    //                       PhoneNumber = pat.PhoneNumber,
+                    //                       DateOfBirth = pat.DateOfBirth,
+                    //                       Address = pat.Address,
+                    //                       IsOutdoorPat = pat.IsOutdoorPat,
+                    //                       CreatedOn = pat.CreatedOn,//for issued-date:healthcard-anish
+                    //                       CountryId = pat.CountryId,
+                    //                       CountrySubDivisionId = pat.CountrySubDivisionId,
+                    //                       CountrySubDivisionName = country.CountrySubDivisionName,
+                    //                       pat.MembershipTypeId,
+                    //                       MembershipTypeName = memType.MembershipTypeName,
+                    //                       MembershipDiscountPercent = memType.DiscountPercent,
+                    //                       PANNumber = pat.PANNumber,
+                    //                       DialysisCode = pat.DialysisCode,
+                    //                       pat.BloodGroup,
+                    //                       IsAdmitted = (from adm in patDbContext.Admissions
+                    //                                     where adm.PatientId == pat.PatientId && adm.AdmissionStatus == "admitted"
+                    //                                     select adm.AdmissionStatus).FirstOrDefault() == null ? false : true   //ram--> getting IsAdmitted status of patient                                   
+
+                    //                       //Insurance Details
+                    //                       ,
+                    //                       Insurance = (from ins in patDbContext.Insurances
+                    //                                    join insProvider in patDbContext.InsuranceProviders on ins.InsuranceProviderId equals insProvider.InsuranceProviderId
+                    //                                    where insProvider.InsuranceProviderName == "Government Insurance" && ins.PatientId == pat.PatientId
+                    //                                    select ins.CurrentBalance
+                    //                                    ).FirstOrDefault(),
+                    //                   }).OrderByDescending(p => p.PatientId).Take(200).ToList();
+
+
+                    //    responseData.Results = allPats;
+                    //}
+                    //else
+                    //{
+
+                    //    var allPats = (from pat in patDbContext.Patients.Include("Visits")
+                    //                   join country in patDbContext.CountrySubdivisions
+                    //                   on pat.CountrySubDivisionId equals country.CountrySubDivisionId
+                    //                   join memType in patDbContext.MembershipTypes
+                    //                   on pat.MembershipTypeId equals memType.MembershipTypeId
+                    //                   where pat.IsActive == true && pat.IsActive == true && ((pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName + " " + pat.Address + " " + pat.PhoneNumber + " " + pat.Address + pat.FirstName + " " + pat.Address + pat.PatientCode).Contains(search))
+                    //                   select new
+                    //                   {
+                    //                       PatientId = pat.PatientId,
+                    //                       PatientCode = pat.PatientCode,
+                    //                       ShortName = pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName,
+                    //                       FirstName = pat.FirstName,
+                    //                       LastName = pat.LastName,
+                    //                       MiddleName = pat.MiddleName,
+                    //                       Age = pat.Age,
+                    //                       Gender = pat.Gender,
+                    //                       PhoneNumber = pat.PhoneNumber,
+                    //                       DateOfBirth = pat.DateOfBirth,
+                    //                       Address = pat.Address,
+                    //                       IsOutdoorPat = pat.IsOutdoorPat,
+                    //                       CreatedOn = pat.CreatedOn,//for issued-date:healthcard-anish
+                    //                       CountryId = pat.CountryId,
+                    //                       CountrySubDivisionId = pat.CountrySubDivisionId,
+                    //                       CountrySubDivisionName = country.CountrySubDivisionName,
+                    //                       pat.MembershipTypeId,
+                    //                       MembershipTypeName = memType.MembershipTypeName,
+                    //                       MembershipDiscountPercent = memType.DiscountPercent,
+                    //                       PANNumber = pat.PANNumber,
+                    //                       pat.BloodGroup,
+                    //                       DialysisCode = pat.DialysisCode,
+                    //                       IsAdmitted = (from adm in patDbContext.Admissions
+                    //                                     where adm.PatientId == pat.PatientId && adm.AdmissionStatus == "admitted"
+                    //                                     select adm.AdmissionStatus).FirstOrDefault() == null ? false : true   //ram--> getting IsAdmitted status of patient                                   
+
+                    //                       //Insurance Details
+                    //                       ,
+                    //                       Insurance = (from ins in patDbContext.Insurances
+                    //                                    join insProvider in patDbContext.InsuranceProviders on ins.InsuranceProviderId equals insProvider.InsuranceProviderId
+                    //                                    where insProvider.InsuranceProviderName == "Government Insurance" && ins.PatientId == pat.PatientId
+                    //                                    select ins.CurrentBalance
+                    //                                    ).FirstOrDefault(),
+                    //                   }).OrderByDescending(p => p.PatientId).AsQueryable();
+
+                    //    var isSearchApply = true;
+
+                    //    if (isSearchApply == true)
+                    //    {
+                    //        allPats = allPats.Take(200);
+                    //    }
+                    //    var data = allPats.ToList();
+
+                    //    //if (admitStatus == "IP")
+                    //    //{                           
+                    //    //    responseData.Results = allPats.Where(p=>p.IsAdmitted==true).ToList();
+                    //    //}
+                    //    //else if (admitStatus == "OP")
+                    //    //{                           
+                    //    //    responseData.Results = allPats.Where(p => p.IsAdmitted == false).ToList();
+                    //    //}
+                    //    //else {
+                    //    responseData.Results = allPats;
+                    //    //}
+                    //    // allPats.Select(p=>p.IsAdmitted==true).
+                    //}
                 }
                 else if (reqType == "profile-pic")
                 {
+                    var location = (from dbc in patDbContext.CFGParameters
+                                    where dbc.ParameterGroupName.ToLower() == "patient" && dbc.ParameterName == "PatientProfilePicImageUploadLocation"
+                                    select dbc.ParameterValue
+                                ).FirstOrDefault();
+
                     PatientFilesModel retFile = patDbContext.PatientFiles
                                                .Where(f => f.PatientId == patientId && f.IsActive == true
                                                && f.FileType == "profile-pic")
                                                .FirstOrDefault();
+
+                    var fileFullPath = location + retFile.FileName;
+
                     if (retFile != null)
                     {
-                        retFile.FileBase64String = Convert.ToBase64String(retFile.FileBinaryData);
+                        byte[] imageArray = System.IO.File.ReadAllBytes(@fileFullPath);
+                        retFile.FileBase64String = Convert.ToBase64String(imageArray);
                     }
                     responseData.Results = retFile;
                     responseData.Status = "OK";
@@ -492,17 +582,27 @@ namespace DanpheEMR.Controllers
                 else if (reqType == "loadHealthCardStatus")
                 {
                     BillingDbContext billingDb = new BillingDbContext(connString);
+                    CoreDbContext coreDbContext = new CoreDbContext(connString);
+                    var parameter = coreDbContext.Parameters.Where(a => a.ParameterGroupName == "Common" && a.ParameterName == "BillItemHealthCard").FirstOrDefault();
+                    if (parameter != null && parameter.ParameterValue != null)
+                    {
+                        //JObject paramValue = JObject.Parse(parameter.ParameterValue);
+                        //var result = JsonConvert.DeserializeObject<any>(parameter.ParameterValue);
 
+                        //dynamic result = JValue.Parse(parameter.ParameterValue);
+
+                    }
                     var billStatus = billingDb.BillingTransactionItems
                                                        .Where(bItm => bItm.PatientId == patientId && bItm.ItemName == "Health Card"
-                                                       && bItm.BillStatus != "cancel" && ((!bItm.ReturnStatus.HasValue || bItm.ReturnStatus == false)))
+                                                       && bItm.BillStatus != ENUM_BillingStatus.cancel //"cancel" 
+                                                       && ((!bItm.ReturnStatus.HasValue || bItm.ReturnStatus == false)))
                                                        .FirstOrDefault();
 
                     var CardStatus = patDbContext.PATHealthCard.Where(a => a.PatientId == patientId).FirstOrDefault();
                     //we need to send back some information even when billing is not done or even when card is not printed.//sud:23Aug'18
                     var res = new
                     {
-                        BillStatus = billStatus != null ? billStatus.BillStatus : "unpaid",
+                        BillStatus = billStatus != null ? billStatus.BillStatus : ENUM_BillingStatus.unpaid,// "unpaid",
                         PaidDate = billStatus != null ? billStatus.PaidDate : null,
                         BillingDate = billStatus != null ? billStatus.CreatedOn : null,
                         IsPrinted = CardStatus != null ? true : false,
@@ -563,6 +663,7 @@ namespace DanpheEMR.Controllers
                                             {
                                                 PatientId = pat.PatientId,
                                                 PatientCode = pat.PatientCode,
+                                                IsOutdoorPatient = pat.IsOutdoorPat,
                                                 ShortName = pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName,
                                             }).OrderByDescending(p => p.PatientId).ToList();
                     responseData.Results = salesphrmpatient;
@@ -570,86 +671,202 @@ namespace DanpheEMR.Controllers
                 }
                 else if (reqType == "patient-search-by-text") // Vikas: 17th June 2019 :added real time search.
                 {
-                    if (string.IsNullOrEmpty(search))
-                    {
-                        var allPats = (from pat in patDbContext.Patients.Include("Visits")
-                                       join country in patDbContext.CountrySubdivisions
-                                       on pat.CountrySubDivisionId equals country.CountrySubDivisionId
-                                       where pat.IsActive == true
-                                       select new
-                                       {
-                                           PatientId = pat.PatientId,
-                                           PatientCode = pat.PatientCode,
-                                           ShortName = pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName,
-                                           FirstName = pat.FirstName,
-                                           LastName = pat.LastName,
-                                           MiddleName = pat.MiddleName,
-                                           Age = pat.Age,
-                                           Gender = pat.Gender,
-                                           PhoneNumber = pat.PhoneNumber,
-                                           DateOfBirth = pat.DateOfBirth,
-                                           Address = pat.Address,
-                                           IsOutdoorPat = pat.IsOutdoorPat,
-                                           CreatedOn = pat.CreatedOn,//for issued-date:healthcard-anish
-                                           CountryId = pat.CountryId,
-                                           CountrySubDivisionId = pat.CountrySubDivisionId,
-                                           CountrySubDivisionName = country.CountrySubDivisionName,
-                                           pat.MembershipTypeId,
-                                           PANNumber = pat.PANNumber,
-                                           pat.BloodGroup,
-                                           //ProviderId = (from visit in patDbContext.Visits
-                                           //              where visit.PatientId == pat.PatientId
-                                           //              select visit.ProviderId).FirstOrDefault(),//Ajay--> getting ProviderId for patient
-                                           ProviderId = pat.Visits.Select(v => v.ProviderId).FirstOrDefault(),
-                                           IsAdmitted = (from adm in patDbContext.Admissions
-                                                         where adm.PatientId == pat.PatientId && adm.AdmissionStatus == "admitted"
-                                                         select adm.AdmissionStatus).FirstOrDefault() == null ? false : true
+                    RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
+                    IEnumerable<RbacPermission> validPermissionList = RBAC.GetUserAllPermissions(currentUser.UserId).Where(x => x.ApplicationId == 9).AsEnumerable();
+                    RbacDbContext rbacDbContext = new RbacDbContext(connString);
 
-                                       }).OrderByDescending(p => p.PatientId).Take(200).ToList<object>();
-                        responseData.Results = allPats;
-                    }
-                    else
-                    {
-                        var allPats = (from pat in patDbContext.Patients.Include("Visits")
-                                       join country in patDbContext.CountrySubdivisions
-                                       on pat.CountrySubDivisionId equals country.CountrySubDivisionId
-                                       where pat.IsActive == true && pat.IsActive == true && ((pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName + " " + pat.Address + " " + pat.PhoneNumber + " " + pat.Address + pat.FirstName + " " + pat.Address + pat.PatientCode).Contains(search))
-                                       select new
-                                       {
-                                           PatientId = pat.PatientId,
-                                           PatientCode = pat.PatientCode,
-                                           ShortName = pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName,
-                                           FirstName = pat.FirstName,
-                                           LastName = pat.LastName,
-                                           MiddleName = pat.MiddleName,
-                                           Age = pat.Age,
-                                           Gender = pat.Gender,
-                                           PhoneNumber = pat.PhoneNumber,
-                                           DateOfBirth = pat.DateOfBirth,
-                                           Address = pat.Address,
-                                           IsOutdoorPat = pat.IsOutdoorPat,
-                                           CreatedOn = pat.CreatedOn,//for issued-date:healthcard-anish
-                                           CountryId = pat.CountryId,
-                                           CountrySubDivisionId = pat.CountrySubDivisionId,
-                                           CountrySubDivisionName = country.CountrySubDivisionName,
-                                           pat.MembershipTypeId,
-                                           PANNumber = pat.PANNumber,
-                                           pat.BloodGroup,
-                                           ProviderId = (from visit in patDbContext.Visits
-                                                         where visit.PatientId == pat.PatientId
-                                                         select visit.ProviderId).FirstOrDefault(),//Ajay--> getting ProviderId for patient
-                                           IsAdmitted = (from adm in patDbContext.Admissions
-                                                         where adm.PatientId == pat.PatientId && adm.AdmissionStatus == "admitted"
-                                                         select adm.AdmissionStatus).FirstOrDefault() == null ? false : true
+                    var rolePermissionList = rbacDbContext.RolePermissionMaps.Where(x => x.IsActive == true && x.Permission.ApplicationId == 9).AsEnumerable();
 
-                                       }).OrderByDescending(p => p.PatientId).ToList<object>();
-                        responseData.Results = allPats;
+                    var BtnPermissnList = (from permissionrole in rbacDbContext.RolePermissionMaps
+                                           join permission in rbacDbContext.Permissions on permissionrole.PermissionId equals permission.PermissionId
+                                           where permission.ApplicationId == 9 && permissionrole.IsActive == true
+                                           select new
+                                           {
+                                               PermissionId = permission.PermissionId,
+                                               PermissionName = permission.PermissionName
+                                           }).ToList().AsEnumerable();
+
+                    string admitBtn = "";
+                    foreach (var item in BtnPermissnList)
+                    {
+
+                        if (item.PermissionName == "admit-button")
+                        {
+                            admitBtn = "admit-button";
+                        }
+                    };
+                    CoreDbContext coreDbContext = new CoreDbContext(connString);
+                    search = search == null ? string.Empty : search.ToLower();
+
+                    int minTimeBeforeCancel = 15;
+                    var timeFrmParam = (from param in coreDbContext.Parameters
+                                        where param.ParameterName == "MinutesBeforeAutoCancelOfReservedBed"
+                                        && param.ParameterGroupName.ToLower() == "adt"
+                                        select param.ParameterValue).FirstOrDefault();
+
+                    if (!String.IsNullOrEmpty(timeFrmParam))
+                    { minTimeBeforeCancel = Int32.Parse(timeFrmParam); }
+
+                    DateTime currentDateTime = System.DateTime.Now;
+                    DateTime bufferTime = currentDateTime.AddMinutes(minTimeBeforeCancel);
+
+                    var allPats = (from pat in patDbContext.Patients.Include("Visits")
+                                   join cnty in patDbContext.Countries on pat.CountryId equals cnty.CountryId
+                                   join country in patDbContext.CountrySubdivisions
+                                   on pat.CountrySubDivisionId equals country.CountrySubDivisionId
+                                   where pat.IsActive == true && pat.IsActive == true && ((pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName + " " + pat.Address + " " + pat.PhoneNumber + " " + pat.Address + pat.FirstName + " " + pat.Address + pat.PatientCode).Contains(search))
+                                   select new
+                                   {
+                                       PatientId = pat.PatientId,
+                                       PatientCode = pat.PatientCode,
+                                       ShortName = pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName,
+                                       FirstName = pat.FirstName,
+                                       LastName = pat.LastName,
+                                       MiddleName = pat.MiddleName,
+                                       Age = pat.Age,
+                                       Gender = pat.Gender,
+                                       PhoneNumber = pat.PhoneNumber,
+                                       DateOfBirth = pat.DateOfBirth,
+                                       Address = pat.Address,
+                                       IsOutdoorPat = pat.IsOutdoorPat,
+                                       CreatedOn = pat.CreatedOn,//for issued-date:healthcard-anish
+                                       CountryId = pat.CountryId,
+                                       CountryName = cnty.CountryName,
+                                       CountrySubDivisionId = pat.CountrySubDivisionId,
+                                       CountrySubDivisionName = country.CountrySubDivisionName,
+                                       pat.MembershipTypeId,
+                                       PANNumber = pat.PANNumber,
+                                       pat.BloodGroup,
+                                       VisitDate = (pat.Visits.Count != 0) ? pat.Visits.OrderByDescending(a => a.VisitDate).FirstOrDefault().VisitDate.ToString() : "",
+                                       ProviderId = (from visit in patDbContext.Visits
+                                                     where visit.PatientId == pat.PatientId
+                                                     select visit.ProviderId).FirstOrDefault(),//Ajay--> getting ProviderId for patient
+                                       IsAdmitted = (from adm in patDbContext.Admissions
+                                                     where adm.PatientId == pat.PatientId && adm.AdmissionStatus == "admitted"
+                                                     select adm.AdmissionStatus).FirstOrDefault() == null ? false : true,
+                                       AdmitButton = admitBtn,
+                                       VisitType = (from vis in patDbContext.Visits
+                                                    where vis.PatientId == pat.PatientId && vis.VisitStatus != "cancel"
+                                                    select new
+                                                    {
+                                                        VisitType = vis.VisitType,
+                                                        PatVisitId = vis.PatientVisitId
+                                                    }).OrderByDescending(a => a.PatVisitId).Select(b=>b.VisitType).FirstOrDefault(),
+                                       BedReserved = (from bres in patDbContext.BedReservation
+                                                      where bres.PatientId == pat.PatientId && bres.IsActive == true
+                                                      && bres.AdmissionStartsOn > bufferTime
+                                                      select bres.ReservedBedInfoId).FirstOrDefault() > 0 ? true : false,
+                                       IsPoliceCase = (from vis in patDbContext.Visits where vis.PatientId == pat.PatientId
+                                                       join er in patDbContext.EmergencyPatient on vis.PatientVisitId equals er.PatientVisitId into policecase
+                                                       from polcase in policecase.DefaultIfEmpty()
+                                                       select new
+                                                       {
+                                                           VisitDate = vis.VisitDate,
+                                                           PatientVisitId = vis.PatientVisitId,
+                                                           IsPoliceCase = polcase.IsPoliceCase.HasValue ? polcase.IsPoliceCase : false
+                                                       }).OrderByDescending(a => a.VisitDate).Select(b => b.IsPoliceCase).FirstOrDefault(),
+
+                                       WardBedInfo = (from adttxn in patDbContext.PatientBedInfos where adttxn.PatientId == pat.PatientId
+                                                       join vis in patDbContext.Visits on adttxn.StartedOn equals vis.CreatedOn 
+                                                       join bed in patDbContext.Beds on adttxn.BedId equals bed.BedId
+                                                       join ward in patDbContext.Wards on adttxn.WardId equals ward.WardId
+                                                       select new { 
+                                                            WardName = ward.WardName,
+                                                            BedCode = bed.BedCode,
+                                                            Date = adttxn.StartedOn
+                                                       }).OrderByDescending(a => a.Date).FirstOrDefault()
+                                   }).OrderByDescending(p => p.PatientId).AsQueryable();
+
+
+                    if (CommonFunctions.GetCoreParameterBoolValue(coreDbContext, "Common", "ServerSideSearchComponent", "PatientSearchPatient") == true && search == "")
+                    {
+                        allPats = allPats.Take(CommonFunctions.GetCoreParameterIntValue(coreDbContext, "Common", "ServerSideSearchListLength"));
                     }
+                    var finalResults = allPats.ToList();
+                    responseData.Results = finalResults;
+
+
+                    //if (string.IsNullOrEmpty(search))
+                    //{
+                    //    var allPats = (from pat in patDbContext.Patients.Include("Visits")
+                    //                   join country in patDbContext.CountrySubdivisions
+                    //                   on pat.CountrySubDivisionId equals country.CountrySubDivisionId
+                    //                   where pat.IsActive == true
+                    //                   select new
+                    //                   {
+                    //                       PatientId = pat.PatientId,
+                    //                       PatientCode = pat.PatientCode,
+                    //                       ShortName = pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName,
+                    //                       FirstName = pat.FirstName,
+                    //                       LastName = pat.LastName,
+                    //                       MiddleName = pat.MiddleName,
+                    //                       Age = pat.Age,
+                    //                       Gender = pat.Gender,
+                    //                       PhoneNumber = pat.PhoneNumber,
+                    //                       DateOfBirth = pat.DateOfBirth,
+                    //                       Address = pat.Address,
+                    //                       IsOutdoorPat = pat.IsOutdoorPat,
+                    //                       CreatedOn = pat.CreatedOn,//for issued-date:healthcard-anish
+                    //                       CountryId = pat.CountryId,
+                    //                       CountrySubDivisionId = pat.CountrySubDivisionId,
+                    //                       CountrySubDivisionName = country.CountrySubDivisionName,
+                    //                       pat.MembershipTypeId,
+                    //                       PANNumber = pat.PANNumber,
+                    //                       pat.BloodGroup,
+                    //                       //ProviderId = (from visit in patDbContext.Visits
+                    //                       //              where visit.PatientId == pat.PatientId
+                    //                       //              select visit.ProviderId).FirstOrDefault(),//Ajay--> getting ProviderId for patient
+                    //                       ProviderId = pat.Visits.Select(v => v.ProviderId).FirstOrDefault(),
+                    //                       IsAdmitted = (from adm in patDbContext.Admissions
+                    //                                     where adm.PatientId == pat.PatientId && adm.AdmissionStatus == "admitted"
+                    //                                     select adm.AdmissionStatus).FirstOrDefault() == null ? false : true
+
+                    //                   }).OrderByDescending(p => p.PatientId).Take(200).ToList<object>();
+                    //    responseData.Results = allPats;
+                    //}
+                    //else
+                    //{
+                    //    var allPats = (from pat in patDbContext.Patients.Include("Visits")
+                    //                   join country in patDbContext.CountrySubdivisions
+                    //                   on pat.CountrySubDivisionId equals country.CountrySubDivisionId
+                    //                   where pat.IsActive == true && pat.IsActive == true && ((pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName + " " + pat.Address + " " + pat.PhoneNumber + " " + pat.Address + pat.FirstName + " " + pat.Address + pat.PatientCode).Contains(search))
+                    //                   select new
+                    //                   {
+                    //                       PatientId = pat.PatientId,
+                    //                       PatientCode = pat.PatientCode,
+                    //                       ShortName = pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName,
+                    //                       FirstName = pat.FirstName,
+                    //                       LastName = pat.LastName,
+                    //                       MiddleName = pat.MiddleName,
+                    //                       Age = pat.Age,
+                    //                       Gender = pat.Gender,
+                    //                       PhoneNumber = pat.PhoneNumber,
+                    //                       DateOfBirth = pat.DateOfBirth,
+                    //                       Address = pat.Address,
+                    //                       IsOutdoorPat = pat.IsOutdoorPat,
+                    //                       CreatedOn = pat.CreatedOn,//for issued-date:healthcard-anish
+                    //                       CountryId = pat.CountryId,
+                    //                       CountrySubDivisionId = pat.CountrySubDivisionId,
+                    //                       CountrySubDivisionName = country.CountrySubDivisionName,
+                    //                       pat.MembershipTypeId,
+                    //                       PANNumber = pat.PANNumber,
+                    //                       pat.BloodGroup,
+                    //                       ProviderId = (from visit in patDbContext.Visits
+                    //                                     where visit.PatientId == pat.PatientId
+                    //                                     select visit.ProviderId).FirstOrDefault(),//Ajay--> getting ProviderId for patient
+                    //                       IsAdmitted = (from adm in patDbContext.Admissions
+                    //                                     where adm.PatientId == pat.PatientId && adm.AdmissionStatus == "admitted"
+                    //                                     select adm.AdmissionStatus).FirstOrDefault() == null ? false : true
+
+                    //                   }).OrderByDescending(p => p.PatientId).ToList<object>();
+                    //    responseData.Results = allPats;
+                    //}
 
                 }
                 else//this is default call.. 
                 {
                     var allPats = (from pat in patDbContext.Patients.Include("Visits")
+                                   join cnty in patDbContext.Countries on pat.CountryId equals cnty.CountryId
                                    join country in patDbContext.CountrySubdivisions
                                    on pat.CountrySubDivisionId equals country.CountrySubDivisionId
                                    where pat.IsActive == true
@@ -669,6 +886,7 @@ namespace DanpheEMR.Controllers
                                        IsOutdoorPat = pat.IsOutdoorPat,
                                        CreatedOn = pat.CreatedOn,//for issued-date:healthcard-anish
                                        CountryId = pat.CountryId,
+                                       CountryName = cnty.CountryName,
                                        CountrySubDivisionId = pat.CountrySubDivisionId,
                                        CountrySubDivisionName = country.CountrySubDivisionName,
                                        pat.MembershipTypeId,
@@ -704,6 +922,7 @@ namespace DanpheEMR.Controllers
             try
             {
                 PatientDbContext patDbContext = new PatientDbContext(connString);
+                patDbContext = this.AddAuditField(patDbContext);
 
                 string reqType = this.ReadQueryStringData("reqType");
                 if (reqType == "patient")
@@ -818,7 +1037,7 @@ namespace DanpheEMR.Controllers
                                         currentfileName = patFileData.FileName + '_' + currentFileNo + currentFileExtention;
 
                                         var tempModel = new PatientFilesModel();
-                                        tempModel.FileBinaryData = fileBytes;
+                                        //tempModel.FileBinaryData = fileBytes;
                                         tempModel.PatientId = patFileData.PatientId;
                                         tempModel.ROWGUID = Guid.NewGuid();
                                         tempModel.FileType = patFileData.FileType;
@@ -1005,6 +1224,8 @@ namespace DanpheEMR.Controllers
             RbacUser currentSessionUser = HttpContext.Session.Get<RbacUser>("currentuser");
             try
             {
+                PatientDbContext patDbContext = new PatientDbContext(connString);
+                patDbContext = this.AddAuditField(patDbContext);
 
                 if (reqType == "update-gov-insurance-patient")
                 {
@@ -1013,7 +1234,6 @@ namespace DanpheEMR.Controllers
 
                     if (insPatObjFromClient != null && insPatObjFromClient.PatientId != 0)
                     {
-                        PatientDbContext patDbContext = new PatientDbContext(connString);
                         PatientModel patFromDb = patDbContext.Patients.Include("Insurances")
                             .Where(p => p.PatientId == insPatObjFromClient.PatientId).FirstOrDefault();
                         //if insurance info is not found then add new, else update that.
@@ -1057,7 +1277,6 @@ namespace DanpheEMR.Controllers
                     string str = this.ReadPostData();
 
                     PatientModel objFromClient = JsonConvert.DeserializeObject<PatientModel>(str);
-                    PatientDbContext dbContext = new PatientDbContext(connString);
                     // map all the entities we want to update.
                     // OwnedCollection for list, OwnedEntity for one-one navigational property
                     // test it thoroughly, also with sql-profiler on how it generates the code
@@ -1068,18 +1287,18 @@ namespace DanpheEMR.Controllers
                         objFromClient.ModifiedOn = DateTime.Now;
                     }
 
-                    objFromClient = dbContext.UpdateGraph(objFromClient,
+                    objFromClient = patDbContext.UpdateGraph(objFromClient,
                         map => map.OwnedCollection(a => a.Addresses)
                         .OwnedCollection(a => a.KinEmergencyContacts)
                         .OwnedCollection(a => a.Insurances)
                         .OwnedEntity(a => a.Guarantor));
 
                     //exclude those properties which we don't want graphdiff to update/modify.. 
-                    dbContext.Entry(objFromClient).Property(u => u.CreatedBy).IsModified = false;
-                    dbContext.Entry(objFromClient).Property(u => u.CreatedOn).IsModified = false;
-                    dbContext.Entry(objFromClient).Property(u => u.PatientCode).IsModified = false;
-                    dbContext.Entry(objFromClient).Property(u => u.PatientNo).IsModified = false;//sud: 15Aug'18
-                    dbContext.SaveChanges();
+                    patDbContext.Entry(objFromClient).Property(u => u.CreatedBy).IsModified = false;
+                    patDbContext.Entry(objFromClient).Property(u => u.CreatedOn).IsModified = false;
+                    patDbContext.Entry(objFromClient).Property(u => u.PatientCode).IsModified = false;
+                    patDbContext.Entry(objFromClient).Property(u => u.PatientNo).IsModified = false;//sud: 15Aug'18
+                    patDbContext.SaveChanges();
                 }
                 responseData.Status = "OK";
                 responseData.Results = "Patient information updated successfully.";
@@ -1121,21 +1340,19 @@ namespace DanpheEMR.Controllers
             {
                 string base64String = ipFileInfo.FileBase64String;
                 byte[] imageData = Convert.FromBase64String(base64String);
-                var existingFileCount = (from dbFile in patDbContext.PatientFiles
-
-                                         where dbFile.PatientId == ipFileInfo.PatientId && dbFile.FileType == ipFileInfo.FileType
-                                         select dbFile
-                                             ).Count();
-
-                ///this is Current Insrting File MaX Number
-                var currentFileNo = (existingFileCount + 1);
+                var location = (from dbc in patDbContext.CFGParameters
+                                where dbc.ParameterGroupName.ToLower() == "patient" && dbc.ParameterName == "PatientProfilePicImageUploadLocation"
+                                select dbc.ParameterValue
+                                ).FirstOrDefault();
                 string currentfileName = "";
-                // this is Latest File NAme with FileNo in the Last Binding
-                currentfileName = ipFileInfo.FileName + '_' + currentFileNo + ".jpg";
+                // this is Latest File NAme with FileNo in the Last Binding                
+                currentfileName = patientId.ToString() + '-' + System.DateTime.Now.ToString().Replace(" ", "").Replace("/", "").Replace(":", "-") + "-pp" + ".jpg";
+                var fullPath = location + currentfileName;
+                byte[] imageBytes = Convert.FromBase64String(ipFileInfo.FileBase64String);
 
                 PatientFilesModel tempModel = new PatientFilesModel();
-                // tempModel.FileBinaryData = fileBytes;
-                tempModel.FileBinaryData = imageData;
+                //tempModel.FileBinaryData = fileBytes;
+                //tempModel.FileBinaryData = imageData;
                 tempModel.PatientId = patientId;
                 tempModel.ROWGUID = Guid.NewGuid();
                 tempModel.FileType = ipFileInfo.FileType;
@@ -1143,14 +1360,16 @@ namespace DanpheEMR.Controllers
                 tempModel.UploadedOn = DateTime.Now;
                 tempModel.Description = ipFileInfo.Description;
                 tempModel.FileName = currentfileName;
-                tempModel.FileNo = currentFileNo;
                 tempModel.Title = ipFileInfo.Title;
                 tempModel.FileExtention = ".jpg";
                 tempModel.IsActive = true;
                 patDbContext.PatientFiles.Add(tempModel);
                 patDbContext.SaveChanges();
 
-                tempModel.FileBase64String = Convert.ToBase64String(tempModel.FileBinaryData);
+                tempModel.FileBase64String = Convert.ToBase64String(imageBytes);
+
+
+                System.IO.File.WriteAllBytes(@fullPath, imageBytes);
 
 
                 returnModel = tempModel;

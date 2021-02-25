@@ -1,0 +1,84 @@
+<style>
+  .thBoder {
+    border: double;
+  }
+</style>
+
+<div class="popup-static portlet box portlet-fullscreen inv_modal danphe-refer-visit">
+  <div class="portlet-body form">
+    <!--*ngIf="showEditDoctorPage"-->
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        <div class="modelbox-div clearfix">
+          <a class="btn btn-danger history-del-btn" style="float: right" (click)="Close()">X</a>
+          <div class="form-body">
+            <table class="table table-striped table-bordered table-hover">
+              <tr>
+                <th sortable-header><b>Transaction Date:</b></th>
+                <th sortable-header>
+                  <date-lbl [value]="SelectedItem.Date" [show-time]="true"></date-lbl>
+                  <!-- {{SelectedItem.Date}} AD ( {{ SelectedItem.Date | nepaliDate:'format':'YYYY-MM-DD'}} BS) -->
+                </th>
+              </tr>
+              <tr>
+                <th sortable-header><b>Patient Name:</b></th>
+                <th sortable-header>{{SelectedItem.PatientName}}({{SelectedItem.PatientCode}})</th>
+              </tr>
+            </table>
+            <table class="table table-striped table-bordered table-hover" style="border: solid;">
+              <tr style="background-color: lightgrey;">
+                <!--<th sortable-header><b>Transaction Date</b></th>-->
+                <th class="thBoder">Department</th>
+                <th class="thBoder">ItemName</th>
+                <th class="thBoder">Reporting Doctor(Radiologist)</th>
+                <th class="thBoder">Referred By  Dr. </th>
+              </tr>
+              <tr>
+                <!--<th>{{SelectedItem.Date}}</th>-->
+                <th class="thBoder">{{SelectedItem.ServiceDepartmentName}}</th>
+                <th class="thBoder">{{SelectedItem.ItemName}}</th>
+                <th class="thBoder">{{SelectedItem.ProviderName}}</th>
+                <th class="thBoder">{{SelectedItem.ReferredByName ? SelectedItem.ReferredByName : 'SELF'}} <a (click)="showReferrer()">Change?</a></th>
+              </tr>
+            </table>
+            <table class="table table-striped table-bordered table-hover">
+              <tr class="mg">
+                <td> Reporting Doctor(Radiologist) : </td>
+                <td>
+                  <div style="width:200px;">
+                    <input danphe-auto-complete  class="search-textbox"
+                           [(ngModel)]="newProvider"
+                           [list-formatter]="ProviderListFormatter"
+                           [source]="providerList"
+                           placeholder="Search Doctor Name"
+                           display-property-name="EmployeeName"
+                           value-property-name=null
+                           onclick="this.select()"
+                           max-num-list="10" />
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="showRef">
+                <td> Change Referred By Doctor: </td>
+                <td>
+                  <div  style="width:200px;">
+                    <input danphe-auto-complete class="search-textbox"
+                           [(ngModel)]="newReferrer"
+                           [list-formatter]="ProviderListFormatter"
+                           [source]="providerList"
+                           placeholder="Search Doctor Name"
+                           display-property-name="EmployeeName"
+                           value-property-name=null
+                           onclick="this.select()"
+                           max-num-list="10" />
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </div>
+          <div class="panel-footer"><input type="button" class="btn btn-danger" value="Update" (click)="UpdateProviderAndReferer()" /></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

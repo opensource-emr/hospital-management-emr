@@ -1,12 +1,8 @@
-﻿
-import { Component, ChangeDetectorRef } from "@angular/core";
-
+﻿import { Component, ChangeDetectorRef } from "@angular/core";
 import { UnitOfMeasurementModel } from '../shared/unit-of-measurement.model';
 import { InventorySettingBLService } from "../shared/inventory-settings.bl.service";
-
 import GridColumnSettings from '../../../shared/danphe-grid/grid-column-settings.constant';
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
-
 import * as moment from 'moment/moment';
 //testing
 @Component({
@@ -63,9 +59,17 @@ export class UnitOfMeasurementListComponent {
     }
 
     CallBackAdd($event) {
-        this.unitofmeasurementList.push($event.unitofmeasurement);
-        if (this.index!=null)
-            this.unitofmeasurementList.splice(this.index, 1);
+        if ($event != null) {
+            //find the index of currently added/updated unitofmeasurement in the list of all items (grid)
+            let index = this.unitofmeasurementList.findIndex(a => a.UOMId == $event.unitofmeasurement.UOMId);
+            //index will be -1 when this unitofmeasurement is currently added. 
+            if (index < 0) {
+                this.unitofmeasurementList.splice(0, 0, $event.unitofmeasurement);//this will add this unitofmeasurement to 0th index.
+            }
+            else {
+                this.unitofmeasurementList.splice(index, 1, $event.unitofmeasurement);//this will replace one unitofmeasurement at particular index. 
+            }
+        }
         this.unitofmeasurementList = this.unitofmeasurementList.slice();
         this.changeDetector.detectChanges();
         this.showAddPage = false;

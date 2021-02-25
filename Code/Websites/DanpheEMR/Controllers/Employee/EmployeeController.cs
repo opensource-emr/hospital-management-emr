@@ -70,35 +70,42 @@ namespace DanpheEMR.Controllers
                     responseData.Status = "OK";
                 }
 
+                else if (reqType == "get-active-employees-info")
+                {
+                    //created: sud:30Apr'20-- for reusability in various modules.. it needs only basic information of employees..
+                    MasterDbContext masterDbContext = new MasterDbContext(connString);
+                  
+                    var employeeList = (from e in masterDbContext.Employees.Include("Department").Include("EmployeeRole").Include("EmployeeType")
+                                        where e.IsExternal == false && e.IsActive == true
+                                        select new
+                                        {
+                                            EmployeeId = e.EmployeeId,
+                                            Salutation = e.Salutation,
+                                            FirstName = e.FirstName,
+                                            MiddleName = e.MiddleName,
+                                            LastName = e.LastName,
+                                            FullName = e.FullName,
+                                            ContactNumber = e.ContactNumber,
+                                            Gender = e.Gender,
+                                            DepartmentId = e.DepartmentId,
+                                            DepartmentName = e.Department != null ? e.Department.DepartmentName : null,
+                                            EmployeeRoleId = e.EmployeeRoleId,
+                                            EmployeeRoleName = e.EmployeeRole != null ? e.EmployeeRole.EmployeeRoleName : null,
+                                            EmployeeTypeId = e.EmployeeTypeId,
+                                            EmployeeTypeName = e.EmployeeType != null ? e.EmployeeType.EmployeeTypeName : null,
+                                            IsAppointmentApplicable = e.IsAppointmentApplicable,
+                                            DisplaySequence = e.DisplaySequence
+                                        }).OrderBy(e => e.EmployeeId).ToList();
 
+                    responseData.Status = "OK";
+                    responseData.Results = employeeList;
+                }
                 else
                 {
                     responseData.Status = "Failed";
                     responseData.ErrorMessage = "Invalid request type.";
                 }
-                //else
-                //{
 
-                //    RbacDbContext rbacDbContext = new RbacDbContext(connString);
-                //    MasterDbContext masterDbContext = new MasterDbContext(connString);
-
-                //    RbacUser currUser = rbacDbContext.Users.Where(u => u.UserId == empId).FirstOrDefault();
-                //    var UserProfileInfo = (from x in masterDbContext.Employee
-                //                           where x.EmployeeId == currUser.EmployeeId
-                //                           select new
-                //                           {
-                //                               UserName = currUser.UserName,
-                //                               FirstName = x.FirstName,
-                //                               LastName = x.LastName,
-                //                               Email = x.Email,
-                //                               Department = x.EmployeeDepartment,
-                //                               EmployeeId = x.EmployeeId,
-                //                               ImageName = x.ImageName
-                //                           }).ToList();
-
-                //    responseData.Results = UserProfileInfo;
-                //    responseData.Status = "OK";
-                //}
             }
             catch (Exception ex)
             {
@@ -131,7 +138,7 @@ namespace DanpheEMR.Controllers
                 {
                     RbacDbContext rbacdbContext = new RbacDbContext(connString);
                     RbacUser user = DanpheJSONConvert.DeserializeObject<RbacUser>(str);
-                    if(user != null)
+                    if (user != null)
                     {
                         var currUser = rbacdbContext.Users.Where(a => a.UserId == user.UserId).Select(a => a).FirstOrDefault();
                         currUser.LandingPageRouteId = user.LandingPageRouteId;

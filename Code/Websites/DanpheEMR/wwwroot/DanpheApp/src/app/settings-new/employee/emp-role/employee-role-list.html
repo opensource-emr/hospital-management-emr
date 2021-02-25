@@ -1,0 +1,21 @@
+
+
+<!--<div class="caption">
+    <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
+    <span class="caption-subject font-blue bold uppercase">Manage Employee Roles</span>
+</div>
+<br />-->
+
+<a feature="button" class="btn blue bordered" (click)="AddEmployeeRole()"><i class="fa fa-plus"></i>Add Role</a>
+<employee-role-add [showAddPage]="showAddPage"
+                   [selectedItem]="selectedItem"
+                   (callback-add)="CallBackAdd($event)"></employee-role-add>
+
+<div *ngIf="showGrid" class="row">
+    <div class="col-md-8 col-xs-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="employeeRoleGridColumns" [grid-data]="employeeRoleList" (grid-actions)="EmployeeRoleGridActions($event)"
+                     [show-print-button]="false">
+        </danphe-grid>
+    </div>
+</div>
+

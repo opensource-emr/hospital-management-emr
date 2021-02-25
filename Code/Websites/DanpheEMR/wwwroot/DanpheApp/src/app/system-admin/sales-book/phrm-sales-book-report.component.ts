@@ -29,7 +29,7 @@ export class PHRMSalesBookComponent
     public sumExportSales: number = 0;
 
     public displayReport: boolean = false;
-
+    public headerDetail: { CustomerName, Address, Email, CustomerRegLabel,CustomerRegNo,Tel};
     public curtSalesBookDetail: Array<PhrmInvoiceDetailsModel> = new Array<PhrmInvoiceDetailsModel>();
     public systemAdminBLService: SystemAdminBLService = null;
     constructor(_systemAdminBLService: SystemAdminBLService, public msgBoxServ: MessageboxService
@@ -38,6 +38,7 @@ export class PHRMSalesBookComponent
         this.fromDate = moment().format('YYYY-MM-DD');
         this.toDate = moment().format('YYYY-MM-DD');
         this.LoadCalendarTypes();
+        this.GetBillingHeaderParameter();
     }
     LoadCalendarTypes() {
         let Parameter = this.coreservice.Parameters;
@@ -110,5 +111,12 @@ export class PHRMSalesBookComponent
         popupWinindow.document.open();
         popupWinindow.document.write('<html><head><link rel="stylesheet" type="text/css" href="../../themes/theme-default/DanpheStyle.css" /></head><body onload="window.print()">' + printContents + '</body></html>');
         popupWinindow.document.close();
+    }
+    GetBillingHeaderParameter() {
+        var paramValue = this.coreservice.Parameters.find(a => a.ParameterName == 'BillingHeader').ParameterValue;
+        if (paramValue)
+            this.headerDetail = JSON.parse(paramValue);
+        else
+            this.msgBoxServ.showMessage("error", ["Please enter parameter values for BillingHeader"]);
     }
 }

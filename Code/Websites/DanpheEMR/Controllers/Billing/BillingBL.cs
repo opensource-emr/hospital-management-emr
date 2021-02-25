@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using DanpheEMR.Core.Caching;
 using DanpheEMR.ServerModel;
 using DanpheEMR.DalLayer;
-//using DanpheEMR.Sync.IRDNepal.Models;
+using DanpheEMR.Sync.IRDNepal.Models;
 using Newtonsoft.Json;
 using System.Configuration;
 using System.Data.Entity;
@@ -89,7 +89,88 @@ namespace DanpheEMR.Controllers.Billing
             return receiptNo + 1;
         }
 
-     
+        public static void SyncBillToRemoteServer(object billToPost, string billType, BillingDbContext dbContext)
+        {
+            IRDLogModel irdLog = new IRDLogModel();
+            if (billType == "sales")
+            {
+
+                string responseMsg = null;
+                BillingTransactionModel billTxn = (BillingTransactionModel)billToPost;
+                try
+                {
+                    IRD_BillViewModel bill = IRD_BillViewModel.GetMappedSalesBillForIRD(billTxn, true);
+                    irdLog.JsonData = JsonConvert.SerializeObject(bill);
+                    responseMsg = DanpheEMR.Sync.IRDNepal.APIs.PostSalesBillToIRD(bill);
+                }
+                catch (Exception ex)
+                {
+                    responseMsg = "0";
+                    irdLog.ErrorMessage = GetInnerMostException(ex);
+                    irdLog.Status = "failed";
+                }
+
+                dbContext.BillingTransactions.Attach(billTxn);
+                if (responseMsg == "200")
+                {
+                    billTxn.IsRealtime = true;
+                    billTxn.IsRemoteSynced = true;
+                    irdLog.Status = "success";
+                }
+                else
+                {
+                    billTxn.IsRealtime = false;
+                    billTxn.IsRemoteSynced = false;
+                    irdLog.Status = "failed";
+                }
+
+                dbContext.Entry(billTxn).Property(x => x.IsRealtime).IsModified = true;
+                dbContext.Entry(billTxn).Property(x => x.IsRemoteSynced).IsModified = true;
+                dbContext.SaveChanges();
+
+                irdLog.BillType = "billing-" + billType;
+                irdLog.ResponseMessage = responseMsg;
+                PostIRDLog(irdLog, dbContext);
+            }
+            else if (billType == "sales-return")
+            {
+                BillInvoiceReturnModel billRet = (BillInvoiceReturnModel)billToPost;
+
+                string responseMsg = null;
+                try
+                {
+                    IRD_BillReturnViewModel salesRetBill = IRD_BillReturnViewModel.GetMappedSalesReturnBillForIRD(billRet, true);
+                    irdLog.JsonData = JsonConvert.SerializeObject(salesRetBill);
+                    responseMsg = DanpheEMR.Sync.IRDNepal.APIs.PostSalesReturnBillToIRD(salesRetBill);
+                }
+                catch (Exception ex)
+                {
+                    responseMsg = "0";
+                    irdLog.ErrorMessage = GetInnerMostException(ex);
+                    irdLog.Status = "failed";
+                }
+
+                dbContext.BillReturns.Attach(billRet);
+                if (responseMsg == "200")
+                {
+                    billRet.IsRealtime = true;
+                    billRet.IsRemoteSynced = true;
+                }
+                else
+                {
+                    billRet.IsRealtime = false;
+                    billRet.IsRemoteSynced = false;
+                    irdLog.Status = "failed";
+                }
+
+                dbContext.Entry(billRet).Property(x => x.IsRealtime).IsModified = true;
+                dbContext.Entry(billRet).Property(x => x.IsRemoteSynced).IsModified = true;
+                dbContext.SaveChanges();
+                irdLog.BillType = "billing-" + billType;
+                irdLog.ResponseMessage = responseMsg;
+                PostIRDLog(irdLog, dbContext);
+            }
+        }
         //this function post IRD posting log details to Danphe IRD_Log table
         public static void PostIRDLog(IRDLogModel irdLogdata, BillingDbContext dbContext)
         {

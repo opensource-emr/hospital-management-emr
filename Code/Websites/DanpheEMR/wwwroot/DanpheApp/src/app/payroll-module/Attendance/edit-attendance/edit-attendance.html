@@ -1,0 +1,35 @@
+<style>
+    .mat-dialog-content {
+        overflow: hidden;
+    }
+
+    .btn-dialog {
+        padding: 3px 10px;
+        font-size: 11px;
+    }
+
+    .btn-dialog.blue:not(.btn-outline) {
+        color: #FFF;
+        background-color: #3598dc;
+        border-color: #3598dc;
+    }
+
+    .btn-dialog.red:not(.btn-outline) {
+        color: #FFF;
+        background-color: #c51b26;
+        border-color: #a1161f;
+    }
+</style>
+<div mat-dialog-content>
+    <h4><b>Now: {{Status}}</b></h4><br />
+    <mat-radio-group aria-label="Select an option" [(ngModel)]="Attendance.AttStatus" >
+        <mat-radio-button  value="A">Absent</mat-radio-button><br />
+        <mat-radio-button  value="P">Present</mat-radio-button><br />
+        <mat-radio-button  value="HL">Half Day Leave</mat-radio-button><br />
+        <mat-radio-button  value="OFF">Off</mat-radio-button><br />
+    </mat-radio-group>
+</div>
+<div mat-dialog-actions>
+    <button class="blue btn-dialog" (click)="Save()">Save</button>&nbsp;
+    <button class="red btn-dialog" (click)="Close()" >Close</button>
+</div>

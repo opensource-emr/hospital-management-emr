@@ -1,0 +1,74 @@
+<div class="text-center">
+  <div class="tr-container" *ngIf="loading">
+    <div class="tr-box--container">
+      <div class="tr-box tr-box--1">
+        <div class="tr-circle tr-circle--1"></div>
+      </div>
+      <div class="tr-box tr-box--2">
+        <div class="tr-circle tr-circle--2"></div>
+      </div>
+    </div>
+  </div>
+  <div *ngIf="requisitionVM">
+    <!--<div class="rq-info">
+      <div class="col-md-12 rq-head"><h3>Requisition Id: {{RequisitionId}}</h3></div>
+      <div class="rq-body">
+        <div class="col-md-4">Requested By: <b>{{requisitionVM.CreatedBy}}</b></div>
+        <div class="col-md-4">Requesting Store: <b>{{requisitionVM.StoreName}}</b></div>
+        <div class="col-md-4">Status:<b>{{requisitionVM.Status}}</b></div>
+        <div class="col-md-4">Expected Date:<b>{{requisitionVM.ExpectedDate | date}}</b></div>
+        <div class="col-md-4">Verification Level:<b>{{requisitionVM.MaxVerificationLevel}}</b></div>
+      </div>
+    </div>-->
+    <div class="rq-container">
+      <ul class="rq-progress">
+        <li class="active">
+          <span id="VerifiersToolTip" class="tooltip">
+            <span> </span>
+            <p class="tooltiptext ttptextdown no-print">
+              By: {{requisitionVM.CreatedBy}}<br />
+              On: {{requisitionVM.RequisitionDate | date : 'medium'}}
+            </p>
+          </span>
+          <label>Requested</label>
+        </li>
+        <li [ngClass]="{'active':verifier.VerifiedBy != null}"
+          *ngFor="let verifier of requisitionVM.Verifiers; let i=index;">
+          <span id="VerifiersToolTip" class="tooltip">
+            <span> </span>
+            <p *ngIf="verifier.VerifiedBy != null" class="tooltiptext ttptextdown no-print">Status:
+              {{verifier.VerificationStatus}}<br />
+              By: {{verifier.VerifiedBy.FullName}}<br />
+              On: {{verifier.VerifiedOn | date:'medium'}}<br />
+              <em *ngIf="!!verifier.VerificationRemarks">Remarks: {{verifier.VerificationRemarks}}</em>
+            </p>
+            <p *ngIf="verifier.VerifiedBy == null" class="tooltiptext ttptextdown no-print">
+              VerificationStatus: pending
+            </p>
+          </span>
+          <label>Verified({{i+1}})</label>
+        </li>
+        <li [ngClass]="{'active':requisitionVM.Dispatchers.length > 0,'warning':showDispatchWarning}">
+          <span id="DispatchersToolTip" class="tooltip">
+            <span [ngClass]="{'dispatch':isDispatchAllowed}" (click)="DispatchDetail()"> </span>
+            <div *ngIf="requisitionVM.Dispatchers.length > 0" class="tooltiptext ttptextdown no-print">
+              <div *ngFor="let dispatcher of requisitionVM.Dispatchers;let i = index" style="padding-bottom:10px">
+                {{i+1}}. By: {{dispatcher.Name}}<br />
+                &nbsp;&nbsp;On: {{dispatcher.Date | date : 'medium'}}<br />
+                &nbsp;&nbsp;<em *ngIf="!!dispatcher.Remarks">Remarks: {{dispatcher.Remarks}}</em><br />
+              </div>
+            </div>
+            <p *ngIf="requisitionVM.Dispatchers.length == 0" class="tooltiptext ttptextdown no-print">
+              Status: Not Dispatched.
+            </p>
+          </span>
+          <label>Dispatched</label>
+        </li>
+        <li [ngClass]="{'active':requisitionVM.Dispatchers.length > 0 && requisitionVM.Dispatchers[0].isReceived == true,'warning':showDispatchWarning}">
+          <span></span>
+          <label>Received</label>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>

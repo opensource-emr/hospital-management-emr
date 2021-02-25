@@ -1,172 +1,181 @@
-﻿<div *ngIf="showAllergyAddBox && CurrentAllergy && CurrentAllergy.AllergyValidator">
+<style>
+  .icheck-inline > label {
+    margin-right: 15px;
+    margin-left: 0;
+  }
+
+  .control-label {
+    font-weight: 700;
+    margin-bottom: 10px;
+    padding-left: 0px;
+  }
+</style>
+<div *ngIf="showAllergyAddBox && CurrentAllergy && CurrentAllergy.AllergyValidator">
     <form [formGroup]="CurrentAllergy.AllergyValidator">
-        <div style="padding-left:0px;padding-right:0px;">
-            <div class="prob-entry" style="padding: 5px 0px 15px 0px; background: #006687;">
-                <div class="cstm-close" (click)="CloseAllergyAddBox()">
-                    <a><i class="fa fa-close"></i> </a>
-                </div>
-                <h3 class="cstm-add-heading">{{CurrentAllergy.PatientAllergyId ? 'Update' : 'Add' }} Allergy</h3>
+        <div class="prob-entry hm-form">
+            <div class="cstm-close" (click)="CloseAllergyAddBox()">
+                <a><i class="fa fa-close"></i> </a>
+            </div>
+            <h3 class="cstm-add-heading">{{CurrentAllergy.PatientAllergyId ? 'Update' : 'Add' }} Allergy</h3>
+            <div class="form-group cstm-form-group">
+                <div class="row">
+                    <label class="control-label cstm-control-label col-md-3">Type Of Allergy<sup
+                            class="color-red">*</sup><b>:</b></label>
+                    <div class="col-md-9">
+                        <div class="input-group">
+                            <div class="icheck-inline">
+                                <label class="mt-checkbox mt-checkbox-outline">
+                                    <input type="radio" name="AllergyType" value="Medication"
+                                        [(ngModel)]="CurrentAllergy.AllergyType" formControlName="AllergyType"
+                                        (change)="AllergyTypeOnChange()"><span class="white"></span>Medication
+                                </label>
+                                <label class="mt-checkbox mt-checkbox-outline">
+                                    <input type="radio" name="AllergyType" value="Non Medication"
+                                        [(ngModel)]="CurrentAllergy.AllergyType" formControlName="AllergyType"
+                                        (change)="AllergyTypeOnChange()"><span class="white"></span>Non Medication
+                                </label>
+                                <label class="mt-checkbox mt-checkbox-outline">
+                                    <input type="radio" name="AllergyType" value="Food"
+                                        [(ngModel)]="CurrentAllergy.AllergyType" formControlName="AllergyType"
+                                        (change)="AllergyTypeOnChange()"><span class="white"></span>Food
+                                </label>
+                                <label class="mt-checkbox mt-checkbox-outline">
+                                    <input type="radio" name="AllergyType" value="AdvRec"
+                                        [(ngModel)]="CurrentAllergy.AllergyType" formControlName="AllergyType"
+                                        (change)="AllergyTypeOnChange()"><span class="white"></span>AdvRec
+                                </label>
 
-                <div class="form-group cstm-form-group">
-                    <label class="control-label cstm-control-label col-md-4">Type Of Allergy<b class="color-red">*</b><b style="float:right;">:</b></label>
-                    <div class="col-md-8">
-                        <div class="row">
-                            <div class="input-group">
-                                <div class="icheck-inline">
-                                    <label class="mt-checkbox mt-checkbox-outline">
-                                        <input type="radio" name="AllergyType" value="Medication"
-                                               [(ngModel)]="CurrentAllergy.AllergyType"
-                                               formControlName="AllergyType"
-                                               (change)="AllergyTypeOnChange()"><span class="white"></span>Medication
-                                    </label>
-                                    <label class="mt-checkbox mt-checkbox-outline">
-                                        <input type="radio" name="AllergyType" value="Non Medication"
-                                               [(ngModel)]="CurrentAllergy.AllergyType"
-                                               formControlName="AllergyType"
-                                               (change)="AllergyTypeOnChange()"><span class="white"></span>Non Medication
-                                    </label>
-                                    <label class="mt-checkbox mt-checkbox-outline">
-                                        <input type="radio" name="AllergyType" value="Food"
-                                               [(ngModel)]="CurrentAllergy.AllergyType"
-                                               formControlName="AllergyType"
-                                               (change)="AllergyTypeOnChange()"><span class="white"></span>Food
-                                    </label>
-                                    <label class="mt-checkbox mt-checkbox-outline">
-                                        <input type="radio" name="AllergyType" value="AdvRec"
-                                               [(ngModel)]="CurrentAllergy.AllergyType"
-                                               formControlName="AllergyType"
-                                               (change)="AllergyTypeOnChange()"><span class="white"></span>AdvRec
-                                    </label>
-
-                                </div>
                             </div>
-                            <span class="color-red font-sm" *ngIf="CurrentAllergy.IsDirty('AllergyType')" [hidden]="CurrentAllergy.IsValidCheck('AllergyType','required')">Select Allergy Type</span>
                         </div>
+                        <span class="color-red font-sm" *ngIf="CurrentAllergy.IsDirty('AllergyType')"
+                            [hidden]="CurrentAllergy.IsValidCheck('AllergyType','required')">Select Allergy Type</span>
                     </div>
                 </div>
-                <div class="form-group cstm-form-group" *ngIf="CurrentAllergy.AllergyType == 'Medication' || CurrentAllergy.AllergyType == 'AdvRec'">
-                    <label class="control-label cstm-control-label col-md-4">{{CurrentAllergy.AllergyType}}<b class="color-red">  *</b><b style="float:right;">:</b></label>
-                    <div class="col-md-8">
-                        <input danphe-auto-complete
-                               class="form-control cstm-form-control"
-                               [(ngModel)]="allergenSelected"
-                               [ngModelOptions]="{standalone: true}"
-                               [source]="allergicGenList"
-                               placeholder="Allergen"
-                               display-property-name="GenericName"
-                               (valueChanged)="AssignSelectedAllergen()"
-                               [list-formatter]="allergenListFormatter"
-                               value-property-name=null
-                               onclick="this.select();"
-                               (ngModelChange)="IsDirtyAllergen()"
-                               max-num-list="10" />
-                        <span class="color-red font-sm" *ngIf="showValidationMsg">Select Allergen or Adverse Reaction</span>
+            </div>
+            <div class="form-group cstm-form-group"
+                *ngIf="CurrentAllergy.AllergyType == 'Medication' || CurrentAllergy.AllergyType == 'AdvRec'">
+                <div class="row">
+                    <label class="control-label cstm-control-label col-md-3">{{CurrentAllergy.AllergyType}}<sup
+                            class="color-red"> *</sup><b>:</b></label>
+                    <div class="col-md-9">
+                        <input danphe-auto-complete class="form-control cstm-form-control"
+                            [(ngModel)]="allergenSelected" [ngModelOptions]="{standalone: true}"
+                            [source]="allergicGenList" placeholder="Allergen" display-property-name="GenericName"
+                            (valueChanged)="AssignSelectedAllergen()" [list-formatter]="allergenListFormatter"
+                            value-property-name=null onclick="this.select();" (ngModelChange)="IsDirtyAllergen()"
+                            max-num-list="10" />
+                        <span class="color-red font-sm" *ngIf="showValidationMsg">Select Allergen or Adverse
+                            Reaction</span>
                     </div>
                 </div>
-                <div class="form-group cstm-form-group" *ngIf="CurrentAllergy.AllergyType == 'Food' || CurrentAllergy.AllergyType == 'Non Medication'">
-                    <label class="control-label cstm-control-label col-md-4">{{CurrentAllergy.AllergyType}}<b class="color-red">  *</b><b style="float:right;">:</b></label>
-                    <div class="col-md-8">
+            </div>
+            <div class="form-group cstm-form-group"
+                *ngIf="CurrentAllergy.AllergyType == 'Food' || CurrentAllergy.AllergyType == 'Non Medication'">
+                <div class="row">
+                    <label class="control-label cstm-control-label col-md-3">{{CurrentAllergy.AllergyType}}<sup
+                            class="color-red"> *</sup><b>:</b></label>
+                    <div class="col-md-9">
                         <input type="text" class="form-control cstm-form-control" name="name" value=""
-                               [(ngModel)]="CurrentAllergy.AllergenAdvRecName"
-                               (ngModelChange)="IsDirtyAllergen()"
-                               [ngModelOptions]="{standalone: true}" />
-
-                        <span class="color-red font-sm"
-                              *ngIf="showValidationMsg">Mention allergy</span>
+                            [(ngModel)]="CurrentAllergy.AllergenAdvRecName" (ngModelChange)="IsDirtyAllergen()"
+                            [ngModelOptions]="{standalone: true}" />
+                        <span class="color-red font-sm" *ngIf="showValidationMsg">Mention allergy</span>
                     </div>
                 </div>
-                <div class="form-group cstm-form-group">
-                    <label class="control-label cstm-control-label col-md-4">Severity<b style="float:right;">:</b></label>
-                    <div class="col-md-8">
-                        <div class="row">
+            </div>
+            <div class="form-group cstm-form-group">
+                <div class="row">
+                    <label class="control-label cstm-control-label col-md-3">Severity<b>:</b></label>                   
+                        <div class="col-md-9">
                             <div class="input-group">
                                 <div class="icheck-inline">
 
                                     <label class="mt-checkbox mt-checkbox-outline">
                                         <input type="radio" name="severity" value="Mild"
-                                               [ngModelOptions]="{standalone: true}"
-                                               [(ngModel)]="CurrentAllergy.Severity"><span class="white"></span>Mild
+                                            [ngModelOptions]="{standalone: true}"
+                                            [(ngModel)]="CurrentAllergy.Severity"><span class="white"></span>Mild
                                     </label>
                                     <label class="mt-checkbox mt-checkbox-outline">
                                         <input type="radio" name="severity" value="Moderate"
-                                               [ngModelOptions]="{standalone: true}"
-                                               [(ngModel)]="CurrentAllergy.Severity"><span class="white"></span> Moderate
+                                            [ngModelOptions]="{standalone: true}"
+                                            [(ngModel)]="CurrentAllergy.Severity"><span class="white"></span> Moderate
                                     </label>
                                     <label class="mt-checkbox mt-checkbox-outline">
                                         <input type="radio" name="severity" value="Severe"
-                                               [ngModelOptions]="{standalone: true}"
-                                               [(ngModel)]="CurrentAllergy.Severity"><span class="white"></span> Severe
+                                            [ngModelOptions]="{standalone: true}"
+                                            [(ngModel)]="CurrentAllergy.Severity"><span class="white"></span> Severe
                                     </label>
                                     <label class="mt-checkbox mt-checkbox-outline" style="margin:0px">
                                         <input type="radio" name="severity" value="Unknown"
-                                               [ngModelOptions]="{standalone: true}"
-                                               [(ngModel)]="CurrentAllergy.Severity"><span class="white"></span> Unknown
+                                            [ngModelOptions]="{standalone: true}"
+                                            [(ngModel)]="CurrentAllergy.Severity"><span class="white"></span> Unknown
                                     </label>
                                 </div>
                             </div>
-                            <span class="color-red font-sm" *ngIf="CurrentAllergy.IsDirty('AllergyType')" [hidden]="CurrentAllergy.IsValidCheck('AllergyType','required')">Select Allergy Type</span>
-
-                        </div>
+                            <span class="color-red font-sm" *ngIf="CurrentAllergy.IsDirty('AllergyType')"
+                                [hidden]="CurrentAllergy.IsValidCheck('AllergyType','required')">Select Allergy
+                                Type</span>                    
 
                     </div>
                 </div>
-                <div class="form-group cstm-form-group">
-                    <label class="control-label cstm-control-label col-md-4">Verified<b class="color-red">*</b><b style="float:right;">:</b></label>
-                    <div class="col-md-8">
-
-                        <div class="row">
+            </div>
+            <div class="form-group cstm-form-group">
+                <div class="row">
+                    <label class="control-label cstm-control-label col-md-3">Verified<b>:</b></label>
+                    
+                        <div class="col-md-9">
                             <div class="input-group">
                                 <div class="icheck-inline">
                                     <label class="mt-checkbox mt-checkbox-outline">
                                         <input type="radio" name="Verified" [value]=true
-                                               formControlName="Verified"
-                                               [(ngModel)]="CurrentAllergy.Verified"><span class="white"></span> Yes
+                                            [(ngModel)]="CurrentAllergy.Verified"
+                                            [ngModelOptions]="{standalone: true}"><span class="white"></span> Yes
                                     </label>
                                     <label class="mt-checkbox mt-checkbox-outline">
                                         <input type="radio" name="Verified" [value]=false
-                                               formControlName="Verified"
-                                               [(ngModel)]="CurrentAllergy.Verified"><span class="white"></span> No
+                                            [(ngModel)]="CurrentAllergy.Verified"
+                                            [ngModelOptions]="{standalone: true}"><span class="white"></span> No
                                     </label>
                                 </div>
                             </div>
-                            <span class="color-red font-sm" *ngIf="CurrentAllergy.IsDirty('AllergyType')" [hidden]="CurrentAllergy.IsValidCheck('AllergyType','required')">Select Allergy Type</span>
-                        </div>
-
+                            <span class="color-red font-sm" *ngIf="CurrentAllergy.IsDirty('AllergyType')"
+                                [hidden]="CurrentAllergy.IsValidCheck('AllergyType','required')">Select Allergy
+                                Type</span>                      
                     </div>
                 </div>
-                <div class="form-group cstm-form-group">
-                    <label class="control-label cstm-control-label col-md-4">Reaction<b class="color-red">  *</b><b style="float:right;">:</b></label>
-                    <div class="col-md-8">
+            </div>
+            <div class="form-group cstm-form-group">
+                <div class="row">
+                    <label class="control-label cstm-control-label col-md-3">Reaction<sup class="color-red">
+                            *</sup><b>:</b></label>
+                    <div class="col-md-9">
                         <input danphe-auto-complete class="form-control cstm-form-control"
-                               [(ngModel)]="reactionSelected"
-                               formControlName="Reaction"
-                               [source]="reactionList"
-                               [list-formatter]="reactionListFormatter"
-                               placeholder="Reaction"
-                               display-property-name="ReactionName"
-                               (valueChanged)="AssignSelectedReaction()"
-                               value-property-name=null
-                               onclick="this.select();"
-                               max-num-list="10" />
-                        <span class="color-red font-sm" *ngIf="CurrentAllergy.IsDirty('Reaction')" [hidden]="CurrentAllergy.IsValidCheck('Reaction','required')">Select Reaction</span>
+                            [(ngModel)]="reactionSelected" formControlName="Reaction" [source]="reactionList"
+                            [list-formatter]="reactionListFormatter" placeholder="Reaction"
+                            display-property-name="ReactionName" (valueChanged)="AssignSelectedReaction()"
+                            value-property-name=null onclick="this.select();" max-num-list="10" />
+                        <span class="color-red font-sm" *ngIf="CurrentAllergy.IsDirty('Reaction')"
+                            [hidden]="CurrentAllergy.IsValidCheck('Reaction','required')">Select Reaction</span>
                     </div>
                 </div>
-                <div class="form-group cstm-form-group">
-                    <label class="control-label cstm-control-label col-md-4">Comments<b style="float:right;">:</b></label>
-                    <div class="col-md-8">
+
+            </div>
+            <div class="form-group cstm-form-group">
+                <div class="row">
+                    <label class="control-label cstm-control-label col-md-3">Comments<b>:</b></label>
+                    <div class="col-md-9">
                         <textarea type="text" class="form-control cstm-form-control" maxlength="200"
-                                  formControlName="Comments"
-                                  [(ngModel)]="CurrentAllergy.Comments"></textarea>
+                            formControlName="Comments" [(ngModel)]="CurrentAllergy.Comments"></textarea>
                         <!--<span class="color-red font-sm"
                               *ngIf="CurrentAllergy.IsDirty('Comments')"
                               [hidden]="CurrentAllergy.IsValidCheck('Comments','maxlength')">Comment should not exceed 200 characters.</span>-->
                     </div>
                 </div>
 
-                <div style="margin-left:20px">
-                    <button (click)="SubmitForm()" class="btn btn-primary">{{CurrentAllergy.PatientAllergyId ? 'Update' : 'Add' }}</button>
+            </div>
 
-                </div>
+            <div class="text-right mt20">
+                <button (click)="SubmitForm()"
+                    class="btn primary-btn">{{CurrentAllergy.PatientAllergyId ? 'Update' : 'Add' }}</button>
 
             </div>
         </div>

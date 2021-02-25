@@ -27,7 +27,7 @@ export class SocialHistory {
         var _formBuilder = new FormBuilder();
         this.SocialHistoryValidator = _formBuilder.group({
             //'Note': ['', Validators.compose([Validators.required,Validators.maxLength(200)])],
-            'Occupation': ['', Validators.compose([Validators.required, Validators.maxLength(50)])],
+            //'Occupation': ['', Validators.compose([Validators.required, Validators.maxLength(50)])],
         });
     }
 

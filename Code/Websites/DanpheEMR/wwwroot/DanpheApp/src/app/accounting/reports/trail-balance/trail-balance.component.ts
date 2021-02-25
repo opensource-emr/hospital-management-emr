@@ -1,11 +1,11 @@
-import { Component, Directive, ViewChild } from '@angular/core';
+import { Component, Directive, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
 import { AccountingReportsBLService } from "../shared/accounting-reports.bl.service";
 import { CommonFunctions } from '../../../shared/common.functions';
 import * as moment from 'moment/moment';
 import { TrialBalanceReportVM } from "../shared/trial-balance-reportvm.model";
-import { FiscalYearModel } from '../../settings/shared/fiscalyear.model';
+import { CoreService } from '../../../core/shared/core.service';
 
 @Component({
   selector: 'my-app',
@@ -17,10 +17,7 @@ export class TrailBalanceReportComponent {
   public reportData: Array<TrialBalanceReportVM> = new Array<TrialBalanceReportVM>();
   public TotalDrCr: Array<any> = [];
   public fromDate: string = null;
-  public toDate: string = null;
-  public currentFiscalYear: FiscalYearModel = new FiscalYearModel();
-  public fiscalYearList: Array<FiscalYearModel> = new Array<FiscalYearModel>();
-  public selectedFiscalYear: any;
+  public toDate: string = null; 
   public IsDetailsView: boolean = false;
   public showLedgerDetail: boolean = false;
   public ledgerId: number = 0;
@@ -28,14 +25,18 @@ export class TrailBalanceReportComponent {
   public IsShowReport: boolean = false;
   public dateRange: string = null;
   public IsDataLoaded: boolean = false;
-
+  public showExportbtn: boolean = false;
+  public ledgerCode: any;
+  public showPrint: boolean = false;
+  public printDetaiils: any;
+  public fiscalYearId:number=0;
   constructor(
     public msgBoxServ: MessageboxService,
-    public accReportBLServ: AccountingReportsBLService) {
-    this.fromDate = moment().format('YYYY-MM-DD');
-    this.toDate = moment().format('YYYY-MM-DD');
-    this.GetCurrentFiscalYear();
+    public coreservice: CoreService,
+    public accReportBLServ: AccountingReportsBLService, private changeDetector: ChangeDetectorRef) {      
     this.dateRange = "today";
+    this.showExport();
+
   }
   //event onDateChange
   onDateChange($event) {
@@ -50,30 +51,23 @@ export class TrailBalanceReportComponent {
     }
   }
 
+  public validDate:boolean=true;
+  selectDate(event){
+    if (event) {
+      this.fromDate = event.fromDate;
+      this.toDate = event.toDate;
+      this.fiscalYearId = event.fiscalYearId;
+      this.validDate = true;
+    } 
+    else {     
+      this.validDate =false;
+    }
 
-  GetCurrentFiscalYear() {
-    try {
-      this.accReportBLServ.GetFiscalYearsList().subscribe(res => {
-        if (res.Status == "OK") {
-          this.fiscalYearList = res.Results;
-          this.currentFiscalYear = this.fiscalYearList.find(x => x.IsActive == true);
-          this.IsDataLoaded = true;
-        }
-        else {
-          this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
-        }
-      });
-    }
-    catch (ex) {
-      console.log(ex);
-    }
-  }
-  ChangeFiscalYear() {
-    this.currentFiscalYear = this.fiscalYearList.find(x => x.FiscalYearId == parseInt(this.selectedFiscalYear));
-  }
+  }   
+ 
   GetTrialBalanceRpt() {
-    if (this.checkDateValidation() && this.checkValidFiscalYear()) {
-      this.accReportBLServ.GetTrailBalanceReport(this.fromDate, this.toDate).subscribe(res => {
+    if (this.checkDateValidation()) {
+      this.accReportBLServ.GetTrailBalanceReport(this.fromDate, this.toDate,this.fiscalYearId).subscribe(res => {
         if (res.Status == "OK") {
           this.IsShowReport = true;
           this.MapAndMakeTrialReport(res.Results);
@@ -88,29 +82,15 @@ export class TrailBalanceReportComponent {
     }
   }
   checkDateValidation() {
-    let flag = true;
-    flag = moment(this.fromDate, "YYYY-MM-DD").isValid() == true ? flag : false;
-    flag = moment(this.toDate, "YYYY-MM-DD").isValid() == true ? flag : false;
-    flag = (this.toDate >= this.fromDate) == true ? flag : false;
-    if (!flag) {
-      this.msgBoxServ.showMessage("error", ['select proper date(FromDate <= ToDate)']);
+    let flag = true;  
+    if(!this.validDate){
+      this.msgBoxServ.showMessage("error", ['Select proper date.']);
+      flag= false;
     }
+  
     return flag;
   }
-  checkValidFiscalYear() {
-    var frmdate = moment(this.fromDate, "YYYY-MM-DD");
-    var tdate = moment(this.toDate, "YYYY-MM-DD");
-    var flag = false;
-    this.fiscalYearList.forEach(a => {
-      if ((moment(a.StartDate, 'YYYY-MM-DD') <= frmdate) && (tdate <= moment(a.EndDate, 'YYYY-MM-DD'))) {
-        flag = true;
-      }
-    });
-    if (!flag) {
-      this.msgBoxServ.showMessage("error", ['Selected dates must be with in a fiscal year']);
-    }
-    return flag;
-  }
+ 
   MapAndMakeTrialReport(trialReportData) {
     for (let i = 0; i < 6; i++) {
       this.TotalDrCr[i] = 0;
@@ -124,9 +104,10 @@ export class TrailBalanceReportComponent {
           //parent level is COA
           parent.level = "COA";
           parent.Particulars = row.Particulars;
-          parent.OpeningCr = parent.OpeningDr = 0;
+          parent.OpeningCr = parent.OpeningDr = parent.OpeningTotal = 0;
           parent.CurrentCr = parent.CurrentDr = 0;
           parent.TotalDr = parent.TotalCr = 0;
+          parent.Balance = 0;
           this.reportData.push(parent);//push parent to list
 
           row.LedgerGroupList.forEach(ledgerGroup => {
@@ -134,9 +115,10 @@ export class TrailBalanceReportComponent {
             //child level is LedgerGroup
             child.level = "LedgerGroup";
             child.Particulars = ledgerGroup.Particulars;
-            child.OpeningCr = child.OpeningDr = 0;
+            child.OpeningCr = child.OpeningDr = child.OpeningTotal = 0;
             child.CurrentCr = child.CurrentDr = 0;
             child.TotalDr = child.TotalCr = 0;
+            child.Balance = 0;
             this.reportData.push(child);//push child to list
 
             ledgerGroup.LedgerList.forEach(ledger => {
@@ -144,17 +126,24 @@ export class TrailBalanceReportComponent {
               //subchild Level is Ledger
               subChild.level = "Ledger";
               subChild.Particulars = ledger.Particulars;
+              subChild.Code = ledger.Code;
               subChild.LedgerId = ledger.LedgerId;
+              subChild.Balance = 0;
               ledger.OpeningDr = ledger.OpeningDr + ledger.OpeningBalDr;
               ledger.OpeningCr = ledger.OpeningCr + ledger.OpeningBalCr;
               //calculate opening Debit/Credit balance (upto fromDate)
               if (ledger.OpeningDr >= ledger.OpeningCr) {
                 subChild.OpeningDr = ledger.OpeningDr - ledger.OpeningCr;
                 subChild.OpeningCr = 0;
+                subChild.OpeningBalType = "Dr";
+                subChild.OpeningTotal = subChild.OpeningDr;
               } else {
                 subChild.OpeningCr = ledger.OpeningCr - ledger.OpeningDr;
                 subChild.OpeningDr = 0;
+                subChild.OpeningBalType = "Cr";
+                subChild.OpeningTotal = subChild.OpeningCr;
               }
+
               //calculate current Debit/Credit balance (fromDate to toDate)
               if (ledger.CurrentDr >= ledger.CurrentCr) {
                 subChild.CurrentDr = ledger.CurrentDr - ledger.CurrentCr;
@@ -166,6 +155,15 @@ export class TrailBalanceReportComponent {
               //calculate total of subChild Dr/Cr
               subChild.TotalDr = subChild.CurrentDr + subChild.OpeningDr;
               subChild.TotalCr = subChild.CurrentCr + subChild.OpeningCr;
+
+              //calculate balance of subChild Dr and Cr
+              if (subChild.TotalDr >= subChild.TotalCr) {
+                subChild.Balance = subChild.TotalDr - subChild.TotalCr;
+                subChild.BalanceType = "Dr";
+              } else {
+                subChild.Balance = subChild.TotalCr - subChild.TotalDr;
+                subChild.BalanceType = "Cr";
+              }
 
               if (ledger.Details.length > 0) {
                 for (let i = 0; i < ledger.Details.length; i++) {
@@ -190,10 +188,26 @@ export class TrailBalanceReportComponent {
               //calculate opening Debit/Credit balance (upto fromDate)
               child.OpeningDr = child.OpeningDr + subChild.OpeningDr;
               child.OpeningCr = child.OpeningCr + subChild.OpeningCr;
+              if (child.OpeningDr > child.OpeningCr) {
+                child.OpeningTotal = child.OpeningDr - child.OpeningCr;
+                child.OpeningBalType = "Dr";
+              } else {
+                child.OpeningTotal = child.OpeningCr - child.OpeningDr;
+                child.OpeningBalType = "Cr";
+              }
             });
             //calculate total of child Dr/Cr
             child.TotalDr = child.OpeningDr + child.CurrentDr;
             child.TotalCr = child.OpeningCr + child.CurrentCr;
+
+            //calculate total balance of child Dr and Cr            
+            if (child.TotalDr >= child.TotalCr) {
+              child.Balance = child.TotalDr - child.TotalCr;
+              child.BalanceType = "Dr";
+            } else {
+              child.Balance = child.TotalCr - child.TotalDr;
+              child.BalanceType = "Cr";
+            }
 
             //add current Dr/Cr of child to current Dr/Cr of parent
             parent.CurrentDr = parent.CurrentDr + child.CurrentDr;
@@ -201,45 +215,99 @@ export class TrailBalanceReportComponent {
             //calculate opening Debit/Credit balance (upto fromDate)
             parent.OpeningDr = parent.OpeningDr + child.OpeningDr;
             parent.OpeningCr = parent.OpeningCr + child.OpeningCr;
+            if (parent.OpeningDr > parent.OpeningCr) {
+              parent.OpeningTotal = parent.OpeningDr - parent.OpeningCr;
+              parent.OpeningBalType = "Dr";
+            } else {
+              parent.OpeningTotal = parent.OpeningCr - parent.OpeningDr;
+              parent.OpeningBalType = "Cr";
+            }
+
           });
           //calculate total of parent Dr/Cr
           parent.TotalDr = parent.OpeningDr + parent.CurrentDr;
           parent.TotalCr = parent.OpeningCr + parent.CurrentCr;
 
-          //grandtotal for opening Dr/Cr
-          this.TotalDrCr[0] = this.TotalDrCr[0] + parent.OpeningDr;
-          this.TotalDrCr[1] = this.TotalDrCr[1] + parent.OpeningCr;
+          //calculate total balance  of parent Dr and Cr
+          if (parent.TotalDr >= parent.TotalCr) {
+            parent.Balance = parent.TotalDr - parent.TotalCr;
+            parent.BalanceType = "Dr";
+          } else {
+            parent.Balance = parent.TotalCr - parent.TotalDr;
+            parent.BalanceType = "Cr";
+          }
+
+          //add all Debit and Substract all Credit.
+          if (parent.OpeningBalType == "Dr") {
+
+            this.TotalDrCr[0] = this.TotalDrCr[0] + parent.OpeningTotal;
+          }
+          else {
+            this.TotalDrCr[0] = this.TotalDrCr[0] - parent.OpeningTotal;
+          }
+
           //grandtotal for current Dr/Cr
           this.TotalDrCr[2] = this.TotalDrCr[2] + parent.CurrentDr;
           this.TotalDrCr[3] = this.TotalDrCr[3] + parent.CurrentCr;
-          //grandtotal for total Dr/Cr
-          this.TotalDrCr[4] = this.TotalDrCr[4] + parent.TotalDr;
-          this.TotalDrCr[5] = this.TotalDrCr[5] + parent.TotalCr;
+         
+
+          //add all Debit and Substract all Credit.
+          if (parent.BalanceType == "Dr") {
+            this.TotalDrCr[4] = this.TotalDrCr[4] + parent.Balance;
+          }
+          else {
+            this.TotalDrCr[4] = this.TotalDrCr[4] - parent.Balance;
+          }
+
         });
+
+
+        if (this.TotalDrCr[4]) {
+
+          //if total is positive then it's Dr, else it's Cr
+          if (this.TotalDrCr[4] > 0) {
+            this.TotalDrCr[5] = "Dr";
+          }
+          else {
+            this.TotalDrCr[4] = -(this.TotalDrCr[4]);
+            this.TotalDrCr[5] = "Cr";
+          }
+        }
+
+        if (this.TotalDrCr[0]) {
+
+          //if total is positive then it's Dr, else it's Cr
+          if (this.TotalDrCr[0] > 0) {
+            this.TotalDrCr[1] = "Dr";
+          }
+          else {
+            this.TotalDrCr[0] = -(this.TotalDrCr[0]);
+            this.TotalDrCr[1] = "Cr";
+          }
+        }
+
+
       } else {
         this.msgBoxServ.showMessage("notice", ['NO RECORD FOUND']);
       }
     } catch (ex) {
       console.log(ex);
-    }
+    }    
   }
   Print() {
     let popupWinindow;
     var headerContent = document.getElementById("headerForPrint").innerHTML;
     var printContents = '<b>Report Date Range: ' + this.fromDate + ' To ' + this.toDate + '</b>';
     printContents += '<style> table { border-collapse: collapse; border-color: black; } th { color:black; background-color: #599be0; } </style>';
-    printContents += document.getElementById("printpage").innerHTML;
-    popupWinindow = window.open('', '_blank', 'width=600,height=700,scrollbars=no,menubar=no,toolbar=no,location=no,status=no,titlebar=no');
-    popupWinindow.document.open();
-    let documentContent = "<html><head>";
-    documentContent += '<link rel="stylesheet" type="text/css" media="print" href="../../themes/theme-default/DanphePrintStyle.css"/>';
-    documentContent += '<link rel="stylesheet" type="text/css" href="../../themes/theme-default/DanpheStyle.css"/>';
-    documentContent += '<link rel="stylesheet" type="text/css" href="../../../assets/global/plugins/bootstrap/css/bootstrap.min.css"/>';
-    documentContent += '</head>';
-    documentContent += '<body onload="window.print()">' + headerContent + printContents + '</body></html>';
-    popupWinindow.document.write(documentContent);
-    popupWinindow.document.close();
+    printContents += document.getElementById("printpage").innerHTML;  
+    this.showPrint = false;
+    this.printDetaiils = null;
+    this.changeDetector.detectChanges();
+    this.showPrint = true;
+    this.printDetaiils = headerContent + printContents ; //document.getElementById("printpage");
+
   }
+
   ExportToExcel(tableId) {
     if (tableId) {
       let workSheetName = 'Trial Balance Report';
@@ -255,6 +323,7 @@ export class TrailBalanceReportComponent {
   SwitchViews(row) {
     this.ledgerId = row.LedgerId;
     this.ledgerName = row.Particulars;
+    this.ledgerCode = row.Code;
     this.showLedgerDetail = true;
   }
   ShowReport($event) {
@@ -283,6 +352,17 @@ export class TrailBalanceReportComponent {
       if (this.reportData[i] == row) {
         flag = 0;
       }
+    }
+  }
+
+  showExport() {
+
+    let exportshow = this.coreservice.Parameters.find(a => a.ParameterName == "AllowOtherExport" && a.ParameterGroupName == "Accounting").ParameterValue;
+    if (exportshow == "true") {
+      this.showExportbtn = true;
+    }
+    else {
+      this.showExportbtn = false;
     }
   }
 }

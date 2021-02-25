@@ -1,0 +1,87 @@
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showAddPage">
+
+    <div class="portlet-body form" style="background-color:white">
+        <form [formGroup]="CurrentLeave.LeaveCategoryValidator" class="form-horizontal">
+            <div class="form-body">
+                <div class="col-md-12">
+                    <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+                    </div>
+                    <div class="col-md-8 col-sm-10 col-xs-10 modelbox-div" style="margin-right: 24px;">
+                        <div class="col-md-12">
+                            <div class="caption" style="color:blue;">
+                                <h3>
+                                    <span *ngIf="!update">Create Leave Category</span>
+                                    <span *ngIf="update">Update Leave Category</span>
+                                </h3>
+
+                            </div>
+                            <a style="float:right;  margin-top:-32px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+
+                            <hr />
+                        </div>
+                        <div class="col-md-12">
+                            <div class="col-md-8" style="margin-right: 24px;">
+
+
+                                <div class="form-group">
+                                    <label class="control-label col-md-5">Leave Category<b class="color-red">*</b><b style="float:right;">:</b></label>
+                                    <div class="col-md-7">
+                                        <input class="form-control" maxlength="30" type="text"
+                                               [(ngModel)]="CurrentLeave.LeaveCategoryName"
+                                               formControlName="LeaveCategoryName"
+                                               id="LeaveCategoryName"
+                                               placeholder="LeaveCategoryName" />
+
+                                        <span class="color-red font-sm" [hidden]="CurrentLeave.IsValidCheck('LeaveCategoryName','required') || !(CurrentLeave.IsDirty('LeaveCategoryName'))">LeaveCategoryName is required</span>
+                                        <span class="color-red font-sm" *ngIf="CurrentLeave.IsDirty('LeaveCategoryName')" [hidden]="CurrentLeave.IsValidCheck('LeaveCategoryName','maxlength')"> Length is not proper</span>
+
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-5">Leave Category Code<b class="color-red">*</b><b style="float:right;">:</b></label>
+                                    <div class="col-md-7">
+                                        <input class="form-control" maxlength="30" type="text"
+                                               [(ngModel)]="CurrentLeave.CategoryCode"
+                                               formControlName="CategoryCode"
+                                               id="CategoryCode"
+                                               placeholder="CategoryCode" />
+                                        <span class="color-red font-sm" [hidden]="CurrentLeave.IsValidCheck('CategoryCode','required') || !(CurrentLeave.IsDirty('CategoryCode'))">Voucher Code is required</span>
+                                        <span class="color-red font-sm" *ngIf="CurrentLeave.IsDirty('CategoryCode')" [hidden]="CurrentLeave.IsValidCheck('CategoryCode','maxlength')"> Length is not proper</span>
+                                     </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="control-label col-md-5">Description<b class="color-red">*</b><b style="float:right;">:</b></label>
+                                    <div class="col-md-7">
+                                        <input class="form-control" maxlength="100" type="text"
+                                               [(ngModel)]="CurrentLeave.Description"
+                                               formControlName="Description"
+                                               id="Description"
+                                               placeholder="Description" />
+
+                                        <span class="color-red font-sm" [hidden]="CurrentLeave.IsValidCheck('Description','required') || !(CurrentLeave.IsDirty('Description'))">Voucher Description is required</span>
+                                        <span class="color-red font-sm" *ngIf="CurrentLeave.IsDirty('Description')" [hidden]="CurrentLeave.IsValidCheck('Description','maxlength')"> Length is not proper</span>
+
+                                    </div>
+                                </div>
+
+
+
+                                <div class="form-actions" *ngIf="!update">
+                                    <input type="button" class="btn btn-primary" (click)="AddLeaveCategory()" value="Add Leave Category" />
+                                 </div>
+                                 <div class="form-actions" *ngIf="update">
+                                    <input type="button" class="btn btn-primary" (click)="UpdateLeaveCategory()" value="Update Leave Category" />
+                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+                    </div>
+
+                </div>
+            </div>
+        </form>
+    </div>
+
+</div>

@@ -83,7 +83,8 @@ namespace DanpheEMR.Controllers
                         NeedsPasswordUpdate = currentUser.NeedsPasswordUpdate,
                         DefaultPagePath = defaultRoutePath,
                         Employee = employee,
-                        LandingPageRouteId = landingPageRouteId
+                        LandingPageRouteId = landingPageRouteId,
+                        IsSysAdmin = defRole.IsSysAdmin
                     };
                     responseData.Status = "OK";
                 }
@@ -180,6 +181,54 @@ namespace DanpheEMR.Controllers
                     responseData.Results = counter;
                     responseData.Status = "OK";
                 }
+                else if (reqType == "get-activeAccHospitalInfo")
+                {
+                    //this gives currently selected accounting hospital.
+                    AccHospitalInfoVM activeHospital = HttpContext.Session.Get<AccHospitalInfoVM>("AccSelectedHospitalInfo");
+                    responseData.Results = activeHospital;
+                    responseData.Status = "OK";
+                }
+                else if (reqType == "get-inv-hospitalInfo")
+                {
+                    var invHospInfo = HttpContext.Session.Get<AccHospitalInfoVM>("INVHospitalInfo");
+                    if (invHospInfo != null)
+                    {
+                        responseData.Status = "OK";
+                        responseData.Results = invHospInfo;
+                    }
+                    else 
+                    {
+                        InventoryDbContext inventoryDbContext = new InventoryDbContext(connString);
+                        AccHospitalInfoVM hospInfo = new AccHospitalInfoVM(); //we are using same model for inventory also
+                                                                              //set only TodaysDate,FiscalYearList, CurrentFiscalYear information
+                        hospInfo.TodaysDate = DateTime.Now;
+                        hospInfo.FiscalYearList = (from fsYear in inventoryDbContext.InventoryFiscalYears
+                                                   where fsYear.IsActive == true
+                                                   select new FiscalYearModel
+                                                   {
+                                                       FiscalYearId = fsYear.FiscalYearId,
+                                                       FiscalYearName = fsYear.FiscalYearName,
+                                                       NpFiscalYearName = fsYear.NpFiscalYearName,
+                                                       StartDate = fsYear.StartDate,
+                                                       EndDate = fsYear.EndDate,
+                                                       CreatedOn = fsYear.CreatedOn,
+                                                       CreatedBy = fsYear.CreatedBy.Value,
+                                                       IsActive = fsYear.IsActive,
+                                                       IsClosed = fsYear.IsClosed,
+                                                       ClosedBy = fsYear.ClosedBy,
+                                                       ClosedOn = fsYear.ClosedOn
+                                                   }).ToList();
+
+                        hospInfo.CurrFiscalYear = (from cf in hospInfo.FiscalYearList.AsEnumerable()
+                                                   where (cf.StartDate.Date <= hospInfo.TodaysDate.Date) &&
+                                                         (cf.EndDate.Date >= hospInfo.TodaysDate.Date)
+                                                   select cf).FirstOrDefault();
+                        HttpContext.Session.Set<AccHospitalInfoVM>("INVHospitalInfo", hospInfo);
+
+                        responseData.Status = "OK";
+                        responseData.Results = hospInfo;
+                    }                   
+                }               
             }
             catch (Exception ex)
             {
@@ -197,11 +246,13 @@ namespace DanpheEMR.Controllers
         {
         }
 
-        // PUT api/values/5
+        //counterid and countername are used for Billing/Pharmacy. 
+        //hospitalid used for accounting
         [HttpPut]
-        public string Put(string reqType, int counterId, string counterName)
+        public string Put(string reqType, int counterId, string counterName, int hospitalId)
         {
             DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
+
             if (reqType == "activateBillingCounter" && counterId != 0)
             {
                 HttpContext.Session.Set<string>("activeBillingCounter", counterId.ToString());
@@ -230,6 +281,51 @@ namespace DanpheEMR.Controllers
             {
                 HttpContext.Session.Remove("activePharmacyCounter");
                 responseData.Status = "OK";
+            }
+            else if (reqType == "activateAccountingHospital" && hospitalId != 0)
+            {
+
+                AccountingDbContext accountingDbContext = new AccountingDbContext(connString);
+                AccHospitalInfoVM hospInfo = new AccHospitalInfoVM();
+                hospInfo.ActiveHospitalId = hospitalId;
+                hospInfo.TodaysDate = DateTime.Now;
+                hospInfo.FiscalYearList = (from fsYear in accountingDbContext.FiscalYears
+                                           where fsYear.HospitalId == hospitalId
+                                           && fsYear.IsActive == true
+                                           select fsYear).ToList();
+
+                if (hospInfo.FiscalYearList != null)
+                {
+                    hospInfo.FiscalYearList.ForEach(f =>
+                    {
+                        f.CurrentDate = DateTime.Now;
+                        f.showreopen = (f.IsClosed == true) ? true : false;
+                    });
+                }
+              
+                hospInfo.CurrFiscalYear = (from cf in hospInfo.FiscalYearList.AsEnumerable()                                        
+                                           where (cf.StartDate.Date <= hospInfo.TodaysDate.Date) &&
+                                                 (cf.EndDate.Date >= hospInfo.TodaysDate.Date)
+                                           select cf).FirstOrDefault();
+
+                hospInfo.SectionList = (from s in accountingDbContext.Section
+                                        where s.HospitalId == hospitalId
+                                        && s.IsActive == true
+                                        select s).ToList();
+                //assign hospitalnames (long/short) so that it can be displayed in accounting main page on relaod.
+                var currHospital = accountingDbContext.Hospitals.Where(h =>h.HospitalId==hospitalId).FirstOrDefault();
+                if (currHospital != null)
+                {
+                    hospInfo.HospitalLongName = currHospital.HospitalLongName;
+                    hospInfo.HospitalShortName = currHospital.HospitalShortName;
+                }
+
+                //need to set the values int TWO sessions, one for hospitalId only and another for hospital-info-all
+                HttpContext.Session.Set<AccHospitalInfoVM>("AccSelectedHospitalInfo", hospInfo);
+                HttpContext.Session.Set<int>("AccSelectedHospitalId", hospitalId);
+
+                responseData.Status = "OK";
+                responseData.Results = hospInfo;
             }
             else
             {

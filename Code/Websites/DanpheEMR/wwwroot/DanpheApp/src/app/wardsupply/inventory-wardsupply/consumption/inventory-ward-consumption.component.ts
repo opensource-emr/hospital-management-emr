@@ -3,25 +3,21 @@ import { RouterOutlet, RouterModule, Router } from '@angular/router';
 import { WardSupplyBLService } from '../../shared/wardsupply.bl.service';
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 import { WardInventoryConsumptionModel } from '../../shared/ward-inventory-consumption.model';
-import { WardStockModel } from '../../shared/ward-stock.model';
-import { WardModel } from '../../shared/ward.model';
-import { Array } from 'core-js';
 import { SecurityService } from '../../../security/shared/security.service';
 import { CallbackService } from '../../../shared/callback.service';
-import * as moment from 'moment/moment';
+import { InventoryService } from '../../../inventory/shared/inventory.service';
+import * as moment from 'moment';
 
 
 @Component({
   templateUrl: "./inventory-ward-consumption.html" // "/Inventory/Consumption"
 })
 export class InventoryConsumptionComponent {
-
-  public ItemTypeListWithItems: Array<any>;
-  public SelecetdItemList: Array<WardInventoryConsumptionModel> = [];
-  public WardStockList: Array<WardStockModel> = [];
-  public DepartmentList: Array<any> = [];
-  public DepartmentId: number = 0;
-  public IsShowConsumption: boolean = false;
+  public CurrentStoreId: number = 0;
+  public ConsumptionDate: string = moment().format('YYYY-MM-DD HH:mm:ss');
+  public ItemTypeListWithItems: Array<any> = [];
+  public SelecetdItemList: Array<WardInventoryConsumptionModel> = new Array<WardInventoryConsumptionModel>();
+  public IsShowConsumption: boolean = true;
   public TotalConsumption: any;
   public WardConsumption: WardInventoryConsumptionModel = new WardInventoryConsumptionModel();
   public loading: boolean = false;
@@ -32,71 +28,42 @@ export class InventoryConsumptionComponent {
     public messageboxService: MessageboxService,
     public securityService: SecurityService,
     public router: Router,
-    public callBackService: CallbackService
+    public callBackService: CallbackService,
+    public inventoryService: InventoryService
   ) {
-    //this.GetDepartmentList();
-    //this.GetPatientList();
-    //try {
-    //    this.currentCounterId = this.securityService.getPHRMLoggedInCounter().CounterId;
-
-    //    if (this.currentCounterId < 1) {
-    //        this.callBackService.CallbackRoute = '/WardSupply/Consumption'
-    //        this.router.navigate(['/Pharmacy/ActivateCounter']);
-    //    }
-    //    else {
-    this.GetDepartmentList();
-    //    }
-    //} catch (exception) {
-    //  this.messageboxService.showMessage("Error", [exception]);
-    //}
+    this.CheckForSubstoreActivation();
   }
-  //get ward list
-  GetDepartmentList() {
+  CheckForSubstoreActivation() {
+    this.CurrentStoreId = this.securityService.getActiveStore().StoreId;
     try {
-      this.wardBLService.GetDepartments()
-        .subscribe(res => {
-          if (res.Status = 'OK') {
-            this.DepartmentList = [];
-            this.DepartmentList = res.Results;
-          }
-        });
-    }
-    catch (exception) {
+      if (!this.CurrentStoreId) {
+        //routeback to substore selection page.
+        this.router.navigate(['/WardSupply']);
+      }
+      else {
+        this.GetInventoryStockDetailsList();
+        this.SelecetdItemList = new Array<WardInventoryConsumptionModel>();
+        this.AddRow();
+        //write whatever is need to be initialise in constructor here.
+      }
+    } catch (exception) {
       this.messageboxService.showMessage("Error", [exception]);
     }
-  }
-  onDepartmentChange() {
-    //this.LoadItemTypeList();
-    this.GetInventoryStockDetailsList();
-    this.GetWardStockDetail();
-    this.SelecetdItemList = [];
-    //if (this.PatientRefinedList.length) {
-    //    this.PatientRefinedList = [];
-    //}
-    //for (let i = 0; i < this.PatientList.length; i++) {
-    //    if (this.WardId == this.PatientList[i].WardId) {
-    //        this.PatientRefinedList.push(this.PatientList[i]);
-    //    }
-    //}
-    this.AddRow();
-    this.IsShowConsumption = true;
   }
   //get wardsupply stock list - sanjit 17feb2019
   public GetInventoryStockDetailsList() {
     try {
-      this.wardBLService.GetInventoryStockDetailsList()
+      this.wardBLService.GetInventoryStockByStoreId(this.CurrentStoreId)
         .subscribe(res => {
           if (res.Status == "OK") {
             if (res.Results.length) {
               this.ItemTypeListWithItems = [];
               this.ItemTypeListWithItems = res.Results;
-              if (this.DepartmentId > 0) {
-                this.ItemTypeListWithItems = this.ItemTypeListWithItems.filter(a => a.DepartmentId == this.DepartmentId && a.ItemType != 'Capital Goods');
-              }
+              this.ItemTypeListWithItems = this.ItemTypeListWithItems.filter(item=>item.Quantity > 0 && item.ItemType == "Consumables");
+              if(this.ItemTypeListWithItems.length == 0){this.messageboxService.showMessage("Failed",["No Stock Available. Please Add Stock."]);}
             }
             else {
-              this.messageboxService.showMessage("Failed", ["No Any Data Available"]);
-              //console.log(res.Errors);
+              this.messageboxService.showMessage("Failed", ["No Stock Available. Please Add Stock."]);
             }
           }
         });
@@ -105,26 +72,9 @@ export class InventoryConsumptionComponent {
       this.messageboxService.showMessage("Error", [exception]);
     }
   }
-  //get ward stock list
-  GetWardStockDetail() {
-    try {
-      this.wardBLService.GetWardStockList()
-        .subscribe(res => {
-          if (res.Status == 'OK') {
-            this.WardStockList = [];
-            this.WardStockList = res.Results;
-            //filtering record per ward
-            this.WardStockList = this.WardStockList.filter(a => a.DepartmentId == this.DepartmentId);
-          }
-        });
-    }
-    catch (exception) {
-      this.messageboxService.showMessage("Error", [exception]);
-    }
-  }
   GetAvailableQuantity(itm) {
     try {
-      return this.WardStockList.find(a => a.ItemId == itm.ItemId).AvailableQuantity;
+      return this.ItemTypeListWithItems.find(a => a.ItemId == itm.ItemId).Quantity;
     }
     catch (ex) {
       this.messageboxService.showMessage("Error", ['Quantity not available!!']);
@@ -133,16 +83,28 @@ export class InventoryConsumptionComponent {
   }
   //used to format display of item in ng-autocomplete
   ItemListFormatter(data: any): string {
-    let html = data["ItemName"];
+    let html = data["ItemName"] + '|Qty:' + data["Quantity"];
     return html;
   }
   onChangeItem($event, index) {
-    this.SelecetdItemList[index].ItemId = $event.ItemId;
-    this.SelecetdItemList[index].Quantity = this.GetAvailableQuantity(this.SelecetdItemList[index]);
-    this.SelecetdItemList[index].ItemName = $event.ItemName;
-    this.SelecetdItemList[index].DepartmentId = this.DepartmentId;
-    this.SelecetdItemList[index].DepartmentName = $event.DepartmentName;
-    this.SelecetdItemList[index].UsedBy = this.securityService.GetLoggedInUser().UserName;
+    var checkIsItemPresent = false;
+    if (this.SelecetdItemList.find(a => a.ItemId == $event.ItemId)) {
+      checkIsItemPresent = true;
+    }
+    if (checkIsItemPresent == false) {
+      this.SelecetdItemList[index].ItemId = $event.ItemId;
+      this.SelecetdItemList[index].Quantity = this.GetAvailableQuantity(this.SelecetdItemList[index]);
+      this.SelecetdItemList[index].ItemName = $event.ItemName;
+      this.SelecetdItemList[index].Code = $event.Code;
+      this.SelecetdItemList[index].UOMName = $event.UOMName;
+      this.SelecetdItemList[index].DepartmentName = $event.DepartmentName;
+      this.SelecetdItemList[index].UsedBy = this.securityService.GetLoggedInUser().UserName;
+    }
+    else {
+      this.messageboxService.showMessage("Error", ["Item is already present in the list"]);
+      this.AddRow(index);
+      this.FocusElementById("itemName"+index);
+    }
   }
   DeleteRow(index) {
     try {
@@ -150,26 +112,49 @@ export class InventoryConsumptionComponent {
       if (this.SelecetdItemList.length == 0) {
         this.AddRow();
       }
-      //window.setTimeout(function () {
-      //    document.getElementById('item-box' + (index+1)).focus();
-      //}, 0);
     }
     catch (exception) {
       this.messageboxService.showMessage("Error", [exception]);
     }
   }
-  AddRow() {
+  AddRow(index?) {
     try {
       var tempSale: WardInventoryConsumptionModel = new WardInventoryConsumptionModel();
-      this.SelecetdItemList.push(tempSale);
+      if(index == null){
+        this.SelecetdItemList.push(tempSale);
+      }
+      else{
+        this.SelecetdItemList.splice(index,1,tempSale);
+      }
+
+      let len = this.SelecetdItemList.length - 1;
+      this.FocusElementById("itemName"+len);
     }
     catch (exception) {
       this.messageboxService.showMessage("Error", [exception]);
     }
   }
+  private FocusElementById(id: string) {
+    window.setTimeout(function () {
+      let itmNameBox = document.getElementById(id);
+      if (itmNameBox) {
+        itmNameBox.focus();
+      }
+    }, 600);
+  }
+
   Save() {
     let check = true;
+    // if(this.IsConsumptionDateValid() == false){
+    //   check = false;
+    //   alert("Invalid Fiscal Year Date Assigned to Consumption Date.")
+    // }
     for (var j = 0; j < this.SelecetdItemList.length; j++) {
+      if (this.SelecetdItemList[j].ConsumeQuantity > this.SelecetdItemList[j].Quantity) {
+        check = false;
+        alert("Consume Quantity is greater than Available Quantity.")
+        break;
+      }
       for (var i in this.SelecetdItemList[j].ConsumptionValidator.controls) {
         this.SelecetdItemList[j].ConsumptionValidator.controls[i].markAsDirty();
         this.SelecetdItemList[j].ConsumptionValidator.controls[i].updateValueAndValidity();
@@ -187,16 +172,17 @@ export class InventoryConsumptionComponent {
     if (check) {
       this.loading = true;
       for (var j = 0; j < this.SelecetdItemList.length; j++) {
+        this.SelecetdItemList[j].StoreId = this.CurrentStoreId;
+        this.SelecetdItemList[j].ConsumptionDate = this.ConsumptionDate;
         this.SelecetdItemList[j].Remark = this.WardConsumption.Remark;
         this.SelecetdItemList[j].CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
-        //this.SelecetdItemList[j].CounterId = this.currentCounterId;
       }
       this.wardBLService.PostInventoryConsumptionData(this.SelecetdItemList)
         .subscribe(res => {
           if (res.Status == "OK" && res.Results != null) {
             this.messageboxService.showMessage("Success", ['Consumption completed']);
             this.loading = false;
-            this.Cancel();
+            this.DiscardChanges();
           }
           else if (res.Status == "Failed") {
             this.loading = false;
@@ -210,14 +196,22 @@ export class InventoryConsumptionComponent {
           });
     }
   }
-  Cancel() {
+  DiscardChanges() {
     this.IsShowConsumption = false;
-    this.DepartmentList = [];
-    this.DepartmentId = 0;
     this.WardConsumption = new WardInventoryConsumptionModel();
-    this.GetDepartmentList();
+    this.ShowConsumptionPage();
   }
   ShowConsumptionPage() {
     this.router.navigate(['/WardSupply/Inventory/Consumption']);
   }
+  GoToNextInput(idToSelect: string) {
+    if (document.getElementById(idToSelect)) {
+      let nextEl = <HTMLInputElement>document.getElementById(idToSelect);
+      nextEl.focus();
+      nextEl.select();
+    }
+  }
+  // public IsConsumptionDateValid() : boolean{
+  //   return this.inventoryService.allFiscalYearList.some( fy => (fy.IsClosed == null || fy.IsClosed == false) && moment(this.ConsumptionDate).isBetween(fy.StartDate,fy.EndDate));
+  // }
 }

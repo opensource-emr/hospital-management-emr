@@ -1,76 +1,70 @@
-<style>
- 
-</style>
-
-<div class="popup-static portlet box portlet-fullscreen">
+<style></style>
+<div class="popup-static portlet box portlet-fullscreen inv_modal">
   <div class="portlet-body form">
     <div class="col-md-offset-1 col-md-10">
-
       <div class="modelbox-div">
-
-        <div class="modelbox-header">
-          <h4 class="margin-0-vr text-warning">
-            <strong>Lab Tests Orders of  {{this.selectedPatient.Name}}  (Patient Number: {{this.selectedPatient.PatientCode}})</strong>
-          </h4>
+        <div class="caption lb-caption">
+          <h3 class="margin-0-vr text-warning"> <strong>Lab Tests Orders of  {{this.selectedPatient.Name}}  (Patient Number: {{this.selectedPatient.PatientCode}})</strong> </h3>
+           <button class="btn btn-danger" (click)="CloseLabRequestsPage()">X</button>
         </div>
-
         <div class="modelbox-body">
-
           <div class="flex-container justify-sp-between margin-15-bt font-600">
             <div>Ward/Bed: {{selectedPatient.BedInformation.Ward}} - {{selectedPatient.BedInformation.BedNumber}}</div>
             <div>Admitting Docor: {{selectedPatient.AdmittingDoctorName}}</div>
-            <div>Admitted On: {{selectedPatient.AdmittedDate  | DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'}}</div>
+            <div>Admitted On: <date-lbl [value]="selectedPatient.AdmittedDate" [show-time]="true"></date-lbl></div>
           </div>
-
           <div *ngIf="labTestList && labTestList.length > 0" class="flex-table-holder">
             <div class="flex-container justify-sp-between table-row tbl-header">
               <div class="tbl-text"><span class="inline-block">Test Name</span></div>
-              <div class="tbl-text"><span class="inline-block">Order Date Time</span></div>
+              <div class="tbl-text"><span class="inline-block">Order Date Time</span>
+                <b *ngIf="!IsLocalDate">(AD)</b><b *ngIf="IsLocalDate">(BS)</b>
+                <div class="tooltip ng-star-inserted" style="color: #0067FF; z-index:inherit;">
+                    <span style="display: inline-block;background: #D8DEF1;cursor: pointer;">
+                      <i class="fa fa-refresh" (click)="ChangeDateFormat()"></i>
+                    </span>
+                    <p class="tooltiptext ttptextdown no-print">Change date format to AD/BS</p>
+                </div>
+              </div>
+              <div class="tbl-text"><span class="inline-block">OrderStatus</span></div>
               <div class="tbl-text"><span class="inline-block">Remarks</span></div>
               <div class="tbl-text"><span class="inline-block">Action</span></div>
             </div>
-
             <div class="flex-table-body-holder">
               <div *ngFor="let test of labTestList; let i = index;" class="flex-container justify-sp-between flex-align-center table-row tbl-body">
-                <div class="tbl-text"><span class="inline-block">{{test.LabTestName}}</span></div>
-                <div class="tbl-text"><span class="inline-block">{{test.OrderDateTime | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</span></div>
-                <div class="tbl-text"><span class="inline-block"><textarea [(ngModel)]="test.CancelRemarks" [attr.disabled]="test.BillingStatus.toLowerCase() == 'provisional' && !test.IsReportGenerated ?  null : 'disabled'"></textarea></span></div>
-
-                <div class="tbl-text" *ngIf="test.BillingStatus.toLowerCase() == 'provisional' && !test.IsReportGenerated"><button [disabled]="loading" (click)="loading=true;cancelThisTest(test, i)" class="btn btn-danger" style="padding: 3px 10px;">Cancel</button></div>
-                <div class="tbl-text" *ngIf="test.BillingStatus.toLowerCase() == 'provisional' && test.IsReportGenerated"><strong>Report Generated- Cannot Cancel it now!!</strong></div>
+                <div class="tbl-text"><span class="inline-block">{{test.ItemName}}</span></div>
+                <div class="tbl-text" *ngIf="!IsLocalDate" style="width: 120px;"><span class="inline-block">{{test.RequisitionDate | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</span></div>
+                <div class="tbl-text" *ngIf="IsLocalDate" style="width: 120px;"><span class="inline-block">{{test.RequisitionDate | nepaliDate:'format':'YYYY-MM-DD hh:mm'}}</span></div>
+                <div class="tbl-text"><span class="inline-block">{{test.OrderStatus}}</span></div>
+                <div class="tbl-text"><span class="inline-block">
+                  <textarea [(ngModel)]="test.CancelRemarks" class="form-control"></textarea>
+                  </span></div>
+                <div class="tbl-text" >
+                  <span *ngIf="!test.AllowCancellation">Cannot Cancel</span>
+                  <button *ngIf="test.AllowCancellation" [disabled]="loading" (click)="loading=true;cancelThisTest(test, i)" class="btn btn-danger" style="padding: 3px 10px;">Cancel</button>
+                </div>
+                <!--<div class="tbl-text" *ngIf="test.BillingStatus.toLowerCase() == 'provisional' && test.IsReportGenerated"><strong>Report Generated- Cannot Cancel it now!!</strong></div>
                 <div class="tbl-text" *ngIf="test.BillingStatus.toLowerCase() == 'paid' && !test.IsReportGenerated"><strong>Can Cancel Only from Billing</strong></div>
-                <div class="tbl-text" *ngIf="test.BillingStatus.toLowerCase() == 'paid' && test.IsReportGenerated"><strong>Report Generated- Cannot Cancel it now!!</strong></div>
+                <div class="tbl-text" *ngIf="test.BillingStatus.toLowerCase() == 'paid' && test.IsReportGenerated"><strong>Report Generated- Cannot Cancel it now!!</strong></div> -->
               </div>
             </div>
-            
           </div>
-
-
-          <div class="table-responsive margin-15-bt">          
-
-            <div *ngIf="labTestList && labTestList.length == 0" class="margin-20-vr text-center">
+          <div class="margin-15-bt" style="width: 100%;background: white;display: flex;flex-wrap: wrap;">
+            <div *ngIf="labTestList && labTestList.length == 0" class="margin-20-vr text-center full-width-flx">
               <p class="font-600 large-txt">No Test For Current InPatient</p>
             </div>
-
-
-            <ward-billitem-request *ngIf="showOrderRequest" [counterId]="labCounterId" [billItems]="labBillItems"
-                                   [patientId]="selectedPatient.PatientId" [visitId]="selectedPatient.PatientVisitId"
-                                   [visitType]="'inpatient'" [billingType]="'inpatient'"
-                                   (emit-billItemReq)="GetAllTestOfSelectedInpatient($event)"></ward-billitem-request>
+            <div class="full-width-flx">
+              <ward-billitem-request *ngIf="showOrderRequest" [counterId]="labCounterId" [billItems]="labBillItems"
+                                     [patientId]="selectedPatient.PatientId" [visitId]="selectedPatient.PatientVisitId"
+                                     [visitType]="'inpatient'" [billingType]="'inpatient'"
+                                     [past-tests] = "labTestList"
+                                     (emit-billItemReq)="WardBillingRequestOnClose($event)"></ward-billitem-request>
+            </div>
           </div>
-
-
         </div>
-
-
-
-
-        <div class="close-modelbox">
+        <!-- <div class="close-modelbox">
           <button class="btn btn-danger" (click)="CloseLabRequestsPage()">X</button>
-        </div>
-
+        </div> -->
       </div>
     </div>
-
   </div>
 </div>

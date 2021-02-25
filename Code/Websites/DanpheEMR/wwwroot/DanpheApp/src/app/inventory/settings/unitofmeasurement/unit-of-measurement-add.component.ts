@@ -19,6 +19,7 @@ export class UnitOfMeasurementAddComponent {
     @Output("callback-add")
     callbackAdd: EventEmitter<Object> = new EventEmitter<Object>();
     public update: boolean = false;
+    public loading: boolean = false;
 
     public CurrentUnitOfMeasurement: UnitOfMeasurementModel;
     public completeunitofmeasurementlist: Array<UnitOfMeasurementModel> = new Array<UnitOfMeasurementModel>();
@@ -53,15 +54,18 @@ export class UnitOfMeasurementAddComponent {
             this.CurrentUnitOfMeasurement.UnitOfMeasurementValidator.controls[i].updateValueAndValidity();
         }
         if (this.CurrentUnitOfMeasurement.IsValidCheck(undefined, undefined)) {
+            this.loading = true;
             this.invSettingBL.AddUnitOfMeasurement(this.CurrentUnitOfMeasurement)
                 .subscribe(
                 res => {
                     this.showMessageBox("success", "UnitOfMeasurement Added");
                     this.CurrentUnitOfMeasurement = new UnitOfMeasurementModel();
                     this.CallBackAddUnitOfMeasurement(res)
+                    this.loading = false;
                 },
                 err => {
                     this.logError(err);
+                    this.loading = false;
                 });
         }
     }
@@ -74,16 +78,19 @@ export class UnitOfMeasurementAddComponent {
         }
 
         if (this.CurrentUnitOfMeasurement.IsValidCheck(undefined, undefined)) {
+            this.loading = true;
             this.invSettingBL.UpdateUnitOfMeasurement(this.CurrentUnitOfMeasurement)
                 .subscribe(
                 res => {
                     this.showMessageBox("success", "UnitOfMeasurement Updated");
                     this.CurrentUnitOfMeasurement = new UnitOfMeasurementModel();
                     this.CallBackAddUnitOfMeasurement(res)
+                    this.loading = false;
 
                 },
                 err => {
                     this.logError(err);
+                    this.loading = false;
                 });
         }
     }

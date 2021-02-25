@@ -1,0 +1,154 @@
+<style>
+  .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+    padding: 0px 0px 0px 5px !important;
+  }
+
+  body {
+    font-family: Verdana !important;
+    color: #000;
+  }
+
+  .round-shadow-div {
+    padding: 15px;
+    margin-top: 15px;
+  }
+
+    .round-shadow-div .padLess_table th, .round-shadow-div .padLess_table td {
+      padding: 8px 5px !important;
+    }
+</style>
+<div class="row" *ngIf="showItemSummary">
+  <div class="col-md-12 no-print">
+    <span style="float:right;">
+      <label for="chkViewChange" class="mt-checkbox mt-checkbox-outline">
+        <input type="checkbox" [(ngModel)]="showDetailView" id="chkViewChange" />
+        <span></span>Show Detail View
+      </label>
+
+    </span>
+  </div>
+  <div class="col-md-12">
+    <button class="blue btn non-printable" type="button" (click)="CallBackDepts()">
+      <i class="fa fa-arrow-left"></i>
+      Back
+    </button>
+    <button class="blue btn right non-printable" type="button" (click)="ExportToExcel('itmSummaryPrintPage')">
+      <i class="fa fa-file-excel-o"></i>
+      Excel
+    </button>
+    <div class="row">
+      <div *ngIf="showDetailView">
+        <div id="itmSummaryPrintPage" class="round-shadow-div">
+          <div class="row">
+            <span class="col-md-2 left">From Date: {{FromDate}}<br />ToDate: {{ToDate}}<br /></span>
+            <span class="col-md-8" style="text-align:center;padding:0px;font-size:16px">
+              Doctor Name: <b *ngIf="reportData && reportData[0]">{{reportData[0].IncentiveReceiverName}}</b><br />
+            </span>
+            <span class="col-md-2 right" style="padding:0px">Print Date: {{currentDate}}</span>
+          </div>
+
+          <div class="row">
+            <div class="col-md-12" *ngFor="let InTyrow of allReportData">
+              <div class="row" *ngIf="InTyrow.reportData && InTyrow.reportData.length>0">
+                <div class="col-md-12">
+                  <p style="margin-bottom: 15px;margin-top:25px;">
+                    Income Type:&nbsp;<b style="text-transform:uppercase;">{{InTyrow.IncomeType}}</b>
+                    <label style="margin-left:12px;color:green;">
+                      {{InTyrow.description}}
+                    </label>
+                  </p>
+                  <table class="table-striped table-hover table-bordered" style="background-color:initial;width:100%">
+                    <thead style="background-color:whitesmoke">
+                      <tr>
+                        <td style="text-align:center"><b>Sr No.</b></td>
+                        <td style="text-align:center">
+                          <b>Date</b>
+                          <b *ngIf="!isDateFormatBS">(AD)</b>
+                          <b *ngIf="isDateFormatBS">(BS)</b>
+                          <i class="fa fa-refresh  no-print hidden-print" (click)="ChangeDateFormate()" title="Click to Change Date Format"></i>
+
+                          <!--<div class="tooltip ng-star-inserted" style="color: #0069FF;z-index: inherit;">
+                            <span style="display: inline-block; background: #D8DEF1;cursor: pointer;">
+                              <i class="fa fa-refresh" (click)="ChangeDateFormate()"></i>
+                            </span>
+                            <p class="tooltiptext ttptextdown no-print">Change date format to AD/BS</p>
+                          </div>-->
+                        </td>
+                        <td style="text-align:center"><b>Invoice No.</b></td>
+                        <td style="text-align:center"><b>Patient</b></td>
+                        <td style="text-align:center"><b>Hospital No</b></td>
+                        <td style="text-align:center"><b>Item Name</b></td>
+                        <td style="text-align:center"><b>Total Bill Amt.</b></td>
+                        <td style="text-align:center"><b>Incentive%</b></td>
+                        <td style="text-align:center"><b>Incentive Amt.</b></td>
+                        <td style="text-align:center"><b>TDS Amt.</b></td>
+                        <td style="text-align:center"><b>Net Payable</b></td>
+                        <td style="text-align:center"><b>IsPaymentProcessed</b></td>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let row of InTyrow.reportData;let i=index">
+                        <td style="text-align:center">{{i+1}}</td>
+                        <td style="width: 6%;" *ngIf="!isDateFormatBS">{{row.TransactionDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                        <td style="width: 6%;" *ngIf="isDateFormatBS">{{row.TransactionDate | nepaliDate:'format':'YYYY-MM-DD'}}</td>
+                        <td style="text-align:center">{{row.InvoiceNoFormatted}}</td>
+                        <td style="text-align:center">{{row.PatientName}}</td>
+                        <td style="text-align:center">{{row.HospitalNum}}</td>
+                        <td style="text-align:center">{{row.ItemName}}</td>
+                        <td style="text-align:center">{{row.TotalAmount}}</td>
+                        <td style="text-align:center">{{row.IncentivePercent}}</td>
+                        <td style="text-align:center">{{row.IncentiveAmount}}</td>
+                        <td style="text-align:center">{{row.TDSAmount}}</td>
+                        <td style="text-align:center">{{row.NetPayableAmt}}</td>
+                        <td style="text-align:center">{{row.IsPaymentMade}}</td>
+                      </tr>
+                      <tr *ngIf="InTyrow.IncomeType=='assigned'" style="font-weight: bold">
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td style="text-align:center"><b>Total :</b></td>
+                        <td style="text-align:center">{{summary.tot_AssignBilAmt}}</td>
+                        <td style="text-align:center">-</td>
+                        <td style="text-align:center">{{summary.tot_AssignInctvAmt}}</td>
+                        <td style="text-align:center">{{summary.tot_AssignTDSAmt}}</td>
+                        <td style="text-align:center">{{summary.tot_AssignNetPayable}}</td>
+                        <td style="text-align:center">-</td>
+                      </tr>
+                      <tr *ngIf="InTyrow.IncomeType=='referral'" style="font-weight: bold">
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td style="text-align:center"><b>Total :</b></td>
+                        <td style="text-align:center">{{summary.tot_RefBilAmt}}</td>
+                        <td style="text-align:center">-</td>
+                        <td style="text-align:center">{{summary.tot_RefInctvAmt}}</td>
+                        <td style="text-align:center">{{summary.tot_RefTDSAmt}}</td>
+                        <td style="text-align:center">{{summary.tot_RefNetPayable}}</td>
+                        <td style="text-align:center">-</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="!showDetailView">
+        <incentive-itemgroup-summary *ngIf="!showDetailView"
+                                     [fromDate]="FromDate"
+                                     [toDate]="ToDate"
+                                     [referrerId]="employeeId"
+                                     [doctorName]="selectedEmpName"
+                                     (callback)="CallBackItemSummary()">
+        </incentive-itemgroup-summary>
+      </div>
+    </div>
+  </div>
+</div>
+

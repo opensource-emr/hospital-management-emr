@@ -7,6 +7,7 @@
     ReactiveFormsModule
 } from '@angular/forms'
 import * as moment from 'moment/moment';
+import { ENUM_TermsApplication } from '../../shared/shared-enums';
 
 export class TermsConditionsMasterModel {
     public TermsId: number = 0;
@@ -17,7 +18,8 @@ export class TermsConditionsMasterModel {
     public CreatedBy: number = 0;
     public CreatedOn: string = null;
     public IsActive: boolean = true;
-
+    public TermsApplicationEnumId: ENUM_TermsApplication = ENUM_TermsApplication.Inventory;
+    
     public TermsValidators: FormGroup = null;
 
     constructor() {

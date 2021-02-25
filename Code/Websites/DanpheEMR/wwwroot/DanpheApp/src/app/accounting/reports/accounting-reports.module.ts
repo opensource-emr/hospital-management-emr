@@ -21,8 +21,9 @@ import { LedgerReportResuableComponent } from './shared/ledger-report-reusable/l
 import { CustomDateReusableComponent } from "./shared/custom-date-reusable/custom-date-reusable.component";
 import { DaywiseVoucherReportComponent } from './daywise-voucher-report/daywise-voucher-report.component';
 import { DaywiseVoucherDetailsComponent} from "./daywise-voucher-report/daywise-voucher-details.component";
+import { SystemAuditReportComponent } from './system-audit/system-audit-report.component';
 @NgModule({
-    providers: [AccountingReportsBLService, AccountingReportsDLService,{ provide: LocationStrategy, useClass: HashLocationStrategy }],
+    providers: [AccountingReportsBLService, AccountingReportsDLService, { provide: LocationStrategy, useClass: HashLocationStrategy }],
     imports: [
         CommonModule,
         ReactiveFormsModule,
@@ -42,7 +43,7 @@ import { DaywiseVoucherDetailsComponent} from "./daywise-voucher-report/daywise-
       LedgerReportResuableComponent,
       CustomDateReusableComponent,
       DaywiseVoucherReportComponent,
-      DaywiseVoucherDetailsComponent
+      DaywiseVoucherDetailsComponent,SystemAuditReportComponent
     ],
 
     bootstrap: [AccountingReportsComponent]

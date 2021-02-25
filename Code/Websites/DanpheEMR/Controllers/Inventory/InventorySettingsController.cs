@@ -20,6 +20,8 @@ using DanpheEMR.Core.Caching;
 using RefactorThis.GraphDiff;//for entity-update.
 using System.Collections.ObjectModel;
 using DanpheEMR.ServerModel.InventoryModels;
+using DanpheEMR.AccTransfer;
+using System.Data.Entity.SqlServer;
 
 // For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -57,7 +59,7 @@ namespace DanpheEMR.Controllers
                 {
 
                     List<InventoryTermsModel> termsconditions = (from terms in inventoryDbContext.InventoryTerms
-                                                           select terms).OrderByDescending(a => a.CreatedOn).ToList();
+                                                                 select terms).OrderByDescending(a => a.CreatedOn).ToList();
                     responseData.Status = "OK";
                     responseData.Results = termsconditions;
                 }
@@ -73,6 +75,10 @@ namespace DanpheEMR.Controllers
                 {
                     List<VendorMasterModel> vendorslist = (from v in inventoryDbContext.Vendors
                                                            select v).ToList();
+                    foreach (VendorMasterModel vendor in vendorslist)
+                    {
+                        vendor.DefaultItem = DanpheJSONConvert.DeserializeObject<List<int>>(vendor.DefaultItemJSON);
+                    }
                     responseData.Status = "OK";
                     responseData.Results = vendorslist;
                 }
@@ -86,7 +92,7 @@ namespace DanpheEMR.Controllers
                 else if (reqType == "GetItemSubCategory")
                 {
                     List<ItemSubCategoryMasterModel> itemsubcategorylist = (from v in inventoryDbContext.ItemSubCategoryMaster
-                                                                      select v).ToList();
+                                                                            select v).ToList();
                     responseData.Status = "OK";
                     responseData.Results = itemsubcategorylist;
                 }
@@ -109,7 +115,7 @@ namespace DanpheEMR.Controllers
                         //getting IsActive=true list
                         accountheadlist = (from list in inventoryDbContext.AccountHeadMaster
                                            where list.IsActive == ShowIsActive
-                                            select list).ToList();
+                                           select list).ToList();
                     }
                     else
                     {
@@ -128,8 +134,34 @@ namespace DanpheEMR.Controllers
                 }
                 else if (reqType == "GetItem")
                 {
-                    List<ItemMasterModel> itemlist = (from v in inventoryDbContext.Items
-                                                      select v).ToList();
+                    var itemlist = (
+                        from v in inventoryDbContext.Items
+                        join unit in inventoryDbContext.UnitOfMeasurementMaster on v.UnitOfMeasurementId equals unit.UOMId into ps
+                        from unit in ps.DefaultIfEmpty()
+                        select new
+                        {
+                            v.ItemId,
+                            v.Code,
+                            v.CompanyId,
+                            v.ItemCategoryId,
+                            //v.AccountHeadId,
+                            v.SubCategoryId,
+                            v.PackagingTypeId,
+                            v.UnitOfMeasurementId,
+                            v.ItemName,
+                            v.ItemType,
+                            v.Description,
+                            v.ReOrderQuantity,
+                            v.VAT,
+                            v.MinStockQuantity,
+                            v.BudgetedQuantity,
+                            v.StandardRate,
+                            v.UnitQuantity,
+                            v.CreatedBy,
+                            v.CreatedOn,
+                            v.IsActive,
+                            unit.UOMName
+                        }).ToList();
                     responseData.Status = "OK";
                     responseData.Results = itemlist;
                 }
@@ -145,7 +177,38 @@ namespace DanpheEMR.Controllers
             return DanpheJSONConvert.SerializeObject(responseData);
 
         }
-
+        #region: Get Terms List based on application id
+        [HttpGet]
+        [Route("~/api/InventorySettings/GetTermsListByTermsApplicationId/{TermsApplicationId}")]
+        public async Task<IActionResult> GetTermsListByTermsApplicationId([FromRoute] int TermsApplicationId)
+        {
+            var inventorydb = new InventoryDbContext(connString);
+            var responseData = new DanpheHTTPResponse<object>();
+            try
+            {
+                var termsList = await inventorydb.InventoryTerms.Where(term => term.TermsApplicationEnumId == TermsApplicationId)
+                                                                .ToListAsync<InventoryTermsModel>();
+                if (termsList.Count > 0)
+                {
+                    responseData.Status = "OK";
+                    responseData.Results = termsList;
+                    return Ok(responseData);
+                }
+                else
+                {
+                    responseData.Status = "Failed";
+                    responseData.ErrorMessage = "Failed to load terms list.";
+                    return NotFound(responseData);
+                }
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = "Failed to load terms list.";
+                return BadRequest(responseData);
+            }
+        }
+        #endregion
         // GET api/values/5
         [HttpGet("{id}")]
         public string Get(int id)
@@ -176,7 +239,16 @@ namespace DanpheEMR.Controllers
                 if (reqType == "AddVendors")
                 {
                     VendorMasterModel vendorModel = DanpheJSONConvert.DeserializeObject<VendorMasterModel>(str);
-                    vendorModel.CreatedOn = System.DateTime.Now;
+
+                    //Check for last max Vendor Code and assign it to new Vendor's VendorCode
+                    string maxVendorCode = inventoryDBContext.Vendors.Where(v => SqlFunctions.IsNumeric(v.VendorCode) == 1).Max(v => v.VendorCode);
+                    int newVendorCode = Convert.ToInt32(maxVendorCode) + 1;
+                    string newVendorCodeInString = "0000" + newVendorCode;
+                    newVendorCodeInString = newVendorCodeInString.Substring(newVendorCodeInString.Length - 5);
+                    vendorModel.VendorCode = newVendorCodeInString;
+
+                    vendorModel.CreatedOn = DateTime.Now;
+
                     inventoryDBContext.Vendors.Add(vendorModel);
                     inventoryDBContext.SaveChanges();
                     responseData.Results = vendorModel;
@@ -194,12 +266,44 @@ namespace DanpheEMR.Controllers
                 }
                 else if (reqType == "AddItemSubCategory")
                 {
-                    ItemSubCategoryMasterModel itemsubcategoryModel = DanpheJSONConvert.DeserializeObject<ItemSubCategoryMasterModel>(str);
-                    itemsubcategoryModel.CreatedOn = System.DateTime.Now;
-                    inventoryDBContext.ItemSubCategoryMaster.Add(itemsubcategoryModel);
-                    inventoryDBContext.SaveChanges();
-                    responseData.Results = itemsubcategoryModel;
-                    responseData.Status = "OK";
+                    AccountingDbContext accountingDBContext = new AccountingDbContext(connString);
+                    using (var dbContextTransaction = accountingDBContext.Database.BeginTransaction())
+                    {
+                        try
+                        {
+
+                            ItemSubCategoryMasterModel itemsubcategoryModel = DanpheJSONConvert.DeserializeObject<ItemSubCategoryMasterModel>(str);
+                            itemsubcategoryModel.CreatedOn = System.DateTime.Now;
+                            inventoryDBContext.ItemSubCategoryMaster.Add(itemsubcategoryModel);
+                            inventoryDBContext.SaveChanges();
+                            /// START :         
+                            LedgerMappingModel ledgerMapping = new LedgerMappingModel();
+                            if (itemsubcategoryModel.LedgerId > 0)
+                            {
+                                var ledgerData = accountingDBContext.Ledgers.Where(l => l.LedgerId == itemsubcategoryModel.LedgerId).FirstOrDefault();
+                                if (ledgerData != null)
+                                {
+                                    ledgerData.LedgerReferenceId = itemsubcategoryModel.SubCategoryId;
+                                    accountingDBContext.Ledgers.Attach(ledgerData);
+                                    accountingDBContext.Entry(ledgerData).State = EntityState.Modified;
+                                    accountingDBContext.Entry(ledgerData).Property(x => x.LedgerReferenceId).IsModified = true;
+                                }
+                                ledgerMapping.LedgerId = (int)itemsubcategoryModel.LedgerId;
+                                ledgerMapping.LedgerType = "inventorysubcategory";
+                                ledgerMapping.ReferenceId = (int)itemsubcategoryModel.SubCategoryId;
+                                accountingDBContext.LedgerMappings.Add(ledgerMapping);
+                                accountingDBContext.SaveChanges();
+                            }
+                            responseData.Results = itemsubcategoryModel;
+                            responseData.Status = "OK";
+                            dbContextTransaction.Commit();
+                        }
+                        catch (Exception ex)
+                        {
+                            dbContextTransaction.Rollback();
+                            throw ex;
+                        }
+                    }
                 }
                 //posting to inventory terms & conditions 
                 else if (reqType == "PostInventoryTerms")
@@ -221,7 +325,7 @@ namespace DanpheEMR.Controllers
                     responseData.Results = unitofmeasurementModel;
                     responseData.Status = "OK";
                 }
-               else if (reqType == "AddPackagingType")
+                else if (reqType == "AddPackagingType")
                 {
                     PackagingTypeMasterModel packagingtypeModel = DanpheJSONConvert.DeserializeObject<PackagingTypeMasterModel>(str);
                     packagingtypeModel.CreatedOn = System.DateTime.Now;
@@ -230,7 +334,7 @@ namespace DanpheEMR.Controllers
                     responseData.Results = packagingtypeModel;
                     responseData.Status = "OK";
                 }
-               else if (reqType == "AddAccountHead")
+                else if (reqType == "AddAccountHead")
                 {
                     AccountHeadMasterModel accountheadModel = DanpheJSONConvert.DeserializeObject<AccountHeadMasterModel>(str);
                     accountheadModel.CreatedOn = System.DateTime.Now;
@@ -239,16 +343,16 @@ namespace DanpheEMR.Controllers
                     responseData.Results = accountheadModel;
                     responseData.Status = "OK";
                 }
-               else if (reqType == "AddItem")
+                else if (reqType == "AddItem")
                 {
                     ItemMasterModel itemModel = DanpheJSONConvert.DeserializeObject<ItemMasterModel>(str);
-                    itemModel.CreatedOn = System.DateTime.Now;                    
+                    itemModel.CreatedOn = System.DateTime.Now;
                     inventoryDBContext.Items.Add(itemModel);
                     inventoryDBContext.SaveChanges();
                     responseData.Results = itemModel;
                     responseData.Status = "OK";
                 }
-               else if (reqType == "AddCurrency")
+                else if (reqType == "AddCurrency")
                 {
                     CurrencyMasterModel currencyModel = DanpheJSONConvert.DeserializeObject<CurrencyMasterModel>(str);
                     currencyModel.CreatedOn = System.DateTime.Now;
@@ -293,6 +397,7 @@ namespace DanpheEMR.Controllers
                         VendorMasterModel vendor = DanpheJSONConvert.DeserializeObject<VendorMasterModel>(str);
                         inventoryDBContext.Vendors.Attach(vendor);
                         inventoryDBContext.Entry(vendor).State = EntityState.Modified;
+                        inventoryDBContext.Entry(vendor).Property(x => x.VendorCode).IsModified = false;
                         inventoryDBContext.Entry(vendor).Property(x => x.CreatedOn).IsModified = false;
                         inventoryDBContext.Entry(vendor).Property(x => x.CreatedBy).IsModified = false;
 
@@ -307,6 +412,7 @@ namespace DanpheEMR.Controllers
                         inventoryDBContext.Entry(termsconditions).State = EntityState.Modified;
                         inventoryDBContext.Entry(termsconditions).Property(x => x.CreatedOn).IsModified = false;
                         inventoryDBContext.Entry(termsconditions).Property(x => x.CreatedBy).IsModified = false;
+                        inventoryDBContext.Entry(termsconditions).Property(x => x.TermsApplicationEnumId).IsModified = false;
 
                         inventoryDBContext.SaveChanges();
                         responseData.Results = termsconditions;
@@ -327,15 +433,58 @@ namespace DanpheEMR.Controllers
                     }
                     if (reqType == "UpdateItemSubCategory")
                     {
-                        ItemSubCategoryMasterModel itemsubcategoryModel = DanpheJSONConvert.DeserializeObject<ItemSubCategoryMasterModel>(str);
-                        inventoryDBContext.ItemSubCategoryMaster.Attach(itemsubcategoryModel);
-                        inventoryDBContext.Entry(itemsubcategoryModel).State = EntityState.Modified;
-                        inventoryDBContext.Entry(itemsubcategoryModel).Property(x => x.CreatedOn).IsModified = false;
-                        inventoryDBContext.Entry(itemsubcategoryModel).Property(x => x.CreatedBy).IsModified = false;
+                        AccountingDbContext accountingDBContext = new AccountingDbContext(connString);
+                        try
+                        {
+                            ItemSubCategoryMasterModel itemsubcategoryModel = DanpheJSONConvert.DeserializeObject<ItemSubCategoryMasterModel>(str);
+                            inventoryDBContext.ItemSubCategoryMaster.Attach(itemsubcategoryModel);
+                            inventoryDBContext.Entry(itemsubcategoryModel).State = EntityState.Modified;
+                            inventoryDBContext.Entry(itemsubcategoryModel).Property(x => x.CreatedOn).IsModified = false;
+                            inventoryDBContext.Entry(itemsubcategoryModel).Property(x => x.CreatedBy).IsModified = false;
+                            inventoryDBContext.SaveChanges();
 
-                        inventoryDBContext.SaveChanges();
-                        responseData.Results = itemsubcategoryModel;
-                        responseData.Status = "OK";
+                            LedgerMappingModel ledgerMapping = new LedgerMappingModel();
+                            if (itemsubcategoryModel.LedgerId > 0)
+                            {
+                                //NageshBB- 22Jul 2020-if this api called from other module , then we have hospital Id issue 
+                                //for this resolution we have temp solution
+                                //we have saved accPrimary id in parameter table so, we will return this hospital records here
+                                //This is not correct solution , well solution is to show activate hospital popup when user get logged in into system.
+                                //so, this will help us to make software as multi tenant. if user have 2 or more hospital permission then this popup will come.
+                                //if user have only one hsopital permission then automatically activate this hospital
+                                var HospId = AccountingTransferData.GetAccPrimaryHospitalId(accountingDBContext);
+
+                                var ledData = accountingDBContext.LedgerMappings.Where(l => l.LedgerId == itemsubcategoryModel.LedgerId && l.HospitalId == HospId).FirstOrDefault();
+                                if (ledData == null)
+                                {
+                                    ledgerMapping.LedgerId = (int)itemsubcategoryModel.LedgerId;
+                                    ledgerMapping.HospitalId = HospId;
+                                    ledgerMapping.LedgerType = "inventorysubcategory";
+                                    ledgerMapping.ReferenceId = (int)itemsubcategoryModel.SubCategoryId;
+                                    accountingDBContext.LedgerMappings.Add(ledgerMapping);
+                                    accountingDBContext.SaveChanges();
+                                }
+                                //NageshBB- later we need to move this code into accounting 
+                                var ledgerData = accountingDBContext.Ledgers.Where(l => l.LedgerId == itemsubcategoryModel.LedgerId && l.HospitalId == HospId).FirstOrDefault();
+                                if (ledgerData != null)
+                                {
+                                    ledgerData.LedgerReferenceId = itemsubcategoryModel.SubCategoryId;
+                                    accountingDBContext.Ledgers.Attach(ledgerData);
+                                    accountingDBContext.Entry(ledgerData).State = EntityState.Modified;
+                                    accountingDBContext.Entry(ledgerData).Property(x => x.LedgerReferenceId).IsModified = true;
+                                    accountingDBContext.SaveChanges();
+                                }
+
+                            }
+
+                            responseData.Results = itemsubcategoryModel;
+                            responseData.Status = "OK";
+
+                        }
+                        catch (Exception ex)
+                        {
+                            throw ex;
+                        }
                     }
                     if (reqType == "UpdateUnitOfMeasurement")
                     {
@@ -376,11 +525,14 @@ namespace DanpheEMR.Controllers
                     if (reqType == "UpdateItem")
                     {
                         ItemMasterModel itemModel = DanpheJSONConvert.DeserializeObject<ItemMasterModel>(str);
+
+
+                        itemModel.ModifiedOn = System.DateTime.Now;
                         inventoryDBContext.Items.Attach(itemModel);
                         inventoryDBContext.Entry(itemModel).State = EntityState.Modified;
                         inventoryDBContext.Entry(itemModel).Property(x => x.CreatedOn).IsModified = false;
                         inventoryDBContext.Entry(itemModel).Property(x => x.CreatedBy).IsModified = false;
-
+                        inventoryDBContext.Entry(itemModel).Property(x => x.ModifiedBy).IsModified = true;
                         inventoryDBContext.SaveChanges();
                         responseData.Results = itemModel;
                         responseData.Status = "OK";

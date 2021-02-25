@@ -1,0 +1,72 @@
+<style>
+    .bg-on {
+        background-color: cadetblue;
+    }
+
+    .bg-off {
+        background-color: none;
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="caption">
+            <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
+            <span class="caption-subject font-blue bold uppercase">Select Roles for <b>{{selectedUser.UserName}}</b></span>
+        </div>
+       
+        <input type="button" class="btn btn-primary" (click)="Submit()" value="Submit" />
+        <div style="height:20%">
+            <table>
+                <tr>
+                    <td>
+                        <input danphe-auto-complete
+                               class="searchtbx"
+                               [(ngModel)]="selectedItem"
+                               [source]="roleList"
+                               [list-formatter]="myListFormatter"
+                               placeholder="Role Name"
+                               display-prorolty-name="RoleName"
+                               value-prorolty-name=null
+                               min-chars="2"
+                               (valueChanged)="SelectRoleSearchBox(selectedItem)"
+                               max-num-list="10" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <br />
+        <div style="width:100%;">
+            <table style="width:100%;" border="1">
+                <tr>
+                    <td style="width:60%;">
+                        
+                        <div>
+                            <span *ngFor="let rol of roleList;let i=index;">
+                                <span style="padding-left:18px;">
+                                    <input type="checkbox" name="rol.RoleId" id = "rol.RoleName" [(ngModel)]="rol.IsSelected" (ngModelChange)="UserRoleEventHandler(rol)" style="font-size:10px;" />
+                                    <span [ngClass]="rol.IsSelected ? 'bg-on' : 'bg-off'" for="rol.RoleName" (click)="selectRole(rol)">{{rol.RoleName}}</span>
+                                </span>
+                                <br/>
+                            </span>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <table style="width:100%;" border="1">
+            <thead *ngIf="selectedUserRoleList.length !=0">
+                <tr>
+                    <th class="BillCreditHdr" style="color:red;text-align: center;"> Selected Roles</th>
+                </tr>
+            </thead>
+            <tr *ngFor="let rol of selectedUserRoleList;let i=index;">
+                <td><input type="checkbox" name="rol.RoleId" [(ngModel)]="rol.IsSelected" (ngModelChange)="UserRoleEventHandler(rol)" style="color:red;font-size:12px;" /> {{rol.RoleName}}</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+

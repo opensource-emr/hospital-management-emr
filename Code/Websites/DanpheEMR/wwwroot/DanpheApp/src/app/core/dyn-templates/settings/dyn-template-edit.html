@@ -29,7 +29,7 @@
         margin-bottom: 8px !important;
     }
 </style>
-
+<div class="wrapper">
 <div class="row" *ngIf="!showEditTemplate">
     <div class="col-md-2">
         Select Template
@@ -49,9 +49,9 @@
 <div class="row" *ngIf="showEditTemplate">
     <div class="col-md-12 col-lg-12" *ngIf="isTemplateLoaded" style="padding-left: 0px;">
         <!--Template Edit secetion.-->
-        <div class="portlet box yellow">
+        <div class="portlet box blue">
             <div class="portlet-title">
-                <div class="caption">
+                <div class="caption custom-caption">
                     Template:  <b style="font-size: large;text-decoration: underline;">{{template.Text}}</b>
                 </div>
                 <div class="tools">
@@ -212,7 +212,7 @@
             </div>
         </div>
     </div>
-</div>
+</div></div>
 
 <qtn-add *ngIf="dynTemplateServ.ShowAddQtn"></qtn-add>
 <qtn-edit *ngIf="dynTemplateServ.ShowEditQtn"></qtn-edit>

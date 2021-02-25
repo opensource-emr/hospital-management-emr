@@ -10,21 +10,27 @@ import {
 export class DispatchItems {
   public DispatchItemsId: number = 0;
   public DepartmentId: number = 0;
+  public StoreId: number = 0;
+  public RequisitionId: number = 0;
   public RequisitionItemId: number = 0;
   public DispatchedQuantity: number = 0;
   public CreatedBy: number = 0;
   public CreatedOn: Date = null;
   public ReceivedBy: string = "";
+  public Remarks: string = "";
   //ony for Display
   public DepartmentName: string = "";
   public ItemId: number = 0;
+  public DispatchId: number = 0;
   public AvailableQuantity: number = 0;
   public ItemName: string = "";
   public RequiredQuantity: number = 0;
   public IsDisQtyValid: boolean = true;
+  public isActive:boolean = true;
 
 
   public DispatchItemValidator: FormGroup = null;
+    StandardRate: number;
   constructor() {
     var _formBuilder = new FormBuilder();
     this.DispatchItemValidator = _formBuilder.group({

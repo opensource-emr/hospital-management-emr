@@ -50,7 +50,7 @@
 }
 
 .smpl-num {
-  width: 150px;
+  width: 160px;
 }
 
 .maintain-min-ht {
@@ -70,4 +70,12 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+.sampleletter {
+  width: 45px;
+  height: 50px;
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
 }

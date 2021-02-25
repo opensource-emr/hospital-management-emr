@@ -11,9 +11,12 @@ import { CommonFunctions } from "../../shared/common.functions"
 import * as moment from 'moment/moment';
 import { Router } from '@angular/router';
 import { PHRMStockManageModel } from "../shared/phrm-stock-manage.model";
+import { IMRPUpdatedStock } from "../setting/mrp/phrm-update-mrp.component";
+import { ENUM_StockLocations } from "../../shared/shared-enums";
+import { SecurityService } from "../../security/shared/security.service";
 @Component({
   selector: 'stock-details-list',
-  templateUrl: '../../view/pharmacy-view/Stock/PHRMStockDetails.html' //"/PharmacyView/PHRMStockDetails"
+  templateUrl: "./phrm-stock-details-list.html"
 })
 export class PHRMStockDetailsListComponent {
 
@@ -24,14 +27,17 @@ export class PHRMStockDetailsListComponent {
   public showStockList: boolean = true;
   public selectedItem: PHRMStockManageModel = new PHRMStockManageModel();
   public showTransferPage: boolean = false;
-  public storeList: Array<any> = new Array<any>();
+  public storeList: Object = new Object();
   public selectedStore: any;
+    totalstockvalue: any;
+  public showUpdateMRPPopUpBox: boolean = false;
+  public selectedStockForMRPUpdate: IMRPUpdatedStock;
 
   constructor(
     public pharmacyBLService: PharmacyBLService, public pharmacyService: PharmacyService,
     public changeDetector: ChangeDetectorRef, public router: Router,
+    public securityService: SecurityService,
     public msgBoxServ: MessageboxService) {
-    this.stockDetailsGridColumns = PHRMGridColumns.PHRMStockDetailsList;
     this.getAllItemsStockDetailsList();
     this.getStoreList();
   }
@@ -43,7 +49,10 @@ export class PHRMStockDetailsListComponent {
     this.pharmacyBLService.GetAllItemsStockDetailsList()
       .subscribe(res => {
         if (res.Status == "OK") {
-          this.stockDetailsList = res.Results;
+          var phrmGridColumns = new PHRMGridColumns(this.securityService);
+          this.stockDetailsGridColumns = phrmGridColumns.PHRMStockDetailsList;
+            this.stockDetailsList = res.Results;
+            this.totalstockvalue = this.stockDetailsList.map(c => c.Price).reduce((sum, current) => sum + current);
           for (var i = 0; i < this.stockDetailsList.length; i++) {
             this.stockDetailsList[i].ExpiryDate = moment(this.stockDetailsList[i].ExpiryDate).format("YYYY-MM-DD");
           }
@@ -58,10 +67,11 @@ export class PHRMStockDetailsListComponent {
   }
 
   getStoreList() {
-    this.pharmacyBLService.GetStoreList()
+    this.pharmacyBLService.GetMainStore()
       .subscribe(res => {
         if (res.Status == "OK") {
           this.storeList = res.Results;
+          this.selectedStore = this.storeList;
         }
         else {
           this.msgBoxServ.showMessage("error", ["Failed to get Store List." + res.ErrorMessage]);
@@ -70,7 +80,14 @@ export class PHRMStockDetailsListComponent {
         this.msgBoxServ.showMessage("error", ["Failed to get Store List." + err.ErrorMessage]);
       });
   }
-
+  private FocusElementById(id: string) {
+    window.setTimeout(function () {
+      let element = document.getElementById(id);
+      if (element) {
+        element.focus();
+      }
+    }, 600);
+  }
   ////Grid Action Method
   StockDetailsGridAction($event: GridEmitModel) {
     switch ($event.Action) {
@@ -86,12 +103,21 @@ export class PHRMStockDetailsListComponent {
           this.selectedItem = new PHRMStockManageModel();
           this.selectedItem = Object.assign(this.selectedItem, $event.Data);
           this.selectedItem.Quantity = $event.Data.AvailableQuantity;
+          this.selectedItem.StockId = $event.Data.StockId;
           this.selectedItem.UpdatedQty = 0;
           this.selectedItem.GoodsReceiptItemId = $event.Data.GoodsReceiptItemId;
           this.selectedItem.Price = $event.Data.Price;
           this.selectedItem.InOut = null;
         }
         this.showTransferPage = true;
+        this.FocusElementById("transfertoStoreQty");
+        break;
+      }
+      case "update-mrp": {
+        this.showUpdateMRPPopUpBox = true;
+        this.selectedStockForMRPUpdate = null;
+        this.selectedStockForMRPUpdate = { StockId: $event.Data.StockId, LocationId: ENUM_StockLocations.Dispensary, MRP: $event.Data.MRP ,oldMRP: $event.Data.MRP,StoreStockId:$event.Data.StoreStockId};
+        break;
       }
       default:
         break;
@@ -168,7 +194,10 @@ export class PHRMStockDetailsListComponent {
       else if (this.selectedItem.UpdatedQty > this.selectedItem.Quantity) {
         alert("Transfer Quantity is greater than Available Quantity.")
       }
-      else {
+      else if (this.selectedItem.StockManageValidator.controls['UpdatedQty'].status == 'INVALID'){
+        alert("Transfer Quantity format not proper");
+      }
+      else { 
         this.selectedItem.InOut = "out";
         this.loading = true;
         this.pharmacyBLService.TransferToStore(this.selectedItem,StoreId).
@@ -181,7 +210,6 @@ export class PHRMStockDetailsListComponent {
                 this.stockDetailsList[this.rowIndex].AvailableQuantity = tempItm.AvailableQuantity - this.selectedItem.UpdatedQty;
                 this.stockDetailsList = this.stockDetailsList.slice();
                 this.selectedItem = new PHRMStockManageModel();
-                this.selectedStore = null;
                 this.getAllItemsStockDetailsList();
               }
               this.Cancel();
@@ -198,7 +226,6 @@ export class PHRMStockDetailsListComponent {
   }
   Close() {
     this.selectedItem = new PHRMStockManageModel();
-    this.selectedStore = null;
     this.showTransferPage = false;
   }
   Cancel() {
@@ -229,6 +256,16 @@ export class PHRMStockDetailsListComponent {
   myStoreListFormatter(data: any): string {
     let html = data["Name"];
     return html;
+  }
+  CallBackUpdateMRP($event) {
+    this.showUpdateMRPPopUpBox = false;
+    if ($event.event == 'update') {
+      let updatedStock = $event.stock;
+      var stockInClient = this.stockDetailsList.find(s => s.StockId == updatedStock.StockId);
+      stockInClient.MRP = updatedStock.MRP;
+      this.changeDetector.detectChanges();
+      this.stockDetailsList = this.stockDetailsList.slice();
+    }
   }
 }
 

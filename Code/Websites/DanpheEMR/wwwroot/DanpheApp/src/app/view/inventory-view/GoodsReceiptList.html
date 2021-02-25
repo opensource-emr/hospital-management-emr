@@ -1,50 +1,40 @@
 <div class="row">
-    <form class="form-horizontal">
-        <div class="form-body">
-            <div class="col-md-12">
+  <div class="col-md-4">
+    <a class="btn primary-btn btn-sm m1" (click)="inventoryService.POId = null" rbac-permission='{"name":"btn-inventory-goodsreceipt-create","actionOnInvalid":"remove"}' [routerLink]="'../GoodsReceiptAdd'"><i class="fa fa-plus"></i> Create Good Receipt</a>
+  </div>
+  <div class="col-md-8">
+    <div class="input-group pull-right padding-15-tp">
+      <div class="icheck-inline">
+        List by Status: &nbsp;
+        <label class="mt-checkbox mt-checkbox-outline">
+          <input type="radio" checked (change)="LoadGoodsReceiptListByStatus()"
+          name="GRStatus" [(ngModel)]="GRFilterStatus" value="complete" style="width:15px;height:15px" />
+          <span></span>Complete
+        </label>
 
-                <div class="row" style="width: 100%; margin-bottom: 25px;">
-                    <div class="col-md-5 col-xs-12">
-                        <div class="form-group">
-                            <label class="control-label col-md-3">From Date<b style="float:right;">:</b></label>
-                            <div class="col-md-9">
-                                <danphe-date-picker [(ngModel)]="fromDate" [ngModelOptions]="{standalone: true}" ngDefaultControl [CalendarTypes]="'en,np'">
-                                </danphe-date-picker>
-                            </div>
-                        </div>
-
-                    </div>
-                    <div class="col-md-5 col-xs-12">
-                        <div class="form-group">
-                            <label class="control-label col-md-3">To Date<b style="float:right;">:</b></label>
-                            <div class="col-md-9">
-                              <danphe-date-picker [(ngModel)]="toDate" [ngModelOptions]="{standalone: true}" ngDefaultControl [CalendarTypes]="'en,np'">
-                              </danphe-date-picker>
-                            </div>
-                        </div>
-
-                    </div>
-                      <div class="col-md-2 col-xs-12">
-                          <div class="form-group">
-                              <button class="btn blue" type="button" (click)="GetGoodsReceiptList()">
-                                <i class="fa fa-search"></i>
-                                Show Details
-                              </button>
-                          </div>
-                      </div>
-                </div>
-            </div>
-        </div>
-    </form>
+        <label class="mt-checkbox mt-checkbox-outline">
+          <input type="radio" (change)="LoadGoodsReceiptListByStatus()"
+          name="GRStatus" [(ngModel)]="GRFilterStatus" value="cancelled" style="width:15px;height:15px" />
+          <span></span>Cancelled
+        </label>
+      </div>
+    </div>
+  </div>
 </div>
 
-<a class="btn btn-primary btn-sm" (click)="inventoryService.POId = null" [routerLink]="'../GoodsReceiptAdd'">Create Good Receipt</a>
+
 
 <div class="row">
-    <div class="col-lg-12 col-sm-12">
-        <danphe-grid [grid-colDefaults]="goodsreceiptGridColumns"
-                     [grid-data]="grListfiltered"
-                     (grid-actions)="GoodsReceiptGridAction($event)">
-        </danphe-grid>
-    </div>
+  <div class="col-lg-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="goodsreceiptGridColumns"
+                 [grid-data]="grListfiltered"
+                 [rangeType]="dateRange"
+                 (onDateChange)="onDateChange($event)"
+                 [show-CustomDate]="true"
+                 (grid-actions)="GoodsReceiptGridAction($event)"
+                 [NepaliDateInGridParams]="NepaliDateInGridSettings"
+                 [grid-exportOptions]="GetGridExportOptions()"
+                 [grid-showExport]="true">
+    </danphe-grid>
+  </div>
 </div>

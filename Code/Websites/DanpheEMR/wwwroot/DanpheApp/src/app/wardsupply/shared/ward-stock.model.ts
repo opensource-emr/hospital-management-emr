@@ -9,14 +9,17 @@ import {
 export class WardStockModel {
     public StockId: number = 0;
     public WardId: number = 0;
+    public StoreId: number = 0;
     public ItemId: number = 0;
     public AvailableQuantity: number = 0;
+    public UnConfirmedQty: number = 0;
     public MRP: number = 0;
     public BatchNo: string = '';
     public ExpiryDate: string = "";
     public SubTotal: number = 0;
     public DispachedQuantity: number = 0;
     public Quantity: number = 0;
+    public Price:number = 0;
     public TotalAmount: number = 0;
     public WardName: string = "";
     public ItemName: string = "";

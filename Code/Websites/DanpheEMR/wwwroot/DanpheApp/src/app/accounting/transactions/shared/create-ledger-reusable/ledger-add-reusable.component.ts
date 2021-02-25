@@ -14,11 +14,9 @@ import { MessageboxService } from '../../../../shared/messagebox/messagebox.serv
 })
 export class LedgersAddReusableComponent {
 
-    public showAddPage: boolean = false;
-    public selectedLedger: LedgerModel;
-    ///public update: boolean = false;
-  @Output("callback-add")
-  callbackAdd: EventEmitter<Object> = new EventEmitter<Object>();
+
+    @Output("callback-add")
+    callbackAdd: EventEmitter<Object> = new EventEmitter<Object>();
     public CurrentLedger: LedgerModel;
     public selLedgerGroup: any;
     public showAddLedgerGroupPopUp: boolean = false;
@@ -36,63 +34,40 @@ export class LedgersAddReusableComponent {
     public Dr: boolean;
     public Cr: boolean;
     public ledgerType: string;
+
     public typeledger: any = true;
     public typesupplier: any = false;
     public typevendor: any = false;
+    
     public phrmSupplierList: any;
     public ledgerMappingList: any;
     constructor(public accountingSettingsBLService: AccountingSettingsBLService,
         public securityService: SecurityService,
-        public changeDetector: ChangeDetectorRef, 
+        public changeDetector: ChangeDetectorRef,
         public msgBoxServ: MessageboxService,
         public accountingBLService: AccountingBLService) {
+
+    }
+
+    ngOnInit() {
         this.GetLedgerGroup();
         this.getLedgerList();
-    }
-    @Input("showAddPage")
-    public set value(val: boolean) {
-      this.showAddPage = val;
-      this.Cr = this.Dr = null;
-      this.ledgerType = 'ledger';
-      this.loading = false;
-      this.typeledger = true;
-      this.typesupplier = false;
-      this.typevendor = false;
-      if (this.selectedLedger) {
-        this.update = false;
-        this.changeDetector.detectChanges();
-        this.update = true;
-        this.ledgergroupList = [];
-        this.primaryGroupList = [];
-        this.coaList = [];
-        this.ledgerList = new Array<LedgerModel>();
-        this.primaryGroupList = Array.from([new Set(this.sourceLedGroupList.map(i => i.PrimaryGroup))][0]);
-        let selectedPrimaryGroupList = this.sourceLedGroupList.filter(a => a.PrimaryGroup == this.selectedLedger.PrimaryGroup);
-        this.coaList = Array.from([new Set(selectedPrimaryGroupList.map(i => i.COA))][0]);
-        this.ledgergroupList = this.sourceLedGroupList.filter(a => a.COA == this.selectedLedger.COA);
-        this.ledgerList = this.sourceLedgerList.filter(a => a.LedgerGroupName == this.selectedLedger.LedgerGroupName);
-        this.CurrentLedger = new LedgerModel();
-        this.changeDetector.detectChanges();
-        this.CurrentLedger = Object.assign(this.CurrentLedger, this.selectedLedger);
-        this.selLedgerGroup = this.ledgergroupList.filter(s => s.LedgerGroupId == this.selectedLedger.LedgerGroupId)[0];
-        this.CurrentLedger.LedgerGroupId = this.selectedLedger.LedgerGroupId;
-        this.CurrentLedger.LedgerGroupName = this.selectedLedger.LedgerGroupName;
-        this.CurrentLedger.checkSelectedLedger = false;
-        this.ledgerType = this.selectedLedger.LedgerType;
-        if (this.selectedLedger.DrCr == true) {
-          this.Dr = true;
-          this.Cr = false;
-        } else if (this.selectedLedger.DrCr == false) {
-          this.Cr = true;
-          this.Dr = false;
-        }
-      }
-      else {
+
+        //this.showAddPage = val;
+        this.Cr = this.Dr = null;
+        this.ledgerType = 'ledger';
+        this.loading = false;
+        this.typeledger = true;
+        this.typesupplier = false;
+        this.typevendor = false;
+
         this.update = false;
         this.CurrentLedger = new LedgerModel();
         this.CurrentLedger.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
-      }
+
     }
+
+
     GetLedgerGroup() {
         this.accountingSettingsBLService.GetLedgerGroup()
             .subscribe(res => this.CallBackLedgerGroup(res));
@@ -108,44 +83,45 @@ export class LedgersAddReusableComponent {
         this.primaryGroupList = Array.from([new Set(this.sourceLedGroupList.map(i => i.PrimaryGroup))][0]);
     }
     //adding new Ledger
-  AddLedger() {
-    if (this.checkUniqueLedgerName()) {
-      this.CheckDrCrValidation();
-      //for checking validations, marking all the fields as dirty and checking the validity.
-      for (var i in this.CurrentLedger.LedgerValidator.controls) {
-        this.CurrentLedger.LedgerValidator.controls[i].markAsDirty();
-        this.CurrentLedger.LedgerValidator.controls[i].updateValueAndValidity();
-      }
-      if (this.CurrentLedger.IsValidCheck(undefined, undefined) && this.CheckLedgerTypeValidation()) {
-        this.loading = true;
-        ///During First Time Add Current Balance and Opening Balance is Equal                 
-        this.accountingSettingsBLService.AddLedgers(this.CurrentLedger)
-          .subscribe(
-            res => {
-              if (res.Status == "OK") {
-                this.msgBoxServ.showMessage("success", ["Ledger Added"]);
-                // this.CurrentLedger
-                this.CallBackAddLedger(res);
-                this.CurrentLedger = new LedgerModel();
-                this.selLedgerGroup = null; ////Null the Selected Ledger Group 
+    AddLedger() {
+        if (this.checkUniqueLedgerName()) {
+            this.CheckDrCrValidation();
+            //for checking validations, marking all the fields as dirty and checking the validity.
+            for (var i in this.CurrentLedger.LedgerValidator.controls) {
+                this.CurrentLedger.LedgerValidator.controls[i].markAsDirty();
+                this.CurrentLedger.LedgerValidator.controls[i].updateValueAndValidity();
+            }
+            if (this.CurrentLedger.IsValidCheck(undefined, undefined) && this.CheckLedgerTypeValidation()) {
+                this.loading = true;
+
+                ///During First Time Add Current Balance and Opening Balance is Equal                 
+                this.accountingSettingsBLService.AddLedgers(this.CurrentLedger)
+                    .subscribe(
+                        res => {
+                            if (res.Status == "OK") {
+                                this.msgBoxServ.showMessage("success", ["Ledger Added"]);
+                                // this.CurrentLedger
+                                this.CallBackAddLedger(res);
+                                this.CurrentLedger = new LedgerModel();
+                                this.selLedgerGroup = null; ////Null the Selected Ledger Group 
+                                this.loading = false;
+                            }
+                            else {
+                                this.msgBoxServ.showMessage("error", ["Duplicate ledger not allowed"]);
+                                this.loading = false;
+                            }
+                        },
+                        err => {
+                            this.logError(err);
+                            this.loading = false;
+                        });
+            } else {
                 this.loading = false;
-              }
-              else {
-                this.msgBoxServ.showMessage("error", ["Duplicate ledger not allowed"]);
-                this.loading = false;
-              }
-            },
-            err => {
-              this.logError(err);
-              this.loading = false;
-            });
-      } else {
-        this.loading = false;
-      }
+            }
+        }
     }
-    }
+
     Close() {
-        this.selectedLedger = null;
         this.ledgerList = this.completeledgerList;
         this.CurrentLedger = new LedgerModel();
         this.selLedgerGroup = null;
@@ -153,23 +129,27 @@ export class LedgersAddReusableComponent {
         this.ledgergroupList = new Array<LedgerModel>();
         this.coaList = [];
         this.ledgerList = new Array<LedgerModel>();
-        this.showAddPage = false;
+
+        this.callbackAdd.emit({ action: "close" });//
+
     }
+
     //after adding Ledger is succesfully added  then this function is called.
     CallBackAddLedger(res) {
         if (res.Status == "OK" && res.Results != null) {
-          let temp = new LedgerModel();
-            temp = Object.assign(temp, res.Results);
-            temp.PrimaryGroup = this.CurrentLedger.PrimaryGroup;
-            temp.COA = this.CurrentLedger.COA;
-            temp.LedgerGroupId = this.CurrentLedger.LedgerGroupId;
-          temp.LedgerGroupName = this.CurrentLedger.LedgerGroupName;
-          temp.LedgerName = this.CurrentLedger.LedgerName;
-          this.sourceLedgerList.push(temp);
-          this.showAddPage = false;
+            let retLedgerObj = new LedgerModel();
+            retLedgerObj = Object.assign(retLedgerObj, res.Results);
+            retLedgerObj.PrimaryGroup = this.CurrentLedger.PrimaryGroup;
+            retLedgerObj.COA = this.CurrentLedger.COA;
+            retLedgerObj.LedgerGroupId = this.CurrentLedger.LedgerGroupId;
+            retLedgerObj.LedgerGroupName = this.CurrentLedger.LedgerGroupName;
+            retLedgerObj.LedgerName = this.CurrentLedger.LedgerName;
+      
+            //this.showAddPage = false;
             this.ledgergroupList = new Array<LedgerModel>();
-          this.ledgerList = new Array<LedgerModel>();
-          this.callbackAdd.emit({ ledger: temp });
+            this.ledgerList = new Array<LedgerModel>();
+
+            this.callbackAdd.emit({ action: "add", data: retLedgerObj });//we will return the ledgerobject which was created here.
         }
         else if (res.Status == "OK" && res.Results == null) {
             this.msgBoxServ.showMessage("notice-message", ["Ledger under LedgerGroup already exist.Please deactivate the previous ledger to add a new one with same name"]);
@@ -182,6 +162,7 @@ export class LedgersAddReusableComponent {
     logError(err: any) {
         console.log(err);
     }
+
     CheckProperSelectedLedger(selLedgerGroup) {
         try {
             for (var i = 0; i < this.ledgergroupList.length; i++) {
@@ -231,9 +212,9 @@ export class LedgersAddReusableComponent {
             this.CurrentLedger.LedgerName = null;
             this.ledgerList = new Array<LedgerModel>();
             let selectedPrimaryGroupList = this.sourceLedGroupList.filter(a => a.PrimaryGroup == this.CurrentLedger.PrimaryGroup);
-          this.coaList = Array.from([new Set(selectedPrimaryGroupList.map(i => i.COA))][0]);
-          this.CurrentLedger.COA = this.coaList[0];
-          this.COAChanged();
+            this.coaList = Array.from([new Set(selectedPrimaryGroupList.map(i => i.COA))][0]);
+            this.CurrentLedger.COA = this.coaList[0];
+            this.COAChanged();
         }
     }
 
@@ -275,6 +256,7 @@ export class LedgersAddReusableComponent {
     LedgerListFormatter(data: any): string {
         return data["LedgerName"];
     }
+
     ChangeOpeningBalType(e) {
         this.loading = false;
         if (e.target.name == "Dr") {
@@ -292,6 +274,7 @@ export class LedgersAddReusableComponent {
             }
         }
     }
+
     CheckDrCrValidation() {
         //if Opening balance is greater than 0 then add required validation to opening balance type
         if (this.CurrentLedger.OpeningBalance > 0) {
@@ -315,6 +298,7 @@ export class LedgersAddReusableComponent {
                 }
             });
     }
+
     GetLedgerMapping() {
         this.accountingBLService.GetLedgerMappingDetails()
             .subscribe(res => {
@@ -326,27 +310,7 @@ export class LedgersAddReusableComponent {
     SupplierListFormatter(data: any): string {
         return data["SupplierName"];
     }
-    ToggleLedgerType(ledgerType) {
-        this.ledgerType = ledgerType;
-        this.CurrentLedger = new LedgerModel();
-
-        if (ledgerType == 'ledger') {
-            this.typeledger = true;
-            this.typesupplier = false;
-            this.typevendor = false;
-        }
-        if (ledgerType == 'pharmacysupplier') {
-            this.typeledger = false;
-            this.typesupplier = true;
-            this.typevendor = false;
-            this.SetSupplierData();
-        }
-        if (ledgerType == 'inventoryvendor') {
-            this.typeledger = false;
-            this.typesupplier = false;
-            this.typevendor = true;
-        }
-    }
+    
     SetSupplierData() {
         this.GetLedgerMapping();
         this.GetPharmacySupplierList();
@@ -386,43 +350,43 @@ export class LedgersAddReusableComponent {
             }
         }
         return true;
-  }
+    }
 
 
-  //for Ledger Group add popup
-  AddLedgerGroupPopUp() {
-    this.showAddLedgerGroupPopUp = false;
-    this.changeDetector.detectChanges();
-    this.showAddLedgerGroupPopUp = true;
-  }
-  OnNewLedgerGroupAdded($event) {
-    this.showAddLedgerGroupPopUp = false;
-    var ledgerGroup = new LedgerModel();
-    ledgerGroup.LedgerGroupId = $event.currentLedger.LedgerGroupId;
-    ledgerGroup.PrimaryGroup = $event.currentLedger.PrimaryGroup;
-    ledgerGroup.COA = $event.currentLedger.COA;
-    ledgerGroup.LedgerGroupName = $event.currentLedger.LedgerGroupName;
-    ledgerGroup.IsActive = $event.currentLedger.IsActive;
-    ledgerGroup.Description = $event.currentLedger.Description;
-    ledgerGroup.Name = $event.currentLedger.Name;
-    this.ledgergroupList.push(ledgerGroup);
-    this.ledgergroupList = this.ledgergroupList.slice();
-    this.GetLedgerGroup();
-  }
-  checkUniqueLedgerName() {
-    if (this.CurrentLedger.LedgerName) {
-      this.changeDetector.detectChanges();
-      let count = this.sourceLedgerList.filter(s => s.LedgerName == this.CurrentLedger.LedgerName).length;
-      if (count > 0) {
-        this.msgBoxServ.showMessage("notice", ['duplicate ledger not allowed']);
-        this.loading = false;
-        return false;
-      }
-      else return true;
+    //for Ledger Group add popup
+    AddLedgerGroupPopUp() {
+        this.showAddLedgerGroupPopUp = false;
+        this.changeDetector.detectChanges();
+        this.showAddLedgerGroupPopUp = true;
     }
-    else {
-      this.msgBoxServ.showMessage("notice", ['LedgerName required.']);
-      this.loading = false;
+    OnNewLedgerGroupAdded($event) {
+        this.showAddLedgerGroupPopUp = false;
+        var ledgerGroup = new LedgerModel();
+        ledgerGroup.LedgerGroupId = $event.currentLedger.LedgerGroupId;
+        ledgerGroup.PrimaryGroup = $event.currentLedger.PrimaryGroup;
+        ledgerGroup.COA = $event.currentLedger.COA;
+        ledgerGroup.LedgerGroupName = $event.currentLedger.LedgerGroupName;
+        ledgerGroup.IsActive = $event.currentLedger.IsActive;
+        ledgerGroup.Description = $event.currentLedger.Description;
+        ledgerGroup.Name = $event.currentLedger.Name;
+        this.ledgergroupList.push(ledgerGroup);
+        this.ledgergroupList = this.ledgergroupList.slice();
+        this.GetLedgerGroup();
     }
-  }
+    checkUniqueLedgerName() {
+        if (this.CurrentLedger.LedgerName) {
+            this.changeDetector.detectChanges();
+            let count = this.sourceLedgerList.filter(s => s.LedgerName == this.CurrentLedger.LedgerName).length;
+            if (count > 0) {
+                this.msgBoxServ.showMessage("notice", ['duplicate ledger not allowed']);
+                this.loading = false;
+                return false;
+            }
+            else return true;
+        }
+        else {
+            this.msgBoxServ.showMessage("notice", ['LedgerName required.']);
+            this.loading = false;
+        }
+    }
 }

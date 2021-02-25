@@ -25,6 +25,8 @@ namespace DanpheEMR.Security
         public DbSet<RolePermissionMap> RolePermissionMaps { get; set; }
         public DbSet<DanpheRoute> Routes { get; set; }
         public DbSet<EmployeeModel> Employees { get; set; }
+        public DbSet<PHRMStoreModel> Store { get; set; }
+        public DbSet<StoreVerificationMapModel> StoreVerificationMapModel { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
@@ -37,8 +39,10 @@ namespace DanpheEMR.Security
             modelBuilder.Entity<RbacUser>().ToTable("RBAC_User");
             modelBuilder.Entity<UserRoleMap>().ToTable("RBAC_MAP_UserRole");
             modelBuilder.Entity<EmployeeModel>().ToTable("EMP_Employee");
-            
-            
+            modelBuilder.Entity<PHRMStoreModel>().ToTable("PHRM_MST_Store");
+            modelBuilder.Entity<StoreVerificationMapModel>().ToTable("MST_MAP_StoreVerification");
+
+
             //application and permission mapping
             //modelBuilder.Entity<RbacPermission>()
             //    .HasRequired<RbacApplication>(p => p.Application)

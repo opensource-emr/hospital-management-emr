@@ -1,12 +1,6 @@
-
 import { Component, ChangeDetectorRef } from "@angular/core";
 import { VisitBLService } from '../../../appointments/shared/visit.bl.service';
-import { BillingItem } from '../../../settings/shared/billing-item.model';
-import { SettingsBLService } from '../../../settings/shared/settings.bl.service';
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
-import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
-import { SettingsService } from "../../../settings/shared/settings-service";
-import GridColumnSettings from "../../../shared/danphe-grid/grid-column-settings.constant";
 import { FractionCalculationService } from "../../shared/fraction-calculation.service";
 import { DesignationService } from '../../shared/Designation.service';
 import { BillingTransactionItem } from "../../../billing/shared/billing-transaction-item.model";
@@ -14,14 +8,10 @@ import { Router } from "@angular/router";
 import { FractionPercentModel } from "../../shared/fraction-percent.model";
 import { FractionPercentService } from "../../shared/Fraction-Percent.service";
 import { RouteFromService } from '../../../shared/routefrom.service';
-import { DesignationModel } from "../../shared/Designation.model";
-import { Department } from "../../../settings/shared/department.model";
+import { Department } from "../../../settings-new/shared/department.model";
 import { CoreService } from "../../../core/shared/core.service";
 import { FractionCalculationModel } from "../../shared/fraction-calculation.model";
-//import { Listener } from "ag-grid";
 import { SecurityService } from "../../../security/shared/security.service";
-import { count } from "rxjs/operator/count";
-import { identifierModuleUrl } from "@angular/compiler";
 import * as moment from 'moment/moment';
 
 @Component({

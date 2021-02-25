@@ -1,0 +1,52 @@
+<div class="wrapper">
+  <div class="row">
+    <div class="col-md-3">
+      <div class="caption lb-caption no-margin"> <i class="fa fa-check-square-o"></i> <span class="caption-subject">Check and Verify Requisition</span> </div>
+    </div>
+    <div class="col-md-6">
+      <div class="input-group pull-right pt5">
+        <div class="icheck-inline"> List by Verification Status: &nbsp;
+          <label class="mt-radio mt-radio-outline">
+            <input type="radio" (change)="LoadRequisitionListByStatus()" checked
+                 name="VerificationStatus" [(ngModel)]="VerificationStatus" value="pending" style="width:15px;height:15px" />
+            <span></span>Pending </label>
+          <label class="mt-radio mt-radio-outline">
+            <input type="radio" (change)="LoadRequisitionListByStatus()"
+                 name="VerificationStatus" [(ngModel)]="VerificationStatus" value="approved" style="width:15px;height:15px" />
+            <span></span>Approved </label>
+          <label class="mt-radio mt-radio-outline">
+            <input type="radio" (change)="LoadRequisitionListByStatus()"
+                 name="VerificationStatus" [(ngModel)]="VerificationStatus" value="rejected" style="width:15px;height:15px" />
+            <span></span>Rejected </label>
+          <label class="mt-radio mt-radio-outline">
+            <input type="radio" (change)="LoadRequisitionListByStatus()"
+                 name="VerificationStatus" [(ngModel)]="VerificationStatus" value="all" style="width:15px;height:15px" />
+            <span></span>All </label>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="pull-right lb-search-filter no-padding">
+        <div class="search-title"> Requisition Status: </div>
+        <div class="input-group">
+          <select [(ngModel)]="RequisitionStatus" (ngModelChange)="LoadRequisitionListByStatus()">
+            <option value="all">--ALL--</option>
+            <option value="active">active</option>
+            <option value="partial">partial</option>
+            <option value="complete">complete</option>
+            <option value="cancelled">cancelled</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-12 col-sm-12">
+      <danphe-grid [grid-colDefaults]="RequisitionGridColumn" 
+                 [grid-data]="RequisitionGridDataFiltered"
+                 [rangeType]="dateRange"
+                 [show-CustomDate]="true"
+                 [NepaliDateInGridParams]="NepaliDateInGridSettings"
+                 (onDateChange)="onDateChange($event)"
+                 (grid-actions)="RequisitionGridAction($event)"> </danphe-grid>
+    </div>
+  </div>
+</div>

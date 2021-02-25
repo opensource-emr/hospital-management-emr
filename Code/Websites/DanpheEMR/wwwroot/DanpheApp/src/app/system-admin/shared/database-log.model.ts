@@ -1,4 +1,4 @@
-﻿import {
+import {
     NgForm,
     FormGroup,
     FormControl,
@@ -13,7 +13,7 @@ export class DatabaseLogModel {
         public FolderPath: string = null;
         public DatabaseName: string = null;
         public DatabaseVersion: string = null;
-        public IsDBRestorable: boolean = null;
+        public IsDBRestorable: boolean = false;
         public Action: string = null;
         public ActionType: string = null;
         public Status: string = null;

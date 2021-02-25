@@ -1,0 +1,55 @@
+<style>
+  textarea {
+    resize: vertical;
+  }
+
+  .clp.clp-hd {
+    margin-bottom: 0px !important;
+  }
+
+  .each-card {
+    background: #fbfbfb;
+  }
+	.form-horizontal .control-label {
+		margin-bottom: 15px;
+    font-size: 16px;
+	}
+	.doc-pagecontent .form-body {
+    padding: 15px;
+    border: 1px solid #d1d1d1;
+}
+</style>
+<div class="row" >
+  <div class="col-md-12">
+    <form class="form-horizontal">
+      
+      <h3 class="text-head" style="text-align:center">Free Text Note</h3>
+      <div class="form-body">
+
+        <div class="form-group">
+          <label class="control-label col-md-2">Free Text<b>:</b></label>
+          <!--<div class="col-md-12">
+    <textarea class="form-control" [(ngModel)]="freeText.FreeText" (focusout)="Focusout()"  [ngModelOptions]="{standalone: true}" maxlength="2000" rows="10" cols="100"></textarea>
+  </div>-->
+          <div class="editor-content">
+            <div class="row">
+              <div class="col-md-12 col-xs-12 col-sm-12" style="min-height:460px;">
+                <danphe-ckeditor *ngIf="showCKeditor"
+                                 [readonly]="false"
+                                 (get-html-content)="onChangeEditorData($event)"
+                                 [set-html-content]="freeText.FreeText">
+                </danphe-ckeditor>
+                <!--(get-shortcut)="onShortCutPressed($event)"    // shortcut feature not used currently-->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+  </div>
+
+
+
+
+

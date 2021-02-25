@@ -21,6 +21,9 @@
       ]
     }
   },
+  // "angularCompilerOptions": {
+  //   "enableIvy": true
+  // },
   "compileOnSave": false,
   "include": [
     "src/**/*"

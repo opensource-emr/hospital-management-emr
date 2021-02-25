@@ -1,0 +1,42 @@
+
+<style>
+  table.doc-tbl tr:nth-of-type(odd) td {
+    background: #fafcfb;
+  }
+</style>
+    <div class="row">
+
+        <div class="col-md-12">
+
+
+            <div class="table-responsive" style="background:#fff; padding: 15px">
+                <table class="table doc-tbl">
+                    <tr style="background-color:whitesmoke">
+                        <th>VisitType</th>
+                        <th>VisitCode</th>
+                        <th>Visit Date</th>
+                        <th>Visit Time</th>
+                        <th>Provider Name</th>
+                        <th>Comments</th>
+                        <th>Referred By Provider</th>
+                        <th></th>
+                    </tr>
+                    <tr *ngFor="let vis of visits">
+                        <td>{{vis.VisitType}}</td>
+                        <td>{{vis.VisitCode}}</td>
+                        <td>{{vis.VisitDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                        <td>{{vis.VisitTime }}</td>
+                        <td>{{vis.ProviderName}}</td>
+                        <td>{{vis.Comments}}</td>
+                        <td>{{vis.ReferredByProvider}}</td>
+                        <td>
+                            <button class="btn b-border btn-sm" (click)="ViewVisitSummary()"><i class="fa fa-eye"></i>View Summary</button>
+                        </td>
+                </table>
+            </div>
+        </div>
+    </div>
+
+<opd-visit-summary *ngIf="showOpdSummary" [showSummaryPage]="showOpdSummary">
+
+</opd-visit-summary>

@@ -1,0 +1,13 @@
+<a feature="button" class="btn blue bordered" (click)="AddCreditOrganization()"><i class="fa fa-plus"></i>Add Organization</a>
+<credit-organization-add [showAddPage]="showAddPage"
+                   [selectedItem]="selectedItem"
+                   (callback-add)="CallBackAdd($event)"></credit-organization-add>
+
+<div *ngIf="showGrid" class="row">
+    <div class="col-md-8 col-xs-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="creditOrganizationGridColumns" [grid-data]="creditOrganizationList" (grid-actions)="CreditOrganizationGridActions($event)"
+                     [show-print-button]="false">
+        </danphe-grid>
+    </div>
+</div>
+

@@ -43,6 +43,7 @@ export class LedgersEditComponent {
   public typevendor: any = false;
   public phrmSupplierList: any;
   public ledgerMappingList: any;
+  public ledgerCode:any;
   constructor(public accountingSettingsBLService: AccountingSettingsBLService,
     public securityService: SecurityService,
     public changeDetector: ChangeDetectorRef,
@@ -84,6 +85,7 @@ export class LedgersEditComponent {
       this.CurrentLedger.LedgerGroupName = this.selectedLedger.LedgerGroupName;
       this.CurrentLedger.checkSelectedLedger = false;
       this.ledgerType = this.selectedLedger.LedgerType;
+      this.ledgerCode = this.selectedLedger.Code;
       if (this.selectedLedger.DrCr == true) {
         this.Dr = true;
         this.Cr = false;
@@ -151,7 +153,7 @@ export class LedgersEditComponent {
   }
   //update Ledger
   UpdateLedger() {
-    if (this.checkUniqueLedgerName()) {
+    //if (this.checkUniqueLedgerName()) { //NageshBB- no need to check duplicate ledger name for update Ledger
       this.CheckDrCrValidation();
       //for checking validations, marking all the fields as dirty and checking the validity.
       for (var i in this.CurrentLedger.LedgerValidator.controls) {
@@ -182,7 +184,7 @@ export class LedgersEditComponent {
       } else {
         this.loading = false;
       }
-    }
+    //}
   }
   Close() {
     this.selectedLedger = null;
@@ -312,7 +314,8 @@ export class LedgersEditComponent {
     return data["LedgerGroupName"];
   }
   LedgerListFormatter(data: any): string {
-    return data["LedgerName"];
+    //return data["LedgerName"];
+    return data["Code"] + "-" + data["LedgerName"] + " | " + data["PrimaryGroup"] + " -> " + data["LedgerGroupName"];
   }
   ChangeOpeningBalType(e) {
     this.loading = false;

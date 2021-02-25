@@ -18,13 +18,15 @@ export class RequestForQuotationItemsModel{
     public Quantity:number = 0;
     public ItemName:string = "";
     public TitleName: string ="";
-  public Description: string="";
-  public CreatedBy: number =0;
-  public CreatedOn: string ="";
-  public ItemStatus: string = null;
- public SelectedItem: ItemMaster = null;
- public Item: ItemMaster = null;
- public ReqForQuotationItemValidator: FormGroup = null;
+    public Code:string="";
+    public UOMName:string="";
+    public Description: string="";
+    public CreatedBy: number =0;
+    public CreatedOn: string ="";
+    public ItemStatus: string = null;
+    public SelectedItem: ItemMaster = null;
+    public Item: ItemMaster = null;
+    public ReqForQuotationItemValidator: FormGroup = null;
 
 
  constructor() {

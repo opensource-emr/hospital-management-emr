@@ -23,6 +23,7 @@ export class PackagingTypeAddComponent {
     @Output("callback-add")
     callbackAdd: EventEmitter<Object> = new EventEmitter<Object>();
     public update: boolean = false;
+    public loading: boolean = false;
 
     public CurrentPackagingType: PackagingTypeModel;
     public completepackagingtypelist: Array<PackagingTypeModel> = new Array<PackagingTypeModel>();
@@ -63,15 +64,18 @@ export class PackagingTypeAddComponent {
 
 
         if (this.CurrentPackagingType.IsValidCheck(undefined, undefined)) {
+            this.loading = true;
             this.invSettingBL.AddPackagingType(this.CurrentPackagingType)
                 .subscribe(
                 res => {
                     this.showMessageBox("success", "PackagingType Added");
                     this.CurrentPackagingType = new PackagingTypeModel();
                     this.CallBackAddPackagingType(res)
+                    this.loading = false;
                 },
                 err => {
                     this.logError(err);
+                    this.loading = false;
                 });
         }
     }
@@ -84,16 +88,19 @@ export class PackagingTypeAddComponent {
         }
 
         if (this.CurrentPackagingType.IsValidCheck(undefined, undefined)) {
+            this.loading = true;
             this.invSettingBL.UpdatePackagingType(this.CurrentPackagingType)
                 .subscribe(
                 res => {
                     this.showMessageBox("success", "PackagingType Updated");
                     this.CurrentPackagingType = new PackagingTypeModel();
                     this.CallBackAddPackagingType(res)
+                    this.loading = false;
 
                 },
                 err => {
                     this.logError(err);
+                    this.loading = false;
                 });
         }
     }
@@ -109,7 +116,7 @@ export class PackagingTypeAddComponent {
     //after adding Vendor is succesfully added  then this function is called.
     CallBackAddPackagingType(res) {
         if (res.Status == "OK") {
-            this.callbackAdd.emit({ itemcategory: res.Results });
+            this.callbackAdd.emit({ packagingtype: res.Results });
 
 
 

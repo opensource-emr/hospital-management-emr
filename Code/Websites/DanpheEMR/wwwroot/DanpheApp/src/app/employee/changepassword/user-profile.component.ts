@@ -6,6 +6,7 @@ import { SecurityService } from '../../security/shared/security.service';
 import { EmployeeProfile } from './../shared/employee-profile.model';
 import { Routes, RouterModule, RouterOutlet } from '@angular/router';
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
+import { DanpheRoute } from '../../security/shared/danphe-route.model';
 @Component({
 
   templateUrl: "../../view/employee-view/UserProfile.html" //"/EmployeeView/UserProfile"
@@ -15,11 +16,11 @@ export class UserProfileComponent {
   public http: HttpClient;
   public userProfileInfo: EmployeeProfile = new EmployeeProfile();
   public pathToImage: string = null;
-  public userRoutes: any;
+  public userRoutes: Array<DanpheRoute>;
   private landingRouteId: number = 0;
   public landingModuleRouteId: number = 0;
   public landingChildRouteId: number = 0;
-  public childRouteList: any;
+  public childRouteList: Array<DanpheRoute>;
 
   constructor(
     private securityService: SecurityService,
@@ -27,7 +28,7 @@ export class UserProfileComponent {
     private changeDetector: ChangeDetectorRef,
     private msgBoxService: MessageboxService) {
     this.http = _http;
-    this.userRoutes = this.securityService.validRouteList;
+    this.userRoutes = this.securityService.validRouteList.filter(r => r.DefaultShow == true);
     this.LoadUserProfile();
   }
   public options = {
@@ -71,6 +72,9 @@ export class UserProfileComponent {
     var routelist = this.securityService.validRouteList.find(a => a.RouteId == this.landingModuleRouteId);
     if (routelist) {
       this.childRouteList = routelist.ChildRoutes;
+      if (this.childRouteList && this.childRouteList.length > 0) {
+        this.childRouteList = this.childRouteList.filter(r => r.DefaultShow == true);
+      }
     }
   }
   public SetNewLandingPage() {
@@ -84,7 +88,7 @@ export class UserProfileComponent {
       this.landingRouteId = this.landingChildRouteId;
     }
     if (this.landingRouteId == this.securityService.GetLoggedInUser().LandingPageRouteId) {
-      this.msgBoxService.showMessage('error', ['please select landing page!!']);
+      this.msgBoxService.showMessage('error', ['This page is already registered as Landing page. Please select a different one.']);
       return;
     }
     var data = {

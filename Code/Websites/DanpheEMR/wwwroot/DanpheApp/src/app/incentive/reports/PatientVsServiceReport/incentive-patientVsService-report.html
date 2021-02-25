@@ -1,0 +1,178 @@
+<style>
+  .round-shadow-div {
+    padding: 15px;
+    margin-top: 15px;
+  }
+
+    .round-shadow-div .padLess_table th,
+    .round-shadow-div .padLess_table td {
+      padding: 8px 5px !important;
+    }
+
+  .multi-line-date select {
+    margin: 0 5px !important;
+  }
+</style>
+<div class="row">
+  <form [formGroup]="curDocReportMain.BilRefMainReportValidator" class="form-horizontal">
+    <div class="form-body">
+      <div class="col-md-12">
+        <div class="caption custom-caption">
+          <i class="glyphicon glyphicon-asterisk"></i> <span class="caption-subject">Incentive Patient Vs Service Report</span>
+        </div>
+        <div class="col-md-6">
+          <from-to-date-select (on-change)="OnDateRangeChange($event)">
+          </from-to-date-select>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <label class="control-label col-md-5">Select Doctor<b style="float:right;">:</b></label>
+            <div class="col-md-7 doctor-select-opt">
+              <input danphe-auto-complete [(ngModel)]="DocObj" [list-formatter]="EmployeeListFormatter" match-formatted="true"
+                     [source]="allDocterList" placeholder="Search Doctor Name" display-property-name="FullName"
+                     value-property-name=null onclick="this.select()" [ngModelOptions]="{standalone: true}" max-num-list="10"
+                     (ngModelChange)="ChangeDocter(DocObj)" style="width:100%" />
+            </div>
+          </div>
+        </div>
+        <div class="col-md-1">
+          <button class="btn blue" type="button" (click)="LoadDocDeptItemSummary()">
+            <i class="fa fa-search"></i> Show
+            Report
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+<div class="col-md-12" *ngIf="showReport">
+  <div class="row">
+    <div class="col-md-12">
+      <button class="blue btn right non-printable" type="button"
+              (click)="ExportToExcel('printPage')">
+        <i class="fa fa-file-excel-o"></i> Excel
+      </button>
+    </div>
+  </div>
+  <div class="">
+    <div class="row round-shadow-div" id="printPage">
+      <div class="col-md-12" style="display:none;padding:0px" id="headerForPrint">
+        <div class="text-center bill-head col-md-12" style="text-align:center;font-family:sans-serif;padding-top: 5px;">
+          <span style="font-size:20px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
+          <span style="font-size:14px;">{{headerDetail.address}}</span><br />
+        </div>
+      </div>
+      <!--<div class="col-md-12">
+        <div class="row">
+          <div class="col-md-6 col-sm-6"> From Date:
+            {{curDocReportMain.fromDate}}&nbsp;({{curDocReportMain.fromDate | nepaliDate}})<br />
+            ToDate: {{curDocReportMain.toDate}}&nbsp;({{curDocReportMain.toDate | nepaliDate}})<br />
+            <span class="col-md-8" style="padding:0px;font-size:16px"> Doctor Name: <b
+                *ngIf="reportData && reportData[0]">{{reportData[0].IncentiveReceiverName}}</b><br />
+            </span> </div>
+          <div class="col-md-6 col-sm-6" style="text-align:right;"> <span>Print Date: {{currentDate}}&nbsp;
+              ({{currentDate | nepaliDate}})</span> </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12 text-center mt20 mb20" style="text-align:center;font-size:18px"> <span><b>Incentive
+                Patient Vs Service Report</b></span> </div>
+        </div>
+      </div>-->
+      <div class="col-md-12">
+        <div class="row">
+          <span class="col-md-8" style="padding:0px;font-size:16px">
+            Doctor Name: <b *ngIf="reportData && reportData[0]">{{reportData[0].IncentiveReceiverName}}</b><br />
+          </span>
+        </div>
+      </div>
+      <div class="clearfix"></div>
+      <div class="col-md-12">
+        <div class="row">
+          <table class="table-striped table-hover table-bordered custom_table padLess_table"
+                 style="background-color:initial;width:100%">
+            <thead style="background-color:whitesmoke">
+              <tr>
+                <!--<td style="text-align:center"><b>Sr No.</b></td>-->
+                <td style="text-align:left; width:200px;"><b>Item Name</b></td>
+                <td style="text-align:center; width:100px;">
+                  <b>Date </b><b *ngIf="!isDateFormatBS">(AD)</b><b *ngIf="isDateFormatBS">(BS)</b>
+                  <span style="display: inline-block; background: #D8DEF1;cursor: pointer;">
+                    <i class="fa fa-refresh" (click)="ChangeDateFormate()" title="Change date format to AD/BS"></i>
+                  </span>
+                  <!--<div class="tooltip ng-star-inserted no-print hidden-print" style="color: #0069FF;z-index: inherit;">
+                    <span style="display: inline-block; background: #D8DEF1;cursor: pointer;">
+                      <i class="fa fa-refresh"
+                         (click)="ChangeDateFormate()"></i>
+                    </span>
+                    <p class="tooltiptext ttptextdown">Change date format to AD/BS</p>
+                  </div>-->
+                </td>
+                <td style="text-align:center; width:100px;"><b>Invoice No.</b></td>
+                <td style="text-align:center; width:100px;"><b>Incentive Amt.</b></td>
+                <td style="text-align:center; width:100px;"><b>TDS Amt.</b></td>
+                <td style="text-align:center; width:100px;"><b>Net Payable</b></td>
+              </tr>
+            </thead>
+          </table>
+        </div>
+        <div class="row" *ngFor="let InTyrow of allReportData">
+          <p style="margin-bottom: 0px;margin-top:15px;">
+            <b style="text-transform:uppercase;text-decoration: underline;">{{InTyrow.PatientName}}</b>
+          </p>
+          <table class="table-striped table-hover table-bordered" style="background-color:initial;width:100%">
+            <tbody>
+              <tr *ngFor="let row of InTyrow.report;let i=index">
+                <!--<td style="text-align:center">{{i+1}}</td>-->
+                <td style="text-align:left; width:200px;">{{row.ItemName}}</td>
+                <td style="text-align:center; width:100px;" *ngIf="!isDateFormatBS">
+                  {{row.TransactionDate | DanpheDateTime:'format':'YYYY-MM-DD'}}
+                </td>
+                <td style="text-align:center; width:100px;" *ngIf="isDateFormatBS">
+                  {{row.TransactionDate | nepaliDate:'format':'YYYY-MM-DD'}}
+                </td>
+                <td style="text-align:center; width:100px;">{{row.InvoiceNoFormatted}}</td>
+                <td style="text-align:center; width:100px;">{{row.IncentiveAmount | ParseAmount}}</td>
+                <td style="text-align:center; width:100px;">{{row.TDSAmount | ParseAmount}}</td>
+                <td style="text-align:center; width:100px;">{{row.NetPayableAmt | ParseAmount}}</td>
+              </tr>
+              <tr style="font-weight: bold">
+                <td></td>
+                <td></td>
+                <td style="text-align:center;width:100px;"><b>Sub Total :</b></td>
+                <td style="text-align:center;width:100px;">
+                  <span style="text-decoration: overline;">{{InTyrow.Sub_IncentiveAmount | ParseAmount}}</span>
+                </td>
+                <td style="text-align:center;width:100px;">
+                  <span style="text-decoration: overline;">{{InTyrow.Sub_TDSAmount | ParseAmount}}</span>
+                </td>
+                <td style="text-align:center;width:100px;">
+                  <span style="text-decoration: overline;">{{InTyrow.Sub_NetPayableAmt | ParseAmount}}</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="row">
+          <table class="table-striped table-hover"
+                 style="background-color:initial;width:100%;border-style: double; margin-top:20px">
+            <tbody>
+              <tr style="font-weight: bold">
+                <td style="width:200px;"></td>
+                <td style="width:100px;"></td>
+                <td style="text-align:center; width:100px;"><b>Total :</b></td>
+                <td style="text-align:center; width:100px;">{{tot_IncentiveAmount | ParseAmount}}</td>
+                <td style="text-align:center; width:100px;">{{tot_TDSAmount | ParseAmount}}</td>
+                <td style="text-align:center; width:100px;">{{tot_NetPayable | ParseAmount}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row col-md-12 margin-top-15" style="text-align:center;" *ngIf="showReport">
+  <div>
+    <button class="blue btn" type="button" (click)="Print()"> <i class="fa fa-print"></i> Print </button>
+  </div>
+</div>

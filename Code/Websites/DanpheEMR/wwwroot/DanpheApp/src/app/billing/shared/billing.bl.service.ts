@@ -26,7 +26,7 @@ import { SecurityDLService } from "../../security/shared/security.dl.service";
 import { BillSettlementModel } from "./bill-settlement.model";
 import { BillInvoiceReturnModel } from "./bill-invoice-return.model";
 import { CoreService } from '../../core/shared/core.service';
-import { AdmissionDLService } from '../../admission/shared/admission.dl.service';
+import { ADT_DLService } from '../../adt/shared/adt.dl.service';
 import { BillingReceiptModel } from './billing-receipt.model';
 import { Visit } from '../../appointments/shared/visit.model';
 import { DischargeDetailBillingVM } from '../ip-billing/shared/discharge-bill.view.models';
@@ -36,6 +36,8 @@ import { CurrentVisitContextVM } from '../../appointments/shared/current-visit-c
 import { HandOverModel } from './hand-over.model';
 import { DenominationModel } from './denomination.model';
 import { BillingOpPatientVM } from '../op-patient-add/bill-op-patientVM';
+import { DanpheCache, MasterType } from '../../shared/danphe-cache-service-utility/cache-services';
+import { ENUM_VisitStatus, ENUM_AppointmentType, ENUM_BillingStatus, ENUM_VisitType } from '../../shared/shared-enums';
 
 @Injectable()
 export class BillingBLService {
@@ -47,7 +49,7 @@ export class BillingBLService {
     public labsDLService: LabsDLService,
     public patientDLService: PatientsDLService,
     public appointmentDLService: AppointmentDLService,
-    public admissionDLService: AdmissionDLService,
+    public admissionDLService: ADT_DLService,
     public routeFromService: RouteFromService,
     public imagingDLService: ImagingDLService,
     public securityDlService: SecurityDLService,
@@ -57,6 +59,13 @@ export class BillingBLService {
 
   public GetUnpaidTotalBills() {
     return this.billingDLService.GetUnpaidTotalBills()
+      .map((responseData) => {
+        return responseData;
+      })
+  }
+
+  public LoadAllProvisionalBills(from:string, to:string) {
+    return this.billingDLService.LoadAllProvisionalBills(from,to)
       .map((responseData) => {
         return responseData;
       })
@@ -89,15 +98,15 @@ export class BillingBLService {
         return responseData;
       })
   }
-  public GetInvoiceDetailsForDuplicatebill() {
-    return this.billingDLService.GetInvoiceDetailsForDuplicatebill()
+  public GetInvoiceDetailsForDuplicatebill(from, to) {
+    return this.billingDLService.GetInvoiceDetailsForDuplicatebill(from, to)
       .map((responseData) => {
         return responseData;
       })
   }
 
-  public GetProvisionalReceiptDetailsForDuplicatebill() {
-    return this.billingDLService.GetProvisionalReceiptDetailsForDuplicatebill()
+  public GetProvisionalReceiptDetailsForDuplicatebill(searchTxt) {
+    return this.billingDLService.GetProvisionalReceiptDetailsForDuplicatebill(searchTxt)
       .map((responseData) => {
         return responseData;
       })
@@ -125,8 +134,21 @@ export class BillingBLService {
       })
   }
 
+  //Get Items requested list for Inpatient
+  public GetInPatientProvisionalItemList(patientId, patientVisitId, module){
+    return this.billingDLService.GetInPatientProvisionalItemList(patientId, patientVisitId, module).map((responseData) => {
+      return responseData;
+    })
+  }
+
   public GetInvoiceByReceiptNo(receiptNo: number, fiscalYrId: number, getVisitInfo: boolean, isInsuranceReceipt: boolean) {
     return this.billingDLService.GetInvoiceByReceiptNo(receiptNo, fiscalYrId, getVisitInfo, isInsuranceReceipt)
+      .map((responseData) => {
+        return responseData;
+      });
+  }
+  public GetInPatientDetailForPartialBilling(patId: number, patVisitId: number) {
+    return this.billingDLService.GetInPatientDetailForPartialBilling(patId, patVisitId)
       .map((responseData) => {
         return responseData;
       });
@@ -276,13 +298,13 @@ export class BillingBLService {
       });
   }
 
-  public GetPatients() {
-    return this.patientDLService.GetPatients()
+  public GetPatients(searchTxt) {
+    return this.patientDLService.GetPatients(searchTxt)
       .map(res => res);
   }
 
-  public GetPatientsWithVisitsInfo() {
-    return this.patientDLService.GetPatientsWithVisitsInfo()
+  public GetPatientsWithVisitsInfo(searchTxt) {
+    return this.patientDLService.GetPatientsWithVisitsInfo(searchTxt)
       .map(res => res);
   }
 
@@ -303,14 +325,22 @@ export class BillingBLService {
   }
 
 
-  public GetTxnItemsForEditDoctor() {
-    return this.billingDLService.GetTxnItemsForEditDoctor()
+  public GetTxnItemsForEditDoctor(searchTxt) {
+    return this.billingDLService.GetTxnItemsForEditDoctor(searchTxt)
       .map(res => res);
+  }
+
+  public GetTxnItemsForEditDoctorRad(searchTxt) {
+    return this.billingDLService.GetTxnItemsForEditDoctorRad(searchTxt).map(res => res);
   }
 
   //Sud/yub: 11Aug'19--to get txn items by date - duplicate implementation needed for date filter.
   public GetTxnItemsForEditDoctorByDate(fromDate: string, toDate: string) {
     return this.billingDLService.GetTxnItemsForEditDoctorByDate(fromDate, toDate)
+      .map(res => res);
+  }
+  public GetTxnItemsForEditDoctorByDateRad(fromDate: string, toDate: string) {
+    return this.billingDLService.GetTxnItemsForEditDoctorByDateRad(fromDate, toDate)
       .map(res => res);
   }
 
@@ -351,8 +381,8 @@ export class BillingBLService {
       .map(res => res);
   }
 
-  public GetExistedMatchingPatientList(FirstName, LastName, PhoneNumber, IsInsurance = false, IMISCode = null) {
-    return this.patientDLService.GetExistedMatchingPatientList(FirstName, LastName, PhoneNumber, IsInsurance, IMISCode)
+  public GetExistedMatchingPatientList(FirstName, LastName, PhoneNumber, Age, Gender, IsInsurance = false, IMISCode = null) {
+    return this.patientDLService.GetExistedMatchingPatientList(FirstName, LastName, PhoneNumber, Age, Gender, IsInsurance, IMISCode)
       .map(res => res);
   }
 
@@ -490,7 +520,7 @@ export class BillingBLService {
 
   //To cancel the Credit Bill 
   public PutBillStatusOnBillTxnItemCancellation(billTxnItemReq: BillingTransactionItem) {
-    let billStatus = "cancel";
+    let billStatus = ENUM_BillingStatus.cancel;// "cancel";
     let txnItemId = billTxnItemReq.BillingTransactionItemId;
     //let BillTxnItemIds = billTxnItemReq.map(function (item) {
     //    return item.BillingTransactionItemId;
@@ -569,7 +599,7 @@ export class BillingBLService {
   //service dept's tables et: LabRequisition, ImagingRequisition, Visit, etc will be paid.
   //even though the BillStatus is unpaid in BillingTransactionItem table.
   public UpdateRequisitionsBillingStatus(billTransactionItems: Array<BillingTransactionItem>, srvDeptName: string) {
-    let billStatus = "provisional";
+    let billStatus = ENUM_BillingStatus.provisional;// "provisional";
     let requisitionIds = billTransactionItems.map(function (item) {
       return item.RequisitionId;
     });
@@ -594,8 +624,16 @@ export class BillingBLService {
   }
 
   // update doctor after doctor edit feature
-  public UpdateDoctorafterDoctorEdit(BillTxnItemId: number, ProviderName: string, ProviderId: number) {
-    return this.billingDLService.PutAssignedToDoctor(BillTxnItemId, ProviderName, ProviderId)
+  public UpdateDoctorafterDoctorEdit(BillTxnItemId: number, providerObj, referrerObj) {
+    return this.billingDLService.PutAssignedToDoctor(BillTxnItemId, providerObj, referrerObj)
+      .map((responseData) => {
+        return responseData;
+      });
+  }
+
+  //update doctor from radiology
+  public UpdateDoctorafterDoctorEditRadiology(BillTnxItemId: number, RequisitionId: number, providerObj, referrerObj) {
+    return this.billingDLService.PutAssignedToDoctorRad(BillTnxItemId, RequisitionId, providerObj, referrerObj)
       .map((responseData) => {
         return responseData;
       });
@@ -631,7 +669,8 @@ export class BillingBLService {
       //ashim : 12Dec2018 : Incase of copy from earlier invoice don't post those lab/imaging items to lab/imaging requisition that was already added in the earlier invoice.
       if (integrationName == "Radiology" && !billingTransactionItems[s].RequisitionId) {
         imgingItems.push(billingTransactionItems[s]);
-      } else if (integrationName == "LAB" && !billingTransactionItems[s].RequisitionId) {
+      }
+      else if (integrationName == "LAB" && !billingTransactionItems[s].RequisitionId) {
         labItems.push(billingTransactionItems[s]);    //Push only Lab items
       }
       //ashim: 24Sep2018 : Create only Emergency Registration item's visit .
@@ -648,7 +687,7 @@ export class BillingBLService {
       wardName = currPatVisitContext.Current_WardBed;
     }
     let labItms = this.GetLabItemsMapped(labItems, orderStatus, billStatus, wardName, insuranceApplicable); //after mapping lab items
-    let imgItems = this.GetImagingItemsMapped(imgingItems, orderStatus, billStatus, insuranceApplicable); //after mapping imaging items
+    let imgItems = this.GetImagingItemsMapped(imgingItems, orderStatus, billStatus, wardName, insuranceApplicable); //after mapping imaging items
 
     //added: Ashim: 23Sep2018 : Added for OPD from BillingTransaction.
     let visititems = this.GetVisitItemsMapped(visitItems, orderStatus, billStatus);
@@ -670,6 +709,7 @@ export class BillingBLService {
       dptRequestIndexes.push({ dptName: "visit", index: currIndex });
       currIndex++;
     }
+    //if noRequisition to department then return EMPTY-Observable.
     if (deptHttpRequests.length == 0) {
       return Observable.of({ Status: "OK", ErrorMessage: null, Results: billingTransactionItems });
     }
@@ -689,7 +729,7 @@ export class BillingBLService {
               && integrationName == "LAB");
             if (labItm && !billItem.RequisitionId) {
               billItem.RequisitionId = labItm.RequisitionId;
-              //This is added to Use Ditinct RequisitionId for same tests requested Multiple times at a same time
+              //This is added to Use Distinct RequisitionId for same tests requested Multiple times at a same time
               var index = labResponseResults.findIndex(val => val.RequisitionId == labItm.RequisitionId);
               labResponseResults = labResponseResults.splice(index, 1);
             }
@@ -701,21 +741,40 @@ export class BillingBLService {
               && (integrationName == "Radiology"));
             if (imgItm && !billItem.RequisitionId) {
               billItem.RequisitionId = imgItm.ImagingRequisitionId;
+
+              //This is added to Use Distinct RequisitionId for same tests requested Multiple times at a same time
+              var index = imgResponseResults.findIndex(val => val.ImagingRequisitionId == imgItm.ImagingRequisitionId);
+              imgResponseResults = imgResponseResults.splice(index, 1);
+
             }
           }
           //ashim: 24Sep2018, modifications of ER visit.
           if (visitResponse && visitResponse.Results.length > 0) {
             let visitResponseResults: Array<Visit> = visitResponse.Results;
-            let visItem = visitResponseResults.find(visit => billItem.ItemName.toLowerCase() == "emergency registration"
-              && visit.ProviderId == billItem.ProviderId)
-            if (visItem && !billItem.RequisitionId) {
-              billItem.RequisitionId = visItem.PatientVisitId;
-              billItem.PatientVisitId = visItem.PatientVisitId;
-              let index = visitResponse.Results.findIndex(a => a.PatientVisitId == visItem.PatientVisitId);
+
+
+            let erVisItem = visitResponseResults.find(visit => billItem.ItemName.toLowerCase() == "emergency registration"
+              && visit.ProviderId == billItem.ProviderId);
+            if (erVisItem && !billItem.RequisitionId) {
+              billItem.RequisitionId = erVisItem.PatientVisitId;
+              billItem.PatientVisitId = erVisItem.PatientVisitId;
+              let index = visitResponse.Results.findIndex(a => a.PatientVisitId == erVisItem.PatientVisitId);
+              visitResponse.Results.splice(index, 1);//sud:13Oct'19-- Why are we splicing it ????
+            }
+
+            //integrationName == "OPD" && billingTransactionItems[s].ItemName.toLowerCase() == "consultation charge"
+            let opVisitItem = visitResponseResults.find(visit => billItem.SrvDeptIntegrationName == "OPD"
+              && visit.ProviderId == billItem.ProviderId);
+            if (opVisitItem && !billItem.RequisitionId) {
+              billItem.RequisitionId = opVisitItem.PatientVisitId;
+              //billItem.PatientVisitId = opVisitItem.PatientVisitId;//I think we shouldn't add different visitIds for same package. <needs revision> sud:13-Oct'19
+              let index = visitResponse.Results.findIndex(a => a.PatientVisitId == opVisitItem.PatientVisitId);
               visitResponse.Results.splice(index, 1);
             }
+
           }
         });
+
         return { Status: billingTransactionItems.length > 0 ? "OK" : "Failed", Results: billingTransactionItems };
       });
     }
@@ -766,7 +825,10 @@ export class BillingBLService {
         VerifiedBy: null,
         VerifiedOn: null,
         ResultingVendorId: 0,
-        HasInsurance: insuranceApplicable
+        HasInsurance: insuranceApplicable,
+        SampleCollectedOnDateTime: null,
+        BillCancelledBy: null,
+        BillCancelledOn: null
       });
     });
 
@@ -783,7 +845,7 @@ export class BillingBLService {
     return retValue;
   }
   //public Method: Map all transactionItems (Nursing Requisition) for post against Imaging/Radiology department
-  public GetImagingItemsMapped(billItems: Array<BillingTransactionItem>, orderStatus: string, billStatus: string, insuranceApplicable: boolean): Array<ImagingItemRequisition> {
+  public GetImagingItemsMapped(billItems: Array<BillingTransactionItem>, orderStatus: string, billStatus: string, wardName: string, insuranceApplicable: boolean): Array<ImagingItemRequisition> {
     let currentUser: number = this.securityService.GetLoggedInUser().EmployeeId;//logged in doctor
     let imgItems: Array<ImagingItemRequisition> = new Array<ImagingItemRequisition>();
     billItems.forEach(bill => {
@@ -805,7 +867,8 @@ export class BillingBLService {
         BillingStatus: billStatus,
         Urgency: "normal",//default when sending from billing
         DiagnosisId: null,//default null to avoid foreign key conflict
-        HasInsurance: insuranceApplicable//sud:21Jul'19--For Insurnace 
+        HasInsurance: insuranceApplicable,//sud:21Jul'19--For Insurnace
+        WardName: wardName
       });
     });
 
@@ -813,32 +876,48 @@ export class BillingBLService {
   }
 
   public GetVisitItemsMapped(billItems: Array<BillingTransactionItem>, orderStatus: string, billStatus: string): string {
-    let currentUser: number = this.securityService.GetLoggedInUser().EmployeeId;//logged in doctor
-    let visitItems: Array<any> = new Array<any>();
-    billItems.forEach(bill => {
-      let visit = new Visit();
 
-      visit.PatientId = bill.PatientId;
-      if (bill.ItemName.toLowerCase() == "emergency registration")
-        visit.VisitType = "emergency";
-      else
-        visit.VisitType = "outpatient";
+    if (billItems && billItems.length) {
+      let currentUser: number = this.securityService.GetLoggedInUser().EmployeeId;//logged in doctor
+      let visitItems: Array<any> = new Array<any>();
+      billItems.forEach(bill => {
+        let visit = new Visit();
+
+        visit.PatientId = bill.PatientId;
+        if (bill.ItemName.toLowerCase() == "emergency registration")
+          visit.VisitType = ENUM_VisitType.emergency;// "emergency";
+        else
+          visit.VisitType = ENUM_VisitType.outpatient;// "outpatient";
 
 
-      visit.DepartmentId = bill.RequestingDeptId;
+        //sud:26Aug'19--To Assign Departments to VisitDoctors.
+        let doctorList = DanpheCache.GetData(MasterType.Employee, null);
 
-      visit.ProviderId = bill.ProviderId;
-      visit.ProviderName = bill.ProviderName;
-      visit.BillingStatus = billStatus;
-      visit.VisitStatus = "initiated";
-      visit.CreatedOn = moment().format('YYYY-MM-DDTHH:mm');
-      visit.AppointmentType = "New";
-      visit.CreatedBy = currentUser;
-      var tempVisitModel = _.omit(visit, ['VisitValidator']);
-      visitItems.push(tempVisitModel);
-    });
+        if (doctorList && doctorList.length > 0) {
+          let currDoc = doctorList.find(d => d.EmployeeId == bill.ProviderId);
+          if (currDoc) {
+            visit.DepartmentId = currDoc.DepartmentId;
+          }
+        }
 
-    return JSON.stringify(visitItems);
+        // visit.DepartmentId = bill.RequestingDeptId;
+        visit.ProviderId = bill.ProviderId;
+        visit.ProviderName = bill.ProviderName;
+        visit.BillingStatus = billStatus;
+        visit.VisitStatus = ENUM_VisitStatus.initiated;// "initiated";
+        visit.CreatedOn = moment().format('YYYY-MM-DDTHH:mm');
+        visit.AppointmentType = ENUM_AppointmentType.new;// "New";
+        visit.CreatedBy = currentUser;
+        var tempVisitModel = _.omit(visit, ['VisitValidator']);
+        visitItems.push(tempVisitModel);
+      });
+
+      return JSON.stringify(visitItems);
+    }
+    else {
+      return null;
+    }
+
   }
 
   public ActivateCounter(counterId: number) {
@@ -899,6 +978,14 @@ export class BillingBLService {
     return this.billingDLService.CancelMultipleBillTxnItems(billTransItemTemp)
       .map(res => res);
   }
+
+  public GetCancelItemsForGenReceipt(PatientId) {
+    return this.billingDLService.GetCancelItemsForGenReceipt(PatientId)
+      .map((responseData) => {
+        return responseData;
+      })
+  }
+
 
   //sud: 10may'18 -- to cancel multiple txn items at once.
   public GetPatientPastBillSummary(patientId: number) {
@@ -964,7 +1051,11 @@ export class BillingBLService {
 
   //added: ashim: 17Aug'18
   //this function is moved from bill-return-request.component
-  public PostReturnReceipt(billingReceipt: BillingReceiptModel, returnRemarks: string) {
+  public PostReturnReceipt(billingReceipt: BillingReceiptModel, billingTXN: BillingTransaction, returnRemarks: string) {
+
+    let input = new FormData();
+
+    billingTXN.BillingTransactionItems = [];
     let retModel: BillInvoiceReturnModel = new BillInvoiceReturnModel();
     retModel.RefInvoiceNum = billingReceipt.ReceiptNo;
     retModel.PatientId = billingReceipt.Patient.PatientId;
@@ -979,7 +1070,38 @@ export class BillingBLService {
     retModel.IsActive = true;
     retModel.InvoiceCode = billingReceipt.InvoiceCode;
     retModel.TaxId = billingReceipt.TaxId;
-    return this.billingDLService.PostReturnReceipt(retModel)
+    retModel.ReturnedItems = billingReceipt.BillingItems;
+    retModel.Tender = billingReceipt.Tender;
+
+    billingReceipt.BillingItems.forEach(item => {
+      if (item.IsSelected !== true) {
+        billingTXN.BillingTransactionItems.push(item);
+        item.BillingTransactionItemId = 0;
+        item.BillingTransactionId = 0;
+        item.CounterId = this.securityService.getLoggedInCounter().CounterId;
+        item.Remarks = returnRemarks;
+      }
+    });
+
+    var billdata = BillingReceiptModel.GetNewINVReceiptFromTxnItems(billingTXN.BillingTransactionItems);
+    billingTXN.SubTotal = billdata.SubTotal;
+    billingTXN.DiscountAmount = billdata.DiscountAmount;
+    billingTXN.DiscountPercent = billdata.DiscountPercent;
+    billingTXN.TaxableAmount = billdata.TaxableAmount;
+    billingTXN.TaxTotal = billdata.TaxTotal;
+    billingTXN.TotalAmount = billdata.TotalAmount;
+    billingTXN.Tender = billdata.Tender;
+    billingTXN.Patient = billingReceipt.Patient;
+    billingTXN.PrintCount = 0;
+    billingTXN.CounterId = this.securityService.getLoggedInCounter().CounterId;
+    billingTXN.Remarks = returnRemarks;
+
+    var data = JSON.stringify(retModel);
+    var biltxndata = JSON.stringify(billingTXN)
+    input.append("billInvReturnModel", data);
+    input.append("billTransaction", biltxndata);
+
+    return this.billingDLService.PostReturnReceipt(input)
       .map(res => res);
   }
 
@@ -1039,6 +1161,45 @@ export class BillingBLService {
       .map(res => res);
   }
   //end: Yubaraj: 18Jul'19--For Insurance Billing
+
+
+  //Get All-Referrer-List--this function is copied from settings-bl service.
+  public GetAllReferrerList() {
+    return this.billingDLService.GetAllReferrerList()
+      .map(res => res);
+  }
+
+  //sud:30Apr'20--Active Employee List for reusablilty
+  public GetActiveEmployeesList() {
+    return this.billingDLService.GetActiveEmployeesList()
+      .map(res => res);
+  }
+
+  //Anjana: 19Aug-2020: Cancellation of Items in Cancel Bils
+  public CancelItemRequest(item: BillingTransactionItem){
+    var temp = _.omit(item, [
+      "ItemList",
+      "BillingTransactionItemValidator",
+      "Patient",
+    ]);
+    let data = JSON.stringify(temp);
+    return this.billingDLService.CancelItemRequest(data).map((responseData) => {
+      return responseData;
+    });
+  }
+
+  public CancelBillRequest(item: BillingTransactionItem) {
+    var temp = _.omit(item, [
+      "ItemList",
+      "BillingTransactionItemValidator",
+      "Patient",
+    ]);
+    let data = JSON.stringify(temp);
+    return this.billingDLService.CancelBillRequest(data).map((responseData) => {
+      return responseData;
+    });
+  }
+
 }
 
 

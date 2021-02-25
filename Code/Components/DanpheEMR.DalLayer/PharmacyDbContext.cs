@@ -1,11 +1,14 @@
 ﻿using DanpheEMR.ServerModel;
 using DanpheEMR.ServerModel.PharmacyModels;
 using System.Data.Entity;
-
+using Audit.EntityFramework;
+using DanpheEMR.ServerModel.CommonModels;
+using DanpheEMR.Security;
 
 namespace DanpheEMR.DalLayer
 {
-    public class PharmacyDbContext : DbContext
+    [AuditDbContext(Mode = AuditOptionMode.OptIn)]
+    public class PharmacyDbContext : AuditDbContext
     {
 
         public PharmacyDbContext(string conn) : base(conn)
@@ -14,6 +17,7 @@ namespace DanpheEMR.DalLayer
             this.Configuration.ProxyCreationEnabled = false;
         }
         public DbSet<PHRMRackModel> PHRMRack { get; set; }
+        public DbSet<Security.RbacUser> Users { get; set; }
         public DbSet<PHRMSupplierModel> PHRMSupplier { get; set; }
         public DbSet<PHRMCompanyModel> PHRMCompany { get; set; }
         public DbSet<PHRMCategoryModel> PHRMCategory { get; set; }
@@ -21,6 +25,7 @@ namespace DanpheEMR.DalLayer
         public DbSet<PHRMItemMasterModel> PHRMItemMaster { get; set; }
         public DbSet<PHRMTAXModel> PHRMTAX { get; set; }
         public DbSet<PHRMItemTypeModel> PHRMItemType { get; set; }
+        public DbSet<PHRMPackingTypeModel> PHRMPackingType { get; set; }
         public DbSet<PHRMPurchaseOrderModel> PHRMPurchaseOrder { get; set; }
         public DbSet<PHRMPurchaseOrderItemsModel> PHRMPurchaseOrderItems { get; set; }
         public DbSet<PHRMGoodsReceiptModel> PHRMGoodsReceipt { get; set; }
@@ -40,6 +45,7 @@ namespace DanpheEMR.DalLayer
         public DbSet<PHRMStoreSalesCategoryModel> PHRMStoreSalesCategory { get; set; }
         public DbSet<PHRMWriteOffItemsModel> PHRMWriteOffItem { get; set; }
         public DbSet<PHRMInvoiceReturnItemsModel> PHRMInvoiceReturnItemsModel { get; set; }
+        public DbSet<PHRMInvoiceReturnModel> PHRMInvoiceReturnModel { get; set; }
         public DbSet<EmployeePreferences> EmployeePreferences { get; set; }
         public DbSet<PHRMGenericModel> PHRMGenericModel { get; set; }
         public DbSet<PHRMNarcoticRecord> PHRMNarcoticRecord { get; set; }
@@ -54,6 +60,7 @@ namespace DanpheEMR.DalLayer
         public DbSet<PHRMDrugsRequistionItemsModel> DrugRequistionItem { get; set; }
         public DbSet<PHRMDepositModel> DepositModel { get; set; }
         public DbSet<BillingFiscalYear> BillingFiscalYear { get; set; }
+        public DbSet<PHRMSettlementModel> PHRMSettlements { get; set; }
         // public DbSet<EmployeeModel> Employee { get; set; }
 
         //public DbSet<BillingFiscalYear> FiscalYears { get; set; }
@@ -69,8 +76,24 @@ namespace DanpheEMR.DalLayer
         public DbSet<CountrySubDivisionModel> CountrySubDivision { get; set; }
         public DbSet<PHRMDispensaryStockModel> DispensaryStock { get; set; }
 
+        public DbSet<DepartmentModel> Departments { get; set; }
+        public DbSet<PHRMStoreRequisitionModel> StoreRequisition { get; set; }
+        public DbSet<PHRMStoreRequisitionItemsModel> StoreRequisitionItems { get; set; }
+        public DbSet<PHRMDispatchItemsModel> StoreDispatchItems { get; set; }
+        public DbSet<WARDTransactionModel> WardTransactionModel { get; set; }
+        public DbSet<InventoryTermsModel> Terms { get; set; }
+        public DbSet<PHRMCreditOrganizationsModel> CreditOrganizations { get; set; }
+        public DbSet<PHRMMRPHistoryModel> MRPHistories { get; set; }
+        public DbSet<InvoiceHeaderModel> InvoiceHeader { get; set; }
+        public DbSet<CfgParameterModel> CFGParameters { get; set; }
+        public DbSet<PHRMExpiryDateBatchNoHistoryModel> ExpiryDateBatchNoHistories { get; set;}
+
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
+
+            modelBuilder.Entity<PHRMSettlementModel>().ToTable("PHRM_TXN_Settlement");
+            modelBuilder.Entity<DepartmentModel>().ToTable("MST_Department");
+            modelBuilder.Entity<RbacUser>().ToTable("RBAC_User");
             modelBuilder.Entity<PHRMRackModel>().ToTable("PHRM_MST_Rack");
             modelBuilder.Entity<PHRMGenericModel>().ToTable("PHRM_MST_Generic");
             modelBuilder.Entity<PHRMSupplierModel>().ToTable("PHRM_MST_Supplier");
@@ -78,6 +101,7 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<PHRMCategoryModel>().ToTable("PHRM_MST_Category");
             modelBuilder.Entity<PHRMUnitOfMeasurementModel>().ToTable("PHRM_MST_UnitOfMeasurement");
             modelBuilder.Entity<PHRMItemTypeModel>().ToTable("PHRM_MST_ItemType");
+            modelBuilder.Entity<PHRMPackingTypeModel>().ToTable("PHRM_MST_PackingType");
             modelBuilder.Entity<PHRMPurchaseOrderModel>().ToTable("PHRM_PurchaseOrder");
             modelBuilder.Entity<PHRMPurchaseOrderItemsModel>().ToTable("PHRM_PurchaseOrderItems");
             modelBuilder.Entity<PHRMItemMasterModel>().ToTable("PHRM_MST_Item");
@@ -99,6 +123,7 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<PHRMWriteOffModel>().ToTable("PHRM_WriteOff");
             modelBuilder.Entity<PHRMWriteOffItemsModel>().ToTable("PHRM_WriteOffItems");
             modelBuilder.Entity<PHRMInvoiceReturnItemsModel>().ToTable("PHRM_TXN_InvoiceReturnItems");
+            modelBuilder.Entity<PHRMInvoiceReturnModel>().ToTable("PHRM_TXN_InvoiceReturn");
             modelBuilder.Entity<EmployeePreferences>().ToTable("EMP_EmployeePreferences");
             modelBuilder.Entity<PHRMNarcoticRecord>().ToTable("PHRM_NarcoticSaleRecord");
             modelBuilder.Entity<PHRMCounter>().ToTable("PHRM_MST_Counter");
@@ -124,6 +149,17 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<CountrySubDivisionModel>().ToTable("MST_CountrySubDivision");
             modelBuilder.Entity<PHRMDispensaryStockModel>().ToTable("PHRM_DispensaryStock");
             modelBuilder.Entity<PHRMStoreSalesCategoryModel>().ToTable("PHRM_MST_SalesCategory");
+            modelBuilder.Entity<PHRMStoreRequisitionModel>().ToTable("PHRM_StoreRequisition");
+            modelBuilder.Entity<PHRMStoreRequisitionItemsModel>().ToTable("PHRM_StoreRequisitionItems");
+            modelBuilder.Entity<PHRMDispatchItemsModel>().ToTable("PHRM_StoreDispatchItems");
+            modelBuilder.Entity<WARDTransactionModel>().ToTable("WARD_Transaction");
+            modelBuilder.Entity<InventoryTermsModel>().ToTable("INV_MST_Terms");
+            modelBuilder.Entity<PHRMCreditOrganizationsModel>().ToTable("PHRM_MST_Credit_Organization");
+            modelBuilder.Entity<PHRMMRPHistoryModel>().ToTable("PHRM_StockTxnItems_MRPHistory");
+            modelBuilder.Entity<InvoiceHeaderModel>().ToTable("MST_InvoiceHeaders");
+            modelBuilder.Entity<CfgParameterModel>().ToTable("CORE_CFG_Parameters");
+            modelBuilder.Entity<PHRMExpiryDateBatchNoHistoryModel>().ToTable("PHRM_ExpiryDate_BatchNo_History");
+
         }
     }
 }

@@ -18,9 +18,11 @@ namespace DanpheEMR.ServerModel
         public DateTime? ExpiryDate { get; set; }
         public double ReceivedQuantity { get; set; }
         public double AvailableQuantity { get; set; }
-        public DateTime? ReceiptDate { get; set; }
+        public DateTime? TransactionDate { get; set; }
         public int? CreatedBy  { get; set; }
         public DateTime? CreatedOn { get; set; }
+        public decimal? Price { get; set; }
+        public decimal? MRP { get; set; }
 
         //Below properties for only information display
         //ItemRate and VATAmount need for Write-off functionality only for show to user
@@ -28,6 +30,8 @@ namespace DanpheEMR.ServerModel
         public decimal VATAmount { get; set; }
         [NotMapped]
         public decimal ItemRate { get; set; }
+        [NotMapped]
+        public double curQuantity { get; set; }
 
     }
 }

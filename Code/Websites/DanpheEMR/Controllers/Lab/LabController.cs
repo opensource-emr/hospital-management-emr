@@ -19,6 +19,10 @@ using DanpheEMR.Core.Caching;
 using System.Xml;
 using DanpheEMR.Security;
 using DanpheEMR.ServerModel.LabModels;
+using DanpheEMR.Enums;
+using DanpheEMR.Core;
+using System.Data;
+using System.Transactions;
 
 namespace DanpheEMR.Controllers
 {
@@ -26,9 +30,11 @@ namespace DanpheEMR.Controllers
     public class LabController : CommonController
     {
         //private bool docPatPortalSync = false;
+        private List<LabRunNumberSettingsModel> labRunNumberSettings = new List<LabRunNumberSettingsModel>();
+
         public LabController(IOptions<MyConfiguration> _config) : base(_config)
         {
-            //docPatPortalSync = _config.Value.DanphePatientPortalSync;
+            //docPatPortalSync = _config.Value.DanphePatientPortalSync;            
         }
 
         // GET: api/values
@@ -52,7 +58,8 @@ namespace DanpheEMR.Controllers
             string formattedSampleCode,
             DateTime FromDate,
             DateTime ToDate,
-            DateTime date
+            DateTime date,
+            string search
             )
         {
 
@@ -61,6 +68,7 @@ namespace DanpheEMR.Controllers
             {
                 LabDbContext labDbContext = new LabDbContext(connString);
 
+                this.labRunNumberSettings = (List<LabRunNumberSettingsModel>)DanpheCache.GetMasterData(MasterDataEnum.LabRunNumberSettings);
 
                 //it is used in collect sample page
                 //sud: 15Sept'18--we're excluding IsActive = false requisitions from Lab_TestRequisitionTable
@@ -68,45 +76,49 @@ namespace DanpheEMR.Controllers
                 {
                     //Removed to show all detail regardless of BillingStatus
                     //&& (req.BillingStatus.ToLower() == "paid" || req.BillingStatus.ToLower() == "unpaid" || (req.BillingStatus == "provisional" && req.VisitType == "inpatient"))
-                    var histoPatients = (from req in labDbContext.Requisitions.Include("Patient")
-                                         join pat in labDbContext.Patients on req.PatientId equals pat.PatientId
-                                         where ((req.IsActive.HasValue ? req.IsActive.Value == true : true) && req.OrderStatus.ToLower() == "active"
-                                         && (req.BillingStatus.ToLower() != "cancel") && (req.BillingStatus.ToLower() != "returned") && req.RunNumberType.ToLower() == "histo")
-                                         select new
-                                         {
-                                             RequisitionId = req.RequisitionId,
-                                             PatientId = req.PatientId,
-                                             PatientName = req.Patient.FirstName + " " + (string.IsNullOrEmpty(req.Patient.MiddleName) ? "" : req.Patient.MiddleName + " ") + req.Patient.LastName,
-                                             PatientCode = req.Patient.PatientCode,
-                                             DateOfBirth = req.Patient.DateOfBirth,
-                                             Gender = req.Patient.Gender,
-                                             PhoneNumber = req.Patient.PhoneNumber,
-                                             LastestRequisitionDate = req.OrderDateTime,
-                                             VisitType = req.VisitType,
-                                             RunNumberType = req.RunNumberType,
-                                             WardName = req.WardName
-                                         }).OrderByDescending(a => a.LastestRequisitionDate).ToList();
+                    var histoNdCytoPatients = (from req in labDbContext.Requisitions.Include("Patient")
+                                               join pat in labDbContext.Patients on req.PatientId equals pat.PatientId
+                                               where ((req.IsActive.HasValue ? req.IsActive.Value == true : true) && req.OrderStatus.ToLower() == ENUM_LabOrderStatus.Active //"active"
+                                               && (req.BillingStatus.ToLower() != ENUM_BillingStatus.cancel) // "cancel" ) 
+                                               && (req.BillingStatus.ToLower() != ENUM_BillingStatus.returned)// "returned") 
+                                               && (req.RunNumberType.ToLower() == ENUM_LabRunNumType.histo || req.RunNumberType.ToLower() == ENUM_LabRunNumType.cyto)) // "histo || cyto")
+                                               select new
+                                               {
+                                                   RequisitionId = req.RequisitionId,
+                                                   PatientId = req.PatientId,
+                                                   PatientName = req.Patient.FirstName + " " + (string.IsNullOrEmpty(req.Patient.MiddleName) ? "" : req.Patient.MiddleName + " ") + req.Patient.LastName,
+                                                   PatientCode = req.Patient.PatientCode,
+                                                   DateOfBirth = req.Patient.DateOfBirth,
+                                                   Gender = req.Patient.Gender,
+                                                   PhoneNumber = req.Patient.PhoneNumber,
+                                                   LastestRequisitionDate = req.OrderDateTime,
+                                                   VisitType = req.VisitType,
+                                                   RunNumberType = req.RunNumberType,
+                                                   WardName = req.WardName
+                                               }).OrderByDescending(a => a.LastestRequisitionDate).ToList();
 
                     //Removed to show all detail regardless of BillingStatus
                     //&& (req.BillingStatus.ToLower() == "paid" || req.BillingStatus.ToLower() == "unpaid" || (req.BillingStatus == "provisional" && req.VisitType == "inpatient"))
-                    var cytoPatients = (from req in labDbContext.Requisitions.Include("Patient")
-                                        join pat in labDbContext.Patients on req.PatientId equals pat.PatientId
-                                        where ((req.IsActive.HasValue ? req.IsActive.Value == true : true) && req.OrderStatus.ToLower() == "active"
-                                        && (req.BillingStatus.ToLower() != "cancel") && (req.BillingStatus.ToLower() != "returned") && req.RunNumberType.ToLower() == "cyto")
-                                        select new
-                                        {
-                                            RequisitionId = req.RequisitionId,
-                                            PatientId = req.PatientId,
-                                            PatientName = req.Patient.FirstName + " " + (string.IsNullOrEmpty(req.Patient.MiddleName) ? "" : req.Patient.MiddleName + " ") + req.Patient.LastName,
-                                            PatientCode = req.Patient.PatientCode,
-                                            DateOfBirth = req.Patient.DateOfBirth,
-                                            Gender = req.Patient.Gender,
-                                            PhoneNumber = req.Patient.PhoneNumber,
-                                            LastestRequisitionDate = req.OrderDateTime,
-                                            VisitType = req.VisitType,
-                                            RunNumberType = req.RunNumberType,
-                                            WardName = req.WardName
-                                        }).OrderByDescending(a => a.LastestRequisitionDate).ToList();
+                    //var cytoPatients = (from req in labDbContext.Requisitions.Include("Patient")
+                    //                    join pat in labDbContext.Patients on req.PatientId equals pat.PatientId
+                    //                    where ((req.IsActive.HasValue ? req.IsActive.Value == true : true) && req.OrderStatus.ToLower() == ENUM_LabOrderStatus.Active // "active"
+                    //                    && (req.BillingStatus.ToLower() != ENUM_BillingStatus.cancel)// "cancel")
+                    //                    && (req.BillingStatus.ToLower() != ENUM_BillingStatus.returned)//"returned")
+                    //                    && (req.RunNumberType.ToLower() == ENUM_LabRunNumType.cyto || req.RunNumberType.ToLower() == ENUM_LabRunNumType.histo)) // "cyto || cyto")
+                    //                    select new
+                    //                    {
+                    //                        RequisitionId = req.RequisitionId,
+                    //                        PatientId = req.PatientId,
+                    //                        PatientName = req.Patient.FirstName + " " + (string.IsNullOrEmpty(req.Patient.MiddleName) ? "" : req.Patient.MiddleName + " ") + req.Patient.LastName,
+                    //                        PatientCode = req.Patient.PatientCode,
+                    //                        DateOfBirth = req.Patient.DateOfBirth,
+                    //                        Gender = req.Patient.Gender,
+                    //                        PhoneNumber = req.Patient.PhoneNumber,
+                    //                        LastestRequisitionDate = req.OrderDateTime,
+                    //                        VisitType = req.VisitType,
+                    //                        RunNumberType = req.RunNumberType,
+                    //                        WardName = req.WardName
+                    //                    }).OrderByDescending(a => a.LastestRequisitionDate).ToList();
 
                     //.OrderByDescending(a => a.LatestRequisitionDate).ToList()
 
@@ -117,8 +129,10 @@ namespace DanpheEMR.Controllers
                                           //show only paid and unpaid requisitions in the list.
                                           //show only IsActive=True and IsActive=NULL requests, Hide IsActive=False. -- sud: 15Sept'18
                                           //if IsActive has value then it should be true, if it's null then its true by default. 
-                                          where ((req.IsActive.HasValue ? req.IsActive.Value == true : true) && req.OrderStatus.ToLower() == "active"
-                                          && (req.BillingStatus.ToLower() != "cancel") && (req.BillingStatus.ToLower() != "returned") && req.RunNumberType.ToLower() == "normal")
+                                          where ((req.IsActive.HasValue ? req.IsActive.Value == true : true) && req.OrderStatus.ToLower() == ENUM_LabOrderStatus.Active //"active"
+                                          && (req.BillingStatus.ToLower() != ENUM_BillingStatus.cancel)// "cancel") 
+                                          && (req.BillingStatus.ToLower() != ENUM_BillingStatus.returned) // "returned")
+                                          && req.RunNumberType.ToLower() == ENUM_LabRunNumType.normal) // "normal")
                                           group req by new { req.Patient, req.VisitType, req.WardName } into p
                                           select new
                                           {
@@ -139,7 +153,7 @@ namespace DanpheEMR.Controllers
                                           }).OrderByDescending(b => b.LastestRequisitionDate).ToList();
 
 
-                    var combined = histoPatients.Union(cytoPatients).Union(normalPatients);
+                    var combined = histoNdCytoPatients.Union(normalPatients);
                     responseData.Results = combined.OrderByDescending(c => c.LastestRequisitionDate);
 
                 }
@@ -154,7 +168,8 @@ namespace DanpheEMR.Controllers
                                   //show only IsActive=True and IsActive=NULL requests, Hide IsActive=False. -- sud: 15Sept'18
                                   //if IsActive has value then it should be true, if it's null then its true by default. 
                                   where req.PatientId == patientId && (req.IsActive.HasValue ? req.IsActive.Value == true : true) &&
-                                  (req.BillingStatus == "paid" && req.OrderStatus == "active")
+                                  (req.BillingStatus == ENUM_BillingStatus.paid // "paid" 
+                                  && req.OrderStatus == ENUM_LabOrderStatus.Active) //"active"
                                   && (req.VisitType.ToLower() == visitType.ToLower())
                                   && (req.RunNumberType.ToLower() == runNumberType.ToLower())
 
@@ -222,8 +237,9 @@ namespace DanpheEMR.Controllers
                                   //if IsActive has value then it should be true, if it's null then its true by default. 
                                   where req.PatientId == patientId && (req.IsActive.HasValue ? req.IsActive.Value == true : true) &&
                                   (wardName == "null" ? req.WardName == null : req.WardName == wardName) &&
-                                  (req.BillingStatus.ToLower() != "cancel") && (req.BillingStatus.ToLower() != "returned")
-                                  && req.OrderStatus == "active"
+                                  (req.BillingStatus.ToLower() != ENUM_BillingStatus.cancel) // "cancel") 
+                                  && (req.BillingStatus.ToLower() != ENUM_BillingStatus.returned)//"returned")
+                                  && req.OrderStatus == ENUM_LabOrderStatus.Active // "active"
                                   && (req.VisitType.ToLower() == visitType.ToLower())
                                   && req.RunNumberType.ToLower() == runNumberType.ToLower()
 
@@ -250,8 +266,9 @@ namespace DanpheEMR.Controllers
                                   //show only IsActive=True and IsActive=NULL requests, Hide IsActive=False. -- sud: 15Sept'18
                                   //if IsActive has value then it should be true, if it's null then its true by default. 
                                   where req.PatientId == patientId && (req.IsActive.HasValue ? req.IsActive.Value == true : true)
-                                  && (req.BillingStatus.ToLower() != "cancel") && (req.BillingStatus.ToLower() != "returned")
-                                  && req.OrderStatus == "active"
+                                  && (req.BillingStatus.ToLower() != ENUM_BillingStatus.cancel) // "cancel")
+                                  && (req.BillingStatus.ToLower() != ENUM_BillingStatus.returned) //"returned")
+                                  && req.OrderStatus == ENUM_LabOrderStatus.Active //"active"
                                   && (req.VisitType.ToLower() == visitType.ToLower())
                                   && (req.RunNumberType.ToLower() == runNumberType.ToLower())
                                   && (req.RequisitionId == reqId)
@@ -331,110 +348,212 @@ namespace DanpheEMR.Controllers
                     responseData.Results = result;
                 }
 
-
                 //getting latest sample code
                 else if (reqType == "latest-samplecode")
                 {
                     DateTime sampleDate = SampleDate != null ? SampleDate : DateTime.Now;
 
-                    var RunType = runNumberType;
-                    var barCodeList = (from v in labDbContext.LabBarCode
-                                       select v).ToList();
-                    var BarCodeNumber = (barCodeList.Count > 0) ? barCodeList.Max(val => val.BarCodeNumber) + 1 : 1000000;
+                    var RunType = runNumberType.ToLower();
+                    var VisitType = visitType.ToLower();
+                    var PatientId = patientId;
+                    var hasInsurance = false;
+
+                    DataSet barcod = DALFunctions.GetDatasetFromStoredProc("SP_LAB_GetLatestBarCodeNumber", null, labDbContext);
+                    var strData = JsonConvert.SerializeObject(barcod.Tables[0]);
+                    List<BarCodeNumber> barCode = DanpheJSONConvert.DeserializeObject<List<BarCodeNumber>>(strData);
+                    var BarCodeNumber = barCode[0].Value;
+
+                    List<LabRunNumberSettingsModel> allLabRunNumberSettings = (List<LabRunNumberSettingsModel>)DanpheCache.GetMasterData(MasterDataEnum.LabRunNumberSettings);
 
 
+                    List<LabRequisitionModel> allReqOfCurrentType = new List<LabRequisitionModel>();
 
-                    if (visitType != null && visitType.ToLower() == "outpatient")
+                    //Get current RunNumber Settings
+                    LabRunNumberSettingsModel currentRunNumSetting = allLabRunNumberSettings.Where(st => st.RunNumberType == RunType
+                    && st.VisitType == VisitType && st.UnderInsurance == hasInsurance).FirstOrDefault();
+
+                    //Get all the Rows based upon this GroupingIndex
+                    List<LabRunNumberSettingsModel> allCommonSetting = allLabRunNumberSettings.Where(r =>
+                    r.RunNumberGroupingIndex == currentRunNumSetting.RunNumberGroupingIndex).ToList();
+
+                    foreach (var set in allCommonSetting)
                     {
-                        if (RunType.ToLower() == "normal")
+                        List<SqlParameter> paramList = new List<SqlParameter>() {  new SqlParameter("@RunNumberType",set.RunNumberType),
+                        new SqlParameter("@HasInsurance", set.UnderInsurance),
+                        new SqlParameter("@VisitType", set.VisitType) };
+                        DataSet dts = DALFunctions.GetDatasetFromStoredProc("SP_LAB_AllRequisitionsBy_VisitAndRunType", paramList, labDbContext);
+                        List<LabRequisitionModel> reqOfSingleType = new List<LabRequisitionModel>();
+                        if (dts.Tables.Count > 0)
                         {
-                            string sampleCodeFormatted = GetSampleCodeFormatted(GetOutpatientLatestSampleSequence(labDbContext, sampleDate), sampleDate, visitType, RunType);
-                            if (sampleCodeFormatted != null)
+                            strData = JsonConvert.SerializeObject(dts.Tables[0]);
+                            reqOfSingleType = DanpheJSONConvert.DeserializeObject<List<LabRequisitionModel>>(strData);
+                        }
+                        allReqOfCurrentType = allReqOfCurrentType.Union(reqOfSingleType).ToList();
+                    }
+
+
+
+                    var latestSample = GetLatestSampleSequence(allReqOfCurrentType, allLabRunNumberSettings, currentRunNumSetting, allCommonSetting, sampleDate);
+
+
+                    var ExistingBarCodeNumbers = (from allReqTyp in allReqOfCurrentType
+                                                  where allReqTyp.PatientId == patientId && allReqTyp.BarCodeNumber.HasValue
+                                                  select new
+                                                  {
+                                                      SampleNumber = allReqTyp.SampleCode,
+                                                      BarCodeNumber = allReqTyp.BarCodeNumber,
+                                                      SampleDate = allReqTyp.SampleCreatedOn.Value.Date,
+                                                      SampleCodeFormatted = allReqTyp.SampleCodeFormatted,
+                                                      IsSelected = false
+                                                  }).Distinct().OrderByDescending(a => a.BarCodeNumber).FirstOrDefault();
+
+                    var sampleLetter = string.Empty;
+                    var labSampleCode = string.Empty;
+
+                    if (currentRunNumSetting != null)
+                    {
+                        sampleLetter = currentRunNumSetting.StartingLetter;
+
+                        if (String.IsNullOrWhiteSpace(sampleLetter))
+                        {
+                            sampleLetter = string.Empty;
+                        }
+
+                        var beforeSeparator = currentRunNumSetting.FormatInitialPart;
+                        var separator = currentRunNumSetting.FormatSeparator;
+                        var afterSeparator = currentRunNumSetting.FormatLastPart;
+
+                        if (beforeSeparator == "num")
+                        {
+                            if (afterSeparator.Contains("yy"))
                             {
-                                string[] sampleCodeBreakup = sampleCodeFormatted.Split('/');
-                                responseData.Results = new { SampleCode = sampleCodeBreakup[1], SampleNumber = sampleCodeBreakup[0], BarCodeNumber = BarCodeNumber };
+                                var afterSeparatorLength = afterSeparator.Length;
+                                NepaliDateType nepDate = DanpheDateConvertor.ConvertEngToNepDate(sampleDate);
+                                labSampleCode = nepDate.Year.ToString().Substring(1, afterSeparatorLength);
+                            }
+                            else if (afterSeparator.Contains("dd"))
+                            {
+                                NepaliDateType nepDate = DanpheDateConvertor.ConvertEngToNepDate(sampleDate);
+                                labSampleCode = nepDate.Day.ToString();
+                            }
+                            else if (afterSeparator.Contains("mm"))
+                            {
+                                NepaliDateType nepDate = DanpheDateConvertor.ConvertEngToNepDate(sampleDate);
+                                labSampleCode = nepDate.Month.ToString();
                             }
                         }
                         else
                         {
-                            var samCollDate = DanpheDateConvertor.ConvertEngToNepDate(sampleDate).Year.ToString();
-                            string last3Dig = samCollDate.Substring(1, 3);
-                            var samplNum = (int)GetYearlyTypeLatestSampleSequence(labDbContext, RunType.ToLower());
-                            responseData.Results = new { SampleCode = last3Dig, SampleNumber = samplNum, BarCodeNumber = BarCodeNumber };
-                        }
-
-
-                    }
-                    else if (visitType != null && (visitType.ToLower() == "inpatient" || visitType.ToLower() == "emergency"))
-                    {
-                        if (RunType.ToLower() == "normal")
-                        {
-                            string sampleCodeFormatted = GetSampleCodeFormatted(GetInpatientLatestSampleSequence(labDbContext), sampleDate, visitType, RunType);
-                            if (sampleCodeFormatted != null)
+                            if (beforeSeparator.Contains("yy"))
                             {
-                                string[] sampleCodeBreakup = sampleCodeFormatted.Split('/');
-                                responseData.Results = new { SampleCode = sampleCodeBreakup[1], SampleNumber = sampleCodeBreakup[0], BarCodeNumber = BarCodeNumber };
+                                var beforeSeparatorLength = beforeSeparator.Length;
+                                NepaliDateType nepDate = DanpheDateConvertor.ConvertEngToNepDate(sampleDate);
+                                labSampleCode = nepDate.Year.ToString().Substring(1, beforeSeparatorLength);
                             }
-
+                            else if (beforeSeparator.Contains("dd"))
+                            {
+                                NepaliDateType nepDate = DanpheDateConvertor.ConvertEngToNepDate(sampleDate);
+                                labSampleCode = nepDate.Day.ToString();
+                            }
+                            else if (beforeSeparator.Contains("mm"))
+                            {
+                                NepaliDateType nepDate = DanpheDateConvertor.ConvertEngToNepDate(sampleDate);
+                                labSampleCode = nepDate.Month.ToString();
+                            }
                         }
-                        else
-                        {
-                            var samCollDate = DanpheDateConvertor.ConvertEngToNepDate(sampleDate).Year.ToString();
-                            string last3Dig = samCollDate.Substring(1, 3);
-                            var samplNum = (int)GetYearlyTypeLatestSampleSequence(labDbContext, RunType.ToLower());
-                            responseData.Results = new { SampleCode = last3Dig, SampleNumber = samplNum, BarCodeNumber = BarCodeNumber };
-                        }
-
+                    }
+                    else
+                    {
+                        throw new ArgumentException("Cannot Get Samplecode");
                     }
 
 
+                    responseData.Results = new
+                    {
+                        SampleCode = labSampleCode,
+                        SampleNumber = latestSample,
+                        BarCodeNumber = BarCodeNumber,
+                        SampleLetter = sampleLetter,
+                        ExistingBarCodeNumbersOfPatient = ExistingBarCodeNumbers
+                    };
                     responseData.Status = "OK";
+
                 }
 
                 else if (reqType == "check-samplecode")
                 {
                     SampleDate = SampleDate != null ? SampleDate : DateTime.Now;
-
+                    var sampleCode = SampleCode;
                     LabRequisitionModel requisition = null;
-                    var RunNumberType = runNumberType;
+                    var RunNumberType = runNumberType.ToLower();
+                    var VisitType = visitType.ToLower();
+                    var isUnderInsurance = false;
+                    //var sampleCodeFormattedForCurrentData = GetSampleCodeFormatted(sampleCode, SampleDate, VisitType, RunNumberType, isUnderInsurance);
 
-                    if (visitType.ToLower() == "inpatient" || visitType.ToLower() == "emergency")
+                    List<LabRunNumberSettingsModel> allLabRunNumSettings = (List<LabRunNumberSettingsModel>)DanpheCache.GetMasterData(MasterDataEnum.LabRunNumberSettings);
+
+
+                    //Get the GroupingIndex From visitType and Run Number Type
+                    var currentSetting = (from runNumSetting in allLabRunNumSettings
+                                          where runNumSetting.VisitType == VisitType
+                                          && runNumSetting.RunNumberType == RunNumberType
+                                          && runNumSetting.UnderInsurance == isUnderInsurance
+                                          select runNumSetting
+                                         ).FirstOrDefault();
+
+
+                    //Get all the Rows based upon this GroupingIndex
+                    var allCurrentVisitAndRynType = (from runNumSetting in allLabRunNumSettings
+                                                     where runNumSetting.RunNumberGroupingIndex == currentSetting.RunNumberGroupingIndex
+                                                     select new
+                                                     {
+                                                         runNumSetting.RunNumberType,
+                                                         runNumSetting.VisitType,
+                                                         runNumSetting.UnderInsurance,
+                                                         runNumSetting.ResetDaily,
+                                                         runNumSetting.ResetMonthly,
+                                                         runNumSetting.ResetYearly
+                                                     }).ToList();
+
+                    //Get all the Requisition of current sample date and sample code
+                    //var reqOfCurrentSampleYear = (from req in labDbContext.Requisitions 
+                    //                             where req.SampleCreatedOn.HasValue
+                    //                             && req.SampleCreatedOn.Value.AddMonths(-10).Date.Year == SampleDate.Year
+                    //                             && req.SampleCode == sampleCode                                                  
+                    //                             select req).ToList();
+
+
+                    List<SqlParameter> paramList = new List<SqlParameter>() { new SqlParameter("@sampleCode", sampleCode) };
+                    DataSet dts = DALFunctions.GetDatasetFromStoredProc("SP_LAB_AllRequisitionsBy_SampleCode", paramList, labDbContext);
+                    List<LabRequisitionModel> reqOfCurrentSampleYear = new List<LabRequisitionModel>();
+                    if (dts.Tables.Count > 0)
                     {
-                        if (RunNumberType.ToLower() == "normal")
+                        var strData = JsonConvert.SerializeObject(dts.Tables[0]);
+                        reqOfCurrentSampleYear = DanpheJSONConvert.DeserializeObject<List<LabRequisitionModel>>(strData);
+                    }
+
+
+                    foreach (var currVal in allCurrentVisitAndRynType)
+                    {
+                        if (currentSetting.ResetYearly || currentSetting.ResetMonthly || currentSetting.ResetDaily)
                         {
-                            requisition = (from sam in labDbContext.Requisitions.Where(r => r.SampleCreatedOn.HasValue) //this already filters not null data.. 
-                                           where sam.SampleCode == SampleCode && SampleDate.Date.Year == sam.SampleCreatedOn.Value.Year
-                                           && (sam.VisitType.ToLower() == "inpatient" || sam.VisitType.ToLower() == "emergency") && sam.RunNumberType.ToLower() == RunNumberType
-                                           select sam).FirstOrDefault();
+                            requisition = (from req in reqOfCurrentSampleYear
+                                           where
+                                           (DanpheDateConvertor.ConvertEngToNepDate(req.SampleCreatedOn.Value).Year == DanpheDateConvertor.ConvertEngToNepDate(SampleDate).Year)
+                                           && (currentSetting.ResetMonthly ? (DanpheDateConvertor.ConvertEngToNepDate(req.SampleCreatedOn.Value).Month == DanpheDateConvertor.ConvertEngToNepDate(SampleDate).Month) : true)
+                                           && (currentSetting.ResetDaily ? req.SampleCreatedOn.Value.Date == SampleDate.Date : true)
+                                           && (req.VisitType.ToLower() == currVal.VisitType.ToLower())
+                                           && (req.RunNumberType.ToLower() == currVal.RunNumberType.ToLower())
+                                           select req).FirstOrDefault();
                         }
+
                         else
                         {
-                            requisition = (from sam in labDbContext.Requisitions.Where(r => r.SampleCreatedOn.HasValue)
-                                           where sam.SampleCode == SampleCode && SampleDate.Date.Year == sam.SampleCreatedOn.Value.Year
-                                           && sam.RunNumberType.ToLower() == RunNumberType
-                                           select sam).FirstOrDefault();
+                            throw new ArgumentException("Please set the reset type.");
                         }
 
                     }
-                    else if (visitType.ToLower() == "outpatient")
-                    {
-                        if (RunNumberType.ToLower() == "normal")
-                        {
-                            requisition = (from sam in labDbContext.Requisitions
-                                           where sam.SampleCode == SampleCode
-                                           && DbFunctions.TruncateTime(sam.SampleCreatedOn).Value == DbFunctions.TruncateTime(SampleDate).Value
-                                           && sam.VisitType.ToLower() == "outpatient" && sam.RunNumberType.ToLower() == RunNumberType
-                                           select sam).FirstOrDefault();
-                        }
-                        else
-                        {
-                            requisition = (from sam in labDbContext.Requisitions.Where(r => r.SampleCreatedOn.HasValue)
-                                           where sam.SampleCode == SampleCode && SampleDate.Date.Year == sam.SampleCreatedOn.Value.Year
-                                           && sam.RunNumberType.ToLower() == RunNumberType
-                                           select sam).FirstOrDefault();
-                        }
 
-                    }
                     if (requisition != null)
                     {
                         responseData.Results = new { Exist = true, PatientName = requisition.PatientName, PatientId = requisition.PatientId, SampleCreatedOn = requisition.SampleCreatedOn };
@@ -446,7 +565,6 @@ namespace DanpheEMR.Controllers
 
                     responseData.Status = "OK";
                 }
-
 
                 else if (reqType == "lastSampleCode")
                 {
@@ -474,106 +592,13 @@ namespace DanpheEMR.Controllers
                 else if (reqType == "pendingLabResults")
                 {
                     List<LabPendingResultVM> results = new List<LabPendingResultVM>();
-                    var reportWithHtmlTemplate = (from req in labDbContext.Requisitions
-                                                  join test in labDbContext.LabTests on req.LabTestId equals test.LabTestId
-                                                  join template in labDbContext.LabReportTemplates on req.ReportTemplateId equals template.ReportTemplateID
-                                                  join patient in labDbContext.Patients on req.PatientId equals patient.PatientId
-                                                  where req.OrderStatus.ToLower() == "pending"
-                                                  && req.SampleCode != null
-                                                  && req.BillingStatus.ToLower() != "cancel" && req.BillingStatus.ToLower() != "returned"
-                                                  //&& (req.BillingStatus == "paid" || (req.BillingStatus == "provisional" && req.VisitType == "inpatient"))
-                                                  && (template.TemplateType.ToLower() == "html")
-                                                  //ashim: 01Sep2018 : updated group by logic: we're now grouping by samplecode and patient
-                                                  group new { req, test, template } by new
-                                                  {
-                                                      patient,
-                                                      req.SampleCode,
-                                                      DbFunctions.TruncateTime(req.SampleCreatedOn).Value,
-                                                      req.VisitType,
-                                                      req.RequisitionId,
-                                                      req.RunNumberType,
-                                                      req.BarCodeNumber,
-                                                      req.WardName
-                                                  } into grp
-                                                  select new LabPendingResultVM
-                                                  {
-                                                      PatientId = grp.Key.patient.PatientId,
-                                                      PatientCode = grp.Key.patient.PatientCode,
-                                                      DateOfBirth = grp.Key.patient.DateOfBirth,
-                                                      PhoneNumber = grp.Key.patient.PhoneNumber,
-                                                      Gender = grp.Key.patient.Gender,
-                                                      PatientName = grp.Key.patient.FirstName + " " + (string.IsNullOrEmpty(grp.Key.patient.MiddleName) ? "" : grp.Key.patient.MiddleName + " ") + grp.Key.patient.LastName,
+                    var reportWithHtmlTemplate = GetAllHTMLLabPendingResults(labDbContext);
 
-                                                      SampleCode = grp.Key.SampleCode,
-                                                      SampleDate = grp.Key.Value,
-                                                      VisitType = grp.Key.VisitType,
-                                                      RunNumType = grp.Key.RunNumberType,
-                                                      BarCodeNumber = grp.Key.BarCodeNumber,
-                                                      WardName = grp.Key.WardName,
-                                                      Tests = grp.Select(a =>
-                                                      new LabPendingResultVM.LabTestDetail()
-                                                      {
-                                                          RequisitionId = a.req.RequisitionId,
-                                                          TestName = a.test.LabTestName,
-                                                          LabTestId = a.test.LabTestId,
-                                                          ReportTemplateId = a.template.ReportTemplateID,
-                                                          ReportTemplateShortName = a.template.ReportTemplateShortName,
-                                                          RunNumberType = a.req.RunNumberType
-                                                      }).OrderBy(req => req.RequisitionId).ToList()
-                                                  }).OrderByDescending(d => d.SampleDate).ThenByDescending(c => c.SampleCode).ToList();
-
-                    var reportWithNormalEntry = (from req in labDbContext.Requisitions
-                                                 join test in labDbContext.LabTests on req.LabTestId equals test.LabTestId
-                                                 join template in labDbContext.LabReportTemplates on req.ReportTemplateId equals template.ReportTemplateID
-                                                 join patient in labDbContext.Patients on req.PatientId equals patient.PatientId
-                                                 where req.OrderStatus.ToLower() == "pending"
-                                                 && req.SampleCode != null
-                                                 && req.BillingStatus.ToLower() != "cancel" && req.BillingStatus.ToLower() != "returned"
-                                                 //Removed as all can add result but cannot Print Report Until Bill is Paid (incase of OP)
-                                                 //&& (req.BillingStatus == "paid" || (req.BillingStatus == "provisional" && req.VisitType == "inpatient"))
-                                                 && (template.TemplateType.ToLower() == "normal" || template.TemplateType.ToLower() == "culture")
-                                                 //ashim: 01Sep2018 : updated group by logic: we're now grouping by samplecode and patient
-                                                 group new { req, test, template } by new
-                                                 {
-                                                     patient,
-                                                     req.SampleCode,
-                                                     DbFunctions.TruncateTime(req.SampleCreatedOn).Value,
-                                                     req.VisitType,
-                                                     req.RunNumberType,
-                                                     req.BarCodeNumber,
-                                                     req.WardName
-                                                 } into grp
-                                                 select new LabPendingResultVM
-                                                 {
-                                                     PatientId = grp.Key.patient.PatientId,
-                                                     PatientCode = grp.Key.patient.PatientCode,
-                                                     DateOfBirth = grp.Key.patient.DateOfBirth,
-                                                     PhoneNumber = grp.Key.patient.PhoneNumber,
-                                                     Gender = grp.Key.patient.Gender,
-                                                     PatientName = grp.Key.patient.FirstName + " " + (string.IsNullOrEmpty(grp.Key.patient.MiddleName) ? "" : grp.Key.patient.MiddleName + " ") + grp.Key.patient.LastName,
-
-                                                     SampleCode = grp.Key.SampleCode,
-                                                     SampleDate = grp.Key.Value,
-                                                     VisitType = grp.Key.VisitType,
-                                                     RunNumType = grp.Key.RunNumberType,
-                                                     BarCodeNumber = grp.Key.BarCodeNumber,
-                                                     WardName = grp.Key.WardName,
-                                                     Tests = grp.Select(a =>
-                                                     new LabPendingResultVM.LabTestDetail()
-                                                     {
-                                                         RequisitionId = a.req.RequisitionId,
-                                                         TestName = a.test.LabTestName,
-                                                         LabTestId = a.test.LabTestId,
-                                                         ReportTemplateId = a.template.ReportTemplateID,
-                                                         ReportTemplateShortName = a.template.ReportTemplateShortName
-                                                     }).OrderBy(req => req.RequisitionId).ToList()
-                                                 }).OrderByDescending(d => d.SampleDate).ThenByDescending(c => c.SampleCode).ToList();
-
-
+                    var reportWithNormalEntry = GetAllNormalLabPendingResults(labDbContext);
 
                     foreach (var rep in reportWithHtmlTemplate)
                     {
-                        rep.SampleCodeFormatted = GetSampleCodeFormatted(rep.SampleCode, rep.SampleDate ?? default(DateTime), rep.VisitType, rep.RunNumType);
+                        rep.SampleCodeFormatted = GetSampleCodeFormatted(rep.SampleCode, rep.SampleDate ?? default(DateTime), rep.VisitType.ToLower(), rep.RunNumType.ToLower());
                         results.Add(rep);
                     }
                     foreach (var repNormal in reportWithNormalEntry)
@@ -589,130 +614,10 @@ namespace DanpheEMR.Controllers
                 {
                     List<LabPendingResultVM> results = new List<LabPendingResultVM>();
 
-                    var verificationParameter = (from param in labDbContext.AdminParameters
-                                                 where param.ParameterGroupName.ToLower() == "lab" && param.ParameterName == "LabReportVerificationNeededB4Print"
-                                                 select param.ParameterValue).FirstOrDefault();
+                    var pendingNormalReports = GetAllNormalLabPendingReports(labDbContext, StartDate: FromDate, EndDate: ToDate);
+                    var pendingHtmlNCS = GetAllHTMLLabPendingReports(labDbContext, StartDate: FromDate, EndDate: ToDate);
 
-                    bool verificationRequired = Convert.ToBoolean(verificationParameter);
-
-
-                    var pendingNormalReports = (from req in labDbContext.Requisitions
-                                                join test in labDbContext.LabTests on req.LabTestId equals test.LabTestId
-                                                join template in labDbContext.LabReportTemplates on req.ReportTemplateId equals template.ReportTemplateID
-                                                join patient in labDbContext.Patients on req.PatientId equals patient.PatientId
-                                                where (verificationRequired ? (req.OrderStatus.ToLower() == "result-added" && (req.IsVerified.HasValue ? req.IsVerified == false : true)) : req.OrderStatus.ToLower() == "result-added")
-                                                && req.BillingStatus.ToLower() != "cancel" && req.BillingStatus.ToLower() != "returned"
-                                                && (template.TemplateType.ToLower() == "normal" || template.TemplateType.ToLower() == "culture")
-                                                group new { req, template, patient, test } by new
-                                                {
-                                                    patient,
-                                                    req.SampleCode,
-                                                    DbFunctions.TruncateTime(req.SampleCreatedOn).Value,
-                                                    req.VisitType,
-                                                    req.RunNumberType,
-                                                    req.BarCodeNumber,
-                                                    req.WardName
-                                                } into grp
-                                                select new LabPendingResultVM
-                                                {
-                                                    PatientId = grp.Key.patient.PatientId,
-                                                    PatientCode = grp.Key.patient.PatientCode,
-                                                    DateOfBirth = grp.Key.patient.DateOfBirth,
-                                                    PhoneNumber = grp.Key.patient.PhoneNumber,
-                                                    Gender = grp.Key.patient.Gender,
-                                                    PatientName = grp.Key.patient.FirstName + " " + (string.IsNullOrEmpty(grp.Key.patient.MiddleName) ? "" : grp.Key.patient.MiddleName + " ") + grp.Key.patient.LastName,
-
-                                                    SampleCode = grp.Key.SampleCode,
-                                                    SampleDate = grp.Key.Value,
-                                                    VisitType = grp.Key.VisitType,
-                                                    RunNumType = grp.Key.RunNumberType,
-                                                    BarCodeNumber = grp.Key.BarCodeNumber,
-                                                    WardName = grp.Key.WardName,
-                                                    Tests = (from requisition in labDbContext.Requisitions
-                                                             join test in labDbContext.LabTests on requisition.LabTestId equals test.LabTestId
-                                                             join template in labDbContext.LabReportTemplates on requisition.ReportTemplateId equals template.ReportTemplateID
-                                                             where requisition.PatientId == grp.Key.patient.PatientId
-                                                            && requisition.SampleCode == grp.Key.SampleCode
-                                                            && requisition.VisitType == grp.Key.VisitType
-                                                            && requisition.WardName == grp.Key.WardName
-                                                            && requisition.BarCodeNumber == grp.Key.BarCodeNumber
-                                                            && requisition.RunNumberType == grp.Key.RunNumberType
-                                                            && DbFunctions.TruncateTime(requisition.SampleCreatedOn).Value == grp.Key.Value
-                                                            && requisition.OrderStatus.ToLower() == "result-added"
-                                                            && requisition.BillingStatus.ToLower() != "cancel" && requisition.BillingStatus.ToLower() != "returned"
-                                                            && (template.TemplateType.ToLower() == "normal" || template.TemplateType.ToLower() == "culture")
-                                                             // group new { requisition }   by new { requisition, test } into g
-                                                             select new LabPendingResultVM.LabTestDetail
-                                                             {
-                                                                 RequisitionId = requisition.RequisitionId,
-                                                                 LabTestId = requisition.LabTestId,
-                                                                 TestName = requisition.LabTestName
-
-                                                             }).Distinct().ToList()
-                                                }).OrderByDescending(d => d.SampleDate).ThenByDescending(x => x.SampleCode).ThenByDescending(a => a.PatientId);
-
-
-                    var pendingHtmlNCS = (from req in labDbContext.Requisitions
-                                          join test in labDbContext.LabTests on req.LabTestId equals test.LabTestId
-                                          join template in labDbContext.LabReportTemplates on req.ReportTemplateId equals template.ReportTemplateID
-                                          join patient in labDbContext.Patients on req.PatientId equals patient.PatientId
-                                          where req.OrderStatus.ToLower() == "result-added"
-                                          && req.BillingStatus.ToLower() != "cancel" && (req.BillingStatus.ToLower() != "returned")
-                                          && (template.TemplateType.ToLower() == "html")
-                                          group new { req, template, patient, test } by new
-                                          {
-                                              patient,
-                                              req,
-                                              req.RunNumberType,
-                                              req.BarCodeNumber,
-                                              req.WardName
-                                          } into grp
-                                          select new LabPendingResultVM
-                                          {
-                                              PatientId = grp.Key.patient.PatientId,
-                                              PatientCode = grp.Key.patient.PatientCode,
-                                              DateOfBirth = grp.Key.patient.DateOfBirth,
-                                              PhoneNumber = grp.Key.patient.PhoneNumber,
-                                              Gender = grp.Key.patient.Gender,
-                                              PatientName = grp.Key.patient.FirstName + " " + (string.IsNullOrEmpty(grp.Key.patient.MiddleName) ? "" : grp.Key.patient.MiddleName + " ") + grp.Key.patient.LastName,
-
-                                              SampleCode = grp.Key.req.SampleCode,
-                                              SampleDate = DbFunctions.TruncateTime(grp.Key.req.SampleCreatedOn).Value,
-                                              VisitType = grp.Key.req.VisitType,
-                                              RunNumType = grp.Key.RunNumberType,
-                                              BarCodeNumber = grp.Key.BarCodeNumber,
-                                              WardName = grp.Key.WardName,
-                                              Tests = (from requisition in labDbContext.Requisitions
-                                                       join test in labDbContext.LabTests on requisition.LabTestId equals test.LabTestId
-                                                       where requisition.PatientId == grp.Key.patient.PatientId
-                                                        && requisition.RequisitionId == grp.Key.req.RequisitionId
-                                                        && requisition.BarCodeNumber == grp.Key.BarCodeNumber
-                                                        && requisition.WardName == grp.Key.WardName
-                                                        && requisition.RunNumberType == grp.Key.RunNumberType
-                                                        && requisition.BillingStatus.ToLower() != "cancel" && requisition.BillingStatus.ToLower() != "returned"
-                                                        && requisition.OrderStatus.ToLower() == "result-added"
-                                                       //group requisition by new { test } into g
-                                                       select new LabPendingResultVM.LabTestDetail
-                                                       {
-                                                           RequisitionId = requisition.RequisitionId,
-                                                           LabTestId = requisition.LabTestId,
-                                                           TestName = requisition.LabTestName
-                                                           //RequisitionId = g.Select(a => a.RequisitionId).FirstOrDefault(),
-                                                           //LabTestId = g.Key.test.LabTestId,
-                                                           //TestName = g.Key.test.LabTestName
-                                                       }).ToList()
-                                          }).OrderByDescending(d => d.SampleDate).ThenByDescending(x => x.SampleCode).ThenByDescending(a => a.PatientId);
-
-                    foreach (var rep in pendingHtmlNCS)
-                    {
-                        rep.SampleCodeFormatted = GetSampleCodeFormatted(rep.SampleCode, rep.SampleDate ?? default(DateTime), rep.VisitType, rep.RunNumType);
-                        results.Add(rep);
-                    }
-                    foreach (var repNormal in pendingNormalReports)
-                    {
-                        repNormal.SampleCodeFormatted = GetSampleCodeFormatted(repNormal.SampleCode, repNormal.SampleDate ?? default(DateTime), repNormal.VisitType, repNormal.RunNumType);
-                        results.Add(repNormal);
-                    }
+                    results = pendingHtmlNCS.Union(pendingNormalReports).ToList();
 
                     responseData.Results = results.OrderByDescending(d => d.SampleDate).ThenByDescending(x => x.SampleCode).ThenByDescending(a => a.PatientId);
 
@@ -720,145 +625,51 @@ namespace DanpheEMR.Controllers
 
                 else if (reqType == "final-reports")
                 {
+                    CoreDbContext coreDbContext = new CoreDbContext(connString);
+                    search = search == null ? string.Empty : search.ToLower();
 
-                    var finalReportsProv = (from req in labDbContext.Requisitions
-                                            join report in labDbContext.LabReports on req.LabReportId equals report.LabReportId
-                                            join test in labDbContext.LabTests on req.LabTestId equals test.LabTestId
-                                            join patient in labDbContext.Patients on req.PatientId equals patient.PatientId
-                                            where req.OrderStatus == "report-generated"
-                                            && req.BillingStatus == "provisional"
-                                            && (DbFunctions.TruncateTime(req.CreatedOn) >= FromDate && DbFunctions.TruncateTime(req.CreatedOn) <= ToDate)
-                                            group new { req, patient, test } by new
-                                            {
-                                                patient,
-                                                req.SampleCode,
-                                                req.LabReportId,
-                                                DbFunctions.TruncateTime(req.SampleCreatedOn).Value,
-                                                req.VisitType,
-                                                req.RunNumberType,
-                                                report.IsPrinted,
-                                                req.BarCodeNumber,
-                                                req.WardName
-                                            } into grp
-                                            select new LabPendingResultVM
-                                            {
-                                                PatientId = grp.Key.patient.PatientId,
-                                                PatientCode = grp.Key.patient.PatientCode,
-                                                DateOfBirth = grp.Key.patient.DateOfBirth,
-                                                PhoneNumber = grp.Key.patient.PhoneNumber,
-                                                Gender = grp.Key.patient.Gender,
-                                                PatientName = grp.Key.patient.FirstName + " " + (string.IsNullOrEmpty(grp.Key.patient.MiddleName) ? "" : grp.Key.patient.MiddleName + " ") + grp.Key.patient.LastName,
-
-                                                SampleCode = grp.Key.SampleCode,
-                                                SampleDate = grp.Key.Value,
-                                                SampleCodeFormatted = "",
-                                                VisitType = grp.Key.VisitType,
-                                                RunNumType = grp.Key.RunNumberType,
-                                                IsPrinted = grp.Key.IsPrinted,
-                                                BillingStatus = "provisional",
-                                                BarCodeNumber = grp.Key.BarCodeNumber,
-                                                ReportId = grp.Key.LabReportId,
-                                                WardName = grp.Key.WardName,
-                                                ReportGeneratedBy = (from labRep in labDbContext.LabReports
-                                                                     join employee in labDbContext.Employee
-                                                                     on labRep.CreatedBy equals employee.EmployeeId
-                                                                     where labRep.LabReportId == grp.Key.LabReportId
-                                                                     select employee.FirstName + " " + (string.IsNullOrEmpty(employee.MiddleName) ? "" : employee.MiddleName + " ") + employee.LastName).FirstOrDefault(),
-
-
-                                                Tests = (from requisition in labDbContext.Requisitions
-                                                         join test in labDbContext.LabTests on requisition.LabTestId equals test.LabTestId
-                                                         where requisition.PatientId == grp.Key.patient.PatientId
-                                                         && requisition.SampleCode == grp.Key.SampleCode
-                                                         && DbFunctions.TruncateTime(requisition.SampleCreatedOn).Value == grp.Key.Value
-                                                         && requisition.OrderStatus == "report-generated"
-                                                         && requisition.LabReportId == grp.Key.LabReportId
-                                                         && requisition.VisitType == grp.Key.VisitType
-                                                         && requisition.BarCodeNumber == grp.Key.BarCodeNumber
-                                                         && requisition.WardName == grp.Key.WardName
-                                                         && requisition.BillingStatus == "provisional"
-
-                                                         select new LabPendingResultVM.LabTestDetail
-                                                         {
-                                                             RequisitionId = requisition.RequisitionId,
-                                                             LabTestId = requisition.LabTestId,
-                                                             TestName = requisition.LabTestName
-                                                         }).ToList()
-                                            }).OrderByDescending(d => d.SampleDate).ThenByDescending(x => x.SampleCode).ThenByDescending(a => a.PatientId).ToList();
-
-
-                    var finalReportsPaidUnpaid = (from req in labDbContext.Requisitions
-                                                  join report in labDbContext.LabReports on req.LabReportId equals report.LabReportId
-                                                  join test in labDbContext.LabTests on req.LabTestId equals test.LabTestId
-                                                  join patient in labDbContext.Patients on req.PatientId equals patient.PatientId
-                                                  where req.OrderStatus == "report-generated"
-                                                  && (req.BillingStatus.ToLower() == "paid" || req.BillingStatus.ToLower() == "unpaid")
-                                                 && (DbFunctions.TruncateTime(req.CreatedOn) >= FromDate && DbFunctions.TruncateTime(req.CreatedOn) <= ToDate)
-                                                  group new { req, patient, test } by new
-                                                  {
-                                                      patient,
-                                                      req.SampleCode,
-                                                      req.LabReportId,
-                                                      DbFunctions.TruncateTime(req.SampleCreatedOn).Value,
-                                                      req.VisitType,
-                                                      req.RunNumberType,
-                                                      report.IsPrinted,
-                                                      req.BarCodeNumber,
-                                                      req.WardName
-                                                  } into grp
-                                                  select new LabPendingResultVM
-                                                  {
-                                                      PatientId = grp.Key.patient.PatientId,
-                                                      PatientCode = grp.Key.patient.PatientCode,
-                                                      DateOfBirth = grp.Key.patient.DateOfBirth,
-                                                      PhoneNumber = grp.Key.patient.PhoneNumber,
-                                                      Gender = grp.Key.patient.Gender,
-                                                      PatientName = grp.Key.patient.FirstName + " " + (string.IsNullOrEmpty(grp.Key.patient.MiddleName) ? "" : grp.Key.patient.MiddleName + " ") + grp.Key.patient.LastName,
-
-                                                      SampleCode = grp.Key.SampleCode,
-                                                      SampleDate = grp.Key.Value,
-                                                      SampleCodeFormatted = "",
-                                                      VisitType = grp.Key.VisitType,
-                                                      RunNumType = grp.Key.RunNumberType,
-                                                      IsPrinted = grp.Key.IsPrinted,
-                                                      BillingStatus = "paid",
-                                                      BarCodeNumber = grp.Key.BarCodeNumber,
-                                                      ReportId = grp.Key.LabReportId,
-                                                      WardName = grp.Key.WardName,
-                                                      ReportGeneratedBy = (from labRep in labDbContext.LabReports
-                                                                           join employee in labDbContext.Employee
-                                                                           on labRep.CreatedBy equals employee.EmployeeId
-                                                                           where labRep.LabReportId == grp.Key.LabReportId
-                                                                           select employee.FirstName + " " + (string.IsNullOrEmpty(employee.MiddleName) ? "" : employee.MiddleName + " ") + employee.LastName).FirstOrDefault(),
-
-                                                      Tests = (from requisition in labDbContext.Requisitions
-                                                               join test in labDbContext.LabTests on requisition.LabTestId equals test.LabTestId
-                                                               where requisition.PatientId == grp.Key.patient.PatientId
-                                                               && requisition.SampleCode == grp.Key.SampleCode
-                                                               && DbFunctions.TruncateTime(requisition.SampleCreatedOn).Value == grp.Key.Value
-                                                               && requisition.OrderStatus == "report-generated"
-                                                               && requisition.LabReportId == grp.Key.LabReportId
-                                                               && requisition.VisitType == grp.Key.VisitType
-                                                               && (requisition.BillingStatus == "paid" || requisition.BillingStatus == "unpaid")
-                                                               && requisition.BarCodeNumber == grp.Key.BarCodeNumber
-                                                               select new LabPendingResultVM.LabTestDetail
-                                                               {
-                                                                   RequisitionId = requisition.RequisitionId,
-                                                                   LabTestId = requisition.LabTestId,
-                                                                   TestName = requisition.LabTestName
-                                                               }).ToList()
-                                                  }).OrderByDescending(d => d.SampleDate).ThenByDescending(x => x.SampleCode).ThenByDescending(a => a.PatientId).ToList();
-
-
+                    var finalReportsProv = GetAllLabProvisionalFinalReports(labDbContext, StartDate: FromDate, EndDate: ToDate);
+                    var finalReportsPaidUnpaid = GetAllLabPaidUnpaidFinalReports(labDbContext, StartDate: FromDate, EndDate: ToDate);
                     var finalReports = finalReportsProv.Union(finalReportsPaidUnpaid);
-                    finalReports = finalReports.OrderByDescending(rep => rep.SampleDate).ThenByDescending(x => x.SampleCode).ThenByDescending(a => a.PatientId).ToList();
+                    finalReports = finalReports.Where(r => (r.BarCodeNumber.ToString() + " " + r.PatientName + " " + r.PatientCode + " " + r.SampleCode.ToString() + " " + r.PhoneNumber).ToLower().Contains(search))
+                                               .OrderByDescending(rep => rep.SampleDate).ThenByDescending(x => x.SampleCode).ThenByDescending(a => a.PatientId).ToList();
 
+                    List<LabPendingResultVM> finalResults = new List<LabPendingResultVM>();
+                    // 14th Jan 2020: Here we are filtering data as per search text, this will avoid maximum records
+                    // but not improve performance same as other server side search feature pages.
+                    // Because other pages filter db data, here we are filtering with results which is get into finalReports.
+                    // we need to apply search on above function => GetAllLabProvisionalFinalReports, GetAllLabPaidUnpaidFinalReports
+                    if (CommonFunctions.GetCoreParameterBoolValue(coreDbContext, "Common", "ServerSideSearchComponent", "LaboratoryFinalReports") == true && search == "")
+                    {
+                        finalReports = finalReports.Take(CommonFunctions.GetCoreParameterIntValue(coreDbContext, "Common", "ServerSideSearchListLength"));
+                    }
+                    finalResults = finalReports.ToList();
 
+                    var parameterOutPatWithProvisional = (from coreData in labDbContext.AdminParameters
+                                                          where coreData.ParameterGroupName.ToLower() == "lab"
+                                                          && coreData.ParameterName == "AllowLabReportToPrintOnProvisional"
+                                                          select coreData.ParameterValue).FirstOrDefault();
+                    bool allowOutPatWithProv = false;
+                    if (!String.IsNullOrEmpty(parameterOutPatWithProvisional) && parameterOutPatWithProvisional.ToLower() == "true")
+                    {
+                        allowOutPatWithProv = true;
+                    }
                     foreach (var rep in finalReports)
                     {
+                        if (!String.IsNullOrEmpty(rep.VisitType) && !String.IsNullOrEmpty(rep.BillingStatus))
+                        {
+                            rep.IsValidToPrint = ValidatePrintOption(allowOutPatWithProv, rep.VisitType, rep.BillingStatus);
+                        }
+                        foreach (var test in rep.Tests)
+                        {
+                            if (!String.IsNullOrEmpty(rep.VisitType) && !String.IsNullOrEmpty(test.BillingStatus))
+                            {
+                                test.ValidTestToPrint = ValidatePrintOption(allowOutPatWithProv, rep.VisitType, test.BillingStatus);
+                            }
+                        }
                         rep.SampleCodeFormatted = GetSampleCodeFormatted(rep.SampleCode, rep.SampleDate ?? default(DateTime), rep.VisitType, rep.RunNumType);
                     }
-                    responseData.Results = finalReports;
+                    responseData.Results = finalResults;
                 }
 
                 else if (reqType == "allLabDataFromBarCodeNumber")
@@ -896,103 +707,9 @@ namespace DanpheEMR.Controllers
 
 
                     //All PendingLabResults (for Add-Result page) of Particular Barcode Number
-                    var reportWithHtmlTemplate = (from req in labDbContext.Requisitions
-                                                  join test in labDbContext.LabTests on req.LabTestId equals test.LabTestId
-                                                  join template in labDbContext.LabReportTemplates on req.ReportTemplateId equals template.ReportTemplateID
-                                                  join patient in labDbContext.Patients on req.PatientId equals patient.PatientId
-                                                  where req.OrderStatus.ToLower() == "pending"
-                                                  && req.SampleCode != null
-                                                  && req.BillingStatus.ToLower() != "cancel" && req.BillingStatus.ToLower() != "returned"
-                                                  && req.BarCodeNumber == BarCodeNumber
-                                                  //&& (req.BillingStatus == "paid" || (req.BillingStatus == "provisional" && req.VisitType == "inpatient"))
-                                                  && (template.TemplateType.ToLower() == "html")
-                                                  //ashim: 01Sep2018 : updated group by logic: we're now grouping by samplecode and patient
-                                                  group new { req, test, template } by new
-                                                  {
-                                                      patient,
-                                                      req.SampleCode,
-                                                      DbFunctions.TruncateTime(req.SampleCreatedOn).Value,
-                                                      req.VisitType,
-                                                      req.RequisitionId,
-                                                      req.RunNumberType,
-                                                      req.BarCodeNumber,
-                                                      req.WardName
-                                                  } into grp
-                                                  select new LabPendingResultVM
-                                                  {
-                                                      PatientId = grp.Key.patient.PatientId,
-                                                      PatientCode = grp.Key.patient.PatientCode,
-                                                      DateOfBirth = grp.Key.patient.DateOfBirth,
-                                                      PhoneNumber = grp.Key.patient.PhoneNumber,
-                                                      Gender = grp.Key.patient.Gender,
-                                                      PatientName = grp.Key.patient.FirstName + " " + (string.IsNullOrEmpty(grp.Key.patient.MiddleName) ? "" : grp.Key.patient.MiddleName + " ") + grp.Key.patient.LastName,
+                    var reportWithHtmlTemplate = GetAllHTMLLabPendingResults(labDbContext, BarcodeNumber: BarCodeNumber);
 
-                                                      SampleCode = grp.Key.SampleCode,
-                                                      SampleDate = grp.Key.Value,
-                                                      VisitType = grp.Key.VisitType,
-                                                      RunNumType = grp.Key.RunNumberType,
-                                                      BarCodeNumber = grp.Key.BarCodeNumber,
-                                                      WardName = grp.Key.WardName,
-                                                      Tests = grp.Select(a =>
-                                                      new LabPendingResultVM.LabTestDetail()
-                                                      {
-                                                          RequisitionId = a.req.RequisitionId,
-                                                          TestName = a.test.LabTestName,
-                                                          LabTestId = a.test.LabTestId,
-                                                          ReportTemplateId = a.template.ReportTemplateID,
-                                                          ReportTemplateShortName = a.template.ReportTemplateShortName,
-                                                          RunNumberType = a.req.RunNumberType
-                                                      }).OrderBy(req => req.RequisitionId).ToList()
-                                                  }).OrderByDescending(d => d.SampleDate).ThenByDescending(c => c.SampleCode).ToList();
-
-                    var reportWithNormalEntry = (from req in labDbContext.Requisitions
-                                                 join test in labDbContext.LabTests on req.LabTestId equals test.LabTestId
-                                                 join template in labDbContext.LabReportTemplates on req.ReportTemplateId equals template.ReportTemplateID
-                                                 join patient in labDbContext.Patients on req.PatientId equals patient.PatientId
-                                                 where req.OrderStatus.ToLower() == "pending"
-                                                 && req.SampleCode != null
-                                                 && req.BillingStatus.ToLower() != "cancel" && req.BillingStatus.ToLower() != "returned"
-                                                 && req.BarCodeNumber == BarCodeNumber
-                                                 //Removed as all can add result but cannot Print Report Until Bill is Paid (incase of OP)
-                                                 //&& (req.BillingStatus == "paid" || (req.BillingStatus == "provisional" && req.VisitType == "inpatient"))
-                                                 && (template.TemplateType.ToLower() == "normal" || template.TemplateType.ToLower() == "culture")
-                                                 //ashim: 01Sep2018 : updated group by logic: we're now grouping by samplecode and patient
-                                                 group new { req, test, template } by new
-                                                 {
-                                                     patient,
-                                                     req.SampleCode,
-                                                     DbFunctions.TruncateTime(req.SampleCreatedOn).Value,
-                                                     req.VisitType,
-                                                     req.RunNumberType,
-                                                     req.BarCodeNumber,
-                                                     req.WardName
-                                                 } into grp
-                                                 select new LabPendingResultVM
-                                                 {
-                                                     PatientId = grp.Key.patient.PatientId,
-                                                     PatientCode = grp.Key.patient.PatientCode,
-                                                     DateOfBirth = grp.Key.patient.DateOfBirth,
-                                                     PhoneNumber = grp.Key.patient.PhoneNumber,
-                                                     Gender = grp.Key.patient.Gender,
-                                                     PatientName = grp.Key.patient.FirstName + " " + (string.IsNullOrEmpty(grp.Key.patient.MiddleName) ? "" : grp.Key.patient.MiddleName + " ") + grp.Key.patient.LastName,
-
-                                                     SampleCode = grp.Key.SampleCode,
-                                                     SampleDate = grp.Key.Value,
-                                                     VisitType = grp.Key.VisitType,
-                                                     RunNumType = grp.Key.RunNumberType,
-                                                     BarCodeNumber = grp.Key.BarCodeNumber,
-                                                     WardName = grp.Key.WardName,
-                                                     Tests = grp.Select(a =>
-                                                     new LabPendingResultVM.LabTestDetail()
-                                                     {
-                                                         RequisitionId = a.req.RequisitionId,
-                                                         TestName = a.test.LabTestName,
-                                                         LabTestId = a.test.LabTestId,
-                                                         ReportTemplateId = a.template.ReportTemplateID,
-                                                         ReportTemplateShortName = a.template.ReportTemplateShortName
-                                                     }).OrderBy(req => req.RequisitionId).ToList()
-                                                 }).OrderByDescending(d => d.SampleDate).ThenByDescending(c => c.SampleCode).ToList();
-
+                    var reportWithNormalEntry = GetAllNormalLabPendingResults(labDbContext, BarcodeNumber: BarCodeNumber);
 
 
                     foreach (var rep in reportWithHtmlTemplate)
@@ -1009,270 +726,15 @@ namespace DanpheEMR.Controllers
                     LabMasterData.AddResult = LabMasterData.AddResult.OrderByDescending(d => d.SampleDate).ThenByDescending(c => c.SampleCode).ToList();
 
 
+                    var pendingNormalReports = GetAllNormalLabPendingReports(labDbContext, BarcodeNumber: BarCodeNumber);
+                    var pendingHtmlNCS = GetAllHTMLLabPendingReports(labDbContext, BarcodeNumber: BarCodeNumber);
 
-                    var verificationParameter = (from param in labDbContext.AdminParameters
-                                                 where param.ParameterGroupName.ToLower() == "lab" && param.ParameterName == "LabReportVerificationNeededB4Print"
-                                                 select param.ParameterValue).FirstOrDefault();
-
-                    bool verificationRequired = Convert.ToBoolean(verificationParameter);
-
-                    var pendingNormalReports = (from req in labDbContext.Requisitions
-                                                join test in labDbContext.LabTests on req.LabTestId equals test.LabTestId
-                                                join template in labDbContext.LabReportTemplates on req.ReportTemplateId equals template.ReportTemplateID
-                                                join patient in labDbContext.Patients on req.PatientId equals patient.PatientId
-                                                where (verificationRequired ? (req.OrderStatus.ToLower() == "result-added" && (req.IsVerified.HasValue ? req.IsVerified == false : true)) : req.OrderStatus.ToLower() == "result-added")
-                                                && req.BillingStatus.ToLower() != "cancel" && req.BillingStatus.ToLower() != "returned"
-                                                && req.BarCodeNumber == BarCodeNumber
-                                                && (template.TemplateType.ToLower() == "normal" || template.TemplateType.ToLower() == "culture")
-                                                group new { req, template, patient, test } by new
-                                                {
-                                                    patient,
-                                                    req.SampleCode,
-                                                    DbFunctions.TruncateTime(req.SampleCreatedOn).Value,
-                                                    req.VisitType,
-                                                    req.RunNumberType,
-                                                    req.BarCodeNumber,
-                                                    req.WardName
-                                                } into grp
-                                                select new LabPendingResultVM
-                                                {
-                                                    PatientId = grp.Key.patient.PatientId,
-                                                    PatientCode = grp.Key.patient.PatientCode,
-                                                    DateOfBirth = grp.Key.patient.DateOfBirth,
-                                                    PhoneNumber = grp.Key.patient.PhoneNumber,
-                                                    Gender = grp.Key.patient.Gender,
-                                                    PatientName = grp.Key.patient.FirstName + " " + (string.IsNullOrEmpty(grp.Key.patient.MiddleName) ? "" : grp.Key.patient.MiddleName + " ") + grp.Key.patient.LastName,
-
-                                                    SampleCode = grp.Key.SampleCode,
-                                                    SampleDate = grp.Key.Value,
-                                                    VisitType = grp.Key.VisitType,
-                                                    RunNumType = grp.Key.RunNumberType,
-                                                    BarCodeNumber = grp.Key.BarCodeNumber,
-                                                    WardName = grp.Key.WardName,
-                                                    Tests = (from requisition in labDbContext.Requisitions
-                                                             join test in labDbContext.LabTests on requisition.LabTestId equals test.LabTestId
-                                                             join template in labDbContext.LabReportTemplates on requisition.ReportTemplateId equals template.ReportTemplateID
-                                                             where requisition.PatientId == grp.Key.patient.PatientId
-                                                            && requisition.SampleCode == grp.Key.SampleCode
-                                                            && requisition.VisitType == grp.Key.VisitType
-                                                            && requisition.WardName == grp.Key.WardName
-                                                            && requisition.BarCodeNumber == grp.Key.BarCodeNumber
-                                                            && DbFunctions.TruncateTime(requisition.SampleCreatedOn).Value == grp.Key.Value
-                                                            && requisition.OrderStatus.ToLower() == "result-added"
-                                                            && requisition.BillingStatus.ToLower() != "cancel" && requisition.BillingStatus.ToLower() != "returned"
-                                                            && (template.TemplateType.ToLower() == "normal" || template.TemplateType.ToLower() == "culture")
-                                                             // group new { requisition }   by new { requisition, test } into g
-                                                             select new LabPendingResultVM.LabTestDetail
-                                                             {
-                                                                 RequisitionId = requisition.RequisitionId,
-                                                                 LabTestId = requisition.LabTestId,
-                                                                 TestName = requisition.LabTestName
-
-                                                             }).Distinct().ToList()
-                                                }).OrderByDescending(d => d.SampleDate).ThenByDescending(x => x.SampleCode).ThenByDescending(a => a.PatientId);
+                    LabMasterData.PendingReport = pendingHtmlNCS.Union(pendingNormalReports).ToList();
 
 
-                    var pendingHtmlNCS = (from req in labDbContext.Requisitions
-                                          join test in labDbContext.LabTests on req.LabTestId equals test.LabTestId
-                                          join template in labDbContext.LabReportTemplates on req.ReportTemplateId equals template.ReportTemplateID
-                                          join patient in labDbContext.Patients on req.PatientId equals patient.PatientId
-                                          where (verificationRequired ? (req.OrderStatus.ToLower() == "result-added" && (req.IsVerified.HasValue ? req.IsVerified == false : true)) : req.OrderStatus.ToLower() == "result-added")
-                                          && req.BillingStatus.ToLower() != "cancel" && req.BillingStatus.ToLower() != "returned"
-                                          && req.BarCodeNumber == BarCodeNumber
-                                          && (template.TemplateType.ToLower() == "html")
-                                          group new { req, template, patient, test } by new
-                                          {
-                                              patient,
-                                              req,
-                                              req.RunNumberType,
-                                              req.BarCodeNumber,
-                                              req.WardName
-                                          } into grp
-                                          select new LabPendingResultVM
-                                          {
-                                              PatientId = grp.Key.patient.PatientId,
-                                              PatientCode = grp.Key.patient.PatientCode,
-                                              DateOfBirth = grp.Key.patient.DateOfBirth,
-                                              PhoneNumber = grp.Key.patient.PhoneNumber,
-                                              Gender = grp.Key.patient.Gender,
-                                              PatientName = grp.Key.patient.FirstName + " " + (string.IsNullOrEmpty(grp.Key.patient.MiddleName) ? "" : grp.Key.patient.MiddleName + " ") + grp.Key.patient.LastName,
+                    var finalReportsProv = GetAllLabProvisionalFinalReports(labDbContext, BarcodeNumber: BarCodeNumber);
 
-                                              SampleCode = grp.Key.req.SampleCode,
-                                              SampleDate = DbFunctions.TruncateTime(grp.Key.req.SampleCreatedOn).Value,
-                                              VisitType = grp.Key.req.VisitType,
-                                              RunNumType = grp.Key.RunNumberType,
-                                              BarCodeNumber = grp.Key.BarCodeNumber,
-                                              WardName = grp.Key.WardName,
-                                              Tests = (from requisition in labDbContext.Requisitions
-                                                       join test in labDbContext.LabTests on requisition.LabTestId equals test.LabTestId
-                                                       where requisition.PatientId == grp.Key.patient.PatientId
-                                                       && requisition.BarCodeNumber == grp.Key.req.BarCodeNumber
-                                                       && requisition.WardName == grp.Key.req.WardName
-                                                       && requisition.BillingStatus.ToLower() != "cancel" && requisition.BillingStatus.ToLower() != "returned"
-                                                       && requisition.OrderStatus.ToLower() == "result-added"
-                                                       && requisition.RequisitionId == grp.Key.req.RequisitionId
-                                                       //group requisition by new { test } into g
-                                                       select new LabPendingResultVM.LabTestDetail
-                                                       {
-                                                           RequisitionId = requisition.RequisitionId,
-                                                           LabTestId = requisition.LabTestId,
-                                                           TestName = requisition.LabTestName
-                                                           //RequisitionId = g.Select(a => a.RequisitionId).FirstOrDefault(),
-                                                           //LabTestId = g.Key.test.LabTestId,
-                                                           //TestName = g.Key.test.LabTestName
-                                                       }).ToList()
-                                          }).OrderByDescending(d => d.SampleDate).ThenByDescending(x => x.SampleCode).ThenByDescending(a => a.PatientId);
-
-                    foreach (var rep in pendingHtmlNCS)
-                    {
-                        rep.SampleCodeFormatted = GetSampleCodeFormatted(rep.SampleCode, rep.SampleDate ?? default(DateTime), rep.VisitType, rep.RunNumType);
-                        LabMasterData.PendingReport.Add(rep);
-                    }
-                    foreach (var repNormal in pendingNormalReports)
-                    {
-                        repNormal.SampleCodeFormatted = GetSampleCodeFormatted(repNormal.SampleCode, repNormal.SampleDate ?? default(DateTime), repNormal.VisitType, repNormal.RunNumType);
-                        LabMasterData.PendingReport.Add(repNormal);
-                    }
-
-                    var finalReportsProv = (from req in labDbContext.Requisitions
-                                            join report in labDbContext.LabReports on req.LabReportId equals report.LabReportId
-                                            join test in labDbContext.LabTests on req.LabTestId equals test.LabTestId
-                                            join patient in labDbContext.Patients on req.PatientId equals patient.PatientId
-                                            where req.OrderStatus == "report-generated"
-                                            && req.BillingStatus == "provisional"
-                                            //&& req.BillingStatus.ToLower() != "cancel" && req.BillingStatus.ToLower() != "returned"
-                                            && req.BarCodeNumber == BarCodeNumber
-                                            group new { req, patient, test } by new
-                                            {
-                                                patient,
-                                                req.SampleCode,
-                                                req.LabReportId,
-                                                DbFunctions.TruncateTime(req.SampleCreatedOn).Value,
-                                                req.VisitType,
-                                                req.RunNumberType,
-                                                report.IsPrinted,
-                                                req.BarCodeNumber,
-                                                req.WardName
-                                            } into grp
-                                            select new LabPendingResultVM
-                                            {
-                                                PatientId = grp.Key.patient.PatientId,
-                                                PatientCode = grp.Key.patient.PatientCode,
-                                                DateOfBirth = grp.Key.patient.DateOfBirth,
-                                                PhoneNumber = grp.Key.patient.PhoneNumber,
-                                                Gender = grp.Key.patient.Gender,
-                                                PatientName = grp.Key.patient.FirstName + " " + (string.IsNullOrEmpty(grp.Key.patient.MiddleName) ? "" : grp.Key.patient.MiddleName + " ") + grp.Key.patient.LastName,
-
-                                                SampleCode = grp.Key.SampleCode,
-                                                SampleDate = grp.Key.Value,
-                                                SampleCodeFormatted = "",
-                                                VisitType = grp.Key.VisitType,
-                                                RunNumType = grp.Key.RunNumberType,
-                                                IsPrinted = grp.Key.IsPrinted,
-                                                BillingStatus = "provisional",
-                                                BarCodeNumber = grp.Key.BarCodeNumber,
-                                                WardName = grp.Key.WardName,
-                                                ReportGeneratedBy = (from labRep in labDbContext.LabReports
-                                                                     join employee in labDbContext.Employee
-                                                                     on labRep.CreatedBy equals employee.EmployeeId
-                                                                     where labRep.LabReportId == grp.Key.LabReportId
-                                                                     select employee.FirstName + " " + (string.IsNullOrEmpty(employee.MiddleName) ? "" : employee.MiddleName + " ") + employee.LastName).FirstOrDefault(),
-
-                                                Tests = (from requisition in labDbContext.Requisitions
-                                                         join test in labDbContext.LabTests on requisition.LabTestId equals test.LabTestId
-                                                         where requisition.PatientId == grp.Key.patient.PatientId
-                                                         && requisition.SampleCode == grp.Key.SampleCode
-                                                         && DbFunctions.TruncateTime(requisition.SampleCreatedOn).Value == grp.Key.Value
-                                                         && requisition.OrderStatus == "report-generated"
-                                                         && requisition.LabReportId == grp.Key.LabReportId
-                                                         && requisition.RunNumberType == grp.Key.RunNumberType
-                                                         && requisition.VisitType == grp.Key.VisitType
-                                                         && requisition.BarCodeNumber == grp.Key.BarCodeNumber
-                                                         && requisition.WardName == grp.Key.WardName
-                                                         && requisition.BillingStatus == "provisional"
-
-                                                         //group requisition by new { test } into g
-                                                         select new LabPendingResultVM.LabTestDetail
-                                                         {
-                                                             RequisitionId = requisition.RequisitionId,
-                                                             LabTestId = requisition.LabTestId,
-                                                             TestName = requisition.LabTestName
-                                                             //RequisitionId = g.Select(a => a.RequisitionId).FirstOrDefault(),
-                                                             //LabTestId = g.Key.test.LabTestId,
-                                                             //TestName = g.Key.test.LabTestName
-                                                         }).ToList()
-                                            }).OrderByDescending(d => d.SampleDate).ThenByDescending(x => x.SampleCode).ThenByDescending(a => a.PatientId).ToList();
-
-
-                    var finalReportsPaidUnpaid = (from req in labDbContext.Requisitions
-                                                  join report in labDbContext.LabReports on req.LabReportId equals report.LabReportId
-                                                  join test in labDbContext.LabTests on req.LabTestId equals test.LabTestId
-                                                  join patient in labDbContext.Patients on req.PatientId equals patient.PatientId
-                                                  where req.OrderStatus == "report-generated"
-                                                  && (req.BillingStatus == "paid" || req.BillingStatus == "unpaid")
-                                                  //&& req.BillingStatus.ToLower() != "cancel" && req.BillingStatus.ToLower() != "returned"
-                                                  && req.BarCodeNumber == BarCodeNumber
-                                                  group new { req, patient, test } by new
-                                                  {
-                                                      patient,
-                                                      req.SampleCode,
-                                                      req.LabReportId,
-                                                      DbFunctions.TruncateTime(req.SampleCreatedOn).Value,
-                                                      req.VisitType,
-                                                      req.RunNumberType,
-                                                      report.IsPrinted,
-                                                      req.BarCodeNumber,
-                                                      req.WardName
-                                                  } into grp
-                                                  select new LabPendingResultVM
-                                                  {
-                                                      PatientId = grp.Key.patient.PatientId,
-                                                      PatientCode = grp.Key.patient.PatientCode,
-                                                      DateOfBirth = grp.Key.patient.DateOfBirth,
-                                                      PhoneNumber = grp.Key.patient.PhoneNumber,
-                                                      Gender = grp.Key.patient.Gender,
-                                                      PatientName = grp.Key.patient.FirstName + " " + (string.IsNullOrEmpty(grp.Key.patient.MiddleName) ? "" : grp.Key.patient.MiddleName + " ") + grp.Key.patient.LastName,
-
-                                                      SampleCode = grp.Key.SampleCode,
-                                                      SampleDate = grp.Key.Value,
-                                                      SampleCodeFormatted = "",
-                                                      VisitType = grp.Key.VisitType,
-                                                      RunNumType = grp.Key.RunNumberType,
-                                                      IsPrinted = grp.Key.IsPrinted,
-                                                      BillingStatus = "paid",
-                                                      BarCodeNumber = grp.Key.BarCodeNumber,
-                                                      WardName = grp.Key.WardName,
-                                                      ReportGeneratedBy = (from labRep in labDbContext.LabReports
-                                                                           join employee in labDbContext.Employee
-                                                                           on labRep.CreatedBy equals employee.EmployeeId
-                                                                           where labRep.LabReportId == grp.Key.LabReportId
-                                                                           select employee.FirstName + " " + (string.IsNullOrEmpty(employee.MiddleName) ? "" : employee.MiddleName + " ") + employee.LastName).FirstOrDefault(),
-
-                                                      Tests = (from requisition in labDbContext.Requisitions
-                                                               join test in labDbContext.LabTests on requisition.LabTestId equals test.LabTestId
-                                                               where requisition.PatientId == grp.Key.patient.PatientId
-                                                               && requisition.SampleCode == grp.Key.SampleCode
-                                                               && DbFunctions.TruncateTime(requisition.SampleCreatedOn).Value == grp.Key.Value
-                                                               && requisition.OrderStatus == "report-generated"
-                                                               && requisition.LabReportId == grp.Key.LabReportId
-                                                               && requisition.RunNumberType == grp.Key.RunNumberType
-                                                               && requisition.VisitType == grp.Key.VisitType
-                                                               && requisition.BarCodeNumber == grp.Key.BarCodeNumber
-                                                               && requisition.WardName == grp.Key.WardName
-                                                               && (requisition.BillingStatus == "paid" || requisition.BillingStatus == "unpaid")
-
-                                                               //group requisition by new { test } into g
-                                                               select new LabPendingResultVM.LabTestDetail
-                                                               {
-                                                                   RequisitionId = requisition.RequisitionId,
-                                                                   LabTestId = requisition.LabTestId,
-                                                                   TestName = requisition.LabTestName
-                                                                   //RequisitionId = g.Select(a => a.RequisitionId).FirstOrDefault(),
-                                                                   //LabTestId = g.Key.test.LabTestId,
-                                                                   //TestName = g.Key.test.LabTestName
-                                                               }).ToList()
-                                                  }).OrderByDescending(d => d.SampleDate).ThenByDescending(x => x.SampleCode).ThenByDescending(a => a.PatientId).ToList();
-
+                    var finalReportsPaidUnpaid = GetAllLabPaidUnpaidFinalReports(labDbContext, BarcodeNumber: BarCodeNumber);
 
 
                     var finalReports = finalReportsProv.Union(finalReportsPaidUnpaid);
@@ -1300,6 +762,13 @@ namespace DanpheEMR.Controllers
                         {
                             rep.IsValidToPrint = ValidatePrintOption(allowOutPatWithProv, rep.VisitType, rep.BillingStatus);
                         }
+                        foreach (var test in rep.Tests)
+                        {
+                            if (!String.IsNullOrEmpty(rep.VisitType) && !String.IsNullOrEmpty(test.BillingStatus))
+                            {
+                                test.ValidTestToPrint = ValidatePrintOption(allowOutPatWithProv, rep.VisitType, test.BillingStatus);
+                            }
+                        }
                         rep.SampleCodeFormatted = GetSampleCodeFormatted(rep.SampleCode, rep.SampleDate ?? default(DateTime), rep.VisitType, rep.RunNumType);
                     }
 
@@ -1307,18 +776,28 @@ namespace DanpheEMR.Controllers
 
                 }
 
-
                 else if (reqType == "allLabDataFromRunNumber")
                 {
                     LabMasterModel LabMasterData = new LabMasterModel();
                     string completeSampleCode = formattedSampleCode;
 
-
                     //LabMasterData = AllLabDataFromRunNumOrBarCode(labDbContext, formattedCode:completeSampleCode);
 
-                    var mainCode = formattedSampleCode.Split('/');
+
+                    List<LabRunNumberSettingsModel> allLabRunNumberSettings = (List<LabRunNumberSettingsModel>)DanpheCache.GetMasterData(MasterDataEnum.LabRunNumberSettings);
+
+                    //assuming all the settings have same separator
+                    var separator = allLabRunNumberSettings[0].FormatSeparator;
+                    var mainCode = formattedSampleCode.Split(separator[0]);
                     int samplNumber = Convert.ToInt32(mainCode[0]);
                     int code = Convert.ToInt32(mainCode[1]);
+
+                    if (allLabRunNumberSettings[0].FormatInitialPart != "num")
+                    {
+                        samplNumber = code;
+                        code = Convert.ToInt32(mainCode[0]);
+                    }
+
 
                     DateTime englishDateToday = DateTime.Now;
                     NepaliDateType nepaliDate = DanpheDateConvertor.ConvertEngToNepDate(englishDateToday);
@@ -1334,103 +813,23 @@ namespace DanpheEMR.Controllers
 
                     englishDateToday = DanpheDateConvertor.ConvertNepToEngDate(nepaliDate);
 
-                    var reportWithHtmlTemplate = (from req in labDbContext.Requisitions
-                                                  join test in labDbContext.LabTests on req.LabTestId equals test.LabTestId
-                                                  join template in labDbContext.LabReportTemplates on req.ReportTemplateId equals template.ReportTemplateID
-                                                  join patient in labDbContext.Patients on req.PatientId equals patient.PatientId
-                                                  where req.OrderStatus.ToLower() == "pending"
-                                                  && (req.SampleCode.HasValue ? (req.SampleCode == samplNumber) : false)
-                                                  && (code > 32 ? (req.SampleCreatedOn.Value.Year == englishDateToday.Year) : true)
-                                                  && req.BillingStatus.ToLower() != "cancel" && req.BillingStatus.ToLower() != "returned"
-                                                  && (template.TemplateType.ToLower() == "html")
-                                                  group new { req, test, template } by new
-                                                  {
-                                                      patient,
-                                                      req.SampleCode,
-                                                      DbFunctions.TruncateTime(req.SampleCreatedOn).Value,
-                                                      req.VisitType,
-                                                      req.RequisitionId,
-                                                      req.RunNumberType,
-                                                      req.BarCodeNumber,
-                                                      req.WardName
-                                                  } into grp
-                                                  select new LabPendingResultVM
-                                                  {
-                                                      PatientId = grp.Key.patient.PatientId,
-                                                      PatientCode = grp.Key.patient.PatientCode,
-                                                      DateOfBirth = grp.Key.patient.DateOfBirth,
-                                                      PhoneNumber = grp.Key.patient.PhoneNumber,
-                                                      Gender = grp.Key.patient.Gender,
-                                                      PatientName = grp.Key.patient.FirstName + " " + (string.IsNullOrEmpty(grp.Key.patient.MiddleName) ? "" : grp.Key.patient.MiddleName + " ") + grp.Key.patient.LastName,
 
-                                                      SampleCode = grp.Key.SampleCode,
-                                                      SampleDate = grp.Key.Value,
-                                                      VisitType = grp.Key.VisitType,
-                                                      RunNumType = grp.Key.RunNumberType,
-                                                      BarCodeNumber = grp.Key.BarCodeNumber,
-                                                      WardName = grp.Key.WardName,
-                                                      Tests = grp.Select(a =>
-                                                      new LabPendingResultVM.LabTestDetail()
-                                                      {
-                                                          RequisitionId = a.req.RequisitionId,
-                                                          TestName = a.test.LabTestName,
-                                                          LabTestId = a.test.LabTestId,
-                                                          ReportTemplateId = a.template.ReportTemplateID,
-                                                          ReportTemplateShortName = a.template.ReportTemplateShortName,
-                                                          RunNumberType = a.req.RunNumberType
-                                                      }).OrderBy(req => req.RequisitionId).ToList()
-                                                  }).OrderByDescending(d => d.SampleDate).ThenByDescending(c => c.SampleCode).ToList();
 
-                    var reportWithNormalEntry = (from req in labDbContext.Requisitions
-                                                 join test in labDbContext.LabTests on req.LabTestId equals test.LabTestId
-                                                 join template in labDbContext.LabReportTemplates on req.ReportTemplateId equals template.ReportTemplateID
-                                                 join patient in labDbContext.Patients on req.PatientId equals patient.PatientId
-                                                 where req.OrderStatus.ToLower() == "pending"
-                                                 && (req.SampleCode.HasValue ? (req.SampleCode == samplNumber) : false)
-                                                 && (code > 32 ? (req.SampleCreatedOn.Value.Year == englishDateToday.Year) : true)
-                                                 && req.BillingStatus.ToLower() != "cancel" && req.BillingStatus.ToLower() != "returned"
-                                                 && (template.TemplateType.ToLower() == "normal" || template.TemplateType.ToLower() == "culture")
-                                                 group new { req, test, template } by new
-                                                 {
-                                                     patient,
-                                                     req.SampleCode,
-                                                     DbFunctions.TruncateTime(req.SampleCreatedOn).Value,
-                                                     req.VisitType,
-                                                     req.RunNumberType,
-                                                     req.BarCodeNumber,
-                                                     req.WardName
-                                                 } into grp
-                                                 select new LabPendingResultVM
-                                                 {
-                                                     PatientId = grp.Key.patient.PatientId,
-                                                     PatientCode = grp.Key.patient.PatientCode,
-                                                     DateOfBirth = grp.Key.patient.DateOfBirth,
-                                                     PhoneNumber = grp.Key.patient.PhoneNumber,
-                                                     Gender = grp.Key.patient.Gender,
-                                                     PatientName = grp.Key.patient.FirstName + " " + (string.IsNullOrEmpty(grp.Key.patient.MiddleName) ? "" : grp.Key.patient.MiddleName + " ") + grp.Key.patient.LastName,
+                    var reportWithHtmlTemplate = GetAllHTMLLabPendingResults(labDbContext, SampleNumber: samplNumber, SampleCode: code, EnglishDateToday: englishDateToday);
 
-                                                     SampleCode = grp.Key.SampleCode,
-                                                     SampleDate = grp.Key.Value,
-                                                     VisitType = grp.Key.VisitType,
-                                                     RunNumType = grp.Key.RunNumberType,
-                                                     BarCodeNumber = grp.Key.BarCodeNumber,
-                                                     WardName = grp.Key.WardName,
-                                                     Tests = grp.Select(a =>
-                                                     new LabPendingResultVM.LabTestDetail()
-                                                     {
-                                                         RequisitionId = a.req.RequisitionId,
-                                                         TestName = a.test.LabTestName,
-                                                         LabTestId = a.test.LabTestId,
-                                                         ReportTemplateId = a.template.ReportTemplateID,
-                                                         ReportTemplateShortName = a.template.ReportTemplateShortName
-                                                     }).OrderBy(req => req.RequisitionId).ToList()
-                                                 }).OrderByDescending(d => d.SampleDate).ThenByDescending(c => c.SampleCode).ToList();
+                    var reportWithNormalEntry = GetAllNormalLabPendingResults(labDbContext, SampleNumber: samplNumber, SampleCode: code, EnglishDateToday: englishDateToday);
 
 
 
                     foreach (var rep in reportWithHtmlTemplate)
                     {
+                        var letter = allLabRunNumberSettings.Where(t => t.VisitType == rep.VisitType && t.RunNumberType == rep.RunNumType).Select(s => s.StartingLetter).FirstOrDefault();
+                        if (!String.IsNullOrEmpty(letter))
+                        {
+                            completeSampleCode = letter + formattedSampleCode;
+                        }
                         rep.SampleCodeFormatted = GetSampleCodeFormatted(rep.SampleCode, rep.SampleDate ?? default(DateTime), rep.VisitType, rep.RunNumType);
+
                         if (rep.SampleCodeFormatted == completeSampleCode)
                         {
                             LabMasterData.AddResult.Add(rep);
@@ -1439,6 +838,11 @@ namespace DanpheEMR.Controllers
                     }
                     foreach (var repNormal in reportWithNormalEntry)
                     {
+                        var letter = allLabRunNumberSettings.Where(t => t.VisitType == repNormal.VisitType && t.RunNumberType == repNormal.RunNumType).Select(s => s.StartingLetter).FirstOrDefault();
+                        if (!String.IsNullOrEmpty(letter))
+                        {
+                            completeSampleCode = letter + formattedSampleCode;
+                        }
                         repNormal.SampleCodeFormatted = GetSampleCodeFormatted(repNormal.SampleCode, repNormal.SampleDate ?? default(DateTime), repNormal.VisitType, repNormal.RunNumType);
                         if (repNormal.SampleCodeFormatted == completeSampleCode)
                         {
@@ -1447,121 +851,16 @@ namespace DanpheEMR.Controllers
                     }
 
                     LabMasterData.AddResult = LabMasterData.AddResult.OrderByDescending(d => d.SampleDate).ThenByDescending(c => c.SampleCode).ToList();
-
-
-                    var verificationParameter = (from param in labDbContext.AdminParameters
-                                                 where param.ParameterGroupName.ToLower() == "lab" && param.ParameterName == "LabReportVerificationNeededB4Print"
-                                                 select param.ParameterValue).FirstOrDefault();
-
-                    bool verificationRequired = Convert.ToBoolean(verificationParameter);
-
-                    var pendingNormalReports = (from req in labDbContext.Requisitions
-                                                join test in labDbContext.LabTests on req.LabTestId equals test.LabTestId
-                                                join template in labDbContext.LabReportTemplates on req.ReportTemplateId equals template.ReportTemplateID
-                                                join patient in labDbContext.Patients on req.PatientId equals patient.PatientId
-                                                where (verificationRequired ? (req.OrderStatus.ToLower() == "result-added" && (req.IsVerified.HasValue ? req.IsVerified == false : true)) : req.OrderStatus.ToLower() == "result-added")
-                                                && req.BillingStatus.ToLower() != "cancel" && req.BillingStatus.ToLower() != "returned"
-                                                && (req.SampleCode.HasValue ? (req.SampleCode == samplNumber) : false)
-                                                && (code > 32 ? (req.SampleCreatedOn.Value.Year == englishDateToday.Year) : true)
-                                                && (template.TemplateType.ToLower() == "normal" || template.TemplateType.ToLower() == "culture")
-                                                group new { req, template, patient, test } by new
-                                                {
-                                                    patient,
-                                                    req.SampleCode,
-                                                    DbFunctions.TruncateTime(req.SampleCreatedOn).Value,
-                                                    req.VisitType,
-                                                    req.RunNumberType,
-                                                    req.BarCodeNumber,
-                                                    req.WardName
-                                                } into grp
-                                                select new LabPendingResultVM
-                                                {
-                                                    PatientId = grp.Key.patient.PatientId,
-                                                    PatientCode = grp.Key.patient.PatientCode,
-                                                    DateOfBirth = grp.Key.patient.DateOfBirth,
-                                                    PhoneNumber = grp.Key.patient.PhoneNumber,
-                                                    Gender = grp.Key.patient.Gender,
-                                                    PatientName = grp.Key.patient.FirstName + " " + (string.IsNullOrEmpty(grp.Key.patient.MiddleName) ? "" : grp.Key.patient.MiddleName + " ") + grp.Key.patient.LastName,
-
-                                                    SampleCode = grp.Key.SampleCode,
-                                                    SampleDate = grp.Key.Value,
-                                                    VisitType = grp.Key.VisitType,
-                                                    RunNumType = grp.Key.RunNumberType,
-                                                    BarCodeNumber = grp.Key.BarCodeNumber,
-                                                    WardName = grp.Key.WardName,
-                                                    Tests = (from requisition in labDbContext.Requisitions
-                                                             join test in labDbContext.LabTests on requisition.LabTestId equals test.LabTestId
-                                                             join template in labDbContext.LabReportTemplates on requisition.ReportTemplateId equals template.ReportTemplateID
-                                                             where requisition.PatientId == grp.Key.patient.PatientId
-                                                            && requisition.SampleCode == grp.Key.SampleCode
-                                                            && requisition.RunNumberType == grp.Key.RunNumberType
-                                                            && requisition.VisitType == grp.Key.VisitType
-                                                            && requisition.WardName == grp.Key.WardName
-                                                            && requisition.BarCodeNumber == grp.Key.BarCodeNumber
-                                                            && DbFunctions.TruncateTime(requisition.SampleCreatedOn).Value == grp.Key.Value
-                                                            && requisition.OrderStatus.ToLower() == "result-added"
-                                                            && requisition.BillingStatus.ToLower() != "cancel" && requisition.BillingStatus.ToLower() != "returned"
-                                                            && (template.TemplateType.ToLower() == "normal" || template.TemplateType.ToLower() == "culture")
-                                                             select new LabPendingResultVM.LabTestDetail
-                                                             {
-                                                                 RequisitionId = requisition.RequisitionId,
-                                                                 LabTestId = requisition.LabTestId,
-                                                                 TestName = requisition.LabTestName
-
-                                                             }).Distinct().ToList()
-                                                }).OrderByDescending(d => d.SampleDate).ThenByDescending(x => x.SampleCode).ThenByDescending(a => a.PatientId);
-
-
-                    var pendingHtmlNCS = (from req in labDbContext.Requisitions
-                                          join test in labDbContext.LabTests on req.LabTestId equals test.LabTestId
-                                          join template in labDbContext.LabReportTemplates on req.ReportTemplateId equals template.ReportTemplateID
-                                          join patient in labDbContext.Patients on req.PatientId equals patient.PatientId
-                                          where (verificationRequired ? (req.OrderStatus.ToLower() == "result-added" && (req.IsVerified.HasValue ? req.IsVerified == false : true)) : req.OrderStatus.ToLower() == "result-added")
-                                          && req.BillingStatus.ToLower() != "cancel" && req.BillingStatus.ToLower() != "returned"
-                                          && (req.SampleCode.HasValue ? (req.SampleCode == samplNumber) : false)
-                                         && (code > 32 ? (req.SampleCreatedOn.Value.Year == englishDateToday.Year) : true)
-                                          && (template.TemplateType.ToLower() == "html")
-                                          group new { req, template, patient, test } by new
-                                          {
-                                              patient,
-                                              req,
-                                              req.RunNumberType,
-                                              req.BarCodeNumber,
-                                              req.WardName
-                                          } into grp
-                                          select new LabPendingResultVM
-                                          {
-                                              PatientId = grp.Key.patient.PatientId,
-                                              PatientCode = grp.Key.patient.PatientCode,
-                                              DateOfBirth = grp.Key.patient.DateOfBirth,
-                                              PhoneNumber = grp.Key.patient.PhoneNumber,
-                                              Gender = grp.Key.patient.Gender,
-                                              PatientName = grp.Key.patient.FirstName + " " + (string.IsNullOrEmpty(grp.Key.patient.MiddleName) ? "" : grp.Key.patient.MiddleName + " ") + grp.Key.patient.LastName,
-
-                                              SampleCode = grp.Key.req.SampleCode,
-                                              SampleDate = DbFunctions.TruncateTime(grp.Key.req.SampleCreatedOn).Value,
-                                              VisitType = grp.Key.req.VisitType,
-                                              RunNumType = grp.Key.RunNumberType,
-                                              BarCodeNumber = grp.Key.BarCodeNumber,
-                                              WardName = grp.Key.WardName,
-                                              Tests = (from requisition in labDbContext.Requisitions
-                                                       join test in labDbContext.LabTests on requisition.LabTestId equals test.LabTestId
-                                                       where requisition.PatientId == grp.Key.patient.PatientId
-                                                       && requisition.BarCodeNumber == grp.Key.req.BarCodeNumber
-                                                       && requisition.WardName == grp.Key.req.WardName
-                                                       && requisition.RunNumberType == grp.Key.RunNumberType
-                                                       && requisition.RequisitionId == grp.Key.req.RequisitionId
-                                                       select new LabPendingResultVM.LabTestDetail
-                                                       {
-                                                           RequisitionId = requisition.RequisitionId,
-                                                           LabTestId = requisition.LabTestId,
-                                                           TestName = requisition.LabTestName
-                                                       }).ToList()
-                                          }).OrderByDescending(d => d.SampleDate).ThenByDescending(x => x.SampleCode).ThenByDescending(a => a.PatientId);
+                    var pendingNormalReports = GetAllNormalLabPendingReports(labDbContext, SampleNumber: samplNumber, SampleCode: code, EnglishDateToday: englishDateToday);
+                    var pendingHtmlNCS = GetAllHTMLLabPendingReports(labDbContext, SampleNumber: samplNumber, SampleCode: code, EnglishDateToday: englishDateToday);
 
                     foreach (var rep in pendingHtmlNCS)
                     {
-                        rep.SampleCodeFormatted = GetSampleCodeFormatted(rep.SampleCode, rep.SampleDate ?? default(DateTime), rep.VisitType, rep.RunNumType);
+                        var letter = allLabRunNumberSettings.Where(t => t.VisitType == rep.VisitType && t.RunNumberType == rep.RunNumType).Select(s => s.StartingLetter).FirstOrDefault();
+                        if (!String.IsNullOrEmpty(letter))
+                        {
+                            completeSampleCode = letter + formattedSampleCode;
+                        }
                         if (rep.SampleCodeFormatted == completeSampleCode)
                         {
                             LabMasterData.PendingReport.Add(rep);
@@ -1569,144 +868,21 @@ namespace DanpheEMR.Controllers
                     }
                     foreach (var repNormal in pendingNormalReports)
                     {
-                        repNormal.SampleCodeFormatted = GetSampleCodeFormatted(repNormal.SampleCode, repNormal.SampleDate ?? default(DateTime), repNormal.VisitType, repNormal.RunNumType);
+                        var letter = allLabRunNumberSettings.Where(t => t.VisitType == repNormal.VisitType && t.RunNumberType == repNormal.RunNumType).Select(s => s.StartingLetter).FirstOrDefault();
+                        if (!String.IsNullOrEmpty(letter))
+                        {
+                            completeSampleCode = letter + formattedSampleCode;
+                        }
                         if (repNormal.SampleCodeFormatted == completeSampleCode)
                         {
                             LabMasterData.PendingReport.Add(repNormal);
                         }
                     }
 
-                    var finalReportsProv = (from req in labDbContext.Requisitions
-                                            join report in labDbContext.LabReports on req.LabReportId equals report.LabReportId
-                                            join test in labDbContext.LabTests on req.LabTestId equals test.LabTestId
-                                            join patient in labDbContext.Patients on req.PatientId equals patient.PatientId
-                                            where req.OrderStatus == "report-generated"
-                                            && req.BillingStatus.ToLower() == "provisional"
-                                            //&& req.BillingStatus.ToLower() != "cancel" && req.BillingStatus.ToLower() != "returned"
-                                            && (req.SampleCode.HasValue ? (req.SampleCode == samplNumber) : false)
-                                            && (code > 32 ? (req.SampleCreatedOn.Value.Year == englishDateToday.Year) : true)
-                                            group new { req, patient, test } by new
-                                            {
-                                                patient,
-                                                req.SampleCode,
-                                                req.LabReportId,
-                                                DbFunctions.TruncateTime(req.SampleCreatedOn).Value,
-                                                req.VisitType,
-                                                req.RunNumberType,
-                                                report.IsPrinted,
-                                                req.BarCodeNumber,
-                                                req.WardName
-                                            } into grp
-                                            select new LabPendingResultVM
-                                            {
-                                                PatientId = grp.Key.patient.PatientId,
-                                                PatientCode = grp.Key.patient.PatientCode,
-                                                DateOfBirth = grp.Key.patient.DateOfBirth,
-                                                PhoneNumber = grp.Key.patient.PhoneNumber,
-                                                Gender = grp.Key.patient.Gender,
-                                                PatientName = grp.Key.patient.FirstName + " " + (string.IsNullOrEmpty(grp.Key.patient.MiddleName) ? "" : grp.Key.patient.MiddleName + " ") + grp.Key.patient.LastName,
 
-                                                SampleCode = grp.Key.SampleCode,
-                                                SampleDate = grp.Key.Value,
-                                                SampleCodeFormatted = "",
-                                                VisitType = grp.Key.VisitType,
-                                                RunNumType = grp.Key.RunNumberType,
-                                                IsPrinted = grp.Key.IsPrinted,
-                                                BillingStatus = "provisional",
-                                                BarCodeNumber = grp.Key.BarCodeNumber,
-                                                WardName = grp.Key.WardName,
-                                                ReportGeneratedBy = (from labRep in labDbContext.LabReports
-                                                                     join employee in labDbContext.Employee
-                                                                     on labRep.CreatedBy equals employee.EmployeeId
-                                                                     where labRep.LabReportId == grp.Key.LabReportId
-                                                                     select employee.FirstName + " " + (string.IsNullOrEmpty(employee.MiddleName) ? "" : employee.MiddleName + " ") + employee.LastName).FirstOrDefault(),
+                    var finalReportsProv = GetAllLabProvisionalFinalReports(labDbContext, SampleNumber: samplNumber, SampleCode: code, EnglishDateToday: englishDateToday);
 
-                                                Tests = (from requisition in labDbContext.Requisitions
-                                                         join test in labDbContext.LabTests on requisition.LabTestId equals test.LabTestId
-                                                         where requisition.PatientId == grp.Key.patient.PatientId
-                                                         && requisition.SampleCode == grp.Key.SampleCode
-                                                         && requisition.VisitType == grp.Key.VisitType
-                                                         && requisition.WardName == grp.Key.WardName
-                                                         && requisition.BarCodeNumber == grp.Key.BarCodeNumber
-                                                         && DbFunctions.TruncateTime(requisition.SampleCreatedOn).Value == grp.Key.Value
-                                                         && requisition.OrderStatus == "report-generated"
-                                                         && requisition.LabReportId == grp.Key.LabReportId
-                                                         && requisition.BillingStatus == "provisional"
-                                                         && requisition.RunNumberType == grp.Key.RunNumberType
-
-                                                         select new LabPendingResultVM.LabTestDetail
-                                                         {
-                                                             RequisitionId = requisition.RequisitionId,
-                                                             LabTestId = requisition.LabTestId,
-                                                             TestName = requisition.LabTestName
-                                                         }).ToList()
-                                            }).OrderByDescending(d => d.SampleDate).ThenByDescending(x => x.SampleCode).ThenByDescending(a => a.PatientId).ToList();
-
-                    var finalReportsPaidUnpaid = (from req in labDbContext.Requisitions
-                                                  join report in labDbContext.LabReports on req.LabReportId equals report.LabReportId
-                                                  join test in labDbContext.LabTests on req.LabTestId equals test.LabTestId
-                                                  join patient in labDbContext.Patients on req.PatientId equals patient.PatientId
-                                                  where req.OrderStatus == "report-generated"
-                                                  && (req.BillingStatus.ToLower() == "paid" || req.BillingStatus.ToLower() == "unpaid")
-                                                  //&& req.BillingStatus.ToLower() != "cancel" && req.BillingStatus.ToLower() != "returned"
-                                                  && (req.SampleCode.HasValue ? (req.SampleCode == samplNumber) : false)
-                                                  && (code > 32 ? (req.SampleCreatedOn.Value.Year == englishDateToday.Year) : true)
-                                                  group new { req, patient, test } by new
-                                                  {
-                                                      patient,
-                                                      req.SampleCode,
-                                                      req.LabReportId,
-                                                      DbFunctions.TruncateTime(req.SampleCreatedOn).Value,
-                                                      req.VisitType,
-                                                      req.RunNumberType,
-                                                      report.IsPrinted,
-                                                      req.BarCodeNumber,
-                                                      req.WardName
-                                                  } into grp
-                                                  select new LabPendingResultVM
-                                                  {
-                                                      PatientId = grp.Key.patient.PatientId,
-                                                      PatientCode = grp.Key.patient.PatientCode,
-                                                      DateOfBirth = grp.Key.patient.DateOfBirth,
-                                                      PhoneNumber = grp.Key.patient.PhoneNumber,
-                                                      Gender = grp.Key.patient.Gender,
-                                                      PatientName = grp.Key.patient.FirstName + " " + (string.IsNullOrEmpty(grp.Key.patient.MiddleName) ? "" : grp.Key.patient.MiddleName + " ") + grp.Key.patient.LastName,
-
-                                                      SampleCode = grp.Key.SampleCode,
-                                                      SampleDate = grp.Key.Value,
-                                                      SampleCodeFormatted = "",
-                                                      VisitType = grp.Key.VisitType,
-                                                      RunNumType = grp.Key.RunNumberType,
-                                                      IsPrinted = grp.Key.IsPrinted,
-                                                      BillingStatus = "paid",
-                                                      BarCodeNumber = grp.Key.BarCodeNumber,
-                                                      WardName = grp.Key.WardName,
-                                                      ReportGeneratedBy = (from labRep in labDbContext.LabReports
-                                                                           join employee in labDbContext.Employee
-                                                                           on labRep.CreatedBy equals employee.EmployeeId
-                                                                           where labRep.LabReportId == grp.Key.LabReportId
-                                                                           select employee.FirstName + " " + (string.IsNullOrEmpty(employee.MiddleName) ? "" : employee.MiddleName + " ") + employee.LastName).FirstOrDefault(),
-
-                                                      Tests = (from requisition in labDbContext.Requisitions
-                                                               join test in labDbContext.LabTests on requisition.LabTestId equals test.LabTestId
-                                                               where requisition.PatientId == grp.Key.patient.PatientId
-                                                               && requisition.SampleCode == grp.Key.SampleCode
-                                                               && DbFunctions.TruncateTime(requisition.SampleCreatedOn).Value == grp.Key.Value
-                                                               && requisition.OrderStatus == "report-generated"
-                                                               && requisition.LabReportId == grp.Key.LabReportId
-                                                               && requisition.RunNumberType == grp.Key.RunNumberType
-                                                               && requisition.VisitType == grp.Key.VisitType
-                                                               && requisition.WardName == grp.Key.WardName
-                                                               && requisition.BarCodeNumber == grp.Key.BarCodeNumber
-                                                               && (requisition.BillingStatus == "paid" || requisition.BillingStatus == "unpaid")
-
-                                                               select new LabPendingResultVM.LabTestDetail
-                                                               {
-                                                                   RequisitionId = requisition.RequisitionId,
-                                                                   LabTestId = requisition.LabTestId,
-                                                                   TestName = requisition.LabTestName
-                                                               }).ToList()
-                                                  }).OrderByDescending(d => d.SampleDate).ThenByDescending(x => x.SampleCode).ThenByDescending(a => a.PatientId).ToList();
+                    var finalReportsPaidUnpaid = GetAllLabPaidUnpaidFinalReports(labDbContext, SampleNumber: samplNumber, SampleCode: code, EnglishDateToday: englishDateToday);
 
                     var finalReports = finalReportsProv.Union(finalReportsPaidUnpaid);
                     finalReports = finalReports.OrderByDescending(rep => rep.SampleDate).ThenByDescending(x => x.SampleCode).ThenByDescending(a => a.PatientId).ToList();
@@ -1726,9 +902,22 @@ namespace DanpheEMR.Controllers
 
                     foreach (var rep in finalReports)
                     {
+                        var letter = allLabRunNumberSettings.Where(t => t.VisitType == rep.VisitType && t.RunNumberType == rep.RunNumType).Select(s => s.StartingLetter).FirstOrDefault();
+                        if (!String.IsNullOrEmpty(letter))
+                        {
+                            completeSampleCode = letter + formattedSampleCode;
+                        }
                         if (!String.IsNullOrEmpty(rep.VisitType) && !String.IsNullOrEmpty(rep.BillingStatus))
                         {
                             rep.IsValidToPrint = ValidatePrintOption(allowOutPatWithProv, rep.VisitType, rep.BillingStatus);
+                        }
+
+                        foreach (var test in rep.Tests)
+                        {
+                            if (!String.IsNullOrEmpty(rep.VisitType) && !String.IsNullOrEmpty(test.BillingStatus))
+                            {
+                                test.ValidTestToPrint = ValidatePrintOption(allowOutPatWithProv, rep.VisitType, test.BillingStatus);
+                            }
                         }
 
                         rep.SampleCodeFormatted = GetSampleCodeFormatted(rep.SampleCode, rep.SampleDate ?? default(DateTime), rep.VisitType, rep.RunNumType);
@@ -1747,20 +936,16 @@ namespace DanpheEMR.Controllers
                 {
                     LabMasterModel LabMasterData = new LabMasterModel();
 
-                    int PatientId = patientId;
-
-                    var verificationParameter = (from param in labDbContext.AdminParameters
-                                                 where param.ParameterGroupName.ToLower() == "lab" && param.ParameterName == "LabReportVerificationNeededB4Print"
-                                                 select param.ParameterValue).FirstOrDefault();
-
-                    bool verificationRequired = Convert.ToBoolean(verificationParameter);
+                    int patId = patientId;
 
                     //All LabRequisitions of Patient
                     var histoPatients = (from req in labDbContext.Requisitions.Include("Patient")
                                          join pat in labDbContext.Patients on req.PatientId equals pat.PatientId
-                                         where ((req.IsActive.HasValue ? req.IsActive.Value == true : true) && req.OrderStatus.ToLower() == "active"
-                                         && req.PatientId == PatientId
-                                         && (req.BillingStatus.ToLower() != "cancel") && (req.BillingStatus.ToLower() != "returned") && req.RunNumberType.ToLower() == "histo")
+                                         where ((req.IsActive.HasValue ? req.IsActive.Value == true : true) && req.OrderStatus.ToLower() == ENUM_LabOrderStatus.Active// "active"
+                                         && req.PatientId == patId
+                                         && (req.BillingStatus.ToLower() != ENUM_BillingStatus.cancel) //"cancel") 
+                                         && (req.BillingStatus.ToLower() != ENUM_BillingStatus.returned) //"returned") 
+                                         && req.RunNumberType.ToLower() == ENUM_LabRunNumType.histo) // "histo")
                                          select new Requisition
                                          {
                                              RequisitionId = req.RequisitionId,
@@ -1780,9 +965,11 @@ namespace DanpheEMR.Controllers
                     //&& (req.BillingStatus.ToLower() == "paid" || req.BillingStatus.ToLower() == "unpaid" || (req.BillingStatus == "provisional" && req.VisitType == "inpatient"))
                     var cytoPatients = (from req in labDbContext.Requisitions.Include("Patient")
                                         join pat in labDbContext.Patients on req.PatientId equals pat.PatientId
-                                        where ((req.IsActive.HasValue ? req.IsActive.Value == true : true) && req.OrderStatus.ToLower() == "active"
-                                        && req.PatientId == PatientId
-                                        && (req.BillingStatus.ToLower() != "cancel") && (req.BillingStatus.ToLower() != "returned") && req.RunNumberType.ToLower() == "cyto")
+                                        where ((req.IsActive.HasValue ? req.IsActive.Value == true : true) && req.OrderStatus.ToLower() == ENUM_LabOrderStatus.Active //"active"
+                                        && req.PatientId == patId
+                                        && (req.BillingStatus.ToLower() != ENUM_BillingStatus.cancel) // "cancel") 
+                                        && (req.BillingStatus.ToLower() != ENUM_BillingStatus.returned) // "returned")
+                                        && req.RunNumberType.ToLower() == ENUM_LabRunNumType.cyto) // // "cyto")
                                         select new Requisition
                                         {
                                             RequisitionId = req.RequisitionId,
@@ -1807,9 +994,11 @@ namespace DanpheEMR.Controllers
                                           //show only paid and unpaid requisitions in the list.
                                           //show only IsActive=True and IsActive=NULL requests, Hide IsActive=False. -- sud: 15Sept'18
                                           //if IsActive has value then it should be true, if it's null then its true by default. 
-                                          where ((req.IsActive.HasValue ? req.IsActive.Value == true : true) && req.OrderStatus.ToLower() == "active"
-                                          && req.PatientId == PatientId
-                                          && (req.BillingStatus.ToLower() != "cancel") && (req.BillingStatus.ToLower() != "returned") && req.RunNumberType.ToLower() == "normal")
+                                          where ((req.IsActive.HasValue ? req.IsActive.Value == true : true) && req.OrderStatus.ToLower() == ENUM_LabOrderStatus.Active //"active"
+                                          && req.PatientId == patId
+                                          && (req.BillingStatus.ToLower() != ENUM_BillingStatus.cancel) // "cancel")
+                                          && (req.BillingStatus.ToLower() != ENUM_BillingStatus.returned) //"returned") 
+                                          && req.RunNumberType.ToLower() == ENUM_LabRunNumType.normal) // "normal")
                                           group req by new { req.Patient, req.VisitType, req.WardName } into p
                                           select new Requisition
                                           {
@@ -1838,104 +1027,8 @@ namespace DanpheEMR.Controllers
 
 
                     //All PendingLabResults (for Add-Result page) of Particular Barcode Number
-                    var reportWithHtmlTemplate = (from req in labDbContext.Requisitions
-                                                  join test in labDbContext.LabTests on req.LabTestId equals test.LabTestId
-                                                  join template in labDbContext.LabReportTemplates on req.ReportTemplateId equals template.ReportTemplateID
-                                                  join patient in labDbContext.Patients on req.PatientId equals patient.PatientId
-                                                  where req.OrderStatus.ToLower() == "pending"
-                                                  && req.SampleCode != null
-                                                  && req.BillingStatus.ToLower() != "cancel" && req.BillingStatus.ToLower() != "returned"
-                                                  && req.PatientId == PatientId
-                                                  //&& (req.BillingStatus == "paid" || (req.BillingStatus == "provisional" && req.VisitType == "inpatient"))
-                                                  && (template.TemplateType.ToLower() == "html")
-                                                  //ashim: 01Sep2018 : updated group by logic: we're now grouping by samplecode and patient
-                                                  group new { req, test, template } by new
-                                                  {
-                                                      patient,
-                                                      req.SampleCode,
-                                                      DbFunctions.TruncateTime(req.SampleCreatedOn).Value,
-                                                      req.VisitType,
-                                                      req.RequisitionId,
-                                                      req.RunNumberType,
-                                                      req.BarCodeNumber,
-                                                      req.WardName
-                                                  } into grp
-                                                  select new LabPendingResultVM
-                                                  {
-                                                      PatientId = grp.Key.patient.PatientId,
-                                                      PatientCode = grp.Key.patient.PatientCode,
-                                                      DateOfBirth = grp.Key.patient.DateOfBirth,
-                                                      PhoneNumber = grp.Key.patient.PhoneNumber,
-                                                      Gender = grp.Key.patient.Gender,
-                                                      PatientName = grp.Key.patient.FirstName + " " + (string.IsNullOrEmpty(grp.Key.patient.MiddleName) ? "" : grp.Key.patient.MiddleName + " ") + grp.Key.patient.LastName,
-
-                                                      SampleCode = grp.Key.SampleCode,
-                                                      SampleDate = grp.Key.Value,
-                                                      VisitType = grp.Key.VisitType,
-                                                      RunNumType = grp.Key.RunNumberType,
-                                                      BarCodeNumber = grp.Key.BarCodeNumber,
-                                                      WardName = grp.Key.WardName,
-                                                      Tests = grp.Select(a =>
-                                                      new LabPendingResultVM.LabTestDetail()
-                                                      {
-                                                          RequisitionId = a.req.RequisitionId,
-                                                          TestName = a.test.LabTestName,
-                                                          LabTestId = a.test.LabTestId,
-                                                          ReportTemplateId = a.template.ReportTemplateID,
-                                                          ReportTemplateShortName = a.template.ReportTemplateShortName,
-                                                          RunNumberType = a.req.RunNumberType
-                                                      }).OrderBy(req => req.RequisitionId).ToList()
-                                                  }).OrderByDescending(d => d.SampleDate).ThenByDescending(c => c.SampleCode).ToList();
-
-                    var reportWithNormalEntry = (from req in labDbContext.Requisitions
-                                                 join test in labDbContext.LabTests on req.LabTestId equals test.LabTestId
-                                                 join template in labDbContext.LabReportTemplates on req.ReportTemplateId equals template.ReportTemplateID
-                                                 join patient in labDbContext.Patients on req.PatientId equals patient.PatientId
-                                                 where req.OrderStatus.ToLower() == "pending"
-                                                 && req.SampleCode != null
-                                                 && req.BillingStatus.ToLower() != "cancel" && req.BillingStatus.ToLower() != "returned"
-                                                 && req.PatientId == PatientId
-                                                 //Removed as all can add result but cannot Print Report Until Bill is Paid (incase of OP)
-                                                 //&& (req.BillingStatus == "paid" || (req.BillingStatus == "provisional" && req.VisitType == "inpatient"))
-                                                 && (template.TemplateType.ToLower() == "normal" || template.TemplateType.ToLower() == "culture")
-                                                 //ashim: 01Sep2018 : updated group by logic: we're now grouping by samplecode and patient
-                                                 group new { req, test, template } by new
-                                                 {
-                                                     patient,
-                                                     req.SampleCode,
-                                                     DbFunctions.TruncateTime(req.SampleCreatedOn).Value,
-                                                     req.VisitType,
-                                                     req.RunNumberType,
-                                                     req.BarCodeNumber,
-                                                     req.WardName
-                                                 } into grp
-                                                 select new LabPendingResultVM
-                                                 {
-                                                     PatientId = grp.Key.patient.PatientId,
-                                                     PatientCode = grp.Key.patient.PatientCode,
-                                                     DateOfBirth = grp.Key.patient.DateOfBirth,
-                                                     PhoneNumber = grp.Key.patient.PhoneNumber,
-                                                     Gender = grp.Key.patient.Gender,
-                                                     PatientName = grp.Key.patient.FirstName + " " + (string.IsNullOrEmpty(grp.Key.patient.MiddleName) ? "" : grp.Key.patient.MiddleName + " ") + grp.Key.patient.LastName,
-
-                                                     SampleCode = grp.Key.SampleCode,
-                                                     SampleDate = grp.Key.Value,
-                                                     VisitType = grp.Key.VisitType,
-                                                     RunNumType = grp.Key.RunNumberType,
-                                                     BarCodeNumber = grp.Key.BarCodeNumber,
-                                                     WardName = grp.Key.WardName,
-                                                     Tests = grp.Select(a =>
-                                                     new LabPendingResultVM.LabTestDetail()
-                                                     {
-                                                         RequisitionId = a.req.RequisitionId,
-                                                         TestName = a.test.LabTestName,
-                                                         LabTestId = a.test.LabTestId,
-                                                         ReportTemplateId = a.template.ReportTemplateID,
-                                                         ReportTemplateShortName = a.template.ReportTemplateShortName
-                                                     }).OrderBy(req => req.RequisitionId).ToList()
-                                                 }).OrderByDescending(d => d.SampleDate).ThenByDescending(c => c.SampleCode).ToList();
-
-
+                    var reportWithHtmlTemplate = GetAllHTMLLabPendingResults(labDbContext, PatientId: patId);
+                    var reportWithNormalEntry = GetAllNormalLabPendingResults(labDbContext, PatientId: patId);
 
                     foreach (var rep in reportWithHtmlTemplate)
                     {
@@ -1951,264 +1044,14 @@ namespace DanpheEMR.Controllers
                     LabMasterData.AddResult = LabMasterData.AddResult.OrderByDescending(d => d.SampleDate).ThenByDescending(c => c.SampleCode).ToList();
 
 
-                    var pendingNormalReports = (from req in labDbContext.Requisitions
-                                                join test in labDbContext.LabTests on req.LabTestId equals test.LabTestId
-                                                join template in labDbContext.LabReportTemplates on req.ReportTemplateId equals template.ReportTemplateID
-                                                join patient in labDbContext.Patients on req.PatientId equals patient.PatientId
-                                                where (verificationRequired ? (req.OrderStatus.ToLower() == "result-added" && (req.IsVerified.HasValue ? req.IsVerified == false : true)) : req.OrderStatus.ToLower() == "result-added")
-                                                && req.BillingStatus.ToLower() != "cancel" && req.BillingStatus.ToLower() != "returned"
-                                                && req.PatientId == PatientId
-                                                && (template.TemplateType.ToLower() == "normal" || template.TemplateType.ToLower() == "culture")
-                                                group new { req, template, patient, test } by new
-                                                {
-                                                    patient,
-                                                    req.SampleCode,
-                                                    DbFunctions.TruncateTime(req.SampleCreatedOn).Value,
-                                                    req.VisitType,
-                                                    req.RunNumberType,
-                                                    req.BarCodeNumber,
-                                                    req.WardName
-                                                } into grp
-                                                select new LabPendingResultVM
-                                                {
-                                                    PatientId = grp.Key.patient.PatientId,
-                                                    PatientCode = grp.Key.patient.PatientCode,
-                                                    DateOfBirth = grp.Key.patient.DateOfBirth,
-                                                    PhoneNumber = grp.Key.patient.PhoneNumber,
-                                                    Gender = grp.Key.patient.Gender,
-                                                    PatientName = grp.Key.patient.FirstName + " " + (string.IsNullOrEmpty(grp.Key.patient.MiddleName) ? "" : grp.Key.patient.MiddleName + " ") + grp.Key.patient.LastName,
-
-                                                    SampleCode = grp.Key.SampleCode,
-                                                    SampleDate = grp.Key.Value,
-                                                    VisitType = grp.Key.VisitType,
-                                                    RunNumType = grp.Key.RunNumberType,
-                                                    BarCodeNumber = grp.Key.BarCodeNumber,
-                                                    WardName = grp.Key.WardName,
-                                                    Tests = (from requisition in labDbContext.Requisitions
-                                                             join test in labDbContext.LabTests on requisition.LabTestId equals test.LabTestId
-                                                             join template in labDbContext.LabReportTemplates on requisition.ReportTemplateId equals template.ReportTemplateID
-                                                             where requisition.PatientId == PatientId
-                                                            && requisition.SampleCode == grp.Key.SampleCode
-                                                            && requisition.VisitType == grp.Key.VisitType
-                                                            && requisition.WardName == grp.Key.WardName
-                                                            && requisition.RunNumberType == grp.Key.RunNumberType
-                                                            && requisition.BarCodeNumber == grp.Key.BarCodeNumber
-                                                            && DbFunctions.TruncateTime(requisition.SampleCreatedOn).Value == grp.Key.Value
-                                                            && requisition.OrderStatus.ToLower() == "result-added"
-                                                            && requisition.BillingStatus.ToLower() != "cancel" && requisition.BillingStatus.ToLower() != "returned"
-                                                            && (template.TemplateType.ToLower() == "normal" || template.TemplateType.ToLower() == "culture")
-                                                             // group new { requisition }   by new { requisition, test } into g
-                                                             select new LabPendingResultVM.LabTestDetail
-                                                             {
-                                                                 RequisitionId = requisition.RequisitionId,
-                                                                 LabTestId = requisition.LabTestId,
-                                                                 TestName = requisition.LabTestName
-
-                                                             }).Distinct().ToList()
-                                                }).OrderByDescending(d => d.SampleDate).ThenByDescending(x => x.SampleCode).ThenByDescending(a => a.PatientId);
+                    var pendingNormalReports = GetAllNormalLabPendingReports(labDbContext, PatientId: patId);
+                    var pendingHtmlNCS = GetAllHTMLLabPendingReports(labDbContext, PatientId: patId);
+                    LabMasterData.PendingReport = pendingHtmlNCS.Union(pendingNormalReports).ToList();
 
 
-                    var pendingHtmlNCS = (from req in labDbContext.Requisitions
-                                          join test in labDbContext.LabTests on req.LabTestId equals test.LabTestId
-                                          join template in labDbContext.LabReportTemplates on req.ReportTemplateId equals template.ReportTemplateID
-                                          join patient in labDbContext.Patients on req.PatientId equals patient.PatientId
-                                          where (verificationRequired ? (req.OrderStatus.ToLower() == "result-added" && (req.IsVerified.HasValue ? req.IsVerified == false : true)) : req.OrderStatus.ToLower() == "result-added")
-                                          && req.BillingStatus.ToLower() != "cancel" && req.BillingStatus.ToLower() != "returned"
-                                          && req.PatientId == PatientId
-                                          && (template.TemplateType.ToLower() == "html")
-                                          group new { req, template, patient, test } by new
-                                          {
-                                              patient,
-                                              req,
-                                              req.RunNumberType,
-                                              req.BarCodeNumber,
-                                              req.WardName
-                                          } into grp
-                                          select new LabPendingResultVM
-                                          {
-                                              PatientId = grp.Key.patient.PatientId,
-                                              PatientCode = grp.Key.patient.PatientCode,
-                                              DateOfBirth = grp.Key.patient.DateOfBirth,
-                                              PhoneNumber = grp.Key.patient.PhoneNumber,
-                                              Gender = grp.Key.patient.Gender,
-                                              PatientName = grp.Key.patient.FirstName + " " + (string.IsNullOrEmpty(grp.Key.patient.MiddleName) ? "" : grp.Key.patient.MiddleName + " ") + grp.Key.patient.LastName,
+                    var finalReportsProv = GetAllLabProvisionalFinalReports(labDbContext, PatientId: patId);
+                    var finalReportsPaidUnpaid = GetAllLabPaidUnpaidFinalReports(labDbContext, PatientId: patId);
 
-                                              SampleCode = grp.Key.req.SampleCode,
-                                              SampleDate = DbFunctions.TruncateTime(grp.Key.req.SampleCreatedOn).Value,
-                                              VisitType = grp.Key.req.VisitType,
-                                              RunNumType = grp.Key.RunNumberType,
-                                              BarCodeNumber = grp.Key.BarCodeNumber,
-                                              WardName = grp.Key.WardName,
-                                              Tests = (from requisition in labDbContext.Requisitions
-                                                       join test in labDbContext.LabTests on requisition.LabTestId equals test.LabTestId
-                                                       where requisition.PatientId == PatientId
-                                                        && requisition.RequisitionId == grp.Key.req.RequisitionId
-                                                        && requisition.BarCodeNumber == grp.Key.req.BarCodeNumber
-                                                        && requisition.WardName == grp.Key.req.WardName
-                                                        && requisition.RunNumberType == grp.Key.RunNumberType
-                                                        && requisition.SampleCode == grp.Key.req.SampleCode
-                                                       //group requisition by new { test } into g
-                                                       select new LabPendingResultVM.LabTestDetail
-                                                       {
-                                                           RequisitionId = requisition.RequisitionId,
-                                                           LabTestId = requisition.LabTestId,
-                                                           TestName = requisition.LabTestName
-                                                           //RequisitionId = g.Select(a => a.RequisitionId).FirstOrDefault(),
-                                                           //LabTestId = g.Key.test.LabTestId,
-                                                           //TestName = g.Key.test.LabTestName
-                                                       }).ToList()
-                                          }).OrderByDescending(d => d.SampleDate).ThenByDescending(x => x.SampleCode).ThenByDescending(a => a.PatientId);
-
-                    foreach (var rep in pendingHtmlNCS)
-                    {
-                        rep.SampleCodeFormatted = GetSampleCodeFormatted(rep.SampleCode, rep.SampleDate ?? default(DateTime), rep.VisitType, rep.RunNumType);
-                        LabMasterData.PendingReport.Add(rep);
-                    }
-                    foreach (var repNormal in pendingNormalReports)
-                    {
-                        repNormal.SampleCodeFormatted = GetSampleCodeFormatted(repNormal.SampleCode, repNormal.SampleDate ?? default(DateTime), repNormal.VisitType, repNormal.RunNumType);
-                        LabMasterData.PendingReport.Add(repNormal);
-                    }
-
-
-
-                    var finalReportsProv = (from req in labDbContext.Requisitions
-                                            join report in labDbContext.LabReports on req.LabReportId equals report.LabReportId
-                                            join test in labDbContext.LabTests on req.LabTestId equals test.LabTestId
-                                            join patient in labDbContext.Patients on req.PatientId equals patient.PatientId
-                                            where req.OrderStatus == "report-generated"
-                                            && req.BillingStatus.ToLower() == "provisional"
-                                            //&& req.BillingStatus.ToLower() != "cancel" && req.BillingStatus.ToLower() != "returned"
-                                            && req.PatientId == PatientId
-                                            group new { req, patient, test } by new
-                                            {
-                                                patient,
-                                                req.SampleCode,
-                                                req.LabReportId,
-                                                DbFunctions.TruncateTime(req.SampleCreatedOn).Value,
-                                                req.VisitType,
-                                                req.RunNumberType,
-                                                report.IsPrinted,
-                                                req.BarCodeNumber,
-                                                req.WardName
-                                            } into grp
-                                            select new LabPendingResultVM
-                                            {
-                                                PatientId = grp.Key.patient.PatientId,
-                                                PatientCode = grp.Key.patient.PatientCode,
-                                                DateOfBirth = grp.Key.patient.DateOfBirth,
-                                                PhoneNumber = grp.Key.patient.PhoneNumber,
-                                                Gender = grp.Key.patient.Gender,
-                                                PatientName = grp.Key.patient.FirstName + " " + (string.IsNullOrEmpty(grp.Key.patient.MiddleName) ? "" : grp.Key.patient.MiddleName + " ") + grp.Key.patient.LastName,
-
-                                                SampleCode = grp.Key.SampleCode,
-                                                SampleDate = grp.Key.Value,
-                                                SampleCodeFormatted = "",
-                                                VisitType = grp.Key.VisitType,
-                                                RunNumType = grp.Key.RunNumberType,
-                                                IsPrinted = grp.Key.IsPrinted,
-                                                BillingStatus = "provisional",
-                                                BarCodeNumber = grp.Key.BarCodeNumber,
-                                                WardName = grp.Key.WardName,
-                                                ReportGeneratedBy = (from labRep in labDbContext.LabReports
-                                                                     join employee in labDbContext.Employee
-                                                                     on labRep.CreatedBy equals employee.EmployeeId
-                                                                     where labRep.LabReportId == grp.Key.LabReportId
-                                                                     select employee.FirstName + " " + (string.IsNullOrEmpty(employee.MiddleName) ? "" : employee.MiddleName + " ") + employee.LastName).FirstOrDefault(),
-
-                                                Tests = (from requisition in labDbContext.Requisitions
-                                                         join test in labDbContext.LabTests on requisition.LabTestId equals test.LabTestId
-                                                         where requisition.PatientId == PatientId
-                                                         && requisition.VisitType == grp.Key.VisitType
-                                                         && requisition.WardName == grp.Key.WardName
-                                                         && requisition.BarCodeNumber == grp.Key.BarCodeNumber
-                                                         && requisition.SampleCode == grp.Key.SampleCode
-                                                         && DbFunctions.TruncateTime(requisition.SampleCreatedOn).Value == grp.Key.Value
-                                                         && requisition.OrderStatus == "report-generated"
-                                                         && requisition.LabReportId == grp.Key.LabReportId
-                                                         && requisition.RunNumberType == grp.Key.RunNumberType
-                                                         && requisition.BillingStatus == "provisional"
-
-                                                         //group requisition by new { test } into g
-                                                         select new LabPendingResultVM.LabTestDetail
-                                                         {
-                                                             RequisitionId = requisition.RequisitionId,
-                                                             LabTestId = requisition.LabTestId,
-                                                             TestName = requisition.LabTestName
-                                                             //RequisitionId = g.Select(a => a.RequisitionId).FirstOrDefault(),
-                                                             //LabTestId = g.Key.test.LabTestId,
-                                                             //TestName = g.Key.test.LabTestName
-                                                         }).ToList()
-                                            }).OrderByDescending(d => d.SampleDate).ThenByDescending(x => x.SampleCode).ThenByDescending(a => a.PatientId).ToList();
-
-                    var finalReportsPaidUnpaid = (from req in labDbContext.Requisitions
-                                                  join report in labDbContext.LabReports on req.LabReportId equals report.LabReportId
-                                                  join test in labDbContext.LabTests on req.LabTestId equals test.LabTestId
-                                                  join patient in labDbContext.Patients on req.PatientId equals patient.PatientId
-                                                  where req.OrderStatus == "report-generated"
-                                                  && (req.BillingStatus == "paid" || req.BillingStatus == "unpaid")
-                                                  //&& req.BillingStatus.ToLower() != "cancel" && req.BillingStatus.ToLower() != "returned"
-                                                  && req.PatientId == PatientId
-                                                  group new { req, patient, test } by new
-                                                  {
-                                                      patient,
-                                                      req.SampleCode,
-                                                      req.LabReportId,
-                                                      DbFunctions.TruncateTime(req.SampleCreatedOn).Value,
-                                                      req.VisitType,
-                                                      req.RunNumberType,
-                                                      report.IsPrinted,
-                                                      req.BarCodeNumber,
-                                                      req.WardName
-                                                  } into grp
-                                                  select new LabPendingResultVM
-                                                  {
-                                                      PatientId = grp.Key.patient.PatientId,
-                                                      PatientCode = grp.Key.patient.PatientCode,
-                                                      DateOfBirth = grp.Key.patient.DateOfBirth,
-                                                      PhoneNumber = grp.Key.patient.PhoneNumber,
-                                                      Gender = grp.Key.patient.Gender,
-                                                      PatientName = grp.Key.patient.FirstName + " " + (string.IsNullOrEmpty(grp.Key.patient.MiddleName) ? "" : grp.Key.patient.MiddleName + " ") + grp.Key.patient.LastName,
-
-                                                      SampleCode = grp.Key.SampleCode,
-                                                      SampleDate = grp.Key.Value,
-                                                      SampleCodeFormatted = "",
-                                                      VisitType = grp.Key.VisitType,
-                                                      RunNumType = grp.Key.RunNumberType,
-                                                      IsPrinted = grp.Key.IsPrinted,
-                                                      BillingStatus = "paid",
-                                                      BarCodeNumber = grp.Key.BarCodeNumber,
-                                                      WardName = grp.Key.WardName,
-                                                      ReportGeneratedBy = (from labRep in labDbContext.LabReports
-                                                                           join employee in labDbContext.Employee
-                                                                           on labRep.CreatedBy equals employee.EmployeeId
-                                                                           where labRep.LabReportId == grp.Key.LabReportId
-                                                                           select employee.FirstName + " " + (string.IsNullOrEmpty(employee.MiddleName) ? "" : employee.MiddleName + " ") + employee.LastName).FirstOrDefault(),
-
-                                                      Tests = (from requisition in labDbContext.Requisitions
-                                                               join test in labDbContext.LabTests on requisition.LabTestId equals test.LabTestId
-                                                               where requisition.PatientId == PatientId
-                                                               && requisition.SampleCode == grp.Key.SampleCode
-                                                               && DbFunctions.TruncateTime(requisition.SampleCreatedOn).Value == grp.Key.Value
-                                                               && requisition.OrderStatus == "report-generated"
-                                                               && requisition.LabReportId == grp.Key.LabReportId
-                                                               && requisition.VisitType == grp.Key.VisitType
-                                                               && requisition.WardName == grp.Key.WardName
-                                                               && requisition.RunNumberType == grp.Key.RunNumberType
-                                                               && requisition.BarCodeNumber == grp.Key.BarCodeNumber
-                                                               && (requisition.BillingStatus == "paid" || requisition.BillingStatus == "unpaid")
-
-                                                               //group requisition by new { test } into g
-                                                               select new LabPendingResultVM.LabTestDetail
-                                                               {
-                                                                   RequisitionId = requisition.RequisitionId,
-                                                                   LabTestId = requisition.LabTestId,
-                                                                   TestName = requisition.LabTestName
-                                                                   //RequisitionId = g.Select(a => a.RequisitionId).FirstOrDefault(),
-                                                                   //LabTestId = g.Key.test.LabTestId,
-                                                                   //TestName = g.Key.test.LabTestName
-                                                               }).ToList()
-                                                  }).OrderByDescending(d => d.SampleDate).ThenByDescending(x => x.SampleCode).ThenByDescending(a => a.PatientId).ToList();
 
                     var finalReports = finalReportsProv.Union(finalReportsPaidUnpaid);
                     finalReports = finalReports.OrderByDescending(rep => rep.SampleDate).ThenByDescending(x => x.SampleCode).ThenByDescending(a => a.PatientId).ToList();
@@ -2236,6 +1079,13 @@ namespace DanpheEMR.Controllers
                         {
                             rep.IsValidToPrint = ValidatePrintOption(allowOutPatWithProv, rep.VisitType, rep.BillingStatus);
                         }
+                        foreach (var test in rep.Tests)
+                        {
+                            if (!String.IsNullOrEmpty(rep.VisitType) && !String.IsNullOrEmpty(test.BillingStatus))
+                            {
+                                test.ValidTestToPrint = ValidatePrintOption(allowOutPatWithProv, rep.VisitType, test.BillingStatus);
+                            }
+                        }
                         rep.SampleCodeFormatted = GetSampleCodeFormatted(rep.SampleCode, rep.SampleDate ?? default(DateTime), rep.VisitType, rep.RunNumType);
                     }
 
@@ -2243,17 +1093,19 @@ namespace DanpheEMR.Controllers
 
                 }
 
-
                 else if (reqType == "labReportFromReqIdList")
                 {
                     List<Int64> reqIdList = DanpheJSONConvert.DeserializeObject<List<Int64>>(requisitionIdList);
                     var allBarCode = (from requisition in labDbContext.Requisitions
                                       where reqIdList.Contains(requisition.RequisitionId)
                                       select requisition.BarCodeNumber).Distinct().ToList();
+
+
                     if (allBarCode != null && allBarCode.Count == 1)
                     {
                         LabReportVM labReport = DanpheEMR.Labs.LabsBL.GetLabReportVMForReqIds(labDbContext, reqIdList);
-                        labReport.Lookups.SampleCodeFormatted = GetSampleCodeFormatted(labReport.Lookups.SampleCode, labReport.Lookups.SampleDate ?? default(DateTime), labReport.Lookups.VisitType, labReport.Lookups.RunNumberType);
+                        //labReport.Lookups.SampleCodeFormatted = GetSampleCodeFormatted(labReport.Lookups.SampleCode, labReport.Lookups.SampleDate ?? default(DateTime), labReport.Lookups.VisitType, labReport.Lookups.RunNumberType);
+
                         labReport.ValidToPrint = true;
                         labReport.BarCodeNumber = allBarCode[0];
                         responseData.Results = labReport;
@@ -2270,7 +1122,7 @@ namespace DanpheEMR.Controllers
                 {
 
                     List<LabReportTemplateModel> allReports = (from report in labDbContext.LabReportTemplates
-                                                               where report.IsActive == true && report.TemplateType == "html"
+                                                               where report.IsActive == true && report.TemplateType == ENUM_LabTemplateType.html// "html"
                                                                select report).ToList();
 
 
@@ -2292,7 +1144,6 @@ namespace DanpheEMR.Controllers
                                                         where req.RequisitionId == req.RequisitionId
                                                         select new
                                                         {
-
                                                             Component = res.ComponentName,
                                                             Value = res.Value,
                                                             Unit = res.Unit,
@@ -2311,14 +1162,38 @@ namespace DanpheEMR.Controllers
 
                 else if (reqType == "visit-requisitions")
                 {
+                    //var labComponents = labDbContext.LabTestComponentResults.ToList();
+
+                    //var reqsListTemp = (from req in labDbContext.Requisitions
+                    //                    where req.PatientVisitId == patientVisitId
+                    //                    && req.PatientId == patientId
+                    //                    select new
+                    //                    {
+                    //                        TestId = req.LabTestId,
+                    //                        TestName = req.LabTestName,
+                    //                        req.RequisitionId,
+                    //                        labComponents = labDbContext.LabTestComponentResults.Where(a => a.RequisitionId == req.RequisitionId).ToList()
+                    //                    }).ToList();
+                    //var reqsList = reqsListTemp.GroupBy(g => g.TestId).Select(go => new { go.Key, ult =  go.OrderByDescending(x => x.RequisitionId).Take(1) });
+
                     var reqsList = (from req in labDbContext.Requisitions
-                                    where req.PatientVisitId == patientVisitId
-                                    && req.PatientId == patientId
-                                    select new
-                                    {
-                                        TestId = req.LabTestId,
-                                        TestName = req.LabTestName
-                                    }).ToList();
+                                        where req.PatientVisitId == patientVisitId
+                                        && req.PatientId == patientId
+                                        select req
+                                        )
+                                        .GroupBy(x => x.LabTestId)
+                                        .Select(g => new 
+                                        {
+                                           g.Key,
+                                           LatestRequisition = g.OrderByDescending(x => x.RequisitionId).FirstOrDefault()
+                                        })
+                                        .Select(x => new 
+                                        {
+                                            TestId = x.Key,
+                                            TestName = x.LatestRequisition.LabTestName,
+                                            labComponents = labDbContext.LabTestComponentResults.Where(a => a.RequisitionId == x.LatestRequisition.RequisitionId).ToList()
+                                        })
+                                        .ToList();
 
                     responseData.Results = reqsList;
                 }
@@ -2354,7 +1229,6 @@ namespace DanpheEMR.Controllers
                     responseData.Results = viewReport;
 
                 }
-
 
                 //getting some data to show the report ..when print is order..
                 else if (patientId != 0 && templateId != 0)
@@ -2423,41 +1297,78 @@ namespace DanpheEMR.Controllers
 
                 else if (reqType == "labTestListOfSelectedInpatient")
                 {
-                    var currPatRequisitions = (from req in labDbContext.Requisitions
-                                               join billItem in labDbContext.BillingTransactionItems on req.RequisitionId equals billItem.RequisitionId
-                                               //into tempItmList
-                                               join dept in labDbContext.ServiceDepartment on billItem.ServiceDepartmentId equals dept.ServiceDepartmentId
+                    //var currPatRequisitions = (from req in labDbContext.Requisitions
+                    //                           join billItem in labDbContext.BillingTransactionItems on req.RequisitionId equals billItem.RequisitionId
+                    //                           into tempItmList
+                    //                           join dept in labDbContext.ServiceDepartment on billItem.ServiceDepartmentId equals dept.ServiceDepartmentId
 
-                                               where (req.PatientId == patientId) && (req.PatientVisitId == patientVisitId) && (billItem.PatientId == patientId)
-                                                && (req.BillingStatus.ToLower() == "paid" || req.BillingStatus.ToLower() == "provisional")
-                                                && (req.VisitType.ToLower() == "inpatient") && dept.IntegrationName == "LAB"
-                                                && (!billItem.ReturnStatus.HasValue || billItem.ReturnStatus.Value == false)
-                                               select new
-                                               {
-                                                   BillingTransactionItemId = billItem.BillingTransactionItemId,
-                                                   RequisitionId = req.RequisitionId,
-                                                   PatientId = req.PatientId,
-                                                   PatientVisitId = req.PatientVisitId,
-                                                   LabTestName = req.LabTestName,
-                                                   LabTestId = req.LabTestId,
-                                                   ReportTemplateId = req.ReportTemplateId,
-                                                   LabTestSpecimen = req.LabTestSpecimen,
-                                                   ProviderId = req.ProviderId,
-                                                   ProviderName = req.ProviderName,
-                                                   RunNumberType = req.RunNumberType,
-                                                   BillingStatus = req.BillingStatus,
-                                                   OrderStatus = req.OrderStatus,
-                                                   OrderDateTime = req.OrderDateTime,
-                                                   IsReportGenerated = (
-                                                       (from cmp in labDbContext.LabTestComponentResults
-                                                        where cmp.RequisitionId == req.RequisitionId
-                                                       && cmp.LabReportId.HasValue
-                                                        select cmp).ToList().Count > 0
-                                                    )
+                    //                           where (req.PatientId == patientId) && (req.PatientVisitId == patientVisitId) && (billItem.PatientId == patientId)
+                    //                            && (req.BillingStatus.ToLower() == ENUM_BillingStatus.paid // "paid" 
+                    //                            || req.BillingStatus.ToLower() == ENUM_BillingStatus.provisional) // "provisional")
+                    //                            && (req.VisitType.ToLower() == ENUM_VisitType.inpatient) // "inpatient") 
+                    //                            && dept.IntegrationName.ToLower() == "lab"
+                    //                            && (!billItem.ReturnStatus.HasValue || billItem.ReturnStatus.Value == false)
+                    //                           select new
+                    //                           {
+                    //                               BillingTransactionItemId = billItem.BillingTransactionItemId,
+                    //                               RequisitionId = req.RequisitionId,
+                    //                               PatientId = req.PatientId,
+                    //                               PatientVisitId = req.PatientVisitId,
+                    //                               LabTestName = req.LabTestName,
+                    //                               LabTestId = req.LabTestId,
+                    //                               ReportTemplateId = req.ReportTemplateId,
+                    //                               LabTestSpecimen = req.LabTestSpecimen,
+                    //                               ProviderId = req.ProviderId,
+                    //                               ProviderName = req.ProviderName,
+                    //                               RunNumberType = req.RunNumberType,
+                    //                               BillingStatus = req.BillingStatus,
+                    //                               OrderStatus = req.OrderStatus,
+                    //                               OrderDateTime = req.OrderDateTime,
+                    //                               IsReportGenerated = (
+                    //                                   (from cmp in labDbContext.LabTestComponentResults
+                    //                                    where cmp.RequisitionId == req.RequisitionId
+                    //                                   && cmp.LabReportId.HasValue
+                    //                                    select cmp).ToList().Count > 0
+                    //                                )
 
-                                               }).ToList();
+                    //                           }).ToList();
 
-                    responseData.Results = currPatRequisitions;
+                    //responseData.Results = currPatRequisitions;
+
+                    string module = this.ReadQueryStringData("module");
+
+                    PatientModel currPatient = labDbContext.Patients.Where(pat => pat.PatientId == patientId).FirstOrDefault();
+                    if (currPatient != null)
+                    {
+                        string subDivName = (from pat in labDbContext.Patients
+                                             join countrySubdiv in labDbContext.CountrySubdivisions
+                                             on pat.CountrySubDivisionId equals countrySubdiv.CountrySubDivisionId
+                                             where pat.PatientId == currPatient.PatientId
+                                             select countrySubdiv.CountrySubDivisionName
+                                          ).FirstOrDefault();
+
+                        currPatient.CountrySubDivisionName = subDivName;
+                        //remove relational property of patient//sud: 12May'18
+                        //currPatient.BillingTransactionItems = null;
+                    }
+
+                    List<SqlParameter> paramList = new List<SqlParameter>() {
+                        new SqlParameter("@patientId", patientId),
+                        new SqlParameter("@patientVisitId", patientVisitId),
+                        new SqlParameter("@moduleName", module)
+                    };
+
+                    DataTable patCreditItems = DALFunctions.GetDataTableFromStoredProc("SP_InPatient_Item_Details", paramList, labDbContext);
+
+
+                    //create new anonymous type with patient information + Credit Items information : Anish:4May'18
+                    var patCreditDetails = new
+                    {
+                        Patient = currPatient,
+                        BillItems = patCreditItems
+                    };
+                    responseData.Status = "OK";
+                    responseData.Results = patCreditDetails;
 
                 }
 
@@ -2474,12 +1385,15 @@ namespace DanpheEMR.Controllers
                 {
                     List<Int64> reqIdList = DanpheJSONConvert.DeserializeObject<List<Int64>>(requisitionIdList);
                     List<LabRequisitionModel> allReq = new List<LabRequisitionModel>();
-                    foreach (var reqId in reqIdList)
-                    {
-                        LabRequisitionModel eachReq = new LabRequisitionModel();
-                        eachReq = labDbContext.Requisitions.Where(req => req.RequisitionId == reqId).FirstOrDefault();
-                        allReq.Add(eachReq);
-                    }
+                    allReq = labDbContext.Requisitions.Where(req => reqIdList.Contains(req.RequisitionId)).ToList();
+
+                    //foreach (var reqId in reqIdList)
+                    //{
+                    //LabRequisitionModel eachReq = new LabRequisitionModel();
+
+                    //eachReq = labDbContext.Requisitions.Where(req => req.RequisitionId == reqId).FirstOrDefault();
+                    // allReq.Add(eachReq);
+                    //}
 
                     responseData.Results = allReq;
                 }
@@ -2495,7 +1409,9 @@ namespace DanpheEMR.Controllers
                                                                               join pat in labDbContext.Patients on req.PatientId equals pat.PatientId
                                                                               join test in labDbContext.LabTests on req.LabTestId equals test.LabTestId
                                                                               where (req.OrderDateTime.HasValue ? req.OrderDateTime > dtThirtyDays : true)
-                                                                              && req.OrderStatus == "pending" && req.ResultingVendorId == defaultVendorId
+                                                                              && req.OrderStatus == ENUM_LabOrderStatus.Pending //"pending" 
+
+                                                                              && req.ResultingVendorId == defaultVendorId
                                                                               select new LabTestListWithVendor
                                                                               {
                                                                                   PatientName = pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName,
@@ -2528,6 +1444,24 @@ namespace DanpheEMR.Controllers
                     responseData.Results = allRequisitionsWithVendors;
                 }
 
+                else if (reqType == "all-lab-category")
+                {
+                    List<LabTestCategoryModel> allLabCategory = (from cat in labDbContext.LabTestCategory
+                                                                 select cat
+                                          ).ToList();
+                    responseData.Results = allLabCategory;
+                }
+
+                else if (reqType == "all-lab-specimen")
+                {
+                    var allSpecimen = (from cat in labDbContext.LabTestSpecimen
+                                       select new
+                                       {
+                                           Name = cat.SpecimenName,
+                                           IsSelected = false
+                                       }).ToList();
+                    responseData.Results = allSpecimen;
+                }
                 responseData.Status = "OK";
 
             }
@@ -2554,7 +1488,7 @@ namespace DanpheEMR.Controllers
                 RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
                 if (reqType != null && reqType == "AddComponent")
                 {
-                    using (var labDbContextTransaction = labDbContext.Database.BeginTransaction())
+                    using (TransactionScope trans = new TransactionScope())
                     {
                         try
                         {
@@ -2574,6 +1508,7 @@ namespace DanpheEMR.Controllers
                                 {
                                     cmp.CreatedOn = DateTime.Now;
                                     cmp.CreatedBy = currentUser.EmployeeId;
+                                    cmp.ResultGroup = cmp.ResultGroup.HasValue ? cmp.ResultGroup.Value : 1;
                                     labDbContext.LabTestComponentResults.Add(cmp);
                                 });
                             }
@@ -2583,6 +1518,7 @@ namespace DanpheEMR.Controllers
                                 {
                                     cmp.CreatedOn = DateTime.Now;
                                     cmp.CreatedBy = currentUser.EmployeeId;
+                                    cmp.ResultGroup = cmp.ResultGroup.HasValue ? cmp.ResultGroup.Value : 1;
                                     labDbContext.LabTestComponentResults.Add(cmp);
                                 });
 
@@ -2595,17 +1531,24 @@ namespace DanpheEMR.Controllers
 
                             //once the results are saved, put the status of 
                             List<Int64> distinctRequisitions = labComponentFromClient.Select(a => a.RequisitionId).Distinct().ToList();
+                            string allReqIdListStr = "";
 
                             foreach (Int64 requisitionId in distinctRequisitions)
                             {
+                                allReqIdListStr = allReqIdListStr + requisitionId + ",";
                                 LabRequisitionModel dbRequisition = labDbContext.Requisitions
                                                                 .Where(a => a.RequisitionId == requisitionId)
                                                                 .FirstOrDefault<LabRequisitionModel>();
 
                                 if (dbRequisition != null)
                                 {
-                                    dbRequisition.OrderStatus = "result-added";
+                                    dbRequisition.ResultAddedBy = currentUser.EmployeeId;
+                                    dbRequisition.ResultAddedOn = System.DateTime.Now;
+                                    dbRequisition.OrderStatus = ENUM_LabOrderStatus.ResultAdded;   // "result-added";
                                     labDbContext.Entry(dbRequisition).Property(a => a.OrderStatus).IsModified = true;
+                                    labDbContext.Entry(dbRequisition).Property(a => a.ResultAddedBy).IsModified = true;
+                                    labDbContext.Entry(dbRequisition).Property(a => a.ResultAddedOn).IsModified = true;
+
                                 }
                             }
 
@@ -2629,14 +1572,18 @@ namespace DanpheEMR.Controllers
                                 }
                             }
 
+                            allReqIdListStr = allReqIdListStr.Substring(0, (allReqIdListStr.Length - 1));
 
-                            //PutOrderStatusOfRequisitions(labDbContext, distinctRequisitions, "final");
-                            labDbContextTransaction.Commit();
+                            List<SqlParameter> paramList = new List<SqlParameter>(){
+                                                    new SqlParameter("@allReqIds", allReqIdListStr),
+                                                    new SqlParameter("@status", ENUM_BillingOrderStatus.Final)
+                                                };
+                            DataTable statusUpdated = DALFunctions.GetDataTableFromStoredProc("SP_Bill_OrderStatusUpdate", paramList, labDbContext);
+                            trans.Complete();
                             responseData.Results = labComponentFromClient;
                         }
                         catch (Exception ex)
                         {
-                            labDbContextTransaction.Rollback();
                             throw (ex);
                         }
                     }
@@ -2666,11 +1613,11 @@ namespace DanpheEMR.Controllers
                             {
                                 LabTestModel labTestdb = allLabTests.Where(a => a.LabTestId == req.LabTestId).FirstOrDefault<LabTestModel>();
                                 //get PatientId from clientSide
-                                if (labTestdb.IsValidSampling == true)
+                                if (labTestdb.IsValidForReporting == true)
                                 {
                                     req.LabTestSpecimen = labTestdb.LabTestSpecimen;
                                     req.LabTestSpecimenSource = labTestdb.LabTestSpecimenSource;
-                                    req.OrderStatus = "active";
+                                    req.OrderStatus = ENUM_LabOrderStatus.Active; //"active";
                                     req.LOINC = "LOINC Code";
                                     req.RunNumberType = labTestdb.RunNumberType;
                                     //req.PatientVisitId = visitId;//assign above visitid to this requisition.
@@ -2716,7 +1663,7 @@ namespace DanpheEMR.Controllers
                                 req.ResultingVendorId = defaultVendor.LabVendorId;
                                 LabTestModel labTestdb = allLabTests.Where(a => a.LabTestId == req.LabTestId).FirstOrDefault<LabTestModel>();
                                 //get PatientId from clientSide
-                                if (labTestdb.IsValidSampling == true)
+                                if (labTestdb.IsValidForReporting == true)
                                 {
                                     req.ReportTemplateId = labTestdb.ReportTemplateId ?? default(int);
                                     req.LabTestSpecimen = null;
@@ -2725,6 +1672,8 @@ namespace DanpheEMR.Controllers
                                     req.RunNumberType = labTestdb.RunNumberType;
                                     //req.OrderStatus = "active";
                                     req.LOINC = "LOINC Code";
+                                    req.BillCancelledBy = null;
+                                    req.BillCancelledOn = null;
                                     if (req.ProviderId != null && req.ProviderId != 0)
                                     {
                                         var emp = labDbContext.Employee.Where(a => a.EmployeeId == req.ProviderId).FirstOrDefault();
@@ -2757,16 +1706,11 @@ namespace DanpheEMR.Controllers
 
                 else if (reqType == "add-labReport")
                 {
-                    using (var labDbTransaction = labDbContext.Database.BeginTransaction())
+                    using (TransactionScope trans = new TransactionScope())
                     {
                         try
                         {
                             LabReportModel labReport = DanpheJSONConvert.DeserializeObject<LabReportModel>(ipStr);
-
-                            var parameterData = (from parameter in labDbContext.AdminParameters
-                                                 where parameter.ParameterGroupName.ToLower() == "lab"
-                                                 && parameter.ParameterName == "AllowLabReportToPrintOnProvisional"
-                                                 select parameter.ParameterValue).FirstOrDefault();
 
 
                             var VerificationEnabled = labReport.VerificationEnabled;
@@ -2781,6 +1725,8 @@ namespace DanpheEMR.Controllers
                             labDbContext.LabReports.Add(labReport);
 
                             labDbContext.SaveChanges();
+
+                            string allReqIdListStr = "";
 
                             if (labReport.LabReportId != 0)
                             {
@@ -2797,6 +1743,7 @@ namespace DanpheEMR.Controllers
 
                                 foreach (var reqId in reqIdToUpdate)
                                 {
+                                    allReqIdListStr = allReqIdListStr + reqId + ",";
                                     LabRequisitionModel requisitionItem = labDbContext.Requisitions.Where(val => val.RequisitionId == reqId).FirstOrDefault();
                                     if (VerificationEnabled == true)
                                     {
@@ -2804,14 +1751,20 @@ namespace DanpheEMR.Controllers
                                     }
                                     else
                                     {
-                                        requisitionItem.OrderStatus = "report-generated";
+                                        requisitionItem.OrderStatus = ENUM_LabOrderStatus.ReportGenerated;// "report-generated";
                                     }
                                     requisitionItem.LabReportId = labReport.LabReportId;
+
+
+                                    var parameterData = (from parameter in labDbContext.AdminParameters
+                                                         where parameter.ParameterGroupName.ToLower() == "lab"
+                                                         && parameter.ParameterName == "AllowLabReportToPrintOnProvisional"
+                                                         select parameter.ParameterValue).FirstOrDefault();
 
                                     //give provisional billing for outpatiient to print
                                     if (parameterData != null && (parameterData.ToLower() == "true" || parameterData == "1"))
                                     {
-                                        if (requisitionItem.BillingStatus.ToLower() == "provisional")
+                                        if (requisitionItem.BillingStatus.ToLower() == ENUM_BillingStatus.provisional) // "provisional")
                                         {
                                             IsValidToPrint = true;
                                         }
@@ -2819,13 +1772,16 @@ namespace DanpheEMR.Controllers
                                     }
                                     else
                                     {
-                                        if ((requisitionItem.VisitType.ToLower() == "outpatient" || requisitionItem.VisitType.ToLower() == "emergency") && requisitionItem.BillingStatus.ToLower() == "provisional")
+                                        if ((requisitionItem.VisitType.ToLower() == ENUM_VisitType.outpatient // "outpatient" 
+                                            || requisitionItem.VisitType.ToLower() == ENUM_VisitType.emergency) // "emergency") 
+                                            && requisitionItem.BillingStatus.ToLower() == ENUM_BillingStatus.provisional) // "provisional")
                                         {
                                             IsValidToPrint = false;
                                         }
                                     }
 
-                                    if (requisitionItem.RunNumberType.ToLower() == "histo" || requisitionItem.RunNumberType.ToLower() == "cyto")
+                                    if (requisitionItem.RunNumberType.ToLower() == ENUM_LabRunNumType.histo // "histo" 
+                                        || requisitionItem.RunNumberType.ToLower() == ENUM_LabRunNumType.cyto) // "cyto")
                                     {
                                         LabReportModel report = labDbContext.LabReports.Where(rep => rep.LabReportId == labReport.LabReportId).FirstOrDefault();
                                         report.ReceivingDate = requisitionItem.OrderDateTime;
@@ -2834,14 +1790,22 @@ namespace DanpheEMR.Controllers
                                 }
                                 labDbContext.SaveChanges();
 
+
+
                                 //if (docPatPortalSync)
                                 //{
                                 //    DocPatPortalBL.PostLabFinalReport(labReport, labDbContext);
                                 //}
                             }
 
+                            allReqIdListStr = allReqIdListStr.Substring(0, (allReqIdListStr.Length - 1));
 
-                            labDbTransaction.Commit();
+                            //List<SqlParameter> paramList = new List<SqlParameter>(){
+                            //                        new SqlParameter("@allReqIds", allReqIdListStr),
+                            //                        new SqlParameter("@status", ENUM_BillingOrderStatus.Final)
+                            //                    };
+                            //DataTable statusUpdated = DALFunctions.GetDataTableFromStoredProc("SP_Bill_OrderStatusUpdate", paramList, labDbContext);
+                            trans.Complete();
 
                             labReport.ValidToPrint = IsValidToPrint;
 
@@ -2849,7 +1813,6 @@ namespace DanpheEMR.Controllers
                         }
                         catch (Exception ex)
                         {
-                            labDbTransaction.Rollback();
                             throw (ex);
                         }
                     }
@@ -2866,8 +1829,25 @@ namespace DanpheEMR.Controllers
                         //Read html
 
                         string PrinterName = this.ReadQueryStringData("PrinterName");
-                        string FilePath = this.ReadQueryStringData("FilePath");
+                        string FileName = this.ReadQueryStringData("fileName");
                         int noOfPrints = Convert.ToInt32(this.ReadQueryStringData("numOfCopies"));
+
+                        var parameter = (from param in labDbContext.AdminParameters
+                                         where param.ParameterGroupName.ToLower() == "lab" &&
+                                         param.ParameterName == "LabStickerSettings"
+                                         select param.ParameterValue).FirstOrDefault();
+
+                        List<LabStickerParam> paramArray = new List<LabStickerParam>();
+
+                        if (parameter != null)
+                        {
+                            paramArray = DanpheJSONConvert.DeserializeObject<List<LabStickerParam>>(parameter);
+                        }
+
+                        string FolderPath = (from p in paramArray
+                                             where p.Name == PrinterName
+                                             select p.FolderPath).FirstOrDefault();
+
                         if (noOfPrints == 0)
                         {
                             noOfPrints = 1;
@@ -2876,10 +1856,10 @@ namespace DanpheEMR.Controllers
                         for (int i = 0; i < noOfPrints; i++)
                         {
                             //index:i, taken in filename 
-                            var fileName = "Lab_" + PrinterName + "_user_" + currentUser.EmployeeId + "_" + (i + 1) + ".html";
+                            var fileFullName = "Lab_" + FileName + "_user_" + currentUser.EmployeeId + "_" + (i + 1) + ".html";
                             byte[] htmlbytearray = System.Text.Encoding.ASCII.GetBytes(ipStr);
                             //saving file to default folder, html file need to be delete after print is called.
-                            System.IO.File.WriteAllBytes(@FilePath + fileName, htmlbytearray);
+                            System.IO.File.WriteAllBytes(@FolderPath + fileFullName, htmlbytearray);
 
                         }
 
@@ -2887,6 +1867,7 @@ namespace DanpheEMR.Controllers
                         responseData.Results = 1;
                     }
                 }
+
                 responseData.Status = "OK";
             }
             catch (Exception ex)
@@ -2913,6 +1894,7 @@ namespace DanpheEMR.Controllers
                 string reqType = this.ReadQueryStringData("reqType");
                 string billstatus = this.ReadQueryStringData("billstatus");
                 string comments = this.ReadQueryStringData("comments");
+                string labReqIdList = this.ReadQueryStringData("requisitionIdList");
                 int vendorId = ToInt(this.ReadQueryStringData("vendorId"));
                 //sud:22Aug'18 --it was giving error when trying Int.Parse(),  so use Convert.ToInt instead.
                 int referredById = Convert.ToInt32(this.ReadQueryStringData("id"));
@@ -2925,54 +1907,66 @@ namespace DanpheEMR.Controllers
                 //int CurrentUser = 1;
                 //int.TryParse(this.ReadQueryStringData("CurrentUser"), out CurrentUser);
                 int? RunNumber = ToInt(this.ReadQueryStringData("RunNumber"));
-
-
                 LabDbContext labDbContext = new LabDbContext(connString);
+                this.labRunNumberSettings = (List<LabRunNumberSettingsModel>)DanpheCache.GetMasterData(MasterDataEnum.LabRunNumberSettings);
 
                 LabRequisitionModel GetCurrentRequisitionData(string RunNumberType, string visitType, DateTime? sampleCreatedOn, int runNumber)
                 {
-                    LabRequisitionModel currRequisitionType = new LabRequisitionModel();
-                    if (visitType.ToLower() == "inpatient" || visitType.ToLower() == "emergency")
+                    LabRequisitionModel currRequisitionType = null;
+                    var isUnderInsurance = false;
+
+
+
+
+                    //Get the GroupingIndex From visitType and Run Number Type
+                    var currentSetting = (from runNumSetting in labRunNumberSettings
+                                          where runNumSetting.VisitType == visitType.ToLower()
+                                          && runNumSetting.RunNumberType == RunNumberType.ToLower()
+                                          && runNumSetting.UnderInsurance == isUnderInsurance
+                                          select runNumSetting
+                                         ).FirstOrDefault();
+
+
+                    //Get all the Rows based upon this GroupingIndex
+                    var allCurrentVisitAndRynType = (from runNumSetting in labRunNumberSettings
+                                                     where runNumSetting.RunNumberGroupingIndex == currentSetting.RunNumberGroupingIndex
+                                                     select new
+                                                     {
+                                                         runNumSetting.RunNumberType,
+                                                         runNumSetting.VisitType,
+                                                         runNumSetting.UnderInsurance,
+                                                         runNumSetting.ResetDaily,
+                                                         runNumSetting.ResetMonthly,
+                                                         runNumSetting.ResetYearly
+                                                     }).ToList();
+
+
+                    //Get all the Requisition of current sample date and sample code
+                    var reqOfCurrentSampleYear = (from req in labDbContext.Requisitions.Where(r => r.SampleCreatedOn.HasValue) //this already filters not null data.. 
+                                                  where req.SampleCode == runNumber && req.SampleCreatedOn.Value.Year == sampleCreatedOn.Value.Year
+                                                  select req).ToList();
+
+
+
+                    foreach (var currVal in allCurrentVisitAndRynType)
                     {
-                        if (RunNumberType.ToLower() == "normal")
+                        if (currentSetting.ResetYearly || currentSetting.ResetMonthly || currentSetting.ResetDaily)
                         {
-                            currRequisitionType = (from sam in labDbContext.Requisitions.Where(r => r.SampleCreatedOn.HasValue) //this already filters not null data.. 
-                                                   where sam.SampleCode == runNumber && sampleCreatedOn.Value.Year == sam.SampleCreatedOn.Value.Year
-                                                   && (sam.VisitType.ToLower() == "inpatient" || sam.VisitType.ToLower() == "emergency") && sam.RunNumberType.ToLower() == RunNumberType
-                                                   select sam).FirstOrDefault();
+
+                            currRequisitionType = (from req in reqOfCurrentSampleYear
+                                                   where currentSetting.ResetMonthly ? (DanpheDateConvertor.ConvertEngToNepDate(req.SampleCreatedOn.Value).Month == DanpheDateConvertor.ConvertEngToNepDate(sampleCreatedOn.Value).Month) : true
+                                                   && currentSetting.ResetDaily ? ((req.SampleCreatedOn.Value.Month == sampleCreatedOn.Value.Month)
+                                                   && (req.SampleCreatedOn.Value.Day == sampleCreatedOn.Value.Day)) : true
+                                                   && req.VisitType.ToLower() == currVal.VisitType.ToLower()
+                                                   && req.RunNumberType.ToLower() == currVal.RunNumberType.ToLower()
+                                                   select req).FirstOrDefault();
                         }
                         else
                         {
-                            currRequisitionType = (from sam in labDbContext.Requisitions.Where(r => r.SampleCreatedOn.HasValue)
-                                                   where sam.SampleCode == runNumber && sampleCreatedOn.Value.Year == sam.SampleCreatedOn.Value.Year
-                                                   && sam.RunNumberType.ToLower() == RunNumberType
-                                                   select sam).FirstOrDefault();
+                            throw new ArgumentException("Please set the reset type.");
                         }
 
                     }
-                    else if (visitType.ToLower() == "outpatient")
-                    {
-                        if (RunNumberType.ToLower() == "normal")
-                        {
-                            currRequisitionType = (from sam in labDbContext.Requisitions
-                                                   where sam.SampleCode == runNumber
-                                                   && DbFunctions.TruncateTime(sam.SampleCreatedOn).Value == DbFunctions.TruncateTime(sampleCreatedOn).Value
-                                                   && sam.VisitType.ToLower() == "outpatient" && sam.RunNumberType.ToLower() == RunNumberType
-                                                   select sam).FirstOrDefault();
-                        }
-                        else
-                        {
-                            currRequisitionType = (from sam in labDbContext.Requisitions.Where(r => r.SampleCreatedOn.HasValue)
-                                                   where sam.SampleCode == runNumber && sampleCreatedOn.Value.Year == sam.SampleCreatedOn.Value.Year
-                                                   && sam.RunNumberType.ToLower() == RunNumberType
-                                                   select sam).FirstOrDefault();
-                        }
-                    }
-                    else
-                    {
-                        currRequisitionType = null;
-                    }
-
                     return currRequisitionType;
                 }
 
@@ -2993,20 +1987,16 @@ namespace DanpheEMR.Controllers
                     int? sampleNum = null;
                     int? existingBarCodeNum = null;
                     int? LabBarCodeNum = null;
-
-
-
+                    string reqIdList = "";
 
                     if (labTests != null)
                     {
 
 
-                        using (var labDbTransaction = labDbContext.Database.BeginTransaction())
+                        using (TransactionScope trans = new TransactionScope())
                         {
                             try
                             {
-
-
                                 var requisitionid = labTests[0].RequisitionId;
                                 LabRequisitionModel currRequisitionType = labDbContext.Requisitions
                                                                               .Where(a => a.RequisitionId == requisitionid)
@@ -3016,7 +2006,6 @@ namespace DanpheEMR.Controllers
                                 var barCodeList = (from v in labDbContext.LabBarCode
                                                    select v).ToList();
                                 var BarCodeNumber = (barCodeList.Count > 0) ? barCodeList.Max(val => val.BarCodeNumber) + 1 : 1000000;
-
 
                                 RunNumberType = currRequisitionType.RunNumberType;
                                 visitType = currRequisitionType.VisitType;
@@ -3029,12 +2018,13 @@ namespace DanpheEMR.Controllers
                                 if (currRequisitionType != null)
                                 {
                                     existingBarCodeNum = currRequisitionType.BarCodeNumber;
-                                    LabBarCodeModel newBarCode = labDbContext.LabBarCode
-                                                                        .Where(c => c.BarCodeNumber == existingBarCodeNum)
+                                    LabBarCodeModel newBarCode = barCodeList.Where(c => c.BarCodeNumber == existingBarCodeNum)
                                                                         .FirstOrDefault<LabBarCodeModel>();
                                     newBarCode.IsActive = true;
                                     labDbContext.Entry(newBarCode).Property(a => a.IsActive).IsModified = true;
                                     labDbContext.SaveChanges();
+
+                                    sampleCreatedOn = currRequisitionType.SampleCreatedOn;
                                 }
                                 else
                                 {
@@ -3051,15 +2041,13 @@ namespace DanpheEMR.Controllers
 
                                 }
 
-
-
-
-
                                 foreach (var test in labTests)
                                 {
                                     LabRequisitionModel dbRequisition = labDbContext.Requisitions
                                                                     .Where(a => a.RequisitionId == test.RequisitionId)
                                                                     .FirstOrDefault<LabRequisitionModel>();
+
+                                    reqIdList = reqIdList + test.RequisitionId + ",";
 
                                     RunNumberType = dbRequisition.RunNumberType;
 
@@ -3067,20 +2055,24 @@ namespace DanpheEMR.Controllers
                                     if (test.SampleCode != null)
                                     {
                                         dbRequisition.SampleCode = sampleNum = test.SampleCode;
-                                        dbRequisition.SampleCreatedOn = test.SampleCreatedOn;
+                                        dbRequisition.SampleCodeFormatted = GetSampleCodeFormatted(sampleNum, test.SampleCreatedOn ?? default(DateTime), visitType, RunNumberType);
+                                        dbRequisition.SampleCreatedOn = sampleCreatedOn;
                                         dbRequisition.SampleCreatedBy = currentUser.EmployeeId;
                                         dbRequisition.BarCodeNumber = existingBarCodeNum != null ? existingBarCodeNum : BarCodeNumber;
+                                        dbRequisition.SampleCollectedOnDateTime = System.DateTime.Now;
                                         visitType = dbRequisition.VisitType;
-                                        sampleCreatedOn = test.SampleCreatedOn;
+                                        //sampleCreatedOn = test.SampleCreatedOn;
                                     }
                                     dbRequisition.LabTestSpecimen = test.Specimen;
-                                    dbRequisition.OrderStatus = "pending";
+                                    dbRequisition.OrderStatus = ENUM_LabOrderStatus.Pending;// "pending";
 
                                     labDbContext.Entry(dbRequisition).Property(a => a.SampleCode).IsModified = true;
+                                    labDbContext.Entry(dbRequisition).Property(a => a.SampleCodeFormatted).IsModified = true;
                                     labDbContext.Entry(dbRequisition).Property(a => a.OrderStatus).IsModified = true;
                                     labDbContext.Entry(dbRequisition).Property(a => a.RunNumberType).IsModified = true;
                                     labDbContext.Entry(dbRequisition).Property(a => a.SampleCreatedBy).IsModified = true;
                                     labDbContext.Entry(dbRequisition).Property(a => a.SampleCreatedOn).IsModified = true;
+                                    labDbContext.Entry(dbRequisition).Property(a => a.SampleCollectedOnDateTime).IsModified = true;
                                     labDbContext.Entry(dbRequisition).Property(a => a.LabTestSpecimen).IsModified = true;
                                     labDbContext.Entry(dbRequisition).Property(a => a.BarCodeNumber).IsModified = true;
                                 }
@@ -3089,8 +2081,14 @@ namespace DanpheEMR.Controllers
 
                                 labDbContext.SaveChanges();
 
-                                labDbTransaction.Commit();
+                                reqIdList = reqIdList.Substring(0, (reqIdList.Length - 1));
 
+                                List<SqlParameter> paramList = new List<SqlParameter>(){
+                                                    new SqlParameter("@allReqIds", reqIdList),
+                                                    new SqlParameter("@status", ENUM_BillingOrderStatus.Pending)
+                                                };
+                                DataTable statusUpdated = DALFunctions.GetDataTableFromStoredProc("SP_Bill_OrderStatusUpdate", paramList, labDbContext);
+                                trans.Complete();
                                 string formattedSampleCode = GetSampleCodeFormatted(sampleNum, sampleCreatedOn ?? default(DateTime), visitType, RunNumberType);
                                 //string formattedSampleCode = DateTime.Now.ToString("yyMMdd") + "-" + sampleNum;
                                 responseData.Results = new { FormattedSampleCode = formattedSampleCode, BarCodeNumber = LabBarCodeNum };
@@ -3098,7 +2096,6 @@ namespace DanpheEMR.Controllers
                             }
                             catch (Exception ex)
                             {
-                                labDbTransaction.Rollback();
                                 throw (ex);
                             }
                         }
@@ -3131,7 +2128,7 @@ namespace DanpheEMR.Controllers
                     string RunNumberType = null;
                     int? LabBarCodeNum = null;
 
-
+                    //get the requisition with same Run number
                     requisition = GetCurrentRequisitionData(runNumberType, patVisitType, SampleDate, (int)RunNumber);
 
 
@@ -3146,6 +2143,8 @@ namespace DanpheEMR.Controllers
                         labDbContext.Entry(newBarCode).Property(a => a.IsActive).IsModified = true;
 
                         labDbContext.SaveChanges();
+
+                        SampleDate = requisition.SampleCreatedOn;
                     }
                     else
                     {
@@ -3190,13 +2189,10 @@ namespace DanpheEMR.Controllers
                                 labDbContext.Entry(oldBarCode).Property(a => a.IsActive).IsModified = true;
                             }
 
-
-
-
-
                             dbRequisition.SampleCode = RunNumber;
-                            // dbRequisition.SampleCode = sampleNum;
+                            dbRequisition.SampleCodeFormatted = GetSampleCodeFormatted(RunNumber, SampleDate.Value, patVisitType, runNumberType);
                             dbRequisition.SampleCreatedOn = SampleDate;
+                            dbRequisition.SampleCollectedOnDateTime = System.DateTime.Now;
                             dbRequisition.SampleCreatedBy = currentUser.EmployeeId;
                             dbRequisition.ModifiedBy = currentUser.EmployeeId;
                             dbRequisition.ModifiedOn = System.DateTime.Now;
@@ -3209,8 +2205,10 @@ namespace DanpheEMR.Controllers
                         labDbContext.Entry(dbRequisition).Property(a => a.ModifiedBy).IsModified = true;
                         labDbContext.Entry(dbRequisition).Property(a => a.ModifiedOn).IsModified = true;
                         labDbContext.Entry(dbRequisition).Property(a => a.SampleCode).IsModified = true;
+                        labDbContext.Entry(dbRequisition).Property(a => a.SampleCodeFormatted).IsModified = true;
                         labDbContext.Entry(dbRequisition).Property(a => a.SampleCreatedBy).IsModified = true;
                         labDbContext.Entry(dbRequisition).Property(a => a.SampleCreatedOn).IsModified = true;
+                        labDbContext.Entry(dbRequisition).Property(a => a.SampleCollectedOnDateTime).IsModified = true;
                         labDbContext.Entry(dbRequisition).Property(a => a.BarCodeNumber).IsModified = true;
                     }
 
@@ -3282,10 +2280,6 @@ namespace DanpheEMR.Controllers
                     responseData.Status = "OK";
                     responseData.Results = RequisitionIds;
                 }
-
-
-
-
 
                 // to update the lab result
                 else if (reqType == "EditLabTestResult")
@@ -3401,32 +2395,70 @@ namespace DanpheEMR.Controllers
                     labDbContext.Entry(servReport).Property(a => a.ModifiedBy).IsModified = true;
                     labDbContext.Entry(servReport).Property(a => a.Comments).IsModified = true;
                     labDbContext.SaveChanges();
+
                     responseData.Status = "OK";
                 }
 
                 else if (reqType == "update-reportPrintedFlag")
                 {
+                    List<Int64> requisitionIdList = DanpheJSONConvert.DeserializeObject<List<Int64>>(labReqIdList);
                     int? repId = PrintedReportId;
-                    if (repId != null && repId > 0)
+
+                    using (var dbContextTransaction = labDbContext.Database.BeginTransaction())
                     {
-                        LabReportModel report = labDbContext.LabReports.Where(val => val.LabReportId == repId).FirstOrDefault<LabReportModel>();
-                        labDbContext.LabReports.Attach(report);
+                        try
+                        {
+                            foreach (int req in requisitionIdList)
+                            {
+                                LabRequisitionModel labReq = labDbContext.Requisitions
+                                                     .Where(a => a.RequisitionId == req)
+                                                      .FirstOrDefault<LabRequisitionModel>();
 
-                        labDbContext.Entry(report).Property(a => a.IsPrinted).IsModified = true;
-                        labDbContext.Entry(report).Property(a => a.PrintedOn).IsModified = true;
-                        labDbContext.Entry(report).Property(a => a.PrintedBy).IsModified = true;
-                        labDbContext.Entry(report).Property(a => a.PrintCount).IsModified = true;
+                                labDbContext.Requisitions.Attach(labReq);
+                                labDbContext.Entry(labReq).Property(a => a.PrintCount).IsModified = true;
+                                labDbContext.Entry(labReq).Property(a => a.PrintedBy).IsModified = true;
+                                if (labReq.PrintCount == null || labReq.PrintCount == 0)
+                                {
+                                    labReq.PrintCount = 1;
+                                }
+                                else { labReq.PrintCount = labReq.PrintCount + 1; }
+                                labReq.PrintedBy = currentUser.EmployeeId;
 
-                        report.IsPrinted = true;
-                        report.PrintedOn = System.DateTime.Now;
-                        report.PrintedBy = currentUser.EmployeeId;
-                        report.PrintCount = report.PrintCount + 1;
+                                labDbContext.SaveChanges();
+                            }
 
-                        labDbContext.SaveChanges();
-                        responseData.Results = report;
-                        responseData.Status = "OK";
 
+                            if (repId != null && repId > 0)
+                            {
+                                LabReportModel report = labDbContext.LabReports.Where(val => val.LabReportId == repId).FirstOrDefault<LabReportModel>();
+                                labDbContext.LabReports.Attach(report);
+
+                                labDbContext.Entry(report).Property(a => a.IsPrinted).IsModified = true;
+                                labDbContext.Entry(report).Property(a => a.PrintedOn).IsModified = true;
+                                labDbContext.Entry(report).Property(a => a.PrintedBy).IsModified = true;
+                                labDbContext.Entry(report).Property(a => a.PrintCount).IsModified = true;
+
+                                report.IsPrinted = true;
+                                report.PrintedOn = System.DateTime.Now;
+                                report.PrintedBy = currentUser.EmployeeId;
+                                report.PrintCount = report.PrintCount + 1;
+
+                                labDbContext.SaveChanges();
+
+                                dbContextTransaction.Commit();
+
+                                responseData.Results = report;
+                                responseData.Status = "OK";
+
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            dbContextTransaction.Rollback();
+                            throw (ex);
+                        }
                     }
+
 
                 }
 
@@ -3581,10 +2613,12 @@ namespace DanpheEMR.Controllers
                                                                             && itm.ItemId == inpatientLabTest.LabTestId
                                                                             && itm.PatientId == inpatientLabTest.PatientId
                                                                             && itm.PatientVisitId == inpatientLabTest.PatientVisitId
-                                                                            && itm.BillingType.ToLower() == "inpatient"
-                                                                            && itm.BillStatus.ToLower() != "paid"
+                                                                            && (itm.BillingType.ToLower() == ENUM_BillingType.inpatient
+                                                                            || itm.BillingType.ToLower() == ENUM_BillingType.outpatient)// "inpatient", "outpatient" for cancellation from er
+                                                                            && itm.BillStatus.ToLower() != ENUM_BillingStatus.paid // "paid"
                                                                             && itm.BillingTransactionItemId == inpatientLabTest.BillingTransactionItemId
                                                                         ).FirstOrDefault<BillingTransactionItemModel>();
+
 
                             labDbContext.BillingTransactionItems.Attach(billItem);
 
@@ -3593,7 +2627,7 @@ namespace DanpheEMR.Controllers
                             labDbContext.Entry(billItem).Property(a => a.CancelledOn).IsModified = true;
                             labDbContext.Entry(billItem).Property(a => a.CancelRemarks).IsModified = true;
 
-                            billItem.BillStatus = "cancel";
+                            billItem.BillStatus = ENUM_BillingStatus.cancel;// "cancel";
                             billItem.CancelledBy = currentUser.EmployeeId;
                             billItem.CancelledOn = System.DateTime.Now;
                             billItem.CancelRemarks = inpatientLabTest.CancelRemarks;
@@ -3603,21 +2637,27 @@ namespace DanpheEMR.Controllers
 
                             LabRequisitionModel labReq = labDbContext.Requisitions
                                                             .Where(req => req.RequisitionId == inpatientLabTest.RequisitionId
-                                                                && (req.VisitType.ToLower() == "inpatient" || req.VisitType.ToLower() == "emergency")
-                                                                && req.BillingStatus.ToLower() != "paid"
+                                                                && (
+                                                                req.VisitType.ToLower() == ENUM_VisitType.inpatient // "inpatient"
+                                                                || req.VisitType.ToLower() == ENUM_VisitType.emergency //"emergency"
+                                                                )
+                                                                && req.BillingStatus.ToLower() != ENUM_BillingStatus.paid // "paid"
                                                             ).FirstOrDefault<LabRequisitionModel>();
 
-
+                            labReq.BillCancelledBy = currentUser.EmployeeId;
+                            labReq.BillCancelledOn = System.DateTime.Now;
                             labDbContext.Requisitions.Attach(labReq);
 
                             labDbContext.Entry(labReq).Property(a => a.BillingStatus).IsModified = true;
-
-                            labReq.BillingStatus = "cancel";
+                            labDbContext.Entry(labReq).Property(a => a.BillCancelledBy).IsModified = true;
+                            labDbContext.Entry(labReq).Property(a => a.BillCancelledOn).IsModified = true;
+                            labReq.BillingStatus = ENUM_BillingStatus.cancel;// "cancel";
                             labDbContext.SaveChanges();
 
                             labDbContextTransaction.Commit();
 
                             responseData.Status = "OK";
+                            responseData.Results = null;
 
                         }
                         catch (Exception ex)
@@ -3663,7 +2703,7 @@ namespace DanpheEMR.Controllers
                                 reqResult.SampleCode = null;
                                 reqResult.SampleCreatedBy = null;
                                 reqResult.SampleCreatedOn = null;
-                                reqResult.OrderStatus = "active";
+                                reqResult.OrderStatus = ENUM_LabOrderStatus.Active; //"active";
                                 reqResult.ModifiedBy = currentUser.EmployeeId;
                                 reqResult.ModifiedOn = DateTime.Now;
                                 reqResult.LabTestSpecimen = null;
@@ -3699,38 +2739,60 @@ namespace DanpheEMR.Controllers
 
                     List<Int64> reqIdList = new List<Int64>();
 
-                    if (VerificationEnabled != null && VerificationEnabled == true)
+                    using (var verifyTransaction = labDbContext.Database.BeginTransaction())
                     {
-                        if (labReport.LabReportId != 0)
+                        try
                         {
-                            foreach (var componentId in labReport.ComponentIdList)
+                            if (VerificationEnabled != null && VerificationEnabled == true)
                             {
-                                LabTestComponentResult component = labDbContext.LabTestComponentResults.Where(cmp => cmp.TestComponentResultId == componentId).FirstOrDefault();
-                                reqIdList.Add(component.RequisitionId);
+                                if (labReport.LabReportId != 0)
+                                {
+                                    var report = labDbContext.LabReports.Where(r => r.LabReportId == labReport.LabReportId).FirstOrDefault();
+                                    if (report != null)
+                                    {
+                                        report.Signatories = labReport.Signatories;
+                                    }
+                                    labDbContext.Entry(report).Property(r => r.Signatories).IsModified = true;
+                                    labDbContext.SaveChanges();
+
+
+                                    foreach (var componentId in labReport.ComponentIdList)
+                                    {
+                                        LabTestComponentResult component = labDbContext.LabTestComponentResults.Where(cmp => cmp.TestComponentResultId == componentId).FirstOrDefault();
+                                        reqIdList.Add(component.RequisitionId);
+                                    }
+
+
+                                    var reqIdToUpdate = reqIdList.Distinct().ToList();
+
+                                    foreach (var reqId in reqIdToUpdate)
+                                    {
+                                        LabRequisitionModel requisitionItem = labDbContext.Requisitions.Where(val => val.RequisitionId == reqId).FirstOrDefault();
+
+                                        requisitionItem.OrderStatus = ENUM_LabOrderStatus.ReportGenerated; //"report-generated";
+                                        requisitionItem.VerifiedBy = currentUser.EmployeeId;
+                                        requisitionItem.VerifiedOn = DateTime.Now;
+                                        requisitionItem.IsVerified = true;
+
+                                        labDbContext.Entry(requisitionItem).Property(a => a.OrderStatus).IsModified = true;
+                                        labDbContext.Entry(requisitionItem).Property(a => a.VerifiedBy).IsModified = true;
+                                        labDbContext.Entry(requisitionItem).Property(a => a.VerifiedOn).IsModified = true;
+                                        labDbContext.Entry(requisitionItem).Property(a => a.IsVerified).IsModified = true;
+
+                                        labDbContext.SaveChanges();
+                                    }
+
+                                    verifyTransaction.Commit();
+
+                                }
+
                             }
-
-
-                            var reqIdToUpdate = reqIdList.Distinct().ToList();
-
-                            foreach (var reqId in reqIdToUpdate)
-                            {
-                                LabRequisitionModel requisitionItem = labDbContext.Requisitions.Where(val => val.RequisitionId == reqId).FirstOrDefault();
-
-                                requisitionItem.OrderStatus = "report-generated";
-                                requisitionItem.VerifiedBy = currentUser.EmployeeId;
-                                requisitionItem.VerifiedOn = DateTime.Now;
-                                requisitionItem.IsVerified = true;
-
-                                labDbContext.Entry(requisitionItem).Property(a => a.OrderStatus).IsModified = true;
-                                labDbContext.Entry(requisitionItem).Property(a => a.VerifiedBy).IsModified = true;
-                                labDbContext.Entry(requisitionItem).Property(a => a.VerifiedOn).IsModified = true;
-                                labDbContext.Entry(requisitionItem).Property(a => a.IsVerified).IsModified = true;
-
-                                labDbContext.SaveChanges();
-                            }
-
                         }
-
+                        catch (Exception ex)
+                        {
+                            verifyTransaction.Rollback();
+                            throw ex;
+                        }
                     }
 
                     responseData.Status = "OK";
@@ -3745,7 +2807,7 @@ namespace DanpheEMR.Controllers
                     {
                         LabRequisitionModel requisitionItem = labDbContext.Requisitions.Where(val => val.RequisitionId == reqId).FirstOrDefault();
 
-                        requisitionItem.OrderStatus = "report-generated";
+                        requisitionItem.OrderStatus = ENUM_LabOrderStatus.ReportGenerated; //"report-generated";
                         requisitionItem.VerifiedBy = currentUser.EmployeeId;
                         requisitionItem.VerifiedOn = DateTime.Now;
                         requisitionItem.IsVerified = true;
@@ -3779,6 +2841,21 @@ namespace DanpheEMR.Controllers
                     }
 
                     responseData.Status = "OK";
+                }
+
+                else if (reqType == "SampleCodeFormatted")
+                {
+                    List<LabRequisitionModel> allLabRequisitions = (from req in labDbContext.Requisitions
+                                                                    where req.SampleCreatedOn.HasValue && req.SampleCode.HasValue
+                                                                    select req).ToList();
+                    foreach (var item in allLabRequisitions)
+                    {
+                        item.SampleCodeFormatted = GetSampleCodeFormatted(item.SampleCode.Value, item.SampleCreatedOn.Value, item.VisitType.ToLower(), item.RunNumberType.ToLower());
+
+                        labDbContext.Entry(item).Property(a => a.SampleCodeFormatted).IsModified = true;
+                    }
+                    labDbContext.SaveChanges();
+
                 }
 
                 else
@@ -3900,7 +2977,9 @@ namespace DanpheEMR.Controllers
             // 'where' condition to get samplecode of todays date only
             var latestSample = (from req in labDbContext.Requisitions
                                 where DbFunctions.TruncateTime(req.SampleCreatedOn) == DbFunctions.TruncateTime(SampleDate)
-                                && req.VisitType.ToLower() == "outpatient" && req.RunNumberType.ToLower() != "cyto" && req.RunNumberType.ToLower() != "histo"
+                                && req.VisitType.ToLower() == ENUM_VisitType.outpatient // "outpatient" 
+                                && req.RunNumberType.ToLower() != ENUM_LabRunNumType.cyto // "cyto" 
+                                && req.RunNumberType.ToLower() != ENUM_LabRunNumType.histo  // "histo"
                                 group req by 1 into req
                                 select new
                                 {
@@ -3962,7 +3041,10 @@ namespace DanpheEMR.Controllers
             int? newSampleSequence = 1;
 
             var samplesByType = (from req in labDbContext.Requisitions
-                                 where (req.VisitType.ToLower() == "inpatient" || req.VisitType.ToLower() == "emergency") && (req.RunNumberType.ToLower() != "cyto") && (req.RunNumberType.ToLower() != "histo")
+                                 where (req.VisitType.ToLower() == ENUM_VisitType.inpatient // "inpatient" 
+                                         || req.VisitType.ToLower() == ENUM_VisitType.emergency) // "emergency") 
+                                 && (req.RunNumberType.ToLower() != ENUM_LabRunNumType.cyto) // "cyto") 
+                                 && (req.RunNumberType.ToLower() != ENUM_LabRunNumType.histo) // "histo")
                                  && (req.SampleCode.HasValue)
                                  select new
                                  {
@@ -3991,41 +3073,166 @@ namespace DanpheEMR.Controllers
         }
 
 
-        //ashim: 09Sep2018 : SampleCode Logic.
-        public string GetSampleCodeFormatted(int? sampleCode, DateTime sampleCreatedOn, string visitType, string RunNumberType)
+        private int? GetLatestSampleSequence(List<LabRequisitionModel> allReqOfCurrentType, List<LabRunNumberSettingsModel> labRunNumSetting,
+            LabRunNumberSettingsModel currentSetting, List<LabRunNumberSettingsModel> allCurrentVisitAndRynType, DateTime currentSampleDate)
         {
-            if (visitType.ToLower() == "outpatient")
+            int? newSampleSequence = 0;
+
+            List<int> allMaxSampleCodesForEachType = new List<int>();
+
+            var allReqFilteredByCurrYear = (from smpl in allReqOfCurrentType
+                                            where DanpheDateConvertor.ConvertEngToNepDate((DateTime)smpl.SampleCreatedOn).Year
+                                                == DanpheDateConvertor.ConvertEngToNepDate(System.DateTime.Now).Year
+                                            select smpl).ToList();
+
+            DateTime? currentDateTime = currentSampleDate.Date;
+
+
+            //currentSetting.ResetMonthly ? (req.SampleCreatedOn.Value.Month == SampleDate.Date.Month) : true
+            //                               && currentSetting.ResetDaily ? ((req.SampleCreatedOn.Value.Month == SampleDate.Month)
+            //                               && (req.SampleCreatedOn.Value.Day == SampleDate.Day)) : true
+
+            //If the Reset if Yearly
+            if (currentSetting.ResetYearly)
             {
-                if (RunNumberType.ToLower() == "normal")
+                var latestYearSampleCode = (from smpl in allReqFilteredByCurrYear
+                                            group smpl by 1 into req
+                                            select new
+                                            {
+                                                SampleCode = req.Max(a => a.SampleCode)
+                                            }).FirstOrDefault();
+
+                if (latestYearSampleCode != null)
                 {
-                    NepaliDateType nepDate = DanpheDateConvertor.ConvertEngToNepDate(sampleCreatedOn);
-                    return sampleCode.ToString() + "/" + nepDate.Day.ToString();
+                    var maxCodeForThisType = (int)latestYearSampleCode.SampleCode;
+                    allMaxSampleCodesForEachType.Add(maxCodeForThisType);
                 }
-                else
+            }
+            //If the Reset is Daily
+            else if (currentSetting.ResetDaily)
+            {
+                var latestSampleCodeForThisType = (from smpl in allReqFilteredByCurrYear
+                                                   where smpl.SampleCreatedOn.Value.Date == currentDateTime.Value.Date
+                                                   group smpl by 1 into req
+                                                   select new
+                                                   {
+                                                       SampleCode = req.Max(a => a.SampleCode)
+                                                   }).FirstOrDefault();
+
+                if (latestSampleCodeForThisType != null)
                 {
-                    NepaliDateType nepDate = DanpheDateConvertor.ConvertEngToNepDate(sampleCreatedOn);
-                    return sampleCode.ToString() + "/" + nepDate.Year.ToString().Substring(1, 3);
+                    var maxCodeForThisType = (int)latestSampleCodeForThisType.SampleCode;
+                    allMaxSampleCodesForEachType.Add(maxCodeForThisType);
+                }
+            }
+            //If the Reset is Monthly
+            else if (currentSetting.ResetMonthly)
+            {
+                var latestYearSampleCode = (from smpl in allReqFilteredByCurrYear
+                                            where DanpheDateConvertor.ConvertEngToNepDate((DateTime)smpl.SampleCreatedOn).Month
+                                                == DanpheDateConvertor.ConvertEngToNepDate(System.DateTime.Now).Month
+                                            group smpl by 1 into req
+                                            select new
+                                            {
+                                                SampleCode = req.Max(a => a.SampleCode)
+                                            }).FirstOrDefault();
+
+                if (latestYearSampleCode != null)
+                {
+                    var maxCodeForThisType = (int)latestYearSampleCode.SampleCode;
+                    allMaxSampleCodesForEachType.Add(maxCodeForThisType);
                 }
 
             }
-            else if (visitType.ToLower() == "inpatient" || visitType.ToLower() == "emergency")
+
+
+            if (allMaxSampleCodesForEachType.Count > 0)
             {
-                if (RunNumberType.ToLower() == "normal")
+                newSampleSequence = allMaxSampleCodesForEachType.Max();
+            }
+
+            newSampleSequence = newSampleSequence + 1;
+            return newSampleSequence;
+        }
+
+        //Anish: 30 Aug 2019 : SampleCode Logic Rendered from Format setting table present in the Cache
+        public string GetSampleCodeFormatted(int? sampleCode, DateTime sampleCreatedOn,
+            string visitType, string RunNumberType, bool isUnderInsurance = false)
+        {
+            visitType = visitType.ToLower();
+            RunNumberType = RunNumberType.ToLower();
+
+            //List<LabRunNumberSettingsModel> allLabRunNumberSettings = (List<LabRunNumberSettingsModel>)DanpheCache.GetMasterData(MasterDataEnum.LabRunNumberSettings);
+            LabRunNumberSettingsModel currentRunNumSetting = labRunNumberSettings.Where(st => st.RunNumberType == RunNumberType
+            && st.VisitType == visitType && st.UnderInsurance == isUnderInsurance).FirstOrDefault();
+
+
+            if (currentRunNumSetting != null && sampleCode != null)
+            {
+                var sampleLetter = currentRunNumSetting.StartingLetter;
+
+                if (String.IsNullOrWhiteSpace(sampleLetter))
                 {
-                    NepaliDateType nepDate = DanpheDateConvertor.ConvertEngToNepDate(sampleCreatedOn);
-                    return sampleCode.ToString() + "/" + nepDate.Day.ToString();
+                    sampleLetter = "";
+                }
+
+                var beforeSeparator = currentRunNumSetting.FormatInitialPart;
+                var separator = currentRunNumSetting.FormatSeparator;
+                var afterSeparator = currentRunNumSetting.FormatLastPart;
+
+                if (beforeSeparator == "num")
+                {
+                    if (afterSeparator.Contains("yy"))
+                    {
+                        var afterSeparatorLength = afterSeparator.Length;
+                        NepaliDateType nepDate = DanpheDateConvertor.ConvertEngToNepDate(sampleCreatedOn);
+                        return sampleLetter + sampleCode.ToString() + separator + nepDate.Year.ToString().Substring(1, afterSeparatorLength);
+                    }
+                    else if (afterSeparator.Contains("dd"))
+                    {
+                        NepaliDateType nepDate = DanpheDateConvertor.ConvertEngToNepDate(sampleCreatedOn);
+                        return sampleLetter + sampleCode.ToString() + separator + nepDate.Day.ToString();
+                    }
+                    else if (afterSeparator.Contains("mm"))
+                    {
+                        NepaliDateType nepDate = DanpheDateConvertor.ConvertEngToNepDate(sampleCreatedOn);
+                        return sampleLetter + sampleCode.ToString() + separator + nepDate.Month.ToString();
+                    }
+                    else
+                    {
+                        return sampleLetter + sampleCode;
+                    }
                 }
                 else
                 {
-                    NepaliDateType nepDate = DanpheDateConvertor.ConvertEngToNepDate(sampleCreatedOn);
-                    return sampleCode.ToString() + "/" + nepDate.Year.ToString().Substring(1, 3);
+                    if (beforeSeparator.Contains("yy"))
+                    {
+                        var beforeSeparatorLength = beforeSeparator.Length;
+                        NepaliDateType nepDate = DanpheDateConvertor.ConvertEngToNepDate(sampleCreatedOn);
+                        return sampleLetter + nepDate.Year.ToString().Substring(1, beforeSeparatorLength) + separator + sampleCode.ToString();
+                    }
+                    else if (beforeSeparator.Contains("dd"))
+                    {
+                        NepaliDateType nepDate = DanpheDateConvertor.ConvertEngToNepDate(sampleCreatedOn);
+                        return sampleLetter + nepDate.Day.ToString() + separator + sampleCode.ToString();
+                    }
+                    else if (beforeSeparator.Contains("mm"))
+                    {
+                        NepaliDateType nepDate = DanpheDateConvertor.ConvertEngToNepDate(sampleCreatedOn);
+                        return sampleLetter + nepDate.Month.ToString() + separator + sampleCode.ToString();
+                    }
+                    else
+                    {
+                        return sampleLetter + sampleCode;
+                    }
                 }
+
+
             }
             else
             {
-                return "Cannot Get Samplecode";
+                throw new ArgumentException("Cannot Get Samplecode. Didnt Found Any Format");
             }
-
         }
 
         //Suraj:06Sep2018 ReportTemplateId could be updated in case of html template.
@@ -4110,16 +3317,29 @@ namespace DanpheEMR.Controllers
                         foreach (var comp in updatedComps_Client)
                         {
                             LabTestComponentResult dbComp = requisitionsComps_Db.Where(c => c.TestComponentResultId == comp.TestComponentResultId).FirstOrDefault();
+
+                            if ((dbComp.Value != comp.Value) || (dbComp.Range != comp.Range) || (dbComp.RangeDescription != comp.RangeDescription)
+                                || (dbComp.Remarks != comp.Remarks) || (dbComp.IsNegativeResult != comp.IsNegativeResult))
+                            {
+                                dbComp.ModifiedOn = DateTime.Now;
+                                dbComp.ModifiedBy = currentUser.EmployeeId;
+                                dbContext.Entry(dbComp).Property(a => a.ModifiedOn).IsModified = true;
+                                dbContext.Entry(dbComp).Property(a => a.ModifiedBy).IsModified = true;
+                            }
+
                             dbComp.Value = comp.Value;
                             dbComp.Range = comp.Range;
                             dbComp.RangeDescription = comp.RangeDescription;
                             dbComp.Remarks = comp.Remarks;
                             dbComp.IsAbnormal = comp.IsAbnormal;
                             dbComp.AbnormalType = comp.AbnormalType;
-                            dbComp.ModifiedOn = DateTime.Now;
-                            dbComp.ModifiedBy = currentUser.EmployeeId;
                             dbComp.IsActive = true;
                             dbComp.IsNegativeResult = comp.IsNegativeResult;
+                            dbComp.ResultGroup = comp.ResultGroup;
+
+
+
+
 
                             dbContext.Entry(dbComp).Property(a => a.Value).IsModified = true;
                             dbContext.Entry(dbComp).Property(a => a.IsNegativeResult).IsModified = true;
@@ -4128,9 +3348,8 @@ namespace DanpheEMR.Controllers
                             dbContext.Entry(dbComp).Property(a => a.IsAbnormal).IsModified = true;
                             dbContext.Entry(dbComp).Property(a => a.AbnormalType).IsModified = true;
                             dbContext.Entry(dbComp).Property(a => a.Remarks).IsModified = true;
-                            dbContext.Entry(dbComp).Property(a => a.ModifiedOn).IsModified = true;
-                            dbContext.Entry(dbComp).Property(a => a.ModifiedBy).IsModified = true;
                             dbContext.Entry(dbComp).Property(a => a.IsActive).IsModified = true;
+                            dbContext.Entry(dbComp).Property(a => a.ResultGroup).IsModified = true;
                         }
                     }
 
@@ -4179,7 +3398,7 @@ namespace DanpheEMR.Controllers
                 }
                 else
                 {
-                    if (billingstatus.ToLower() == "paid" || billingstatus.ToLower() == "unpaid")
+                    if (billingstatus.ToLower() == "paid" || billingstatus.ToLower() == "unpaid" || visittype.ToLower() == "emergency")
                     {
                         return true;
                     }
@@ -4191,376 +3410,518 @@ namespace DanpheEMR.Controllers
             }
         }
 
+        private List<LabPendingResultVM> GetAllHTMLLabPendingResults(LabDbContext labDbContext,
+            int BarcodeNumber = 0,
+            int SampleNumber = 0, int SampleCode = 0, DateTime EnglishDateToday = default(DateTime),
+            int PatientId = 0)
+        {
+
+
+            var htmlPendingResult = (from req in labDbContext.Requisitions
+                                     join test in labDbContext.LabTests on req.LabTestId equals test.LabTestId
+                                     join template in labDbContext.LabReportTemplates on req.ReportTemplateId equals template.ReportTemplateID
+                                     join patient in labDbContext.Patients on req.PatientId equals patient.PatientId
+                                     where req.OrderStatus.ToLower() == ENUM_LabOrderStatus.Pending // "pending"
+                                     && req.SampleCode != null
+                                     && req.BillingStatus.ToLower() != ENUM_BillingStatus.cancel // "cancel" 
+                                     && req.BillingStatus.ToLower() != ENUM_BillingStatus.returned // "returned"
+                                     && (BarcodeNumber == 0 ? true : (req.BarCodeNumber == BarcodeNumber))
+                                     && (SampleNumber == 0 ? true : (req.SampleCode.HasValue ? (req.SampleCode == SampleNumber) : false))
+                                     && (PatientId == 0 ? true : (req.PatientId == PatientId))
+                                     //&& (req.BillingStatus == "paid" || (req.BillingStatus == "provisional" && req.VisitType == "inpatient"))
+                                     && (template.TemplateType.ToLower() == ENUM_LabTemplateType.html) // "html")
+                                     //ashim: 01Sep2018 : updated group by logic: we're now grouping by samplecode and patient
+                                     group new { req, test, template } by new
+                                     {
+                                         patient,
+                                         req.SampleCode,
+                                         DbFunctions.TruncateTime(req.SampleCreatedOn).Value,
+                                         req.VisitType,
+                                         req.RequisitionId,
+                                         req.RunNumberType,
+                                         req.BarCodeNumber,
+                                         req.WardName
+                                     } into grp
+                                     select new LabPendingResultVM
+                                     {
+                                         PatientId = grp.Key.patient.PatientId,
+                                         PatientCode = grp.Key.patient.PatientCode,
+                                         DateOfBirth = grp.Key.patient.DateOfBirth,
+                                         PhoneNumber = grp.Key.patient.PhoneNumber,
+                                         Gender = grp.Key.patient.Gender,
+                                         PatientName = grp.Key.patient.FirstName + " " + (string.IsNullOrEmpty(grp.Key.patient.MiddleName) ? "" : grp.Key.patient.MiddleName + " ") + grp.Key.patient.LastName,
+
+                                         SampleCode = grp.Key.SampleCode,
+                                         SampleDate = grp.Key.Value,
+                                         VisitType = grp.Key.VisitType,
+                                         RunNumType = grp.Key.RunNumberType,
+                                         BarCodeNumber = grp.Key.BarCodeNumber,
+                                         WardName = grp.Key.WardName,
+                                         Tests = grp.Select(a =>
+                                         new LabPendingResultVM.LabTestDetail()
+                                         {
+                                             RequisitionId = a.req.RequisitionId,
+                                             TestName = a.test.LabTestName,
+                                             LabTestId = a.test.LabTestId,
+                                             ReportTemplateId = a.template.ReportTemplateID,
+                                             ReportTemplateShortName = a.template.ReportTemplateShortName,
+                                             RunNumberType = a.req.RunNumberType,
+                                             BillingStatus = a.req.BillingStatus
+                                         }).OrderBy(req => req.RequisitionId).ToList()
+                                     }).OrderByDescending(d => d.SampleDate).ThenByDescending(c => c.SampleCode).ToList();
+
+            return htmlPendingResult;
+        }
+
+
+        private List<LabPendingResultVM> GetAllNormalLabPendingResults(LabDbContext labDbContext,
+            int BarcodeNumber = 0,
+            int SampleNumber = 0, int SampleCode = 0, DateTime EnglishDateToday = default(DateTime),
+            int PatientId = 0)
+        {
+
+            var normalPendingResults = (from req in labDbContext.Requisitions
+                                        join test in labDbContext.LabTests on req.LabTestId equals test.LabTestId
+                                        join template in labDbContext.LabReportTemplates on req.ReportTemplateId equals template.ReportTemplateID
+                                        join patient in labDbContext.Patients on req.PatientId equals patient.PatientId
+                                        where req.OrderStatus.ToLower() == ENUM_LabOrderStatus.Pending //"pending"
+                                        && req.SampleCode != null
+                                        && req.BillingStatus.ToLower() != ENUM_BillingStatus.cancel //"cancel"
+                                        && req.BillingStatus.ToLower() != ENUM_BillingStatus.returned //"returned"
+                                        && (BarcodeNumber == 0 ? true : (req.BarCodeNumber == BarcodeNumber))
+                                        && (SampleNumber == 0 ? true : (req.SampleCode.HasValue ? (req.SampleCode == SampleNumber) : false))
+
+                                        && (PatientId == 0 ? true : (req.PatientId == PatientId))
+                                        //Removed as all can add result but cannot Print Report Until Bill is Paid (incase of OP)
+                                        //&& (req.BillingStatus == "paid" || (req.BillingStatus == "provisional" && req.VisitType == "inpatient"))
+                                        //&& (template.TemplateType.ToLower() == "normal" || template.TemplateType.ToLower() == "culture")
+                                          && (template.TemplateType.ToLower() == ENUM_LabTemplateType.normal || template.TemplateType.ToLower() == ENUM_LabTemplateType.culture)
+                                        //ashim: 01Sep2018 : updated group by logic: we're now grouping by samplecode and patient
+                                        group new { req, test, template } by new
+                                        {
+                                            patient,
+                                            req.SampleCode,
+                                            DbFunctions.TruncateTime(req.SampleCreatedOn).Value,
+                                            req.VisitType,
+                                            req.RunNumberType,
+                                            req.BarCodeNumber,
+                                            req.WardName
+                                        } into grp
+                                        select new LabPendingResultVM
+                                        {
+                                            PatientId = grp.Key.patient.PatientId,
+                                            PatientCode = grp.Key.patient.PatientCode,
+                                            DateOfBirth = grp.Key.patient.DateOfBirth,
+                                            PhoneNumber = grp.Key.patient.PhoneNumber,
+                                            Gender = grp.Key.patient.Gender,
+                                            PatientName = grp.Key.patient.FirstName + " " + (string.IsNullOrEmpty(grp.Key.patient.MiddleName) ? "" : grp.Key.patient.MiddleName + " ") + grp.Key.patient.LastName,
+
+                                            SampleCode = grp.Key.SampleCode,
+                                            SampleDate = grp.Key.Value,
+                                            VisitType = grp.Key.VisitType,
+                                            RunNumType = grp.Key.RunNumberType,
+                                            BarCodeNumber = grp.Key.BarCodeNumber,
+                                            WardName = grp.Key.WardName,
+                                            Tests = grp.Select(a =>
+                                            new LabPendingResultVM.LabTestDetail()
+                                            {
+                                                RequisitionId = a.req.RequisitionId,
+                                                TestName = a.test.LabTestName,
+                                                LabTestId = a.test.LabTestId,
+                                                ReportTemplateId = a.template.ReportTemplateID,
+                                                ReportTemplateShortName = a.template.ReportTemplateShortName,
+                                                BillingStatus = a.req.BillingStatus
+                                            }).OrderBy(req => req.RequisitionId).ToList()
+                                        }).OrderByDescending(d => d.SampleDate).ThenByDescending(c => c.SampleCode).ToList();
+
+            return normalPendingResults;
+
+        }
+
+        private List<LabPendingResultVM> GetAllHTMLLabPendingReports(LabDbContext labDbContext,
+            int BarcodeNumber = 0,
+            int SampleNumber = 0, int SampleCode = 0, DateTime EnglishDateToday = default(DateTime),
+            int PatientId = 0, DateTime? StartDate = null, DateTime? EndDate = null)
+        {
+
+            var verificationParameter = (from param in labDbContext.AdminParameters
+                                         where param.ParameterGroupName.ToLower() == "lab" && param.ParameterName == "LabReportVerificationNeededB4Print"
+                                         select param.ParameterValue).FirstOrDefault();
+
+            var verificationObj = DanpheJSONConvert.DeserializeObject<VerificationCoreCFGModel>(verificationParameter);
+
+            bool verificationRequired = verificationObj.EnableVerificationStep;
+            int verificationLevel = verificationObj.VerificationLevel.Value;
+
+            bool filterByDate = true;
+
+            if (StartDate == null || EndDate == null)
+            {
+                filterByDate = false;
+            }
+
+            var htmlPendingReports = (from req in labDbContext.Requisitions
+                                      join test in labDbContext.LabTests on req.LabTestId equals test.LabTestId
+                                      join template in labDbContext.LabReportTemplates on req.ReportTemplateId equals template.ReportTemplateID
+                                      join patient in labDbContext.Patients on req.PatientId equals patient.PatientId
+                                      where req.OrderStatus.ToLower() == ENUM_LabOrderStatus.ResultAdded // "result-added"
+                                      && (BarcodeNumber == 0 ? true : (req.BarCodeNumber == BarcodeNumber))
+                                      && (SampleNumber == 0 ? true : (req.SampleCode.HasValue ? (req.SampleCode == SampleNumber) : false))
+                                      && (filterByDate ? (req.ResultAddedOn.HasValue && DbFunctions.TruncateTime(req.ResultAddedOn.Value) >= StartDate && DbFunctions.TruncateTime(req.ResultAddedOn.Value) <= EndDate) : true)
+                                      && (PatientId == 0 ? true : (req.PatientId == PatientId))
+                                      && req.BillingStatus.ToLower() != ENUM_BillingStatus.cancel //"cancel" 
+                                      && (req.BillingStatus.ToLower() != ENUM_BillingStatus.returned)//"returned")
+                                      && (template.TemplateType.ToLower() == ENUM_LabTemplateType.html)// "html")
+                                      group new { req, template, patient, test } by new
+                                      {
+                                          patient,
+                                          req,
+                                          req.RunNumberType,
+                                          req.BarCodeNumber,
+                                          req.WardName
+                                      } into grp
+                                      select new LabPendingResultVM
+                                      {
+                                          PatientId = grp.Key.patient.PatientId,
+                                          PatientCode = grp.Key.patient.PatientCode,
+                                          DateOfBirth = grp.Key.patient.DateOfBirth,
+                                          PhoneNumber = grp.Key.patient.PhoneNumber,
+                                          Gender = grp.Key.patient.Gender,
+                                          PatientName = grp.Key.patient.FirstName + " " + (string.IsNullOrEmpty(grp.Key.patient.MiddleName) ? "" : grp.Key.patient.MiddleName + " ") + grp.Key.patient.LastName,
+
+                                          SampleCode = grp.Key.req.SampleCode,
+                                          SampleDate = DbFunctions.TruncateTime(grp.Key.req.SampleCreatedOn).Value,
+                                          VisitType = grp.Key.req.VisitType,
+                                          RunNumType = grp.Key.RunNumberType,
+                                          BarCodeNumber = grp.Key.BarCodeNumber,
+                                          WardName = grp.Key.WardName,
+                                          Tests = (from requisition in labDbContext.Requisitions
+                                                   join test in labDbContext.LabTests on requisition.LabTestId equals test.LabTestId
+                                                   where requisition.PatientId == grp.Key.patient.PatientId
+                                                    && requisition.RequisitionId == grp.Key.req.RequisitionId
+                                                    && requisition.BarCodeNumber == grp.Key.BarCodeNumber
+                                                    && requisition.WardName == grp.Key.WardName
+                                                    && requisition.RunNumberType == grp.Key.RunNumberType
+                                                    && requisition.BillingStatus.ToLower() != ENUM_BillingStatus.cancel //"cancel" 
+                                                    && requisition.BillingStatus.ToLower() != ENUM_BillingStatus.returned //"returned"
+                                                    && requisition.OrderStatus.ToLower() == ENUM_LabOrderStatus.ResultAdded// "result-added"
+                                                                                                                           //group requisition by new { test } into g
+                                                   select new LabPendingResultVM.LabTestDetail
+                                                   {
+                                                       RequisitionId = requisition.RequisitionId,
+                                                       LabTestId = requisition.LabTestId,
+                                                       TestName = requisition.LabTestName,
+                                                       BillingStatus = requisition.BillingStatus,
+                                                       LabReportId = requisition.LabReportId
+                                                       //RequisitionId = g.Select(a => a.RequisitionId).FirstOrDefault(),
+                                                       //LabTestId = g.Key.test.LabTestId,
+                                                       //TestName = g.Key.test.LabTestName
+                                                   }).ToList()
+                                      }).OrderByDescending(d => d.SampleDate).ThenByDescending(x => x.SampleCode).ThenByDescending(a => a.PatientId).ToList();
+
+            foreach (var rep in htmlPendingReports)
+            {
+                rep.SampleCodeFormatted = GetSampleCodeFormatted(rep.SampleCode, rep.SampleDate ?? default(DateTime), rep.VisitType, rep.RunNumType);
+            }
+            return htmlPendingReports;
+
+        }
+
+        private List<LabPendingResultVM> GetAllNormalLabPendingReports(LabDbContext labDbContext,
+            int BarcodeNumber = 0,
+            int SampleNumber = 0, int SampleCode = 0, DateTime EnglishDateToday = default(DateTime),
+            int PatientId = 0, DateTime? StartDate = null, DateTime? EndDate = null)
+        {
+            var verificationParameter = (from param in labDbContext.AdminParameters
+                                         where param.ParameterGroupName.ToLower() == "lab" && param.ParameterName == "LabReportVerificationNeededB4Print"
+                                         select param.ParameterValue).FirstOrDefault();
+
+            var verificationObj = DanpheJSONConvert.DeserializeObject<VerificationCoreCFGModel>(verificationParameter);
+
+            bool verificationRequired = verificationObj.EnableVerificationStep;
+            int verificationLevel = verificationObj.VerificationLevel.Value;
+
+            bool filterByDate = true;
+
+            if (StartDate == null || EndDate == null)
+            {
+                filterByDate = false;
+            }
+
+            var normalPendingReports = (from req in labDbContext.Requisitions
+                                        join test in labDbContext.LabTests on req.LabTestId equals test.LabTestId
+                                        join template in labDbContext.LabReportTemplates on req.ReportTemplateId equals template.ReportTemplateID
+                                        join patient in labDbContext.Patients on req.PatientId equals patient.PatientId
+                                        where (verificationRequired ? (req.OrderStatus.ToLower() == ENUM_LabOrderStatus.ResultAdded //"result-added" 
+                                        && (req.IsVerified.HasValue ? req.IsVerified == false : true)) : req.OrderStatus.ToLower() == ENUM_LabOrderStatus.ResultAdded) // "result-added"
+                                        && (BarcodeNumber == 0 ? true : (req.BarCodeNumber == BarcodeNumber))
+                                        && (SampleNumber == 0 ? true : (req.SampleCode.HasValue ? (req.SampleCode == SampleNumber) : false))
+                                        && (filterByDate ? (req.ResultAddedOn.HasValue && DbFunctions.TruncateTime(req.ResultAddedOn.Value) >= StartDate && DbFunctions.TruncateTime(req.ResultAddedOn.Value) <= EndDate) : true)
+                                        && (PatientId == 0 ? true : (req.PatientId == PatientId))
+                                        && req.BillingStatus.ToLower() != ENUM_BillingStatus.cancel //"cancel" 
+                                        && req.BillingStatus.ToLower() != ENUM_BillingStatus.returned //"returned"
+                                        //&& (template.TemplateType.ToLower() == "normal" || template.TemplateType.ToLower() == "culture")
+                                        && (template.TemplateType.ToLower() == ENUM_LabTemplateType.normal || template.TemplateType.ToLower() == ENUM_LabTemplateType.culture)
+                                        group new { req, template, patient, test } by new
+                                        {
+                                            patient,
+                                            req.SampleCode,
+                                            DbFunctions.TruncateTime(req.SampleCreatedOn).Value,
+                                            req.VisitType,
+                                            req.RunNumberType,
+                                            req.BarCodeNumber,
+                                            req.WardName,
+                                            req.LabReportId
+                                        } into grp
+                                        select new LabPendingResultVM
+                                        {
+                                            PatientId = grp.Key.patient.PatientId,
+                                            PatientCode = grp.Key.patient.PatientCode,
+                                            DateOfBirth = grp.Key.patient.DateOfBirth,
+                                            PhoneNumber = grp.Key.patient.PhoneNumber,
+                                            Gender = grp.Key.patient.Gender,
+                                            PatientName = grp.Key.patient.FirstName + " " + (string.IsNullOrEmpty(grp.Key.patient.MiddleName) ? "" : grp.Key.patient.MiddleName + " ") + grp.Key.patient.LastName,
+
+                                            SampleCode = grp.Key.SampleCode,
+                                            SampleDate = grp.Key.Value,
+                                            VisitType = grp.Key.VisitType,
+                                            RunNumType = grp.Key.RunNumberType,
+                                            BarCodeNumber = grp.Key.BarCodeNumber,
+                                            WardName = grp.Key.WardName,
+                                            Tests = (from requisition in labDbContext.Requisitions
+                                                     join test in labDbContext.LabTests on requisition.LabTestId equals test.LabTestId
+                                                     join template in labDbContext.LabReportTemplates on requisition.ReportTemplateId equals template.ReportTemplateID
+                                                     where requisition.PatientId == grp.Key.patient.PatientId
+                                                    && requisition.SampleCode == grp.Key.SampleCode
+                                                    && requisition.VisitType == grp.Key.VisitType
+                                                    && requisition.WardName == grp.Key.WardName
+                                                    && requisition.BarCodeNumber == grp.Key.BarCodeNumber
+                                                    && requisition.RunNumberType == grp.Key.RunNumberType
+                                                    && requisition.LabReportId == grp.Key.LabReportId
+                                                    && DbFunctions.TruncateTime(requisition.SampleCreatedOn).Value == grp.Key.Value
+                                                    && requisition.OrderStatus.ToLower() == ENUM_LabOrderStatus.ResultAdded // "result-added"
+                                                    && requisition.BillingStatus.ToLower() != ENUM_BillingStatus.cancel //"cancel" 
+                                                    && requisition.BillingStatus.ToLower() != ENUM_BillingStatus.returned //"returned"
+                                                    && (template.TemplateType.ToLower() == ENUM_LabTemplateType.normal // "normal" 
+                                                    || template.TemplateType.ToLower() == ENUM_LabTemplateType.culture // "culture"
+                                                    )
+                                                     // group new { requisition }   by new { requisition, test } into g
+                                                     select new LabPendingResultVM.LabTestDetail
+                                                     {
+                                                         RequisitionId = requisition.RequisitionId,
+                                                         LabTestId = requisition.LabTestId,
+                                                         TestName = requisition.LabTestName,
+                                                         BillingStatus = requisition.BillingStatus,
+                                                         LabReportId = requisition.LabReportId
+                                                     }).Distinct().ToList()
+                                        }).OrderByDescending(d => d.SampleDate).ThenByDescending(x => x.SampleCode).ThenByDescending(a => a.PatientId).ToList();
+
+            foreach (var repNormal in normalPendingReports)
+            {
+                repNormal.SampleCodeFormatted = GetSampleCodeFormatted(repNormal.SampleCode, repNormal.SampleDate ?? default(DateTime), repNormal.VisitType, repNormal.RunNumType);
+            }
+            return normalPendingReports;
+        }
+
+        private List<LabPendingResultVM> GetAllLabProvisionalFinalReports(LabDbContext labDbContext,
+            int BarcodeNumber = 0,
+            int SampleNumber = 0, int SampleCode = 0, DateTime EnglishDateToday = default(DateTime),
+            int PatientId = 0, DateTime? StartDate = null, DateTime? EndDate = null)
+        {
+            bool filterByDate = true;
+
+            if (StartDate == null || EndDate == null)
+            {
+                filterByDate = false;
+            }
+            var finalReportsProv = (from req in labDbContext.Requisitions
+                                    join report in labDbContext.LabReports on req.LabReportId equals report.LabReportId
+                                    join test in labDbContext.LabTests on req.LabTestId equals test.LabTestId
+                                    join patient in labDbContext.Patients on req.PatientId equals patient.PatientId
+                                    where req.OrderStatus == ENUM_LabOrderStatus.ReportGenerated // "report-generated"
+                                    && (BarcodeNumber == 0 ? true : (req.BarCodeNumber == BarcodeNumber))
+                                    && (SampleNumber == 0 ? true : (req.SampleCode.HasValue ? (req.SampleCode == SampleNumber) : false))
+
+                                    && (PatientId == 0 ? true : (req.PatientId == PatientId))
+                                    && req.BillingStatus == ENUM_BillingStatus.provisional // "provisional"
+                                    && (filterByDate ? (report.CreatedOn.HasValue && DbFunctions.TruncateTime(report.CreatedOn.Value) >= StartDate && DbFunctions.TruncateTime(report.CreatedOn.Value) <= EndDate) : true)
+                                    group new { req, patient, test } by new
+                                    {
+                                        patient,
+                                        req.SampleCode,
+                                        req.SampleCodeFormatted,
+                                        req.LabReportId,
+                                        DbFunctions.TruncateTime(req.SampleCreatedOn).Value,
+                                        req.VisitType,
+                                        req.RunNumberType,
+                                        report.IsPrinted,
+                                        req.BarCodeNumber,
+                                        req.WardName
+                                    } into grp
+                                    select new LabPendingResultVM
+                                    {
+                                        PatientId = grp.Key.patient.PatientId,
+                                        PatientCode = grp.Key.patient.PatientCode,
+                                        DateOfBirth = grp.Key.patient.DateOfBirth,
+                                        PhoneNumber = grp.Key.patient.PhoneNumber,
+                                        Gender = grp.Key.patient.Gender,
+                                        PatientName = grp.Key.patient.FirstName + " " + (string.IsNullOrEmpty(grp.Key.patient.MiddleName) ? "" : grp.Key.patient.MiddleName + " ") + grp.Key.patient.LastName,
+
+                                        SampleCode = grp.Key.SampleCode,
+                                        SampleDate = grp.Key.Value,
+                                        SampleCodeFormatted = grp.Key.SampleCodeFormatted,
+                                        //SampleCodeFormatted = "",
+                                        VisitType = grp.Key.VisitType,
+                                        RunNumType = grp.Key.RunNumberType,
+                                        IsPrinted = grp.Key.IsPrinted,
+                                        BillingStatus = ENUM_BillingStatus.provisional, // "provisional",
+                                        BarCodeNumber = grp.Key.BarCodeNumber,
+                                        ReportId = grp.Key.LabReportId,
+                                        WardName = grp.Key.WardName,
+                                        ReportGeneratedBy = (from labRep in labDbContext.LabReports
+                                                             join employee in labDbContext.Employee
+                                                             on labRep.CreatedBy equals employee.EmployeeId
+                                                             where labRep.LabReportId == grp.Key.LabReportId
+                                                             select employee.FirstName + " " + (string.IsNullOrEmpty(employee.MiddleName) ? "" : employee.MiddleName + " ") + employee.LastName).FirstOrDefault(),
+
+
+                                        Tests = (from requisition in labDbContext.Requisitions
+                                                 join test in labDbContext.LabTests on requisition.LabTestId equals test.LabTestId
+                                                 where requisition.PatientId == grp.Key.patient.PatientId
+                                                 && requisition.SampleCode == grp.Key.SampleCode
+                                                 && DbFunctions.TruncateTime(requisition.SampleCreatedOn).Value == grp.Key.Value
+                                                 && requisition.OrderStatus == ENUM_LabOrderStatus.ReportGenerated // "report-generated"
+                                                 && requisition.LabReportId == grp.Key.LabReportId
+                                                 && requisition.VisitType == grp.Key.VisitType
+                                                 && requisition.BarCodeNumber == grp.Key.BarCodeNumber
+                                                 && requisition.WardName == grp.Key.WardName
+                                                 && requisition.BillingStatus == ENUM_BillingStatus.provisional // "provisional"
+
+                                                 select new LabPendingResultVM.LabTestDetail
+                                                 {
+                                                     RequisitionId = requisition.RequisitionId,
+                                                     LabTestId = requisition.LabTestId,
+                                                     TestName = requisition.LabTestName,
+                                                     SampleCollectedBy = requisition.SampleCreatedBy,
+                                                     VerifiedBy = requisition.VerifiedBy,
+                                                     ResultAddedBy = requisition.ResultAddedBy,
+                                                     PrintCount = requisition.PrintCount == null ? 0 : requisition.PrintCount,
+                                                     PrintedBy = requisition.PrintedBy,
+                                                     BillingStatus = requisition.BillingStatus,
+                                                     LabCategoryId = (from test in labDbContext.LabTests
+                                                                      where test.LabTestId == requisition.LabTestId
+                                                                      select test.LabTestCategoryId).FirstOrDefault()
+                                                 }).ToList()
+                                    }).OrderByDescending(d => d.SampleDate).ThenByDescending(x => x.SampleCode).ThenByDescending(a => a.PatientId).ToList();
+
+            return finalReportsProv;
+        }
+
+        private List<LabPendingResultVM> GetAllLabPaidUnpaidFinalReports(LabDbContext labDbContext,
+            int BarcodeNumber = 0,
+            int SampleNumber = 0, int SampleCode = 0, DateTime EnglishDateToday = default(DateTime),
+            int PatientId = 0, DateTime? StartDate = null, DateTime? EndDate = null)
+        {
+            bool filterByDate = true;
+
+            if (StartDate == null || EndDate == null)
+            {
+                filterByDate = false;
+            }
 
 
 
+            var finalReportsPaidUnpaid = (from req in labDbContext.Requisitions
+                                          join report in labDbContext.LabReports on req.LabReportId equals report.LabReportId
+                                          join test in labDbContext.LabTests on req.LabTestId equals test.LabTestId
+                                          join patient in labDbContext.Patients on req.PatientId equals patient.PatientId
+                                          where req.OrderStatus == ENUM_LabOrderStatus.ReportGenerated //"report-generated"
+                                          && (BarcodeNumber == 0 ? true : (req.BarCodeNumber == BarcodeNumber))
+                                          && (SampleNumber == 0 ? true : (req.SampleCode.HasValue ? (req.SampleCode == SampleNumber) : false))
+                                          && (PatientId == 0 ? true : (req.PatientId == PatientId))
+                                          && (req.BillingStatus.ToLower() == ENUM_BillingStatus.paid // "paid" 
+                                          || req.BillingStatus.ToLower() == ENUM_BillingStatus.unpaid // "unpaid"
+                                          )
+                                          && (filterByDate ? (report.CreatedOn.HasValue && DbFunctions.TruncateTime(report.CreatedOn.Value) >= StartDate && DbFunctions.TruncateTime(report.CreatedOn.Value) <= EndDate) : true)
+                                          group new { req, patient, test } by new
+                                          {
+                                              patient,
+                                              req.SampleCode,
+                                              req.SampleCodeFormatted,
+                                              req.LabReportId,
+                                              DbFunctions.TruncateTime(req.SampleCreatedOn).Value,
+                                              req.VisitType,
+                                              req.RunNumberType,
+                                              report.IsPrinted,
+                                              req.BarCodeNumber,
+                                              req.WardName
+                                          } into grp
+                                          select new LabPendingResultVM
+                                          {
+                                              PatientId = grp.Key.patient.PatientId,
+                                              PatientCode = grp.Key.patient.PatientCode,
+                                              DateOfBirth = grp.Key.patient.DateOfBirth,
+                                              PhoneNumber = grp.Key.patient.PhoneNumber,
+                                              Gender = grp.Key.patient.Gender,
+                                              PatientName = grp.Key.patient.FirstName + " " + (string.IsNullOrEmpty(grp.Key.patient.MiddleName) ? "" : grp.Key.patient.MiddleName + " ") + grp.Key.patient.LastName,
+
+                                              SampleCode = grp.Key.SampleCode,
+                                              SampleDate = grp.Key.Value,
+                                              SampleCodeFormatted = grp.Key.SampleCodeFormatted,
+                                              //SampleCodeFormatted = "",
+                                              VisitType = grp.Key.VisitType,
+                                              RunNumType = grp.Key.RunNumberType,
+                                              IsPrinted = grp.Key.IsPrinted,
+                                              BillingStatus = "paid",
+                                              BarCodeNumber = grp.Key.BarCodeNumber,
+                                              ReportId = grp.Key.LabReportId,
+                                              WardName = grp.Key.WardName,
+                                              ReportGeneratedBy = (from labRep in labDbContext.LabReports
+                                                                   join employee in labDbContext.Employee
+                                                                   on labRep.CreatedBy equals employee.EmployeeId
+                                                                   where labRep.LabReportId == grp.Key.LabReportId
+                                                                   select employee.FirstName + " " + (string.IsNullOrEmpty(employee.MiddleName) ? "" : employee.MiddleName + " ") + employee.LastName).FirstOrDefault(),
+
+                                              Tests = (from requisition in labDbContext.Requisitions
+                                                       join test in labDbContext.LabTests on requisition.LabTestId equals test.LabTestId
+                                                       where requisition.PatientId == grp.Key.patient.PatientId
+                                                       && requisition.SampleCode == grp.Key.SampleCode
+                                                       && DbFunctions.TruncateTime(requisition.SampleCreatedOn).Value == grp.Key.Value
+                                                       && requisition.OrderStatus == ENUM_LabOrderStatus.ReportGenerated //"report-generated"
+                                                       && requisition.LabReportId == grp.Key.LabReportId
+                                                       && requisition.VisitType == grp.Key.VisitType
+                                                       && (requisition.BillingStatus == ENUM_BillingStatus.paid //"paid" 
+                                                       || requisition.BillingStatus == ENUM_BillingStatus.unpaid // "unpaid"
+                                                       )
+                                                       && requisition.BarCodeNumber == grp.Key.BarCodeNumber
+                                                       select new LabPendingResultVM.LabTestDetail
+                                                       {
+                                                           RequisitionId = requisition.RequisitionId,
+                                                           LabTestId = requisition.LabTestId,
+                                                           TestName = requisition.LabTestName,
+                                                           SampleCollectedBy = requisition.SampleCreatedBy,
+                                                           VerifiedBy = requisition.VerifiedBy,
+                                                           ResultAddedBy = requisition.ResultAddedBy,
+                                                           PrintCount = requisition.PrintCount == null ? 0 : requisition.PrintCount,
+                                                           PrintedBy = requisition.PrintedBy,
+                                                           BillingStatus = requisition.BillingStatus,
+                                                           LabCategoryId = (from test in labDbContext.LabTests
+                                                                            where test.LabTestId == requisition.LabTestId
+                                                                            select test.LabTestCategoryId).FirstOrDefault()
+                                                       }).ToList()
+                                          }).OrderByDescending(d => d.SampleDate).ThenByDescending(x => x.SampleCode).ThenByDescending(a => a.PatientId).ToList();
+
+            return finalReportsPaidUnpaid;
+        }
 
 
-
-        //Anish: 24 Nov'18 (Single Function that returns required AllLabData based on either BarCodeNumber or RunNumber and thus removes code redundancy)
-        //private LabMasterModel AllLabDataFromRunNumOrBarCode(LabDbContext labDbContext, int barcodeNumber=0, string formattedCode="0/0")
-        //{
-        //    LabMasterModel LabMasterData = new LabMasterModel();
-
-
-        //    string completeSampleCode = formattedCode;
-
-        //    var mainCode = formattedCode.Split('/');
-        //    int samplNumber = Convert.ToInt32(mainCode[0]);
-        //    int code = Convert.ToInt32(mainCode[1]);
-
-        //    if (formattedCode != "0/0")
-        //    {               
-
-        //        DateTime englishDateToday = DateTime.Now;
-        //        NepaliDateType nepaliDate = DanpheDateConvertor.ConvertEngToNepDate(englishDateToday);
-
-        //        if (code > 32)
-        //        {
-        //            nepaliDate.Year = 2000 + code;
-        //        }
-        //        else
-        //        {
-        //            nepaliDate.Day = code;
-        //        }
-
-        //        englishDateToday = DanpheDateConvertor.ConvertNepToEngDate(nepaliDate);
-
-        //    }
-
-        //    var reportWithHtmlTemplate = (from req in labDbContext.Requisitions
-        //                                  join test in labDbContext.LabTests on req.LabTestId equals test.LabTestId
-        //                                  join template in labDbContext.LabReportTemplates on req.ReportTemplateId equals template.ReportTemplateID
-        //                                  join patient in labDbContext.Patients on req.PatientId equals patient.PatientId
-        //                                  where req.OrderStatus.ToLower() == "pending"
-        //                                  && req.SampleCode != null
-        //                                  && req.BillingStatus.ToLower() != "cancel" && req.BillingStatus.ToLower() != "returned"
-        //                                  && (barcodeNumber == 0 ? true : (req.BarCodeNumber == barcodeNumber))
-        //                                  && (completeSampleCode == "0/0" ? true : (req.SampleCode.HasValue ? (req.SampleCode == samplNumber) : false) )
-        //                                  && (template.TemplateType.ToLower() == "html")
-
-        //                                  group new { req, test, template } by new
-        //                                  {
-        //                                      patient,
-        //                                      req.SampleCode,
-        //                                      DbFunctions.TruncateTime(req.SampleCreatedOn).Value,
-        //                                      req.VisitType,
-        //                                      req.RequisitionId,
-        //                                      req.RunNumberType,
-        //                                      req.BarCodeNumber,
-        //                                      req.WardName
-        //                                  } into grp
-        //                                  select new LabPendingResultVM
-        //                                  {
-        //                                      PatientId = grp.Key.patient.PatientId,
-        //                                      PatientCode = grp.Key.patient.PatientCode,
-        //                                      DateOfBirth = grp.Key.patient.DateOfBirth,
-        //                                      PhoneNumber = grp.Key.patient.PhoneNumber,
-        //                                      Gender = grp.Key.patient.Gender,
-        //                                      PatientName = grp.Key.patient.FirstName + " " + (string.IsNullOrEmpty(grp.Key.patient.MiddleName) ? "" : grp.Key.patient.MiddleName + " ") + grp.Key.patient.LastName,
-
-        //                                      SampleCode = grp.Key.SampleCode,
-        //                                      SampleDate = grp.Key.Value,
-        //                                      VisitType = grp.Key.VisitType,
-        //                                      RunNumType = grp.Key.RunNumberType,
-        //                                      BarCodeNumber = grp.Key.BarCodeNumber,
-        //                                      WardName = grp.Key.WardName,
-        //                                      Tests = grp.Select(a =>
-        //                                      new LabPendingResultVM.LabTestDetail()
-        //                                      {
-        //                                          RequisitionId = a.req.RequisitionId,
-        //                                          TestName = a.test.LabTestName,
-        //                                          LabTestId = a.test.LabTestId,
-        //                                          ReportTemplateId = a.template.ReportTemplateID,
-        //                                          ReportTemplateShortName = a.template.ReportTemplateShortName,
-        //                                          RunNumberType = a.req.RunNumberType
-        //                                      }).OrderBy(req => req.RequisitionId).ToList()
-        //                                  }).OrderByDescending(d => d.SampleDate).ThenByDescending(c => c.SampleCode).ToList();
-
-        //    var reportWithNormalEntry = (from req in labDbContext.Requisitions
-        //                                 join test in labDbContext.LabTests on req.LabTestId equals test.LabTestId
-        //                                 join template in labDbContext.LabReportTemplates on req.ReportTemplateId equals template.ReportTemplateID
-        //                                 join patient in labDbContext.Patients on req.PatientId equals patient.PatientId
-        //                                 where req.OrderStatus.ToLower() == "pending"
-        //                                 && req.BillingStatus.ToLower() != "cancel" && req.BillingStatus.ToLower() != "returned"
-        //                                 && (barcodeNumber == 0 ? true : (req.BarCodeNumber == barcodeNumber))
-        //                                 && (completeSampleCode == "0/0" ? true : (req.SampleCode.HasValue ? (req.SampleCode == samplNumber) : false))
-        //                                 && (template.TemplateType.ToLower() == "normal" || template.TemplateType.ToLower() == "culture")
-        //                                 group new { req, test, template } by new
-        //                                 {
-        //                                     patient,
-        //                                     req.SampleCode,
-        //                                     DbFunctions.TruncateTime(req.SampleCreatedOn).Value,
-        //                                     req.VisitType,
-        //                                     req.RunNumberType,
-        //                                     req.BarCodeNumber,
-        //                                     req.WardName
-        //                                 } into grp
-        //                                 select new LabPendingResultVM
-        //                                 {
-        //                                     PatientId = grp.Key.patient.PatientId,
-        //                                     PatientCode = grp.Key.patient.PatientCode,
-        //                                     DateOfBirth = grp.Key.patient.DateOfBirth,
-        //                                     PhoneNumber = grp.Key.patient.PhoneNumber,
-        //                                     Gender = grp.Key.patient.Gender,
-        //                                     PatientName = grp.Key.patient.FirstName + " " + (string.IsNullOrEmpty(grp.Key.patient.MiddleName) ? "" : grp.Key.patient.MiddleName + " ") + grp.Key.patient.LastName,
-
-        //                                     SampleCode = grp.Key.SampleCode,
-        //                                     SampleDate = grp.Key.Value,
-        //                                     VisitType = grp.Key.VisitType,
-        //                                     RunNumType = grp.Key.RunNumberType,
-        //                                     BarCodeNumber = grp.Key.BarCodeNumber,
-        //                                     WardName = grp.Key.WardName,
-        //                                     Tests = grp.Select(a =>
-        //                                     new LabPendingResultVM.LabTestDetail()
-        //                                     {
-        //                                         RequisitionId = a.req.RequisitionId,
-        //                                         TestName = a.test.LabTestName,
-        //                                         LabTestId = a.test.LabTestId,
-        //                                         ReportTemplateId = a.template.ReportTemplateID,
-        //                                         ReportTemplateShortName = a.template.ReportTemplateShortName
-        //                                     }).OrderBy(req => req.RequisitionId).ToList()
-        //                                 }).OrderByDescending(d => d.SampleDate).ThenByDescending(c => c.SampleCode).ToList();
-
-
-
-        //    foreach (var rep in reportWithHtmlTemplate)
-        //    {
-        //        rep.SampleCodeFormatted = GetSampleCodeFormatted(rep.SampleCode, rep.SampleDate ?? default(DateTime), rep.VisitType, rep.RunNumType);
-        //        if(barcodeNumber != 0)
-        //        {
-        //            LabMasterData.AddResult.Add(rep);
-        //        }
-        //        else 
-        //        {
-        //            if(rep.SampleCodeFormatted == completeSampleCode)
-        //            {
-        //                LabMasterData.AddResult.Add(rep);
-        //            }
-        //        }
-
-        //    }
-        //    foreach (var repNormal in reportWithNormalEntry)
-        //    {
-        //        repNormal.SampleCodeFormatted = GetSampleCodeFormatted(repNormal.SampleCode, repNormal.SampleDate ?? default(DateTime), repNormal.VisitType, repNormal.RunNumType);
-        //        if (barcodeNumber != 0)
-        //        {
-        //            LabMasterData.AddResult.Add(repNormal);
-        //        }
-        //        else
-        //        {
-        //            if (repNormal.SampleCodeFormatted == completeSampleCode)
-        //            {
-        //                LabMasterData.AddResult.Add(repNormal);
-        //            }
-        //        }
-        //    }
-
-        //    LabMasterData.AddResult = LabMasterData.AddResult.OrderByDescending(d => d.SampleDate).ThenByDescending(c => c.SampleCode).ToList();
-
-
-        //    var pendingNormalReports = (from req in labDbContext.Requisitions
-        //                                join test in labDbContext.LabTests on req.LabTestId equals test.LabTestId
-        //                                join template in labDbContext.LabReportTemplates on req.ReportTemplateId equals template.ReportTemplateID
-        //                                join patient in labDbContext.Patients on req.PatientId equals patient.PatientId
-        //                                where req.OrderStatus.ToLower() == "result-added"
-        //                                && req.BillingStatus.ToLower() != "cancel" && req.BillingStatus.ToLower() != "returned"
-        //                                && (barcodeNumber == 0 ? true : (req.BarCodeNumber == barcodeNumber))
-        //                                && (completeSampleCode == "0/0" ? true : (req.SampleCode.HasValue ? (req.SampleCode == samplNumber) : false))
-        //                                && (template.TemplateType.ToLower() == "normal" || template.TemplateType.ToLower() == "culture")
-        //                                group new { req, template, patient, test } by new
-        //                                {
-        //                                    patient,
-        //                                    req.SampleCode,
-        //                                    DbFunctions.TruncateTime(req.SampleCreatedOn).Value,
-        //                                    req.VisitType,
-        //                                    req.RunNumberType,
-        //                                    req.BarCodeNumber,
-        //                                    req.WardName
-        //                                } into grp
-        //                                select new LabPendingResultVM
-        //                                {
-        //                                    PatientId = grp.Key.patient.PatientId,
-        //                                    PatientCode = grp.Key.patient.PatientCode,
-        //                                    DateOfBirth = grp.Key.patient.DateOfBirth,
-        //                                    PhoneNumber = grp.Key.patient.PhoneNumber,
-        //                                    Gender = grp.Key.patient.Gender,
-        //                                    PatientName = grp.Key.patient.FirstName + " " + (string.IsNullOrEmpty(grp.Key.patient.MiddleName) ? "" : grp.Key.patient.MiddleName + " ") + grp.Key.patient.LastName,
-
-        //                                    SampleCode = grp.Key.SampleCode,
-        //                                    SampleDate = grp.Key.Value,
-        //                                    VisitType = grp.Key.VisitType,
-        //                                    RunNumType = grp.Key.RunNumberType,
-        //                                    BarCodeNumber = grp.Key.BarCodeNumber,
-        //                                    WardName = grp.Key.WardName,
-        //                                    Tests = (from requisition in labDbContext.Requisitions
-        //                                             join test in labDbContext.LabTests on requisition.LabTestId equals test.LabTestId
-        //                                             join template in labDbContext.LabReportTemplates on requisition.ReportTemplateId equals template.ReportTemplateID
-        //                                             where requisition.PatientId == grp.Key.patient.PatientId
-        //                                            && requisition.SampleCode == grp.Key.SampleCode
-        //                                            && DbFunctions.TruncateTime(requisition.SampleCreatedOn).Value == grp.Key.Value
-        //                                            && requisition.OrderStatus.ToLower() == "result-added"
-        //                                            && requisition.BillingStatus.ToLower() != "cancel" && requisition.BillingStatus.ToLower() != "returned"
-        //                                            && (template.TemplateType.ToLower() == "normal" || template.TemplateType.ToLower() == "culture")
-        //                                             select new LabPendingResultVM.LabTestDetail
-        //                                             {
-        //                                                 RequisitionId = requisition.RequisitionId,
-        //                                                 LabTestId = requisition.LabTestId,
-        //                                                 TestName = requisition.LabTestName
-
-        //                                             }).Distinct().ToList()
-        //                                }).OrderByDescending(d => d.SampleDate).ThenByDescending(x => x.SampleCode).ThenByDescending(a => a.PatientId);
-
-
-        //    var pendingHtmlNCS = (from req in labDbContext.Requisitions
-        //                          join test in labDbContext.LabTests on req.LabTestId equals test.LabTestId
-        //                          join template in labDbContext.LabReportTemplates on req.ReportTemplateId equals template.ReportTemplateID
-        //                          join patient in labDbContext.Patients on req.PatientId equals patient.PatientId
-        //                          where req.OrderStatus.ToLower() == "result-added"
-        //                          && req.BillingStatus.ToLower() != "cancel" && req.BillingStatus.ToLower() != "returned"
-        //                          && (barcodeNumber == 0 ? true : (req.BarCodeNumber == barcodeNumber))
-        //                          && (completeSampleCode == "0/0" ? true : (req.SampleCode.HasValue ? (req.SampleCode == samplNumber) : false))
-        //                          && (template.TemplateType.ToLower() == "html")
-        //                          group new { req, template, patient, test } by new
-        //                          {
-        //                              patient,
-        //                              req,
-        //                              req.RunNumberType,
-        //                              req.BarCodeNumber,
-        //                              req.WardName
-        //                          } into grp
-        //                          select new LabPendingResultVM
-        //                          {
-        //                              PatientId = grp.Key.patient.PatientId,
-        //                              PatientCode = grp.Key.patient.PatientCode,
-        //                              DateOfBirth = grp.Key.patient.DateOfBirth,
-        //                              PhoneNumber = grp.Key.patient.PhoneNumber,
-        //                              Gender = grp.Key.patient.Gender,
-        //                              PatientName = grp.Key.patient.FirstName + " " + (string.IsNullOrEmpty(grp.Key.patient.MiddleName) ? "" : grp.Key.patient.MiddleName + " ") + grp.Key.patient.LastName,
-
-        //                              SampleCode = grp.Key.req.SampleCode,
-        //                              SampleDate = DbFunctions.TruncateTime(grp.Key.req.SampleCreatedOn).Value,
-        //                              VisitType = grp.Key.req.VisitType,
-        //                              RunNumType = grp.Key.RunNumberType,
-        //                              BarCodeNumber = grp.Key.BarCodeNumber,
-        //                              WardName = grp.Key.WardName,
-        //                              Tests = (from requisition in labDbContext.Requisitions
-        //                                       join test in labDbContext.LabTests on requisition.LabTestId equals test.LabTestId
-        //                                       where requisition.PatientId == grp.Key.patient.PatientId
-        //                                        && requisition.RequisitionId == grp.Key.req.RequisitionId
-
-        //                                       select new LabPendingResultVM.LabTestDetail
-        //                                       {
-        //                                           RequisitionId = requisition.RequisitionId,
-        //                                           LabTestId = requisition.LabTestId,
-        //                                           TestName = requisition.LabTestName
-        //                                       }).ToList()
-        //                          }).OrderByDescending(d => d.SampleDate).ThenByDescending(x => x.SampleCode).ThenByDescending(a => a.PatientId);
-
-        //    foreach (var rep in pendingHtmlNCS)
-        //    {
-        //        rep.SampleCodeFormatted = GetSampleCodeFormatted(rep.SampleCode, rep.SampleDate ?? default(DateTime), rep.VisitType, rep.RunNumType);
-        //        if (barcodeNumber != 0)
-        //        {
-        //            LabMasterData.PendingReport.Add(rep);
-        //        }
-        //        else
-        //        {
-        //            if (rep.SampleCodeFormatted == completeSampleCode)
-        //            {
-        //                LabMasterData.PendingReport.Add(rep);
-        //            }
-        //        }
-        //    }
-        //    foreach (var repNormal in pendingNormalReports)
-        //    {
-        //        repNormal.SampleCodeFormatted = GetSampleCodeFormatted(repNormal.SampleCode, repNormal.SampleDate ?? default(DateTime), repNormal.VisitType, repNormal.RunNumType);
-        //        if (barcodeNumber != 0)
-        //        {
-        //            LabMasterData.AddResult.Add(repNormal);
-        //        }
-        //        else
-        //        {
-        //            if (repNormal.SampleCodeFormatted == completeSampleCode)
-        //            {
-        //                LabMasterData.AddResult.Add(repNormal);
-        //            }
-        //        }
-        //    }
-
-        //    var FinalReport = (from req in labDbContext.Requisitions
-        //                                 join report in labDbContext.LabReports on req.LabReportId equals report.LabReportId
-        //                                 join test in labDbContext.LabTests on req.LabTestId equals test.LabTestId
-        //                                 join patient in labDbContext.Patients on req.PatientId equals patient.PatientId
-        //                                 where req.OrderStatus == "report-generated"
-        //                                 && req.BillingStatus.ToLower() != "cancel" && req.BillingStatus.ToLower() != "returned"
-        //                                 && (barcodeNumber == 0 ? true : (req.BarCodeNumber == barcodeNumber))
-        //                                 && (completeSampleCode == "0/0" ? true : (req.SampleCode.HasValue ? (req.SampleCode == samplNumber) : false))
-        //                                 group new { req, patient, test } by new
-        //                                 {
-        //                                     patient,
-        //                                     req.SampleCode,
-        //                                     req.LabReportId,
-        //                                     DbFunctions.TruncateTime(req.SampleCreatedOn).Value,
-        //                                     req.VisitType,
-        //                                     req.RunNumberType,
-        //                                     report.IsPrinted,
-        //                                     req.BillingStatus,
-        //                                     req.BarCodeNumber,
-        //                                     req.WardName
-        //                                 } into grp
-        //                                 select new LabPendingResultVM
-        //                                 {
-        //                                     PatientId = grp.Key.patient.PatientId,
-        //                                     PatientCode = grp.Key.patient.PatientCode,
-        //                                     DateOfBirth = grp.Key.patient.DateOfBirth,
-        //                                     PhoneNumber = grp.Key.patient.PhoneNumber,
-        //                                     Gender = grp.Key.patient.Gender,
-        //                                     PatientName = grp.Key.patient.FirstName + " " + (string.IsNullOrEmpty(grp.Key.patient.MiddleName) ? "" : grp.Key.patient.MiddleName + " ") + grp.Key.patient.LastName,
-
-        //                                     SampleCode = grp.Key.SampleCode,
-        //                                     SampleDate = grp.Key.Value,
-        //                                     SampleCodeFormatted = "",
-        //                                     VisitType = grp.Key.VisitType,
-        //                                     RunNumType = grp.Key.RunNumberType,
-        //                                     IsPrinted = grp.Key.IsPrinted,
-        //                                     BillingStatus = grp.Key.BillingStatus,
-        //                                     BarCodeNumber = grp.Key.BarCodeNumber,
-        //                                     WardName = grp.Key.WardName,
-        //                                     Tests = (from requisition in labDbContext.Requisitions
-        //                                              join test in labDbContext.LabTests on requisition.LabTestId equals test.LabTestId
-        //                                              where requisition.PatientId == grp.Key.patient.PatientId
-        //                                              && requisition.SampleCode == grp.Key.SampleCode
-        //                                              && DbFunctions.TruncateTime(requisition.SampleCreatedOn).Value == grp.Key.Value
-        //                                              && requisition.OrderStatus == "report-generated"
-        //                                              && requisition.LabReportId == grp.Key.LabReportId
-
-        //                                              select new LabPendingResultVM.LabTestDetail
-        //                                              {
-        //                                                  RequisitionId = requisition.RequisitionId,
-        //                                                  LabTestId = requisition.LabTestId,
-        //                                                  TestName = requisition.LabTestName                                                          
-        //                                              }).ToList()
-        //                                 }).OrderByDescending(d => d.SampleDate).ThenByDescending(x => x.SampleCode).ThenByDescending(a => a.PatientId).ToList();
-
-        //    foreach (var rep in FinalReport)
-        //    {
-        //        rep.SampleCodeFormatted = GetSampleCodeFormatted(rep.SampleCode, rep.SampleDate ?? default(DateTime), rep.VisitType, rep.RunNumType);
-        //        if (barcodeNumber != 0)
-        //        {
-        //            LabMasterData.FinalReport.Add(rep);
-        //        }
-        //        else
-        //        {
-        //            if (rep.SampleCodeFormatted == completeSampleCode)
-        //            {
-        //                LabMasterData.FinalReport.Add(rep);
-        //            }
-        //        }
-        //    }
-
-        //    return LabMasterData;
-        //}
 
     }
+
+    public class LabStickerParam
+    {
+        public string Name { get; set; }
+        public string FolderPath { get; set; }
+    }
+
 }

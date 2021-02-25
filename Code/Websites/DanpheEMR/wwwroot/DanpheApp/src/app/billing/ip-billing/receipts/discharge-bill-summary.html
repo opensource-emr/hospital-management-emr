@@ -1,17 +1,19 @@
-﻿
-<table class="table table-striped table-hover" style="width: 100%;border-bottom: 1px solid;" *ngIf="dischargeBill.BillItemSummary">
+<div class="wrapper">
+  <table class="table table-striped table-hover" style="width: 100%;border-bottom: 1px solid;"
+    *ngIf="dischargeBill.BillItemSummary">
     <thead>
-        <tr>
-            <th>S.N.</th>
-            <th>Service Particular(s)</th>
-            <th style="text-align: right;">Amount</th>
-        </tr>
+      <tr>
+        <th border="1" align="left" style="font-size:12px; width:10%;"><strong>S.N.</strong></th>
+        <th border="1" align="left" style="font-size:12px; width:70%"><strong>Service Particular(s)</strong></th>
+        <th border="1" style="text-align: right; font-size:12px; width:20%;"><strong>Amount</strong></th>
+      </tr>
     </thead>
     <tbody>
-        <tr *ngFor="let row of dischargeBill.BillItemSummary; let i=index">
-            <td style="text-align:left">{{i+1}}</td>
-            <td style="text-align:left">{{row.ItemGroupName}}</td>
-            <td style="text-align: right;">{{row.SubTotal}}</td>
-        </tr>
+      <tr *ngFor="let row of dischargeBill.BillItemSummary; let i=index">
+        <td style="text-align:left; font-size:11px; width:10%">{{i+1}}</td>
+        <td style="text-align:left; font-size:11px; width:70%">{{row.ItemGroupName}}</td>
+        <td style="text-align: right; font-size:11px; width:20%;">{{row.SubTotal | number : "1.2-2"}}</td>
+      </tr>
     </tbody>
-</table>
+  </table>
+</div>

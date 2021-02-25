@@ -8,6 +8,7 @@ import * as moment from 'moment/moment';
 import { CommonFunctions } from "../../../shared/common.functions";
 import { CoreService } from "../../../core/shared/core.service"
 import { BillingReceiptModel } from '../../shared/billing-receipt.model';
+import { BillingTransactionItem } from "../../shared/billing-transaction-item.model";
 @Component({
   selector: "discharge-bill-main",
   templateUrl: "./discharge-bill-main.html"
@@ -30,13 +31,11 @@ export class DischargeBillMainComponent implements OnInit {
 
   public dischargeBill: DischargeBillVM = new DischargeBillVM();
   public billItems: Array<BillItemVM>;
-  public showDischargeBillSummary: boolean = false;
-  public showDischargeBillBreakup: boolean = true;
+  public showDischargeBillSummary: boolean = true;
+  public showDischargeBillBreakup: boolean = false;
   @Input("billType")
   public billType: string;
   public printDate: string;
-
-
   public patientQRCodeInfo: string = "";
   public showQrCode: boolean = false;
   public showDate: boolean = false;
@@ -56,12 +55,31 @@ export class DischargeBillMainComponent implements OnInit {
   public TotalAmountInUSD: number = 0;
   @Input("ExchangeRate")
   public ExchangeRate: number = 0;
+  @Input("LastBedQty")
+  public LastBedQty: number = 0;
+  @Input("LastBedItem")
+  public LastBedItem: number = 0;
+  public filteredPendingItems: Array<BillingTransactionItem> = [];
+  public AmountType: string = "";//this.billStatus.toLocaleLowerCase() != "paid" ? "Amount to be Paid" : "Paid Amount";
+  public ServiceDepartmentIdFromParametes: number = 0;
   constructor(public dlService: DLService,
     public msgBoxServ: MessageboxService,
     public billingBLService: BillingBLService,
     public CoreService: CoreService,
   ) {
     this.setCheckOutParameter();
+    this.ServiceDepartmentIdFromParametes = this.CoreService.Parameters.find(p => p.ParameterGroupName == "ADT" && p.ParameterName == "Bed_Charges_SevDeptId").ParameterValue;
+    this.SetAutoBedAndAutoBillItemParameters();
+  }
+
+  //this is the expected format of the autobed parameter.. 
+  public autoBedBillParam = { DoAutoAddBillingItems: false, DoAutoAddBedItem: false, ItemList: [] };
+  //sud"7-Oct-2020: This parameter value will be used for bed duration calculation
+  SetAutoBedAndAutoBillItemParameters() {
+    var param = this.CoreService.Parameters.find(p => p.ParameterGroupName == "ADT" && p.ParameterName == "AutoAddBillingItems");
+    if (param && param.ParameterValue) {
+      this.autoBedBillParam = JSON.parse(param.ParameterValue);
+    }
   }
 
   setCheckOutParameter() {
@@ -77,6 +95,7 @@ export class DischargeBillMainComponent implements OnInit {
       this.printDate = moment().format('YYYY-MM-DD HH:mm');
     }
   }
+
   public GetADTNDepositDetails() {
     this.billingBLService.GetAdditionalInfoForDischarge(this.ipVisitId, this.billingTxnId)
       .subscribe((res: DanpheHTTPResponse) => {
@@ -84,13 +103,19 @@ export class DischargeBillMainComponent implements OnInit {
           this.dischargeBill.AdmissionDetail = res.Results.AdmissionInfo;
           this.dischargeBill.DepositDetails = res.Results.DepositInfo;
           this.dischargeBill.BillingTransactionDetail = res.Results.BillingTxnDetail;
-          if(this.dischargeBill.BillingTransactionDetail!=null){
+          if (this.dischargeBill.BillingTransactionDetail != null) {
 
-          if (this.dischargeBill.BillingTransactionDetail.ExchangeRate != null && this.dischargeBill.BillingTransactionDetail.ExchangeRate != 0) {
-            this.ExchangeRate = this.dischargeBill.BillingTransactionDetail.ExchangeRate;
-            this.TotalAmountInUSD = (this.dischargeBill.BillingTransactionDetail.TotalAmount / this.ExchangeRate);
+            if (this.dischargeBill.BillingTransactionDetail.ExchangeRate != null && this.dischargeBill.BillingTransactionDetail.ExchangeRate != 0) {
+              this.ExchangeRate = this.dischargeBill.BillingTransactionDetail.ExchangeRate;
+              this.TotalAmountInUSD = (this.dischargeBill.BillingTransactionDetail.TotalAmount / this.ExchangeRate);
+            }
+
+            if (this.dischargeBill.BillingTransactionDetail.PaymentMode && this.dischargeBill.BillingTransactionDetail.PaymentMode.toLocaleLowerCase() != "credit") {
+              this.AmountType = "Paid Amount";
+            } else {
+              this.AmountType = "Amount to be Paid";
+            }
           }
-}
           this.dischargeBill.PatientDetail = res.Results.PatientDetail;
           this.calculateAdmittedDays();
           if (this.dischargeBill.DepositDetails.length) {
@@ -121,21 +146,42 @@ export class DischargeBillMainComponent implements OnInit {
     }
 
   }
+  
   public GetDischargeBill() {
     this.billingBLService.GetBillItemsForIPReceipt(this.patientId, this.billingTxnId, this.billStatus)
       .subscribe((res: DanpheHTTPResponse) => {
         if (res.Status == "OK") {
           this.billItems = res.Results;
+          this.UpdateLastBedQty();
           this.GroupItems();
-          console.log(this.dischargeBill);
+          //console.log(this.dischargeBill);
         }
         else {
           this.msgBoxServ.showMessage("failed", ["Unable to get ADT and deposit details"]);
-          console.log(res.ErrorMessage);
+          //console.log(res.ErrorMessage);
         }
       });
   }
+  public UpdateLastBedQty() {
+    for (var i = 0; i < this.billItems.length; i++) {
+      // Dinesh/ Sanjit: Previously only compared with itemid, now compared with servicedepartmentId too
+      if (this.billItems[i].ServiceDepartmentId == this.ServiceDepartmentIdFromParametes && this.billItems[i].ItemId == this.LastBedItem && this.billItems[i].IsEdited == false) {
+        this.billItems[i].Quantity = this.LastBedQty;
+        this.billItems[i].SubTotal = this.billItems[i].Price * this.billItems[i].Quantity;
+        this.billItems[i].TotalAmount = this.billItems[i].Price * this.billItems[i].Quantity;
+      }
+      if (this.billItems[i].ItemGroupName == "MEDICAL RESIDENT AND NURSING" && this.billItems[i].IsEdited == false) {
+        this.billItems[i].Quantity = this.LastBedQty;
+        this.billItems[i].SubTotal = this.billItems[i].Price * this.billItems[i].Quantity;
+        this.billItems[i].TotalAmount = this.billItems[i].Price * this.billItems[i].Quantity;
+      }
 
+      if (this.billItems[i].Quantity == 0) {
+        this.billItems.splice(i, 1);
+        i--;
+      }
+    }
+  }
   public GroupItems() {
     this.billItems.forEach(billItem => {
       let itemGroup = this.dischargeBill.BillItemSummary.find(a => a.ItemGroupName == billItem.ItemGroupName);
@@ -164,8 +210,14 @@ export class DischargeBillMainComponent implements OnInit {
       itemGroup.DiscountAmount += billItem.DiscountAmount;
       itemGroup.TotalPrice += billItem.Price;
       let item;
-      if (itemGroup.ItemGroupName.toLowerCase() == "doctor visit charges") {
-        item = itemGroup.Items.find(a => a.DoctorId == billItem.DoctorId);
+      //if (itemGroup.ItemGroupName.toLowerCase() == "doctor visit charges") {
+      //  item = itemGroup.Items.find(a => a.DoctorId == billItem.DoctorId);
+      //}
+      //else {
+      //  item = itemGroup.Items.find(a => a.ItemId == billItem.ItemId);
+      //}
+      if (itemGroup.ItemGroupName != 'BED CHARGES') {
+        item = itemGroup.Items.find(a => a.DoctorId == billItem.DoctorId && a.ItemId == billItem.ItemId);
       }
       else {
         item = itemGroup.Items.find(a => a.ItemId == billItem.ItemId);
@@ -188,6 +240,7 @@ export class DischargeBillMainComponent implements OnInit {
     this.dischargeBill.DiscountAmount = CommonFunctions.parseAmount(this.dischargeBill.DiscountAmount);
 
     this.dischargeBill.BillItemSummary.forEach(group => {
+
       group.DiscountAmount = CommonFunctions.parseAmount(group.DiscountAmount);
       group.SubTotal = CommonFunctions.parseAmount(group.SubTotal);
       group.Tax = CommonFunctions.parseAmount(group.Tax);
@@ -223,8 +276,12 @@ export class DischargeBillMainComponent implements OnInit {
       let printCount = this.dischargeBill.BillingTransactionDetail.PrintCount + 1;
       let recptNo = this.dischargeBill.BillingTransactionDetail.ReceiptNo;
 
+      //console.log("logged from : ip-discharge bill main for testing: ");
+      //console.log(this.dischargeBill.BillingTransactionDetail);
+      //console.log(this.billingTxnId);
 
-      this.billingBLService.PutPrintCount(printCount, recptNo)
+      //sud:30Sept'19--send billingtxn id instead of receipt number.
+      this.billingBLService.PutPrintCount(printCount, this.billingTxnId)
         .subscribe(res => {
           if (res.Status == "OK") {
 
@@ -236,29 +293,161 @@ export class DischargeBillMainComponent implements OnInit {
         });
     }
   }
+  LoadPatientBillingSummary(patientId: number, patientVisitId: number) {
+    this.dlService.Read("/api/IpBilling?reqType=pat-pending-items&patientId=" + this.patientId + "&ipVisitId=" + this.ipVisitId)
+      .map(res => res)
+      .subscribe((res: DanpheHTTPResponse) => {
+        if (res.Status == "OK" && res.Results) {
+          this.admissionInfo = res.Results.AdmissionInfo;
+          this.admissionInfo.AdmittedOn = this.admissionInfo.AdmittedOn;
+          this.admissionInfo.DischargedOn = moment(this.admissionInfo.DischargedOn).format('YYYY-MM-DDTHH:mm:ss');
+          this.filteredPendingItems = res.Results.PendingBillItems;
+        }
+        else {
+          this.msgBoxServ.showMessage("failed", [" Unable to get bill summary."]);
+          console.log(res.ErrorMessage);
+        }
+      });
+  }
+
 
   public calculateAdmittedDays() {
-    let dischargeDate = this.dischargeBill.AdmissionDetail.DischargeDate;
-    if (this.billType == "estimation") {
-      dischargeDate = this.estDischargeDate;
+    //calculate the days again only if DoAutoAddBedItem is true..
+    if (this.autoBedBillParam.DoAutoAddBedItem) {
+      let dischargeDate = this.dischargeBill.AdmissionDetail.DischargeDate;
+      if (this.billType == "estimation") {
+        dischargeDate = this.estDischargeDate;
+      }
+      this.checkouttimeparameter = moment(this.dischargeBill.AdmissionDetail.AdmissionDate).format("HH:mm");
+
+      let onedayformatparameter = this.CoreService.Parameters.find(p => p.ParameterGroupName == "ADT" && p.ParameterName == "OneDayFormat").ParameterValue;
+
+      var duration;
+      if (onedayformatparameter === "00:00") {
+        duration = CommonFunctions.calculateADTBedDuration(moment(this.dischargeBill.AdmissionDetail.AdmissionDate).format("YYYY-MM-DD HH:mm"), moment(dischargeDate).format("YYYY-MM-DD HH:mm"), this.checkouttimeparameter);
+      }
+      if (onedayformatparameter === "24:00") {
+        duration = this.calculateADTBedDurations(moment(this.dischargeBill.AdmissionDetail.AdmissionDate).format("YYYY-MM-DD HH:mm"), moment(dischargeDate).format("YYYY-MM-DD HH:mm"), this.checkouttimeparameter);
+      }
+      if (onedayformatparameter === "skip") {
+        duration = this.calculateADTBedDurationSkip(moment(this.dischargeBill.AdmissionDetail.AdmissionDate).format("YYYY-MM-DD HH:mm"), moment(dischargeDate).format("YYYY-MM-DD HH:mm"), this.checkouttimeparameter);
+      }
+
+
+      // remove hour from length of stay
+      let checkouttime = this.CoreService.Parameters.find(p => p.ParameterGroupName == "ADT" && p.ParameterName == "CheckoutTime").ParameterValue;
+      let checkouttimeincrement = this.CoreService.Parameters.find(p => p.ParameterGroupName == "ADT" && p.ParameterName == "CheckoutTimeIncremental").ParameterValue;
+      let checkouttimeincremental = parseFloat(checkouttimeincrement);
+      //let bedEndDate = moment(dischargeDate).format("YYYY-MM-DD HH:mm");
+      let bedEndDate = moment(dischargeDate).format("HH:mm");
+      let bedEndTimeValues: Array<string> = bedEndDate.split(":");
+      let bedEndHour = parseInt(bedEndTimeValues[0]);
+      let chkOutTimeValues: Array<string> = checkouttime.split(":");
+      let chkOutHour = parseInt(chkOutTimeValues[0]);
+
+      let StartEndDateDay = parseInt(moment(this.dischargeBill.AdmissionDetail.AdmissionDate).format('D'));
+      let date = new Date();
+      let newdate = moment(date).format('YYYY-MM-DD HH:mm');
+      let day = parseInt(moment(newdate).format('D'));
+
+      if (bedEndHour >= chkOutHour && StartEndDateDay != day) {
+        if (duration.days > 0 && duration.hours)
+          this.dischargeBill.AdmissionDetail.LengthOfStay = duration.days + checkouttimeincremental + ' day ';
+
+        else if (duration.days && !duration.hours)
+          this.dischargeBill.AdmissionDetail.LengthOfStay = (duration.days + checkouttimeincremental).toString() + ' day';
+
+        else
+          this.dischargeBill.AdmissionDetail.LengthOfStay = String(1) + 'day';
+      }
+      else {
+        if (duration.days > 0 && duration.hours)
+          this.dischargeBill.AdmissionDetail.LengthOfStay = duration.days + ' day  ';
+        else if (duration.days && !duration.hours)
+          this.dischargeBill.AdmissionDetail.LengthOfStay = duration.days.toString() + ' day';
+
+        else
+          this.dischargeBill.AdmissionDetail.LengthOfStay = String(1) + 'day';
+      }
     }
-    var duration = CommonFunctions.calculateADTBedDuration(moment(this.dischargeBill.AdmissionDetail.AdmissionDate).format("YYYY-MM-DD HH:mm"), moment(dischargeDate).format("YYYY-MM-DD HH:mm"), this.checkouttimeparameter);
-    //if (duration.days > 0 && duration.hours)
-    //    this.dischargeBill.AdmissionDetail.LengthOfStay = duration.days + ' day + ' + duration.hours + ' hour';
-    //else if (duration.days && !duration.hours)
-    //    this.dischargeBill.AdmissionDetail.LengthOfStay = duration.days.toString() + ' day';
-    //else if (!duration.days && duration.hours)
-    //    this.dischargeBill.AdmissionDetail.LengthOfStay = duration.hours + ' hour';
-    //else
-    //    this.dischargeBill.AdmissionDetail.LengthOfStay = String(1) + 'day';
+  }
 
-    // remove hour from length of stay
-    if (duration.days > 0 && duration.hours)
-      this.dischargeBill.AdmissionDetail.LengthOfStay = duration.days + ' day  ';
-    else if (duration.days && !duration.hours)
-      this.dischargeBill.AdmissionDetail.LengthOfStay = duration.days.toString() + ' day';
+  public calculateADTBedDurations(inDate, ipCheckoutDate, checkouttimeparameter): { days: number, hours: number, checkouttimeparameter: string } {
+    //let checkoutDate = ipCheckoutDate;
+    let chkOutTimeValues: Array<string> = checkouttimeparameter.split(":");
+    let chkOutHour = parseInt(chkOutTimeValues[0]);
+    let chkOutMinute = chkOutTimeValues.length > 1 ? parseInt(chkOutTimeValues[1]) : 0;
+    var totalDays = 1;
+    if (!ipCheckoutDate) {
+      ipCheckoutDate = moment(new Date);
+      totalDays = 1;
+    }
+    let InDate = moment(inDate).format('YYYY-MM-DD HH:mm');
+    let InDateYear = moment(InDate).year();
+    let InDateMonth = parseInt(moment(InDate).format('M'));
+    let InDateDay = parseInt(moment(InDate).format('D'));
+    let CheckoutDate = moment(ipCheckoutDate).format('YYYY-MM-DD HH:mm');
+    let CheckoutYear = moment(CheckoutDate).year();
+    let CheckoutMonth = parseInt(moment(CheckoutDate).format('M'));
+    let CheckoutDay = parseInt(moment(CheckoutDate).format('D'));
+    if (CheckoutYear == InDateYear && CheckoutMonth == InDateMonth && CheckoutDay == InDateDay) {
+      CheckoutDate = moment(ipCheckoutDate).format('YYYY-MM-DD HH:mm');
+    }
+    else {
+      //CheckoutDate = moment(ipCheckoutDate).subtract(1, 'days').set({ hour: chkOutHour, minute: chkOutMinute, second: 0, millisecond: 0 }).format('YYYY-MM-DD HH:mm');
+      InDate = moment(inDate).subtract(1, 'days').set({ hour: chkOutHour, minute: chkOutMinute, second: 0, millisecond: 0 }).format('YYYY-MM-DD HH:mm');
+      CheckoutDate = moment(ipCheckoutDate).format('YYYY-MM-DD HH:mm');
+    }
+    for (let indate = moment(InDate); indate.diff(moment(CheckoutDate), 'days') < 0; indate.add(1, 'days')) {
+      let admittedDate = moment(indate).format("HH:mm");
+      let admittedDateValues: Array<string> = admittedDate.split(":");
+      let admittedHour = parseInt(admittedDateValues[0]);
+      for (let hr = admittedHour; (24 - hr) >= 0; hr++) {
+        if (24 - hr == 0) {
+          totalDays += 1;
+        }
+      }
 
-    else
-      this.dischargeBill.AdmissionDetail.LengthOfStay = String(1) + 'day';
+    }
+    return { days: totalDays, hours: 0, checkouttimeparameter };
+  }
+  public calculateADTBedDurationSkip(inDate, ipCheckoutDate, checkouttimeparameter): { days: number, hours: number, checkouttimeparameter: string } {
+    // let checkoutDate = ipCheckoutDate;
+    let chkOutTimeValues: Array<string> = checkouttimeparameter.split(":");
+    let chkOutHour = parseInt(chkOutTimeValues[0]);
+    let chkOutMinute = chkOutTimeValues.length > 1 ? parseInt(chkOutTimeValues[1]) : 0;
+    var totalDays = 1;
+    if (!ipCheckoutDate) {
+      ipCheckoutDate = moment(new Date);
+      totalDays = 1;
+    }
+    let InDate = moment(inDate).format('YYYY-MM-DD HH:mm');
+    let InDateYear = moment(InDate).year();
+    let InDateMonth = parseInt(moment(InDate).format('M'));
+    let InDateDay = parseInt(moment(InDate).format('D'));
+    let CheckoutDate = moment(ipCheckoutDate).format('YYYY-MM-DD HH:mm');
+    let CheckoutYear = moment(CheckoutDate).year();
+    let CheckoutMonth = parseInt(moment(CheckoutDate).format('M'));
+    let CheckoutDay = parseInt(moment(CheckoutDate).format('D'));
+    if (CheckoutYear == InDateYear && CheckoutMonth == InDateMonth && CheckoutDay == InDateDay) {
+      CheckoutDate = moment(ipCheckoutDate).format('YYYY-MM-DD HH:mm');
+    }
+    else {
+
+      CheckoutDate = moment(ipCheckoutDate).format('YYYY-MM-DD HH:mm');
+      InDate = moment(InDate).add(1, 'days').set({ hour: 0, minute: 0, second: 0, millisecond: 0 }).format('YYYY-MM-DD HH:mm');
+    }
+    for (let indate = moment(InDate); indate.diff(moment(CheckoutDate), 'days') < 0; indate.add(1, 'days')) {
+      let admittedDate = moment(indate).format("HH:mm");
+      let admittedDateValues: Array<string> = admittedDate.split(":");
+      let admittedHour = parseInt(admittedDateValues[0]);
+      for (let hr = admittedHour; (24 - hr) >= 0; hr++) {
+        if (24 - hr == 0) {
+          totalDays += 1;
+        }
+      }
+
+    }
+    return { days: totalDays, hours: 0, checkouttimeparameter };
   }
 }

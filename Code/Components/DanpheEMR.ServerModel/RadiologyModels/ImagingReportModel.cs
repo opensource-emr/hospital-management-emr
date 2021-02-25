@@ -37,9 +37,14 @@ namespace DanpheEMR.ServerModel
         public virtual PatientModel Patient { get; set; }
 
         public string Indication { get; set; }
-
+        public string RadiologyNo { get; set; }
 
         public virtual ImagingRequisitionModel ImagingRequisition { get; set; }
+
+        [NotMapped]
+        public string ProviderNameInBilling { get; set; }
+        [NotMapped]
+        public int? ProviderIdInBilling { get; set; }
     }
 
     public class ImagingReportViewModel
@@ -65,15 +70,20 @@ namespace DanpheEMR.ServerModel
         public string Gender { get; set; }
         public string PatientStudyId { get; set; }
         public string ProviderName { get; set; }
+        public int? ProviderId { get; set; }
         public int? ReportingDoctorId { get; set; }
         public string ReportingDoctorName { get; set; }
         public string Indication { get; set; }
+        public string RadiologyNo { get; set; }
 
         public string SignatoryImageBase64 { get; set; }
         public string FooterText { get; set; }
 
         public string currentLoggedInUserSignature { get; set; }
         public bool? HasInsurance { get; set; }
+        public bool? IsActive { get; set; }
+
+        public string PatientNameLocal { get; set; }
 
     }
 }

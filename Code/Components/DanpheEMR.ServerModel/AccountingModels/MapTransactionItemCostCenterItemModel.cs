@@ -16,5 +16,7 @@ namespace DanpheEMR.ServerModel
         public double? Amount { get; set; }
         public DateTime? CreatedOn { get; set; }
         public int CreatedBy { get; set; }
+        //sud-nagesh: 20June'20-- for Acc-Hospital Separation.
+        public int? HospitalId { get; set; }
     }
 }

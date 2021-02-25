@@ -12,6 +12,7 @@ namespace DanpheEMR.ServerModel.ReportingModels
         
         public string ItemName { get; set; }
         public string UOMName { get; set; }
+        public string Code { get; set; }
         public Nullable<decimal> ItemRates { get; set; }
         public Nullable<double> PurchaseQty { get; set; }
         public Nullable<double> PurchaseValue { get; set; }

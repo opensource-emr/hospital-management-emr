@@ -1,0 +1,204 @@
+<style>
+    .main-container {
+        padding: 2px 2px;
+        max-width: 600px;
+        border: 1px solid #dbe7ef;
+        background-color: #ebf7ff;
+        border-radius: 2px !important;
+        /* margin-bottom: 10px; */
+    }
+    .multi-line-date select {
+        margin: 0 5px !important;
+    }
+    .dv-error-container {
+        padding: 2px 2px;
+        width: 606px;
+        border: 1px solid #dbe7ef;
+        background-color: #ebf7ff;
+        border-radius: 2px !important;
+        font-size: 12px;
+    }
+
+    .lbl-from-to {
+        padding-left: 17px;
+        padding-right: 2px;
+        font-weight: bold;
+    }
+
+    .icon-favourite {
+        color: blue;
+        zoom: 1.2;
+        cursor: pointer;
+    }
+
+    .icon-favourite:hover {
+        color: green;
+        zoom: 1.5;
+    }
+
+    .en-cal {
+        width: 174px;
+        height: 30px;
+        border: 1px solid #dae4ea;
+        border-radius: 3px !important;
+        margin: 0 0px;
+        padding: 0 6px;
+    }
+
+    .en-cal:focus {
+        border: 1px solid #dae4ea;
+    }
+
+
+    .btn-change {
+        width: 35px;
+        font-size: 15px;
+        border: none;
+        background-color: #0773bc;
+        color: #fff;
+        border-radius: 3px !important;
+        height: 30px;
+    }
+
+    .btn-ok {
+        width: 40px;
+        font-size: 15px;
+        border: none;
+        background-color: #0773bc;
+        color: #fff;
+        border-radius: 3px !important;
+        height: 30px;
+    }
+
+    .btn-change:focus {
+        border: none;
+    }
+
+
+    .icon-range-ddl {
+        padding: 4px 2px 3px 2px;
+        font-size: 14px;
+        margin: 0px;
+        background-color: #b9b9ca;
+        width: 26px;
+        text-align: center;
+        cursor: pointer;
+        color: white;
+    }
+
+    .icon-range-ddl:hover {
+        background-color: #859add;
+    }
+
+
+    .selected-range {
+        font-weight: bold;
+    }
+
+    .invalid-range {
+        color: red;
+    }
+</style>
+
+<div class="main-container" [ngClass]="{'invalid-range':!validationObject.isValid}">
+    <table>
+        <tr>
+            <td>
+                <div class="tooltip no-print" style="z-index: 1;">
+                    <span *ngIf="showEnCalendar" (click)="changetoNepali()">
+                        <button type="button" class="btn-change" matTooltipPosition="below"
+                            matTooltip="Change to Nepali date.">
+                            AD
+                        </button>
+                    </span>
+                    <span *ngIf="showNpCalendar" (click)="changetoEnglish()">
+                        <button type="button" class="btn-change" matTooltipPosition="below"
+                            matTooltip="Change to English date.">
+                            BS
+                        </button>
+                    </span>
+                </div>
+            </td>
+
+            <td class="lbl-from-to">
+                From:
+            </td>
+            <td>
+              <danphe-date-picker *ngIf="showDatePicker" [(ngModel)]="enDate_from"
+                                  (ngModelChange)="EngCalendarOnDateChange_From()" [isFromToDateSelect]="true"
+                                  [CalendarTypes]="calendarType"> </danphe-date-picker>
+              <!--<danphe-date-picker *ngIf="showNpCalendar" [(ngModel)]="enDate_from"
+                   (ngModelChange)="NepCalendarOnDateChange_From($event)"
+                   [CalendarTypes]="'np'"> </danphe-date-picker>-->
+            </td>
+
+            <td class="lbl-from-to">
+                To:
+            </td>
+            <td>
+              <danphe-date-picker *ngIf="showDatePicker" [(ngModel)]="enDate_to"
+                                  (ngModelChange)="EngCalendarOnDateChange_To()" [isFromToDateSelect]="true"
+                                  [CalendarTypes]="calendarType"> </danphe-date-picker>
+              <!--<danphe-date-picker *ngIf="showNpCalendar" [(ngModel)]="enDate_to"
+                      (ngModelChange)="NepCalendarOnDateChange_To($event)"
+                      [CalendarTypes]="'np'"> </danphe-date-picker>-->
+
+            </td>
+            <td style="padding-left: 5px;" *ngIf="enableFavourite">
+                <div style="width: 20px;">
+                    <i *ngIf="isFavourite" class="fa fa-star icon-favourite" (click)="RemoveFavourite()"
+                        title="Don't Remember this Date"></i>
+                    <i *ngIf="!isFavourite" class="fa fa-star-o icon-favourite" (click)="AddToFavourite()"
+                        title="Remember this Date"></i>
+                </div>
+
+            </td>
+            <td style="padding-left: 8px;">
+                <div class="dropdown">
+                    <span class="icon-range-ddl dropdown-toggle" data-toggle="dropdown" data-hover="dropdown"
+                        matTooltipPosition="below" matTooltip="range='{{rangeFullName}}'. Click to change Date Range">
+                        {{rangeShortName}}
+                    </span>
+                    <ul class="dropdown-menu">
+                        <li *ngIf="dateRangeOptions.today">
+                            <a (click)="ChangeCustomDateRange('today')"
+                                [ngClass]="{'selected-range':defaultRangeName=='today'}">Today</a>
+                        </li>
+                        <li *ngIf="dateRangeOptions.week1">
+                            <a (click)="ChangeCustomDateRange('last1week')"
+                                [ngClass]="{'selected-range':defaultRangeName=='last1week'}">Last 1 Week</a>
+                        </li>
+                        <li *ngIf="dateRangeOptions.month1">
+                            <a (click)="ChangeCustomDateRange('last1month')"
+                                [ngClass]="{'selected-range':defaultRangeName=='last1month'}">Last 1 Month</a>
+                        </li>
+                        <li *ngIf="dateRangeOptions.month3">
+                            <a class="dropdown-item" (click)="ChangeCustomDateRange('last3month')"
+                                [ngClass]="{'selected-range':defaultRangeName=='last3month'}">Last 3 Months</a>
+                        </li>
+                        <li *ngIf="dateRangeOptions.month6">
+                            <a class="dropdown-item" (click)="ChangeCustomDateRange('last6month')"
+                                [ngClass]="{'selected-range':defaultRangeName=='last6month'}">Last 6 Months</a>
+                        </li>
+                    </ul>
+                </div>
+            </td>
+            <td *ngIf="!alwaysEmit_OkBtnNotRequired">
+                <div style="padding-left: 10px;">
+                    <button class="btn green btn-success" (click)="ReloadDataBtnClick()"
+                        style="padding: 4px 6px !important;margin:0px !important;" [disabled]="validationObject && !validationObject.isValid">
+                        <i class="fa fa-check-square-o"></i> OK
+                    </button>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+
+</div>
+
+<div class="dv-error-container" *ngIf="!validationObject.isValid">
+    <span *ngFor="let msg of validationObject.errorMessages" style="color:red;">
+        * {{msg}} <br />
+    </span>
+</div>

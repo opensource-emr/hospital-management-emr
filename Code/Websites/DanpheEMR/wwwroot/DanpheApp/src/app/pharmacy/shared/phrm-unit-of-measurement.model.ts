@@ -1,4 +1,4 @@
-﻿import {
+import {
     NgForm,
     FormGroup,
     FormControl,
@@ -10,7 +10,7 @@ import * as moment from 'moment/moment';
 
 export class PHRMUnitOfMeasurementModel {
     public UOMId: number = 0;
-    public UOMName: string = null;
+    public UOMName: string = "";
     public Description: string = null;
     public CreatedBy: number = 0;
     public CreatedOn: string = null;

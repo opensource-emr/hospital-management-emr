@@ -11,18 +11,12 @@ namespace DanpheEMR.ServerModel
     {
         [Key]
         public int RequisitionId { get; set; }
-
         public int WardId { get; set; }
-
+        public int StoreId { get; set; }
         public string Status { get; set; }
-
         public string ReferenceId { get; set; }
-
         public int CreatedBy { get; set; }
-
         public DateTime? CreatedOn { get; set; }
-
         public virtual List<WARDRequisitionItemsModel> WardRequisitionItemsList { get; set; }
-
     }
 }

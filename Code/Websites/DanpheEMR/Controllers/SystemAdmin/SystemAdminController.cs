@@ -42,7 +42,7 @@ namespace DanpheEMR.Controllers
         }
         // GET api/values/5
         [HttpGet]
-        public string Get(string reqType, DateTime FromDate, DateTime ToDate, string LogType, string Table_Name,string UserName)
+        public string Get(string reqType, DateTime FromDate, DateTime ToDate, string LogType, string Table_Name,string UserName, string ActionName)
         {
             DanpheHTTPResponse<List<object>> responseData = new DanpheHTTPResponse<List<object>>();
             DanpheHTTPResponse<object> responseDataObj = new DanpheHTTPResponse<object>();
@@ -78,8 +78,8 @@ namespace DanpheEMR.Controllers
                 else if (reqType == "get-audit-trail-details")
                 {
                     ReportingDbContext dbContext = new ReportingDbContext(this.connStringAdmin);
-                    DanpheHTTPResponse<DataTable> resData = new DanpheHTTPResponse<DataTable>();
-                     DataTable res = dbContext.AuditTrails(FromDate, ToDate, Table_Name, UserName);
+                    //DanpheHTTPResponse<DataTable> resData = new DanpheHTTPResponse<DataTable>();
+                     DataTable res = dbContext.AuditTrails(FromDate, ToDate, Table_Name, UserName, ActionName);
 
                     responseDataObj.Results = res;
                     responseDataObj.Status = "OK";
@@ -90,6 +90,8 @@ namespace DanpheEMR.Controllers
                 else if (reqType == "get-audit-list")
                 {
                     ReportingDbContext dbContext = new ReportingDbContext(this.connStringAdmin);
+                    SystemAdminDbContext systemAdminDbContext = new SystemAdminDbContext(this.connStringAdmin);
+
                     var userList = (from rbac in rbacDbContext.Users
                                     select new
                                     {
@@ -97,11 +99,16 @@ namespace DanpheEMR.Controllers
                                     }).ToList<object>();
                   
                    var tableNameList = dbContext.AuditTrailList().Select(s=> new { Table_Name = s.Table_Name }).ToList();
-                    
+
+                    var tableDisplayNameMappingList = systemAdminDbContext.AuditTableDisplayNames
+                        .Where(t => t.IsActive == true)
+                        .Select(t => new { TableDisplayName = t.DisplayName, Table_Name = t.TableName }).ToList();
+
                     responseDataObj.Results = new
                     {
                         UserList =userList,
-                        TableNameList =tableNameList
+                        TableNameList =tableNameList,
+                        TableDisplayNameMap = tableDisplayNameMappingList
                     };
                                     
                     responseDataObj.Status = "OK";
@@ -147,6 +154,32 @@ namespace DanpheEMR.Controllers
                     resData.Results = res;
                     resData.Status = "OK";
                     return DanpheJSONConvert.SerializeObject(resData, true);
+                }
+                else if (reqType != null && reqType == "get-system-admin")
+                {
+                    try
+                    {
+                        SystemAdminDbContext dbContext = new SystemAdminDbContext(connStringAdmin);
+                        var results = (from parameters in dbContext.AdminParameters
+                                          orderby parameters.ParameterId
+                                          select new
+                                          {
+                                              ParameterId = parameters.ParameterId,
+                                              ParameterGroupName = parameters.ParameterGroupName,
+                                              ParameterName  = parameters.ParameterName,
+                                              ParameterValue = parameters.ParameterValue,
+                                              ValueDataType = parameters.ValueDataType,
+                                              Description = parameters.Description
+                                          }).ToList<object>();
+                                          
+
+                        responseData.Status = "OK";
+                        responseData.Results = results;
+                    }
+                    catch (Exception ex)
+                    {
+                        throw ex;
+                    }
                 }
             }
             catch (Exception ex)

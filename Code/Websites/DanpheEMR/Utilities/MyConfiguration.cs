@@ -14,6 +14,8 @@ namespace DanpheEMR.Core.Configuration
         public int CacheExpirationMinutes { get; set; }
         public string FileStorageRelativeLocation { get; set; }
         public bool highlightAbnormalLabResult { get; set; }
+        public bool RealTimeRemoteSyncEnabled { get; set; }
         public string ApplicationVersionNum { get; set; }
+        public bool IsAuditEnable { get; set; }
     }
 }

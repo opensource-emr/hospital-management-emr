@@ -7,6 +7,7 @@ import { ReportingService } from "../../../../reporting/shared/reporting-service
 import * as moment from 'moment/moment';
 import { CommonFunctions } from ".././../../../shared/common.functions";
 import { GridEmitModel } from "../../../../shared/danphe-grid/grid-emit.model";
+import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from "../../../../shared/danphe-grid/NepaliColGridSettingsModel";
 
 @Component({
   selector: 'ins-total-items-bill',
@@ -26,6 +27,7 @@ export class INSTotalItemsBillComponent {
 
   public TotalItemsBillReportColumns: Array<any> = null;
   public TotalItemsBillReporttData: Array<any> = new Array<RPT_BIL_TotalItemsBillModel>();
+  public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
 
   public summary: any = {
     tot_SubTotal: 0,
@@ -44,8 +46,7 @@ export class INSTotalItemsBillComponent {
     public coreService: CoreService,
     public reportServ: ReportingService) {
     this.dlService = _dlService;
-    this.CurrentTotalItem.fromDate = moment().format('YYYY-MM-DD');
-    this.CurrentTotalItem.toDate = moment().format('YYYY-MM-DD');
+    this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail("BillingDate", false));
     this.loadDepartments();
   }
 
@@ -54,29 +55,21 @@ export class INSTotalItemsBillComponent {
       .map(res => res).subscribe(res => {
         if (res.Status == "OK") {
           this.serDeptList = res.Results;
+          CommonFunctions.SortArrayOfObjects(this.serDeptList, "ServiceDepartmentName");//this sorts the empRoleList by EmployeeRoleName.
         }
       });
   }
 
   Load() {
-    for (var i in this.CurrentTotalItem.TotalItemBillValidator.controls) {
-      this.CurrentTotalItem.TotalItemBillValidator.controls[i].markAsDirty();
-      this.CurrentTotalItem.TotalItemBillValidator.controls[i].updateValueAndValidity();
-    }
-    if (this.CurrentTotalItem.IsValidCheck(undefined, undefined)) {
+
       //IsInsurance=true for Insurance Reports
-      this.fromDate = this.CurrentTotalItem.fromDate;
-      this.toDate = this.CurrentTotalItem.toDate;
       this.dlService.Read("/BillingReports/TotalItemsBill?FromDate=" + this.fromDate + "&ToDate=" + this.toDate
         + "&BillStatus=" + this.CurrentTotalItem.billstatus + "&ServiceDepartmentName=" + this.CurrentTotalItem.servicedepartment +
-        "&ItemName=" + this.CurrentTotalItem.itemname +"&IsInsurance=true")
+        "&ItemName=" + this.CurrentTotalItem.itemname + "&IsInsurance=true")
         .map(res => res)
         .subscribe(res => this.Success(res),
           res => this.Error(res));
-    }
-    else {
-      this.msgBoxServ.showMessage("notice-message", ["dates are not proper."]);
-    }
+   
   }
 
   Success(res) {
@@ -171,5 +164,10 @@ export class INSTotalItemsBillComponent {
     console.log(err.ErrorMessage);
   }
 
+  //sud:6June'20--reusable From-ToDate
+  OnFromToDateChange($event) {
+    this.fromDate = $event ? $event.fromDate : this.fromDate;
+    this.toDate = $event ? $event.toDate : this.toDate;
+  }
 
 }

@@ -4,14 +4,16 @@ import { CommonFunctions } from '../../shared/common.functions';
 
 export default class LabGridColumnSettings {
 
-  public static ListRequisitionColumnFilter(columnArr: Array<any>): Array<any> {
+  public static ListRequisitionColumnFilter(columnObj: Array<any>): Array<any> {
     var filteredColumns = [];
-    if (columnArr && columnArr.length) {
-      for (var i = 0; i < columnArr.length; i++) {
-        var headername: string = columnArr[i];
-        var ind = this.LabRequsistionPatientSearch.find(val => val.headerName.toLowerCase().replace(/ +/g, "") == headername.toLowerCase().replace(/ +/g, ""));
-        if (ind) {
-          filteredColumns.push(ind);
+    if (columnObj) {
+      for (var prop in columnObj) {
+        if (columnObj[prop] == true || columnObj[prop] == 1) {
+          var headername: string = prop;
+          var ind = this.LabRequsistionPatientSearch.find(val => val.headerName.toLowerCase().replace(/ +/g, "") == headername.toLowerCase().replace(/ +/g, ""));
+          if (ind) {
+            filteredColumns.push(ind);
+          }
         }
       }
       if (filteredColumns.length) {
@@ -28,15 +30,17 @@ export default class LabGridColumnSettings {
 
 
 
-  public static AddResultColumnFilter(columnArr: Array<any>): Array<any> {
+  public static AddResultColumnFilter(columnObj: any): Array<any> {
     var filteredColumns = [];
-    if (columnArr && columnArr.length) {
-      for (var i = 0; i < columnArr.length; i++) {
-        var headername: string = columnArr[i];
-        var ind = this.PendingLabResults.find(val => val.headerName.toLowerCase().replace(/ +/g, "") == headername.toLowerCase().replace(/ +/g, ""));
-        if (ind) {
-          filteredColumns.push(ind);
-        }
+    if (columnObj) {
+      for (var prop in columnObj) {
+        var headername: string = prop;
+        if (columnObj[prop] == true || columnObj[prop] == 1) {
+          var ind = this.PendingLabResults.find(val => val.headerName.toLowerCase().replace(/ +/g, "") == headername.toLowerCase().replace(/ +/g, ""));
+          if (ind) {
+            filteredColumns.push(ind);
+          }
+        }        
       }
       if (filteredColumns.length) {
         return filteredColumns;
@@ -75,15 +79,17 @@ export default class LabGridColumnSettings {
 
 
 
-  public static FinalReportListColumnFilter(columnArr: Array<any>): Array<any> {
+  public static FinalReportListColumnFilter(columnObj: Array<any>): Array<any> {
     var filteredColumns = [];
-    if (columnArr && columnArr.length) {
-      for (var i = 0; i < columnArr.length; i++) {
-        var headername: string = columnArr[i];
-        var ind = this.LabTestFinalReportList.find(val => val.headerName.toLowerCase().replace(/ +/g, "") == headername.toLowerCase().replace(/ +/g, ""));
-        if (ind) {
-          filteredColumns.push(ind);
-        }
+    if (columnObj) {
+      for (var prop in columnObj) {
+        if (columnObj[prop] == true || columnObj[prop] == 1) {
+          var headername: string = prop;
+          var ind = this.LabTestFinalReportList.find(val => val.headerName.toLowerCase().replace(/ +/g, "") == headername.toLowerCase().replace(/ +/g, ""));
+          if (ind) {
+            filteredColumns.push(ind);
+          }
+        }        
       }
       if (filteredColumns.length) {
         return filteredColumns;
@@ -136,8 +142,15 @@ export default class LabGridColumnSettings {
                         Add Result
                      </a> 
                      <a danphe-grid-action="labsticker" class="grid-action"><i class="glyphicon glyphicon-print"></i> Sticker</a>
-                     <a danphe-grid-action="undo" class="grid-action">Undo</a>
-                    `
+                    
+                <div class="dropdown" style="display:inline-block;">
+                 <button class="dropdown-toggle grid-btnCstm" type="button" data-toggle="dropdown">...
+                 <span class="caret"></span></button>
+                 <ul class="dropdown-menu grid-ddlCstm">
+                   <li><a danphe-grid-action="undo" class="grid-action">Undo</a></li>
+                   <li> <a danphe-grid-action="print-empty-sheet" class="grid-action">Print Sheet</a></li>
+                 </ul>
+                </div> `
     }
 
   ];
@@ -171,6 +184,7 @@ export default class LabGridColumnSettings {
     }
   ];
 
+ 
 
 
   static LabTestFinalReportList = [
@@ -290,6 +304,39 @@ export default class LabGridColumnSettings {
     }
   ];
 
+  static LabCategoryList = [
+    { headerName: "Category Name", field: "TestCategoryName", width: 160 }, 
+    {
+      headerName: "Actions",
+      field: "",
+      width: 60,
+      template:
+        `
+             <a danphe-grid-action="edit" class="grid-action">
+                Edit
+             </a>`
+    }
+  ];
+
+  static MappedCompList = [
+    { headerName: "Serial Number", field: "ReportMapId", width:50 },
+    { headerName: "Government Test Name", field: "ReportItemName", width:100 },
+    { headerName: "Mapped Lab Test Name", field: "LabItemName", width:100 },
+    { headerName: "Is Component Based", field: "IsComponentBased", width:100 },
+    { headerName: "Component Name", field: "ComponentName", width:100 },
+    { headerName: "Positive Indicator", field: "PositiveIndicator", width:100 },
+    {
+      headerName: "Actions",
+      field: "",
+      width: 60,
+      template:
+        `
+             <a danphe-grid-action="edit" class="grid-action">
+                Edit
+             </a>`
+    }
+  ];
+
   static IsActiveRenderer(params) {
     let isActive = params.data.IsActive;
     if (isActive) {
@@ -374,7 +421,7 @@ export default class LabGridColumnSettings {
           isBillPaid = false;
         }
       } else {
-        if (params.data.BillingStatus && (params.data.BillingStatus.toLowerCase() == "paid" || params.data.BillingStatus.toLowerCase() == "unpaid")) {
+        if (params.data.BillingStatus && (params.data.BillingStatus.toLowerCase() == "paid" || params.data.BillingStatus.toLowerCase() == "unpaid" || visitType.toLowerCase() == "emergency")) {
           isBillPaid = true;
         } else {
           isBillPaid = false;
@@ -406,6 +453,4 @@ export default class LabGridColumnSettings {
       return `<b style="color: red;">NO</b>`;
     }
   }
-
-
 }

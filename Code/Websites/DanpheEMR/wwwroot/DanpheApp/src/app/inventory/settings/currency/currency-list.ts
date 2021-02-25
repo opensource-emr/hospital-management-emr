@@ -63,9 +63,17 @@ export class CurrencyListComponent {
     }
 
     CallBackAdd($event) {
-        this.currencyList.push($event.currency);
-        if (this.index!= null)
-            this.currencyList.splice(this.index, 1);
+        if ($event != null) {
+            //find the index of currently added/updated currency in the list of all currencys (grid)
+            let index = this.currencyList.findIndex(a => a.CurrencyID == $event.currency.CurrencyID);
+            //index will be -1 when this currency is currently added. 
+            if (index < 0) {
+                this.currencyList.splice(0, 0, $event.currency);//this will add this currency to 0th index.
+            }
+            else {
+                this.currencyList.splice(index, 1, $event.currency);//this will replace one currency at particular index. 
+            }
+        }
         this.currencyList = this.currencyList.slice();
         this.changeDetector.detectChanges();
         this.showAddPage = false;

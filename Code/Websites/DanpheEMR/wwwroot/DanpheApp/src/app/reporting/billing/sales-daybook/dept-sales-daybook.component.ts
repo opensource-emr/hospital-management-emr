@@ -5,23 +5,27 @@ import * as moment from 'moment/moment';
 import { DLService } from "../../../shared/dl.service"
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
+import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from '../../../shared/danphe-grid/NepaliColGridSettingsModel';
 @Component({
   templateUrl: "./dept-sales-daybook.html"
 })
 export class RPT_BIL_DepartmentSalesDaybookComponent {
 
-  public fromDate: Date = null;
-  public toDate: Date = null;
+  public fromDate: string = null;
+  public toDate: string = null;
 
   DepartmentSalesDaybookColumns: Array<any> = null;
   DepartmentSalesDaybookData: Array<any> = new Array<RPT_BIL_DepartmentSalesDaybookModel>();
   public currentdepartmentsales: RPT_BIL_DepartmentSalesDaybookModel = new RPT_BIL_DepartmentSalesDaybookModel();
   dlService: DLService = null;
+  public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
 
   constructor(_dlService: DLService, public msgBoxServ: MessageboxService, public reportServ: ReportingService) {
     this.dlService = _dlService;
     this.currentdepartmentsales.fromDate = moment().format('YYYY-MM-DD');
     this.currentdepartmentsales.toDate = moment().format('YYYY-MM-DD');
+    this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail("FromDate", false));
+    this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail("ToDate", false));
   }
 
 
@@ -30,12 +34,16 @@ export class RPT_BIL_DepartmentSalesDaybookComponent {
   };
 
   Load() {
-    this.dlService.Read("/BillingReports/DepartmentSalesDaybook?FromDate="
-      + this.currentdepartmentsales.fromDate + "&ToDate=" + this.currentdepartmentsales.toDate)
-      .map(res => res)
-      .subscribe(res => this.Success(res),
-        res => this.Error(res));
-
+    if (this.currentdepartmentsales.fromDate != null && this.currentdepartmentsales.toDate != null) {
+      this.dlService.Read("/BillingReports/DepartmentSalesDaybook?FromDate="
+        + this.currentdepartmentsales.fromDate + "&ToDate=" + this.currentdepartmentsales.toDate)
+        .map(res => res)
+        .subscribe(res => this.Success(res),
+          res => this.Error(res));
+    }
+    else {
+      this.msgBoxServ.showMessage("error", ['Dates Provided is not Proper']);
+    }
   }
   Error(err) {
     this.msgBoxServ.showMessage("error", [err.ErrorMessage]);
@@ -78,5 +86,14 @@ export class RPT_BIL_DepartmentSalesDaybookComponent {
   ErrorMsg(err) {
     this.msgBoxServ.showMessage("error", ["Sorry!!! Not able export the excel file."]);
     console.log(err.ErrorMessage);
+  }
+
+  //Anjana:11June'20--reusable From-ToDate-In Reports..
+  OnFromToDateChange($event) {
+    this.fromDate = $event ? $event.fromDate : this.fromDate;
+    this.toDate = $event ? $event.toDate : this.toDate;
+
+    this.currentdepartmentsales.fromDate = this.fromDate;
+    this.currentdepartmentsales.toDate = this.toDate;
   }
 }

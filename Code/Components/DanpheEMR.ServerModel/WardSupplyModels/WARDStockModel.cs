@@ -14,6 +14,7 @@ namespace DanpheEMR.ServerModel
         public int StockId { get; set; }
 
         public int? WardId { get; set; }
+        public int StoreId { get; set; }
 
         public int ItemId { get; set; }
 
@@ -27,7 +28,8 @@ namespace DanpheEMR.ServerModel
 
         public int? DepartmentId { get; set; }
 
-        public string StockType { get; set; }  
+        public string StockType { get; set; }
+        public decimal? Price { get; set; }
 
         [NotMapped]
         public int newWardId { get; set; }

@@ -33,14 +33,22 @@ namespace DanpheEMR.ServerModel
         public int CreatedBy { get; set; }
         public DateTime? CreatedOn { get; set; }
         public decimal MRP { get; set; }
+        public bool? IsPacking { get; set; }
+        public  int? PackingQty { get; set; }
+        public bool? IsItemDiscountApplicable { get; set; }
+        public decimal? StripMRP { get; set; }
         public int CounterId { get; set; }
         public double AvailableQuantity { get; set; }
         public decimal? GrPerItemDisAmt { get; set; }
+        public decimal? GrTotalDisAmt { get; set; }
         public decimal? GrPerItemVATAmt { get; set; }
+        public bool? IsTransferredToACC { get; set; }
 
         [NotMapped]
         public double QtyDiffCount { get; set; }
         [NotMapped]
         public string StkManageInOut { get; set; }
+        public decimal? StripRate { get; set; }
+        public int? PackingTypeId { get; set; }
     }
 }

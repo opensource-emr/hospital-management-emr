@@ -53,16 +53,68 @@ namespace DanpheEMR.Controllers.Reporting
             return DanpheJSONConvert.SerializeObject(responseData);
         }
 
-        public string CurrentStockLevelReportById(int ItemId)
+        public string CurrentStockLevelReportById(string StoreIds)
         {
-            DanpheHTTPResponse<List<CurrentStockLevel>> responseData = new DanpheHTTPResponse<List<CurrentStockLevel>>();
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
             try
             {
                 InventoryReportingDbContext invreportingDbContext = new InventoryReportingDbContext(connString);
-                List<CurrentStockLevel> currentstocklevel = invreportingDbContext.CurrentStockLevelReportByItemId(ItemId);
-
+                DataTable result = invreportingDbContext.CurrentStockLevelReportByItemId(StoreIds);
                 responseData.Status = "OK";
-                responseData.Results = currentstocklevel;
+                responseData.Results = result;
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
+
+        public string SubStoreDispatchAndConsumptionReport(string StoreIds, DateTime FromDate, DateTime ToDate)
+        {
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+            try
+            {
+                InventoryReportingDbContext inventoryReportingDbContext = new InventoryReportingDbContext(connString);
+                DataTable result = inventoryReportingDbContext.SubStoreDispatchAndConsumptionReport(StoreIds, FromDate, ToDate);
+                responseData.Status = "OK";
+                responseData.Results = result;
+            }
+            catch(Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
+
+        public string ItemDetailsForDispatchAndConsumptionReport(string StoreIds, int ItemId, string FromDate, string ToDate)
+        {
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+            try
+            {
+                InventoryReportingDbContext inventoryReportingDbContext = new InventoryReportingDbContext(connString);
+                DataTable result = inventoryReportingDbContext.ItemDetailsForDispatchAndConsumptionReport(StoreIds, ItemId, FromDate, ToDate);
+                responseData.Status = "OK";
+                responseData.Results = result;
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
+        public string CurrentStockItemDetailsByStoreId(string StoreIds,int ItemId)
+        {
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+            try
+            {
+                InventoryReportingDbContext invreportingDbContext = new InventoryReportingDbContext(connString);
+                DataTable result = invreportingDbContext.CurrentStockItemDetailsByStoreId(StoreIds, ItemId);
+                responseData.Status = "OK";
+                responseData.Results = result;
             }
             catch (Exception ex)
             {
@@ -129,13 +181,13 @@ namespace DanpheEMR.Controllers.Reporting
 
         #region Daily Item Dispatch Report
 
-        public string DailyItemDispatchReport(DateTime FromDate, DateTime ToDate, string DepartmentName)
+        public string DailyItemDispatchReport(DateTime FromDate, DateTime ToDate, int StoreId)
         {
             DanpheHTTPResponse<List<DailyItemDispatchModel>> responseData = new DanpheHTTPResponse<List<DailyItemDispatchModel>>();
             try
             {
                 InventoryReportingDbContext invreportingDbContext = new InventoryReportingDbContext(connString);
-                List<DailyItemDispatchModel> currentItemdispatchlevel = invreportingDbContext.DailyItemDispatchReport(FromDate, ToDate, DepartmentName);
+                List<DailyItemDispatchModel> currentItemdispatchlevel = invreportingDbContext.DailyItemDispatchReport(FromDate, ToDate, StoreId);
 
                 responseData.Status = "OK";
                 responseData.Results = currentItemdispatchlevel;
@@ -153,6 +205,25 @@ namespace DanpheEMR.Controllers.Reporting
             return View("~/Views/InventoryView/Reports/DailyItemDispatch.cshtml");
         }
 
+        #endregion
+        #region Inventory Purchase Items Report
+        public string INVPurchaseItemsReport(DateTime FromDate, DateTime ToDate,int FiscalYearId)
+        {
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+            try
+            {
+                InventoryReportingDbContext invreportingDbContext = new InventoryReportingDbContext(connString);
+                DataTable result = invreportingDbContext.INVPurchaseItemsReport(FromDate, ToDate,FiscalYearId);
+                responseData.Status = "OK";
+                responseData.Results = result;
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
         #endregion
 
         #region Purchase Order Report
@@ -182,20 +253,61 @@ namespace DanpheEMR.Controllers.Reporting
         }
 
         #endregion
+        #region Cancelled PO and GR Reports
+        public string CancelledPOandGRReport(DateTime FromDate, DateTime ToDate, string isGR)
+        {
+            DanpheHTTPResponse<List<GoodsReceiptModel>> responseData = new DanpheHTTPResponse<List<GoodsReceiptModel>>();
+            try
+            {
+                bool GR = bool.Parse(isGR);
+                InventoryReportingDbContext invreportingDbContext = new InventoryReportingDbContext(connString);
+                List<GoodsReceiptModel> dsbStats = invreportingDbContext.CancelledPOandGRReports(FromDate,ToDate,GR);
 
+                responseData.Status = "OK";
+                responseData.Results = dsbStats;
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
+        #endregion
+
+        #region Goods Receipt Evaluation Report
+        public string GoodReceiptEvaluationReport(DateTime? FromDate, DateTime? ToDate, string TransactionType,int? GoodReceiptNo)
+        {
+            DanpheHTTPResponse<List<GoodsReceiptEvaluationModel>> responseData = new DanpheHTTPResponse<List<GoodsReceiptEvaluationModel>>();
+            try
+            {
+                
+                InventoryReportingDbContext invreportingDbContext = new InventoryReportingDbContext(connString);
+                List<GoodsReceiptEvaluationModel> dsbStats = invreportingDbContext.GoodReceiptEvaluationReport(FromDate,ToDate,TransactionType,GoodReceiptNo);
+
+                responseData.Status = "OK";
+                responseData.Results = dsbStats;
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
+        #endregion
 
         #region Inventory Summary Report
 
-        public string InventorySummaryReport(DateTime FromDate, DateTime ToDate, string ItemName)
+        public string InventorySummaryReport(DateTime FromDate, DateTime ToDate, int FiscalYearId)
         {
-            DanpheHTTPResponse<List<InventorySummaryModel>> responseData = new DanpheHTTPResponse<List<InventorySummaryModel>>();
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
             try
             {
                 InventoryReportingDbContext invreportingDbContext = new InventoryReportingDbContext(connString);
-                List<InventorySummaryModel> allInventorySummaryData = invreportingDbContext.InventorySummaryReport(FromDate, ToDate, ItemName);
-
+                DataTable result = invreportingDbContext.InventorySummaryReport(FromDate, ToDate, FiscalYearId);
                 responseData.Status = "OK";
-                responseData.Results = allInventorySummaryData;
+                responseData.Results = result;
             }
             catch (Exception ex)
             {
@@ -284,7 +396,7 @@ namespace DanpheEMR.Controllers.Reporting
             }
             return DanpheJSONConvert.SerializeObject(responseData);
         }
-
+       
         public IActionResult IPurchaseReport()
         {
             return View("~/Views/InventoryView/Reports/PurchaseReport.cshtml");
@@ -315,6 +427,119 @@ namespace DanpheEMR.Controllers.Reporting
 
         #endregion
 
+        #region Vendor Transaction Report
+        public string VendorTransactionReport(int fiscalYearId,int VendorId)
+        {
+            //DanpheHTTPResponse<List<GoodsReceiptEvaluationModel>> responseData = new DanpheHTTPResponse<List<GoodsReceiptEvaluationModel>>();
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+            try
+            {
+                InventoryReportingDbContext invreportingDbContext = new InventoryReportingDbContext(connString);
+                DataTable result = invreportingDbContext.VendorTransactionReport(fiscalYearId, VendorId);
+                responseData.Status = "OK";
+                responseData.Results = result;
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
+        #endregion
+
+        #region VendorTransactionReportData
+        public string VendorTransactionReportData(int fiscalYearId, int VendorId)
+        {
+            //DanpheHTTPResponse<List<GoodsReceiptEvaluationModel>> responseData = new DanpheHTTPResponse<List<GoodsReceiptEvaluationModel>>();
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+            try
+            {
+                InventoryReportingDbContext invreportingDbContext = new InventoryReportingDbContext(connString);
+                InventoryDbContext inventoryDbContext = new InventoryDbContext(connString);
+
+                DataTable result = invreportingDbContext.VendorTransactionReportData(fiscalYearId,VendorId);
+
+                responseData.Status = "OK";
+                responseData.Results = result;
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
+        #endregion
+
+        #region ItemMgmtDetail
+        public string ItemMgmtDetailReport()
+        {
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+            try
+            {
+                InventoryReportingDbContext invreportingDbContext = new InventoryReportingDbContext(connString);
+                DataTable dsbStats = invreportingDbContext.ItemMgmtDetail();
+
+                responseData.Status = "OK";
+                responseData.Results = dsbStats;
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
+        #endregion
+        #region Substore Report
+        public string SubstoreStockReport(int StoreId,int ItemId)
+        {
+            DanpheHTTPResponse<SubstoreReportViewModel> responseData = new DanpheHTTPResponse<SubstoreReportViewModel>();
+            try
+            {
+                InventoryReportingDbContext invreportingDbContext = new InventoryReportingDbContext(connString);
+                SubstoreReportViewModel substoreStock = invreportingDbContext.SubstoreStockReport(StoreId,ItemId);
+
+                responseData.Status = "OK";
+                responseData.Results = substoreStock;
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
+        #endregion
+
+        #region Inventory Purchase summary report
+        public string InvPurchaseSummaryReport(DateTime FromDate, DateTime ToDate)
+        {
+            //DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+            DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
+            try
+            {
+                InventoryReportingDbContext invreportingDbContext = new InventoryReportingDbContext(connString);
+                InventoryDbContext inventoryDbContext = new InventoryDbContext(connString);
+                DataTable result = invreportingDbContext.InvPurchaseSummaryReport(FromDate, ToDate);
+                var itmCategoryList = (from itmcat in inventoryDbContext.ItemCategoryMaster
+                                       where itmcat.IsActive == true
+                                       select itmcat).OrderByDescending(s => s.ItemCategoryId).ToList();                
+                responseData.Status = "OK";
+                responseData.Results = new {
+                    PurchaeSummaryList=result,
+                    GRCategoryList= itmCategoryList.Select(t => t.ItemCategoryName).ToList()
+                };
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
+        #endregion
 
     }
 }

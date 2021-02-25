@@ -14,8 +14,15 @@ namespace DanpheEMR.ServerModel
         [Key]
         public int SubjectiveNoteId { get; set; }
         public int NotesId { get; set; }
+       
         public int PatientId { get; set; }
+        [ForeignKey("PatientId")]
+        public virtual PatientModel Patients { get; set; }
         public int PatientVisitId { get; set; }
+        [ForeignKey("PatientVisitId")]
+        public virtual VisitModel Visits { get; set; }
+
+       // public string FreeText { get; set; }
         public string ChiefComplaint { get; set; }
         public string HistoryOfPresentingIllness { get; set; }
         public string ReviewOfSystems { get; set; }

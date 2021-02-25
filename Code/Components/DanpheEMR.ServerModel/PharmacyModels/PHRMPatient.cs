@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -32,5 +33,8 @@ namespace DanpheEMR.ServerModel
         public string CountrySubDivisionName { get; set; }
         [NotMapped]
         public int? ProviderId { get; set; }
+        [NotMapped]
+        public bool IsAdmitted { get; set; }
+        public List<PHRMInvoiceTransactionItemsModel> PHRMInvoiceTransactionItems { get; set; }
     }
 }

@@ -9,6 +9,7 @@ import {
 
 import { Employee } from '../../employee/shared/employee.model';
 import { AbstractControl } from '@angular/forms';
+
 export class User {
   public UserId: number = 0;
   public EmployeeId: number = 0;
@@ -27,10 +28,11 @@ export class User {
 
   public CreatedOn: string = null;
   public ModifiedOn: string = null;
+  public IsSystemAdmin: boolean = false;
 
   public NeedsPasswordUpdate: boolean = true;
   //Ajay 07 Aug 19 -- landing page after login user
-  public LandingPageRouteId: number = null;
+  public LandingPageRouteId: number = null;  
 
   public UserProfileValidator: FormGroup = null;
 

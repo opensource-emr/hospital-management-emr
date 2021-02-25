@@ -27,6 +27,8 @@ export class PHRMStoreStockModel {
   public TransactionType: string = "";
   public CreatedBy: number = 0;
   public CreatedOn: Date = new Date();
+  public ModifiedBy: number = 0;
+  public ModifiedOn: Date = new Date();
   public MRP: number = 0;
   public GoodsReceiptItemId: number = 0;
   public GoodReceiptPrintId: number = 0;
@@ -39,7 +41,7 @@ export class PHRMStoreStockModel {
   constructor() {
     var _formBuilder = new FormBuilder();
     this.StoreManageValidator = _formBuilder.group({
-      'UpdatedQty': ['', Validators.compose([this.positiveNumberValdiator])],
+      'UpdatedQty': ['', Validators.compose([this.positiveNumberValdiator,this.wholeNumberRequired])],
       //'Price': ['', Validators.compose([this.positiveNumberValdiator])]
       'Remark': ['', Validators.required],
       'InOut': ['', Validators.required]
@@ -67,5 +69,13 @@ export class PHRMStoreStockModel {
     }
 
   }
+  wholeNumberRequired(control: FormControl): { [key: string]: boolean } {
+    if (control.value) {
+        if (control.value % 1 != 0) return { 'wrongDecimalValue': true };
+    }
+    else
+    return { 'wrongDecimalValue': true };
+}
+
 
 }

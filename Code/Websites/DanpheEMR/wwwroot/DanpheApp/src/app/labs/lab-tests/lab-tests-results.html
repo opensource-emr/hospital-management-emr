@@ -1,21 +1,12 @@
-
-<button class="btn btn-cancel" *ngIf="showReport && enableEdit" style="float:right" (click)="EditReport()">
-    Edit Result
-    <i class="fa fa-edit"></i>
-</button>
-
-<button class="btn btn-navlink pull-left margin-7-lft"  *ngIf="showAddEditResult && isEditResult"  (click)="BackToViewReport()">
-  <i class="fa fa-arrow-left"></i>
-    Back To Report View
-</button>
-
-<danphe-lab-add-result *ngIf="showAddEditResult" [templateReport]="templateReport"
+<div class="wrapper">
+  <button class="btn btn-cancel" *ngIf="showReport && enableEdit" style="float:right" (click)="EditReport()"> Edit Result <i class="fa fa-edit"></i> </button>
+  <button class="btn primary-btn pull-left margin-7-lft"  *ngIf="showAddEditResult && isEditResult"  (click)="BackToViewReport()"> <i class="fa fa-arrow-left"></i> Back To Report View </button>
+  <danphe-lab-add-result *ngIf="showAddEditResult" [templateReport]="templateReport"
                        [showAddEditResult]="showAddEditResult"
                        [isEditResult]="isEditResult"
                        (callback-addupdate)="CallBackAddUpdate($event)"
                        (callback-cancel)="CallbackCancel($event)"></danphe-lab-add-result>
-
-<danphe-lab-view-report  *ngIf="showReport && hospitalCode != 'mmth'" [templateReport]="templateReport"
+  <danphe-lab-view-report  *ngIf="showReport && labReportFormat == 'format1'" [templateReport]="templateReport"
                         [showReport]="showReport"
                         [showHeader]="showHeader"
                         [showSignatories]="showSignatories"
@@ -23,8 +14,7 @@
                         [verificationRequired]="verificationRequired"
                         [printReportFromGrid]="printReportFromGrid"
                         (callbackBackToGrid)="CallBackBackToGrid($event)"></danphe-lab-view-report>
-
-<danphe-lab-view-report-format2 *ngIf="showReport && hospitalCode == 'mmth'" [templateReport]="templateReport"
+  <danphe-lab-view-report-format2 *ngIf="showReport && labReportFormat == 'format2'" [templateReport]="templateReport"
                         [showReport]="showReport"
                         [showHeader]="showHeader"
                         [showSignatories]="showSignatories"
@@ -32,3 +22,4 @@
                         [verificationRequired]="verificationRequired"
                         [printReportFromGrid]="printReportFromGrid"
                         (callbackBackToGrid)="CallBackBackToGrid($event)"></danphe-lab-view-report-format2>
+</div>

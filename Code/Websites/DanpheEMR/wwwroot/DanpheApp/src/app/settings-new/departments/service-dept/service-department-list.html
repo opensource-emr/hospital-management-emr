@@ -1,0 +1,19 @@
+<!--<div class="caption">
+    <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i>
+    <span class="caption-subject font-blue bold uppercase">Manage Service Department</span>
+</div>
+<br />-->
+<a feature="button" class="btn blue bordered" (click)="AddServDepartment()"><i class="fa fa-plus"></i>Add Service Department</a>
+<service-department-add *ngIf="showAddPage"
+                        [selectedServDepartment]="selectedServDepartment"
+                        (callback-add)="CallBackAdd($event)"></service-department-add>
+
+<div *ngIf="serviceDepartmentList" class="row">
+  <div class="col-md-9 col-xs-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="servDeptGridColumns" [grid-data]="serviceDepartmentList" (grid-actions)="ServDeptGridActions($event)"
+                 [show-print-button]="false">
+    </danphe-grid>
+  </div>
+</div>
+
+

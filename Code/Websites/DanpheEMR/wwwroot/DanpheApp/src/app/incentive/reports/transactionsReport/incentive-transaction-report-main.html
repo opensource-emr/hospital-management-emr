@@ -1,0 +1,73 @@
+<style>
+  .form-horizontal .form-group {
+    margin-bottom: 0;
+  }
+</style>
+<div class="row">
+  <form [formGroup]="curDocReportMain.BilRefMainReportValidator" class="form-horizontal">
+    <div class="form-body">
+      <div class="col-md-12">
+        <div class="caption custom-caption no-margin">
+          <i class="glyphicon glyphicon-asterisk"></i>
+          <span class="caption-subject">Incentive Summary Report</span>
+        </div>
+        <div class="row clearfix">
+          <div class="col-md-6">
+            <from-to-date-select (on-change)="OnDateRangeChange($event)">
+            </from-to-date-select>
+          </div>
+          <div class="col-md-4 col-xs-12">
+            <div class="form-group">
+              <label class="control-label col-md-4">Select Doctor<b style="float:right;">:</b></label>
+              <div class="col-md-6 doctor-select-opt">
+                <input danphe-auto-complete [(ngModel)]="DocObj" [list-formatter]="EmployeeListFormatter"
+                       [source]="filteredDocterList" placeholder="Search Doctor Name" display-property-name="FullName"
+                       value-property-name=null onclick="this.select()" [ngModelOptions]="{standalone: true}"
+                       max-num-list="10" (ngModelChange)="ChangeDocter(DocObj)" match-formatted="true"
+                       style="height: 30px; border: 1px solid #ccc; padding: 0 10px; width: 100%;" />
+              </div>
+            </div>
+          </div>
+          <div class="col-md-2 col-xs-12">
+            <div class="form-group">
+              <button class="btn blue" type="button" (click)="Load()">
+                <i class="fa fa-search"></i>
+                Show Report
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </form>
+</div>
+<div class="row" id="printPage">
+  <div class="col-md-12" style="display:none;padding:0px" id="headerForPrint">
+    <div class="text-center bill-head col-md-12" style="text-align:center;font-family:sans-serif;padding-top: 5px;">
+      <span style="font-size:20px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
+      <span style="font-size:14px;">{{headerDetail.address}}</span><br />
+    </div>
+  </div>
+  <div class="col-md-12">
+    <div *ngIf="showDocSummary">
+      <incentive-report-summary [fromDate]="selDocReportMain.fromDate"
+                                [toDate]="selDocReportMain.toDate">
+      </incentive-report-summary>
+    </div> 
+
+    <div *ngIf="showItemSummary">
+      <incentive-item-summary [fromDate]="selDocReportMain.fromDate"
+                              [toDate]="selDocReportMain.toDate" [referrerId]="selDocReportMain.providerId" (callback)="CallBackItemSummary()">
+      </incentive-item-summary>
+    </div>
+  </div>
+</div>
+<div class="row col-md-12" style="text-align:center; margin: 15px 0;">
+  <div *ngIf="showDocSummary || showItemSummary">
+    <button class="blue btn" type="button" (click)="Print()">
+      <i class="fa fa-print"></i>
+      Print
+    </button>
+  </div>
+</div>

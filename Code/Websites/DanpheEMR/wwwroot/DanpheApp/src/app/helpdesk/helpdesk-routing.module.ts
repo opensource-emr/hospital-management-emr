@@ -1,31 +1,35 @@
-﻿import { NgModule } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { RouterModule } from "@angular/router";
-import { HelpdeskComponent } from './helpdesk.component';
-import { EmployeeInfoComponent } from './employeeinfo/employeeinfo.component';
-import { BedInfoComponent } from "./bedinfo/bed-info.component";
-import { WardInfoComponent } from "./wardinfo/ward-info.component";
+import { HelpdeskMainComponent } from "./helpdesk-main.component";
+import { HlpDskEmployeeInfoComponent } from './employeeinfo/employee-info.component';
+import { HlpDskBedInfoComponent } from "./bedinfo/bed-info.component";
+import { HlpDskWardInfoComponent } from "./wardinfo/ward-info.component";
 import { AuthGuardService } from '../security/shared/auth-guard.service';
+import { PageNotFound } from '../404-error/404-not-found.component';
 
 @NgModule({
-    imports: [
-        RouterModule.forChild([
-            {
-                path: '',
-                component: HelpdeskComponent,canActivate: [AuthGuardService] ,
-                
-                children: [
-                    //{ path: '', component: HelpdeskComponent },
-                    { path: '', redirectTo: 'BedInformation', pathMatch: 'full' },
-                    { path: 'EmployeeInformation', component: EmployeeInfoComponent,canActivate: [AuthGuardService]  },
-                    { path: 'BedInformation', component: BedInfoComponent,canActivate: [AuthGuardService]  },
-                    { path: 'WardInformation', component: WardInfoComponent,canActivate: [AuthGuardService]  }
-                    ]
-            }
-        ])
-    ],
-    exports: [
-        RouterModule
-    ]
+  imports: [
+    RouterModule.forChild([
+      {
+        path: '',
+        component: HelpdeskMainComponent, canActivate: [AuthGuardService],
+
+        children: [
+          //{ path: '', component: HelpdeskComponent },
+          { path: '', redirectTo: 'BedInformation', pathMatch: 'full' },
+          { path: 'EmployeeInformation', component: HlpDskEmployeeInfoComponent, canActivate: [AuthGuardService] },
+          { path: 'BedInformation', component: HlpDskBedInfoComponent, canActivate: [AuthGuardService] },
+          { path: 'WardInformation', component: HlpDskWardInfoComponent, canActivate: [AuthGuardService] },
+          { path: "**", component: PageNotFound }
+
+        ]
+      },
+      { path: "**", component: PageNotFound }
+    ])
+  ],
+  exports: [
+    RouterModule
+  ]
 })
 export class HelpdeskRoutingModule {
 

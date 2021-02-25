@@ -30,6 +30,7 @@ namespace DanpheEMR.DalLayer
 
             modelBuilder.Entity<ServiceDepartmentModel>().ToTable("BIL_MST_ServiceDepartment");
             modelBuilder.Entity<DepartmentModel>().ToTable("MST_Department");
+            modelBuilder.Entity<PHRMStoreModel>().ToTable("PHRM_MST_Store");
             modelBuilder.Entity<BedFeature>().ToTable("ADT_MST_BedFeature");
             modelBuilder.Entity<BedFeaturesMap>().ToTable("ADT_MAP_BedFeaturesMap");
             modelBuilder.Entity<BedModel>().ToTable("ADT_MAP_WardBedType");
@@ -43,8 +44,15 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<TaxModel>().ToTable("MST_Tax");
             modelBuilder.Entity<CfgParameterModel>().ToTable("CORE_CFG_Parameters");
             modelBuilder.Entity<IntegrationModel>().ToTable("ServiceDepartment_MST_IntegrationName");
+            modelBuilder.Entity<EmailSendDetailModel>().ToTable("MSTEmailSendDetail");
+
+
+            modelBuilder.Entity<BillItemPrice>().ToTable("BIL_CFG_BillItemPrice");
+            modelBuilder.Entity<StoreVerificationMapModel>().ToTable("MST_MAP_StoreVerification");
 
         }
+
+
         public DbSet<CountryModel> Country { get; set; }
         public DbSet<CountrySubDivisionModel> CountrySubDivision { get; set; }
         public DbSet<ICD10CodeModel> ICD10Code { get; set; }
@@ -53,6 +61,7 @@ namespace DanpheEMR.DalLayer
         public DbSet<RadiologyImagingTypeModel> ImagingTypes { get; set; }
         public DbSet<RadiologyImagingItemModel> ImagingItems { get; set; }
         public DbSet<DepartmentModel> Departments { get; set; }
+        public DbSet<PHRMStoreModel> Store { get; set; }
         public DbSet<ServiceDepartmentModel> ServiceDepartments { get; set; }
         public DbSet<BedModel> Bed { get; set; }
         public DbSet<BedFeature> BedFeature { get; set; }
@@ -66,6 +75,14 @@ namespace DanpheEMR.DalLayer
         public DbSet<PHRMItemMasterModel> Medicines { get; set; }
         public DbSet<CfgParameterModel> CFGParameters { get; set; }
         public DbSet<IntegrationModel> IntegrationName { get; set; }
+        public DbSet<EmailSendDetailModel> SendEmailDetails { get; set; }
+
+        //sud:24-Oct-2019: Added billitemprice against the convention of Master, since it was neeed for employee settings controller.
+        //and which was using Transaction of MasterDbContext. so couldn't use any other dbcontextes inside of transaction scope.
+        public DbSet<BillItemPrice> BillItemPrices { get; set; }
+        public DbSet<StoreVerificationMapModel> StoreVerificationMapModel { get; set; }
+
+
     }
 }
 

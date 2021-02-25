@@ -9,6 +9,7 @@ import { NepaliDate } from '../../../shared/calendar/np/nepali-dates';
 import { NepaliCalendarService } from '../../../shared/calendar/np/nepali-calendar.service';
 import { CoreService } from "../../../core/shared/core.service"
 import * as moment from 'moment/moment';
+import { KeyValue } from '@angular/common';
 
 @Component({
   templateUrl: "./laboratory-services.html"
@@ -18,6 +19,7 @@ export class RPT_GOVT_LaboratoryServicesComponent {
   public fromDateNepali: NepaliDate = null;
   public toDateNepali: NepaliDate = null;
   public displayReport: boolean = false;
+  public displayPreviousReport: boolean = false;
   public calType: string = "";
   public HaematologyTable0: Array<RPT_GOVT_LaboratoryServicesModel> = new Array<RPT_GOVT_LaboratoryServicesModel>();
   public HaematologyTable1: Array<RPT_GOVT_LaboratoryServicesModel> = new Array<RPT_GOVT_LaboratoryServicesModel>();
@@ -36,6 +38,17 @@ export class RPT_GOVT_LaboratoryServicesComponent {
 
   public currentLaboratoryServices: DynamicGovernmentReport = new DynamicGovernmentReport();
   dlService: DLService = null;
+
+  public hematology: Array<any> = [];
+  public bacteriology: Array<any> = [];
+  public biochemistry: Array<any> = [];
+  public drugAnalysis: Array<any> = [];
+  public histopathology: Array<any> = [];
+  public hormone: Array<any> = [];
+  public immunology: Array<any> = [];
+  public parasitology: Array<any> = [];
+  public virology: Array<any> = [];
+  public immunoHistoChemistry: Array<any> = [];
 
   constructor(public http: HttpClient,
     public _dlService: DLService,
@@ -73,7 +86,7 @@ export class RPT_GOVT_LaboratoryServicesComponent {
     }
     if ((moment(this.currentLaboratoryServices.fromDate).diff(this.currentLaboratoryServices.toDate)) <= 0)
 
-      if (CheckIsValid) {
+      if (this.currentLaboratoryServices.fromDate != null && this.currentLaboratoryServices.toDate != null) {
         this.dlService.Read("/GovernmentReporting/GetLaboratoryServices?FromDate="
           + this.currentLaboratoryServices.fromDate + "&ToDate=" + this.currentLaboratoryServices.toDate)
           .map(res => res)
@@ -93,21 +106,34 @@ export class RPT_GOVT_LaboratoryServicesComponent {
   }
   Success(res) {
     if (res.Status == "OK") {
-
-      this.HaematologyTable0 = JSON.parse(res.Results.HaematologyModel0);
-      this.HaematologyTable1 = JSON.parse(res.Results.HaematologyModel1);
-      this.ImmunologyTable0 = JSON.parse(res.Results.ImmunologyModel0);
-      this.ImmunologyTable1 = JSON.parse(res.Results.ImmunologyModel1);
-      this.BiochemistryTable0 = JSON.parse(res.Results.BiochemistryModel0);
-      this.BiochemistryTable1 = JSON.parse(res.Results.BiochemistryModel1);
-      this.BacteriologyTable0 = JSON.parse(res.Results.BacteriologyModel0);
-      this.CytologyTable0 = JSON.parse(res.Results.CytologyModel0);
-      this.VirologyTable0 = JSON.parse(res.Results.VirologyModel0);
-      this.ImmunohistochemistryTable0 = JSON.parse(res.Results.ImmunohistochemistryModel0);
-      this.HistologyTable0 = JSON.parse(res.Results.HistologyModel0);
-      this.ParasitologyTable0 = JSON.parse(res.Results.ParasitologyModel0);
-      this.CardiacenzymesTable0 = JSON.parse(res.Results.CardiacenzymesModel0);
-      this.HormonesendocrinologyTable0 = JSON.parse(res.Results.HormonesendocrinologyModel0);
+      console.log(res.Results);
+      this.hematology = Object.entries(res.Results.Hematology);
+      this.bacteriology = Object.entries(res.Results.Bacteriology);
+      this.drugAnalysis = Object.entries(res.Results.Drug_Analysis);
+      this.immunoHistoChemistry = Object.entries(res.Results["Immuno-Histo_Chemistry"]);
+      this.immunology = Object.entries(res.Results.Immunology);
+      this.parasitology = Object.entries(res.Results.Parasitology);
+      this.virology = Object.entries(res.Results.Virology);
+      this.histopathology = Object.entries(res.Results["Histopathology/Cytology"]);
+      this.hormone = Object.entries(res.Results["Hormone/Endocrine"]);
+      this.biochemistry = Object.entries(res.Results.Biochemistry);
+      // console.log(this.histopathology);
+      // console.log(this.hematology);
+      //this.HaematologyTable0 = res.Results.Hematology;
+      //console.log(this.HaematologyTable0)
+      //this.HaematologyTable1 = JSON.parse(res.Results.HaematologyModel1);
+      //this.ImmunologyTable0 = JSON.parse(res.Results.ImmunologyModel0);
+      //this.ImmunologyTable1 = JSON.parse(res.Results.ImmunologyModel1);
+      //this.BiochemistryTable0 = JSON.parse(res.Results.BiochemistryModel0);
+      //this.BiochemistryTable1 = JSON.parse(res.Results.BiochemistryModel1);
+      //this.BacteriologyTable0 = JSON.parse(res.Results.BacteriologyModel0);
+      //this.CytologyTable0 = JSON.parse(res.Results.CytologyModel0);
+      //this.VirologyTable0 = JSON.parse(res.Results.VirologyModel0);
+      //this.ImmunohistochemistryTable0 = JSON.parse(res.Results.ImmunohistochemistryModel0);
+      //this.HistologyTable0 = JSON.parse(res.Results.HistologyModel0);
+      //this.ParasitologyTable0 = JSON.parse(res.Results.ParasitologyModel0);
+      //this.CardiacenzymesTable0 = JSON.parse(res.Results.CardiacenzymesModel0);
+      //this.HormonesendocrinologyTable0 = JSON.parse(res.Results.HormonesendocrinologyModel0);
       //For displaying the Template only after the search click
       this.displayReport = true;
     }
@@ -144,4 +170,13 @@ export class RPT_GOVT_LaboratoryServicesComponent {
   //returnToDate($event) {
   //    this.currentLaboratoryServices.toDate = $event.enDate;
   //}
+
+
+  //Anjana:11June'20--reusable From-ToDate-In Reports..
+  OnFromToDateChange($event) {
+    this.currentLaboratoryServices.fromDate = $event.fromDate;
+    this.currentLaboratoryServices.toDate = $event.toDate;
+
+  }
+  
 }

@@ -41,7 +41,8 @@ namespace DanpheEMR.ServerModel
         public List<int> BillTxnItemIds { get; set; }
         [NotMapped]
         public string Remarks { get; set; }
-        
+        [NotMapped]
+        public int? CreditOrganizationId { get; set; }
 
     }
 }

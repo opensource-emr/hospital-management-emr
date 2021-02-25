@@ -33,6 +33,7 @@ namespace DanpheEMR.ServerModel
         public int? SampleCode { get; set; }
         public string RequisitionRemarks { get; set; }
         public DateTime? SampleCreatedOn { get; set; }
+        public DateTime? SampleCollectedOnDateTime { get; set; }
         public int? SampleCreatedBy { get; set; }
         public string Comments { get; set; }
         public string RunNumberType { get; set; }   
@@ -67,6 +68,14 @@ namespace DanpheEMR.ServerModel
 
         public int ResultingVendorId { get; set; }//sud:16May'19--for lab external vendors.
         public bool? HasInsurance { get; set; }
+        public int? ResultAddedBy { get; set; }
+        public DateTime? ResultAddedOn { get; set; }
+        public int? PrintedBy { get; set; }
+        public int? PrintCount { get; set; }
+        public string SampleCodeFormatted { get; set; }
+
+        public int? BillCancelledBy { get; set; }
+        public DateTime? BillCancelledOn { get; set; }
     }
 
     public class LabTestTransactionItemVM

@@ -1,0 +1,53 @@
+<style>
+  select:focus {
+    border: 1px solid red;
+  }
+</style>
+<div style="z-index: 2;" *ngIf="enabledPriceCategories && enabledPriceCategories.length>0">
+  <label class="margin-right-10">Price Category:</label>
+  <select [(ngModel)]="priceCategory" (change)="OnPriceCategoryChange()">
+    <option *ngFor="let cat of enabledPriceCategories" value="{{cat.PriceCategoryName}}">{{cat.DisplayName}}</option>
+  </select>
+
+</div>
+
+
+
+
+
+<!--Below code can be used if different hospital needs different UI (dropdown or radiobutton)
+for which: add a paramter for PriceCategoryDisplayMode=('dropdown' or 'radio') , default will be dropdown.
+and apply ngIf accordingly.-->
+<!--<span *ngIf="enabledPriceCategories.Normal" class="margin-right-10" style="font-weight: bold;color: green;">
+  <input type="radio" checked="checked" [(ngModel)]="priceCategory"
+         (change)="OnPriceCategoryChange()" name="name" value="Normal"
+         id="rdbtn_priceCat_Normal"
+         style="zoom: 1.1;" />
+  <label for="rdbtn_priceCat_Normal" style="vertical-align: middle;">Normal</label>
+</span>
+<span *ngIf="enabledPriceCategories.EHS" class="margin-right-10" style="font-weight: bold;color: green;">
+  <input type="radio" [(ngModel)]="priceCategory" (change)="OnPriceCategoryChange()" name="name"
+         id="rdbtn_priceCat_EHS"
+         value="EHS" style="zoom: 1.1;" />
+  <label for="rdbtn_priceCat_EHS" style="vertical-align: middle;">EHS (PayClinic)</label>
+</span>
+<span *ngIf="enabledPriceCategories.SAARCCitizen" class="margin-right-10" style="font-weight: bold;color: green;">
+  <input type="radio" [(ngModel)]="priceCategory" (change)="OnPriceCategoryChange()" name="name"
+         id="rdbtn_priceCat_SAARC"
+         value="SAARCCitizen" style="zoom: 1.1;" />
+  <label for="rdbtn_priceCat_SAARC" style="vertical-align: middle;">SAARC Citizen</label>
+</span>
+
+<span *ngIf="enabledPriceCategories.Foreigner" style="font-weight: bold;color: green;">
+  <input type="radio" [(ngModel)]="priceCategory" (change)="OnPriceCategoryChange()" name="name"
+         id="rdbtn_priceCat_Foreigner"
+         value="Foreigner" style="zoom: 1.1;" />
+  <label for="rdbtn_priceCat_Foreigner" style="vertical-align: middle;">Foreigner</label>
+</span>
+
+<span *ngIf="enabledPriceCategories.InsForeigner" style="font-weight: bold;color: green;">
+  <input type="radio" [(ngModel)]="priceCategory" (change)="OnPriceCategoryChange()" name="name"
+         id="rdbtn_priceCat_InsForeigner"
+         value="InsForeigner" style="zoom: 1.1;" />
+  <label for="rdbtn_priceCat_InsForeigner" style="vertical-align: middle;">Foreigner(Insurance)</label>
+</span>-->

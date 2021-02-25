@@ -1,0 +1,45 @@
+<div>
+  <div class="caption custom-caption">
+    <h3><span>Calculate and Load Incentive from Billing</span></h3>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    <div class="row font-small">
+      <div class="col-md-12">
+        <div class="row font-small">
+          <div class="col-md-7">
+            <from-to-date-select (on-change)="OnDateRangeChange($event)">
+
+            </from-to-date-select>
+            <!-- <div class="row">
+              <div class="col-md-6">
+                <div class="row">
+                  <label for="" class="control-label col-md-2">From:</label>
+                  <div class="col-md-10">
+                    <danphe-date-picker [(ngModel)]="fromDate" ngDefaultControl [CalendarTypes]="calType"> </danphe-date-picker>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="row">
+                  <label for="" class="control-label col-md-2">To:</label>
+                  <div class="col-md-10">
+                    <danphe-date-picker [(ngModel)]="toDate" ngDefaultControl [CalendarTypes]="calType"> </danphe-date-picker>
+                  </div>
+                </div>
+              </div>
+            </div> -->
+          </div>
+          <div class="col-md-3">
+            <div class="row">
+              <div class="col-md-3">
+                <button (click)="LoadUptoDateFractionTransactions()" class="btn blue" style="padding: 5px 10px;"> <i class="fa fa-refresh"></i> Sync Billing to Incentives </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

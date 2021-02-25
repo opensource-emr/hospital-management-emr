@@ -15,6 +15,7 @@ using Newtonsoft.Json;
 using DanpheEMR.Security;
 using DanpheEMR.Controllers.Billing;
 using System.Data;
+using DanpheEMR.Enums;
 
 namespace DanpheEMR.Controllers
 {
@@ -311,7 +312,7 @@ namespace DanpheEMR.Controllers
                         if (billingTransaction != null)
                         {
                             billingDbContext.BillingTransactions.Attach(billingTransaction);
-                            billingTransaction.BillStatus = "paid";
+                            billingTransaction.BillStatus = ENUM_BillingStatus.paid;// "paid";
                             billingTransaction.PaidAmount = billingTransaction.TotalAmount;
                             billingTransaction.PaidDate = settlementDate;
                             billingTransaction.PaymentReceivedBy = currentUser.EmployeeId;
@@ -338,7 +339,7 @@ namespace DanpheEMR.Controllers
                                 {
                                     billingDbContext.BillingTransactionItems.Attach(txnItm);
 
-                                    txnItm.BillStatus = "paid";
+                                    txnItm.BillStatus = ENUM_BillingStatus.paid;// "paid";
                                     txnItm.PaidDate = settlementDate;
                                     txnItm.PaidCounterId = couterId;
                                     txnItm.PaymentReceivedBy = currentUser.EmployeeId;

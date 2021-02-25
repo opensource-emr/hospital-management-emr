@@ -16,5 +16,6 @@ namespace DanpheEMR.ServerModel
         public string ReferenceId { get; set; }      
         [NotMapped]
         public int? TransferStatus { get; set; }
+        public string ReferenceIdOne { get; set; }
     }  
 }

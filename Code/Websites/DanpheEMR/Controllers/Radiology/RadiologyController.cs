@@ -19,6 +19,12 @@ using DanpheEMR.Core.Caching;
 using System.Drawing;
 using System.Net.Mail;
 using DanpheEMR.Services;
+using System.Threading.Tasks;
+using DanpheEMR.Enums;
+using DanpheEMR.ServerModel.RadiologyModels;
+using System.Transactions;
+using System.Data.SqlClient;
+using System.Data;
 
 namespace DanpheEMR.Controllers
 {
@@ -47,6 +53,7 @@ namespace DanpheEMR.Controllers
              int imagingTypeId,
             int imagingReportId,
             string PatientStudyId,
+            string typeList,
           DateTime? fromDate, DateTime? toDate)
         {
             DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
@@ -222,10 +229,25 @@ namespace DanpheEMR.Controllers
                 {
 
                     List<object> imgReportList = new List<object>();
+                    Dictionary<string, bool> radSettings = coreDBContext.Parameters.Where(p => p.ParameterGroupName.ToLower() == "radiology"
+                                                 && (p.ParameterName == "EnableRadScan" || p.ParameterName == "RadHoldIPBillBeforeScan"
+                                                 || p.ParameterName == "RAD_AttachFileButtonShowHide"))
+                                                .ToDictionary(k => k.ParameterName, d => ((d.ParameterValue == "1" || d.ParameterValue == "true") ? true : false));
+
+                    bool EnableRadScan = radSettings["EnableRadScan"];
+                    bool RadHoldIPBillBeforeScan = radSettings["RadHoldIPBillBeforeScan"];
+                    bool IsShowButton = radSettings["RAD_AttachFileButtonShowHide"];
+
+                    List<int> imgValidTypeList = DanpheJSONConvert.DeserializeObject<List<int>>(typeList);
+
                     var dbReports =
-                        (from i in radioDbContext.ImagingReports.AsEnumerable()
-                         where i.OrderStatus == reportOrderStatus
-                         join pat in radioDbContext.Patients.AsEnumerable()
+                        (from i in radioDbContext.ImagingReports
+                         join requisition in radioDbContext.ImagingRequisitions on i.ImagingRequisitionId equals requisition.ImagingRequisitionId
+                         where i.OrderStatus == reportOrderStatus && (requisition.BillingStatus.ToLower() == "paid"
+                         || requisition.BillingStatus.ToLower() == "unpaid"
+                         || requisition.BillingStatus.ToLower() == "provisional")
+                         && imgValidTypeList.Contains(requisition.ImagingTypeId.Value)
+                         join pat in radioDbContext.Patients
                          on i.PatientId equals pat.PatientId
                          select new
                          {
@@ -233,7 +255,7 @@ namespace DanpheEMR.Controllers
                              ImagingRequisitionId = i.ImagingRequisitionId,
                              PatientVisitId = i.PatientVisitId,
                              PatientId = i.PatientId,
-                             ProviderName = i.ProviderName,
+                             ProviderName = ((i.ProviderName != null) && i.ProviderName.Length > 0) ? i.ProviderName : "self",
                              ImagingTypeId = i.ImagingTypeId,
                              ImagingTypeName = i.ImagingTypeName,
                              ImagingItemId = i.ImagingItemId,
@@ -247,10 +269,15 @@ namespace DanpheEMR.Controllers
                              OrderStatus = i.OrderStatus,
                              PatientStudyId = i.PatientStudyId,
                              Indication = i.Indication,
+                             RadiologyNo = i.RadiologyNo,
                              Signatories = i.Signatories,
-                             HasInsurance = (from req in radioDbContext.ImagingRequisitions
-                                             where req.ImagingRequisitionId == i.ImagingRequisitionId
-                                             select req.HasInsurance).FirstOrDefault(),
+                             IsScanned = true,
+                             ScannedBy = requisition.ScannedBy,
+                             ScannedOn = requisition.ScannedOn,
+                             WardName = requisition.WardName,
+                             IsActive = requisition.IsActive,
+                             HasInsurance = requisition.HasInsurance,
+                             IsShowButton = IsShowButton,
                              Patient = new
                              {
                                  Age = i.Patient.Age,
@@ -265,48 +292,53 @@ namespace DanpheEMR.Controllers
                                  PhoneNumber = i.Patient.PhoneNumber,
                                  Address = i.Patient.Address
                              }
-                         }).AsEnumerable()
-                      .OrderByDescending(r => r.PatientId)
-                   .ToList();
+                         }).OrderByDescending(r => r.PatientId).ToList();
 
-                    var imgReqList = (from s in radioDbContext.ImagingRequisitions.Include("Patient").AsEnumerable()
-                                     .Where(x => x.OrderStatus == reqOrderStatus
-                                          && (x.BillingStatus.ToLower() == "paid" || x.BillingStatus.ToLower() == "unpaid" || x.BillingStatus.ToLower() == "provisional"))
+
+                    var imgReqList = (from req in radioDbContext.ImagingRequisitions.Include("Patient")
+                                      where (EnableRadScan ? (req.OrderStatus == reqOrderStatus || req.OrderStatus == reportOrderStatus) : req.OrderStatus == reqOrderStatus)
+                                      && (req.BillingStatus.ToLower() == "paid" || req.BillingStatus.ToLower() == "unpaid" || req.BillingStatus.ToLower() == "provisional")
+                                          && (DbFunctions.TruncateTime(req.CreatedOn) >= fromDate && DbFunctions.TruncateTime(req.CreatedOn) <= toDate)
+                                          && imgValidTypeList.Contains(req.ImagingTypeId.Value)
                                       select new
                                       {
-                                          ImagingRequisitionId = s.ImagingRequisitionId,
-                                          PatientVisitId = s.PatientVisitId,
-                                          PatientId = s.PatientId,
-                                          ProviderName = s.ProviderName,
-                                          ImagingTypeId = s.ImagingTypeId,
-                                          ImagingTypeName = s.ImagingTypeName,
-                                          ImagingItemId = s.ImagingItemId,
-                                          ImagingItemName = s.ImagingItemName,
-                                          ProcedureCode = s.ProcedureCode,
-                                          ImagingDate = s.ImagingDate,
-                                          RequisitionRemarks = s.RequisitionRemarks,
-                                          OrderStatus = s.OrderStatus,
-                                          ProviderId = s.ProviderId,
-                                          BillingStatus = s.BillingStatus,
-                                          Urgency = s.Urgency,
-                                          HasInsurance = s.HasInsurance,
+                                          ImagingRequisitionId = req.ImagingRequisitionId,
+                                          PatientVisitId = req.PatientVisitId,
+                                          PatientId = req.PatientId,
+                                          ProviderName = ((req.ProviderName != null) && req.ProviderName.Length > 0) ? req.ProviderName : "self",
+                                          ImagingTypeId = req.ImagingTypeId,
+                                          ImagingTypeName = req.ImagingTypeName,
+                                          ImagingItemId = req.ImagingItemId,
+                                          ImagingItemName = req.ImagingItemName,
+                                          ProcedureCode = req.ProcedureCode,
+                                          ImagingDate = req.ImagingDate,
+                                          RequisitionRemarks = req.RequisitionRemarks,
+                                          OrderStatus = req.OrderStatus,
+                                          ProviderId = req.ProviderId,
+                                          BillingStatus = req.BillingStatus,
+                                          Urgency = req.Urgency,
+                                          HasInsurance = req.HasInsurance,
+                                          WardName = req.WardName,
+                                          IsActive = req.IsActive,
+                                          IsScanned = EnableRadScan ? req.IsScanned : true,
+                                          ScannedBy = req.ScannedBy,
+                                          ScannedOn = req.ScannedOn,
+                                          IsShowButton = IsShowButton,
                                           Patient = new
                                           {
-                                              Age = s.Patient.Age,
-                                              DateOfBirth = s.Patient.DateOfBirth,
-                                              Gender = s.Patient.Gender,
-                                              FirstName = s.Patient.FirstName,
-                                              MiddleName = s.Patient.MiddleName,
-                                              LastName = s.Patient.LastName,
-                                              ShortName = s.Patient.FirstName + " " + (string.IsNullOrEmpty(s.Patient.MiddleName) ? "" : s.Patient.MiddleName + " ") + s.Patient.LastName,
-                                              PatientCode = s.Patient.PatientCode,
-                                              PatientId = s.Patient.PatientId,
-                                              PhoneNumber = s.Patient.PhoneNumber,
-                                              Address = s.Patient.Address
+                                              Age = req.Patient.Age,
+                                              DateOfBirth = req.Patient.DateOfBirth,
+                                              Gender = req.Patient.Gender,
+                                              FirstName = req.Patient.FirstName,
+                                              MiddleName = req.Patient.MiddleName,
+                                              LastName = req.Patient.LastName,
+                                              ShortName = req.Patient.FirstName + " " + (string.IsNullOrEmpty(req.Patient.MiddleName) ? "" : req.Patient.MiddleName + " ") + req.Patient.LastName,
+                                              PatientCode = req.Patient.PatientCode,
+                                              PatientId = req.Patient.PatientId,
+                                              PhoneNumber = req.Patient.PhoneNumber,
+                                              Address = req.Patient.Address
                                           }
-                                      }).AsEnumerable()
-                      .OrderByDescending(y => y.ImagingDate)
-                     .ToList();
+                                      }).OrderByDescending(y => y.ImagingDate).ToList();
 
                     //adding both the Requisition List and Report List to same array imgReportList
                     if (dbReports.Count != 0)
@@ -336,7 +368,13 @@ namespace DanpheEMR.Controllers
                                 ReportingDoctorId = 0,
                                 CreatedOn = imgReq.ImagingDate,
                                 ProviderId = imgReq.ProviderId,
+                                WardName = imgReq.WardName,
+                                IsActive = imgReq.IsActive,
                                 HasInsurance = imgReq.HasInsurance,
+                                IsScanned = imgReq.IsScanned,
+                                ScannedBy = imgReq.ScannedBy,
+                                ScannedOn = imgReq.ScannedOn,
+                                IsShowButton = imgReq.IsShowButton,
                                 //nbb- for minimizing network load, reportText call via separate get method by reportItemId
                                 //var rptTemplate = reportTemplateList.Find(x => x.ImagingItemId == imgReq.ImagingItemId);
                                 //if (rptTemplate != null)
@@ -371,14 +409,16 @@ namespace DanpheEMR.Controllers
                 //get all patient's imaging reports--for radiologist to view.. 
                 else if (reqType == "allImagingReports")
                 {
-
+                    List<int> imgValidTypeList = DanpheJSONConvert.DeserializeObject<List<int>>(typeList);
                     List<ImagingReportViewModel> imgReportList = (from report in radioDbContext.ImagingReports
                                                                   join requisition in radioDbContext.ImagingRequisitions on report.ImagingRequisitionId equals requisition.ImagingRequisitionId
                                                                   join patient in radioDbContext.Patients on report.PatientId equals patient.PatientId
                                                                   //join doc in radioDbContext.ReportingDoctors on report.ReportingDoctorId equals doc.ReportingDoctorId into docTemp
                                                                   //from repDoc in docTemp.DefaultIfEmpty()
                                                                   where report.OrderStatus == reportOrderStatus
+                                                                  && (requisition.BillingStatus.ToLower() == "paid" || requisition.BillingStatus.ToLower() == "unpaid" || requisition.BillingStatus.ToLower() == "provisional")
                                                                   && (DbFunctions.TruncateTime(requisition.CreatedOn) >= fromDate && DbFunctions.TruncateTime(requisition.CreatedOn) <= toDate)
+                                                                  && imgValidTypeList.Contains(requisition.ImagingTypeId.Value)
                                                                   select new ImagingReportViewModel
                                                                   {
                                                                       ImagingReportId = report.ImagingReportId,
@@ -398,10 +438,13 @@ namespace DanpheEMR.Controllers
                                                                       Address = patient.Address,
                                                                       PatientStudyId = report.PatientStudyId,
                                                                       ProviderName = requisition.ProviderName,
+                                                                      ProviderId = requisition.ProviderId,
                                                                       ReportingDoctorId = report.ReportingDoctorId,
                                                                       ReportingDoctorName = report.ProviderName,
                                                                       Indication = report.Indication,
-                                                                      HasInsurance = requisition.HasInsurance
+                                                                      RadiologyNo = report.RadiologyNo,
+                                                                      HasInsurance = requisition.HasInsurance,
+                                                                      IsActive = requisition.IsActive
                                                                   }).OrderByDescending(b => b.CreatedOn).ToList();
                     responseData.Status = "OK";
                     responseData.Results = imgReportList;
@@ -440,7 +483,7 @@ namespace DanpheEMR.Controllers
                         }
                     }
 
-              
+
                     ImagingReportViewModel imgReport = (from report in radioDbContext.ImagingReports
                                                         join patient in radioDbContext.Patients on report.PatientId equals patient.PatientId
                                                         //join doc in radioDbContext.ReportingDoctors on report.ReportingDoctorId equals doc.ReportingDoctorId into docTemp
@@ -460,6 +503,7 @@ namespace DanpheEMR.Controllers
                                                             ImageName = report.ImageName,
                                                             PatientName = patient.FirstName + " " + (string.IsNullOrEmpty(patient.MiddleName) ? "" : patient.MiddleName + " ") + patient.LastName,
                                                             Address = patient.Address,
+                                                            PatientNameLocal = patient.PatientNameLocal,
                                                             //DoctorSignatureJSON = repDoc.DoctorSignatureJSON,
                                                             Signatories = report.Signatories,
                                                             DateOfBirth = patient.DateOfBirth,
@@ -470,8 +514,9 @@ namespace DanpheEMR.Controllers
                                                             PatientStudyId = report.PatientStudyId,
                                                             ReportingDoctorId = report.ReportingDoctorId,
                                                             Indication = report.Indication,
+                                                            RadiologyNo = report.RadiologyNo,
                                                             HasInsurance = (from req in radioDbContext.ImagingRequisitions
-                                                                            where req.ImagingRequisitionId== requisitionId
+                                                                            where req.ImagingRequisitionId == requisitionId
                                                                             select req.HasInsurance).FirstOrDefault(),
 
                                                             //can't use below assignments since it gives LINQ error: non static method requires a target
@@ -532,11 +577,30 @@ namespace DanpheEMR.Controllers
                 else if (patientVisitId != 0 && reqType == "imagingResult-visit")
                 {
 
+                    //var imgReportList = radioDbContext.ImagingReports
+                    //                        .Where(i => i.PatientVisitId == patientVisitId && i.OrderStatus == "final")
+                    //                        .OrderByDescending(i => i.CreatedOn).ToList();
+
                     var imgReportList = radioDbContext.ImagingReports
                                             .Where(i => i.PatientVisitId == patientVisitId && i.OrderStatus == "final")
-                                            .OrderByDescending(i => i.CreatedOn).ToList();
+                                            .GroupBy(a => a.ImagingItemId)
+                                            .Select(b => new {
+                                                latestUniqueImagings = b.OrderByDescending(i => i.CreatedOn).FirstOrDefault()
+                                            })
+                                            .Select(c => new
+                                            {
+                                                c.latestUniqueImagings
+                                            })
+                                            .ToList();
+
+                    List<ImagingReportModel> tempImg = new List<ImagingReportModel>();
+                    imgReportList.ForEach(a =>
+                    {
+                        tempImg.Add(a.latestUniqueImagings);
+                    });
+
                     responseData.Status = "OK";
-                    responseData.Results = imgReportList;
+                    responseData.Results = tempImg;
                 }
                 else if (reqType == "getImagingType")
                 {
@@ -812,15 +876,22 @@ namespace DanpheEMR.Controllers
                 //post imaging requistion items.
                 RadiologyDbContext dbContext = new RadiologyDbContext(base.connString);
                 DicomDbContext dicomDbContext = new DicomDbContext(base.connStringPACSServer);
+
+
+
                 if (reqType == "postRequestItems")
                 {
                     string str = this.ReadPostData();
                     List<ImagingRequisitionModel> imgrequests = JsonConvert.DeserializeObject<List<ImagingRequisitionModel>>(str);
                     MasterDbContext masterContext = new MasterDbContext(base.connString);
 
+                    PatientDbContext patientContext = new PatientDbContext(connString);
+
                     //getting the imagingtype because imagingtypename is needed in billing for getting service department
                     List<RadiologyImagingTypeModel> Imgtype = masterContext.ImagingTypes
                                         .ToList<RadiologyImagingTypeModel>();
+
+                    var notValidForReportingItem = masterContext.ImagingItems.Where(i => i.IsValidForReporting == false).Select(m => m.ImagingItemId);
 
                     if (imgrequests != null && imgrequests.Count > 0)
                     {
@@ -829,6 +900,7 @@ namespace DanpheEMR.Controllers
                             req.ImagingDate = System.DateTime.Now;
                             req.CreatedOn = DateTime.Now;
                             req.CreatedBy = currentUser.EmployeeId;
+                            req.IsActive = true;
                             if (req.ProviderId != null && req.ProviderId != 0)
                             {
                                 var emp = dbContext.Employees.Where(a => a.EmployeeId == req.ProviderId).FirstOrDefault();
@@ -838,12 +910,16 @@ namespace DanpheEMR.Controllers
                             {
                                 req.ImagingTypeName = Imgtype.Where(a => a.ImagingTypeId == req.ImagingTypeId).Select(a => a.ImagingTypeName).FirstOrDefault();
                                 req.Urgency = string.IsNullOrEmpty(req.Urgency) ? "normal" : req.Urgency;
+                                //req.WardName = ;
                             }
                             else
                             {
                                 req.ImagingTypeId = Imgtype.Where(a => a.ImagingTypeName == req.ImagingTypeName).Select(a => a.ImagingTypeId).FirstOrDefault();
                             }
-                            dbContext.ImagingRequisitions.Add(req);
+                            if (!notValidForReportingItem.Contains(req.ImagingItemId.Value))
+                            {
+                                dbContext.ImagingRequisitions.Add(req);
+                            }
                         }
                         dbContext.SaveChanges();
                         responseData.Status = "OK";
@@ -863,71 +939,96 @@ namespace DanpheEMR.Controllers
                     var localFolder = Request.Form["localFolder"];
                     var reportDetails = Request.Form["reportDetails"];
                     var orderStatus = Request.Form["orderStatus"];
+                    var enableProviderEditInBillTxnItem = Convert.ToBoolean(Request.Form["enableProviderEditInBillTxnItem"]);
                     ImagingReportModel imgReport = DanpheJSONConvert.DeserializeObject<ImagingReportModel>(reportDetails);
 
-                    //checks if some report file is present and calls UploadReportFile function if necessary.
-                    if (files.Count != 0)
+                    using (TransactionScope trans = new TransactionScope())
                     {
-                        //returns Imaging Report Object after updating Imaging Name and ImagingFullPath
-                        imgReport = UploadReportFile(imgReport, files, localFolder);
-                    }
-
-                    imgReport.CreatedBy = currentUser.EmployeeId;
-                    imgReport.OrderStatus = orderStatus;
-                    imgReport.CreatedOn = System.DateTime.Now;
-                    dbContext.ImagingReports.Add(imgReport);
-
-                    //List<int> patImg = new List<int>(imgReport.PatientStudyId.Split(','));
-
-
-                    if (imgReport.PatientStudyId != null)
-                    {
-
-                        List<int> patStudyIdList = imgReport.PatientStudyId.Split(',').Select(int.Parse).ToList();
-                        List<PatientStudyModel> dicom = (from pp in dicomDbContext.PatientStudies
-                                                         where patStudyIdList.Contains(pp.PatientStudyId)
-                                                         select pp).ToList();
-
-                        dicom.ForEach(pat =>
-                        {
-                            pat.IsMapped = true;
-                            dicomDbContext.PatientStudies.Attach(pat);
-                            dicomDbContext.Entry(pat).Property(u => u.IsMapped).IsModified = true;
-                        });
-
-
-                        dicomDbContext.SaveChanges();
-
-
-                    }
-                    dbContext.SaveChanges();
-
-                    //update OrderStatus of the corresponding requisition item in ImagingRequisition Table
-                    string putRequisitionResult = PutRequisitionItemStatus(imgReport.ImagingRequisitionId, orderStatus);
-
-                    if (putRequisitionResult == "OK")
-                    {
-                        //return to client
-                        responseData.Status = "OK";
-
-                        ImagingReportModel returnImgReport = new ImagingReportModel();
-                        returnImgReport.ReportText = imgReport.ReportText;
-                        returnImgReport.ImagingReportId = imgReport.ImagingReportId;
-                        returnImgReport.OrderStatus = imgReport.OrderStatus;
-                        returnImgReport.Indication = imgReport.Indication;
-                        returnImgReport.ImagingRequisitionId = imgReport.ImagingRequisitionId;
+                        //checks if some report file is present and calls UploadReportFile function if necessary.
                         if (files.Count != 0)
                         {
-                            returnImgReport.ImageFullPath = imgReport.ImageFullPath;
-                            returnImgReport.ImageName = imgReport.ImageName;
+                            //returns Imaging Report Object after updating Imaging Name and ImagingFullPath
+                            imgReport = UploadReportFile(imgReport, files, localFolder);
                         }
-                        responseData.Results = returnImgReport;
-                    }
-                    //if update of RequisitionItem OrderStatus Fails.
-                    else
-                    {
-                        responseData.Status = "Failed";
-                        responseData.ErrorMessage = putRequisitionResult;
+
+                        imgReport.CreatedBy = currentUser.EmployeeId;
+                        imgReport.OrderStatus = orderStatus;
+                        imgReport.CreatedOn = System.DateTime.Now;
+                        dbContext.ImagingReports.Add(imgReport);
+
+                        //List<int> patImg = new List<int>(imgReport.PatientStudyId.Split(','));
+
+
+                        if (imgReport.PatientStudyId != null)
+                        {
+
+                            List<int> patStudyIdList = imgReport.PatientStudyId.Split(',').Select(int.Parse).ToList();
+                            List<PatientStudyModel> dicom = (from pp in dicomDbContext.PatientStudies
+                                                             where patStudyIdList.Contains(pp.PatientStudyId)
+                                                             select pp).ToList();
+
+                            dicom.ForEach(pat =>
+                            {
+                                pat.IsMapped = true;
+                                dicomDbContext.PatientStudies.Attach(pat);
+                                dicomDbContext.Entry(pat).Property(u => u.IsMapped).IsModified = true;
+                            });
+
+
+                            dicomDbContext.SaveChanges();
+
+
+                        }
+                        dbContext.SaveChanges();
+
+                        //update OrderStatus of the corresponding requisition item in ImagingRequisition Table
+                        string putRequisitionResult = PutRequisitionItemStatus(imgReport.ImagingRequisitionId, orderStatus);
+
+                        if (putRequisitionResult == "OK")
+                        {
+                            //return to client
+                            responseData.Status = "OK";
+
+                            ImagingReportModel returnImgReport = new ImagingReportModel();
+                            returnImgReport.ReportText = imgReport.ReportText;
+                            returnImgReport.ImagingReportId = imgReport.ImagingReportId;
+                            returnImgReport.OrderStatus = imgReport.OrderStatus;
+                            returnImgReport.Indication = imgReport.Indication;
+                            returnImgReport.RadiologyNo = imgReport.RadiologyNo;
+                            returnImgReport.ImagingRequisitionId = imgReport.ImagingRequisitionId;
+                            if (files.Count != 0)
+                            {
+                                returnImgReport.ImageFullPath = imgReport.ImageFullPath;
+                                returnImgReport.ImageName = imgReport.ImageName;
+                            }
+
+                            List<SqlParameter> paramList = new List<SqlParameter>(){
+                                                    new SqlParameter("@reqID", imgReport.ImagingRequisitionId),
+                                                    new SqlParameter("@status", orderStatus.ToString())
+                                                };
+
+                            DataTable statusUpdated = DALFunctions.GetDataTableFromStoredProc("SP_Bill_OrderStatusUpdate_Radiology", paramList, dbContext);
+
+                            if (enableProviderEditInBillTxnItem && imgReport.ProviderIdInBilling.HasValue)
+                            {
+                                List<SqlParameter> providerUpdateInBillingParamList = new List<SqlParameter>(){
+                                                    new SqlParameter("@RequisitionId", imgReport.ImagingRequisitionId),
+                                                    new SqlParameter("@ProviderId", imgReport.ProviderIdInBilling),
+                                                    new SqlParameter("@ProviderName", imgReport.ProviderNameInBilling)
+                                                };
+
+                                DataTable providerUpdated = DALFunctions.GetDataTableFromStoredProc("SP_Update_RadiologyProvider_In_BillTransactionItem", providerUpdateInBillingParamList, dbContext);
+                            }
+                            trans.Complete();
+
+                            responseData.Results = returnImgReport;
+                        }
+                        //if update of RequisitionItem OrderStatus Fails.
+                        else
+                        {
+                            responseData.Status = "Failed";
+                            responseData.ErrorMessage = putRequisitionResult;
+                        }
                     }
                 }
                 //post report with patient study details
@@ -949,6 +1050,11 @@ namespace DanpheEMR.Controllers
                     MasterDbContext masterContext = new MasterDbContext(base.connString);
                     RadEmailModel EmailModel = JsonConvert.DeserializeObject<RadEmailModel>(str);
 
+                    var apiKey = (from param in masterContext.CFGParameters
+                                  where param.ParameterGroupName.ToLower() == "common" && param.ParameterName == "APIKeyOfEmailSendGrid"
+                                  select param.ParameterValue
+                                  ).FirstOrDefault();
+
                     if (!EmailModel.SendPdf)
                     {
                         EmailModel.PdfBase64 = null;
@@ -960,11 +1066,35 @@ namespace DanpheEMR.Controllers
                         EmailModel.PlainContent = "";
                     }
 
-                    var response = _emailService.SendEmail(EmailModel.SenderEmailAddress,EmailModel.EmailList, 
-                        EmailModel.SenderTitle, EmailModel.Subject, EmailModel.PlainContent, 
-                        EmailModel.HtmlContent, EmailModel.PdfBase64, EmailModel.AttachmentFileName);
+                    Task<string> response = _emailService.SendEmail(EmailModel.SenderEmailAddress, EmailModel.EmailList,
+                        EmailModel.SenderTitle, EmailModel.Subject, EmailModel.PlainContent,
+                        EmailModel.HtmlContent, EmailModel.PdfBase64, EmailModel.AttachmentFileName,
+                        EmailModel.ImageAttachments, apiKey);
 
-                    responseData.Status = "OK";
+                    response.Wait();
+
+                    if (response.Result == "OK")
+                    {
+                        EmailSendDetailModel sendEmail = new EmailSendDetailModel();
+                        foreach (var eml in EmailModel.EmailList)
+                        {
+                            sendEmail.SendBy = currentUser.EmployeeId;
+                            sendEmail.SendOn = System.DateTime.Now;
+                            sendEmail.SendToEmail = eml;
+                            sendEmail.EmailSubject = EmailModel.Subject;
+                            masterContext.SendEmailDetails.Add(sendEmail);
+                            masterContext.SaveChanges();
+                        }
+
+                        responseData.Status = "OK";
+
+                    }
+                    else
+                    {
+                        responseData.Status = "Failed";
+                    }
+
+
                 }
                 else
                 {
@@ -991,17 +1121,34 @@ namespace DanpheEMR.Controllers
 
                 //storing filename
                 if (!String.IsNullOrEmpty(imgReport.ImageName))
+                {
                     foreach (var file in files)
+                    {
                         imgReport.ImageName = imgReport.ImageName + ";" + file.FileName;
+                    }
+
+                }
+
                 else if (files.Count > 1 && String.IsNullOrEmpty(imgReport.ImageName))
                 {
                     //ImageName contains names of multiple images seperated by ';'
                     foreach (var file in files)
+                    {
                         imgReport.ImageName = imgReport.ImageName + file.FileName + ";";
-                    imgReport.ImageName = imgReport.ImageName.Remove(imgReport.ImageName.Length - 1);
+                        //imgReport.ImageName = imgReport.ImageName.Remove(imgReport.ImageName.Length - 1);
+                    }
                 }
                 else
                     imgReport.ImageName = files[0].FileName;
+
+                //remove the last semicolon ';' from filename.
+                if (!String.IsNullOrEmpty(imgReport.ImageName))
+                {
+                    if (imgReport.ImageName[imgReport.ImageName.Length - 1] == ';')
+                    {
+                        imgReport.ImageName = imgReport.ImageName.Remove(imgReport.ImageName.Length - 1);
+                    }
+                }
 
                 imgReport.ImageFullPath = filePath;
 
@@ -1070,98 +1217,132 @@ namespace DanpheEMR.Controllers
                 var orderStatus = Request.Form["orderStatus"];
 
                 RadiologyDbContext dbContextUpdate = new RadiologyDbContext(base.connString);
+                CoreDbContext coreDbContext = new CoreDbContext(base.connString);
                 if (reqType == "updateImgReport" && !string.IsNullOrEmpty(reportDetails))
                 {
+                    var enableProviderEditInBillTxnItem = Convert.ToBoolean(Request.Form["enableProviderEditInBillTxnItem"]);
                     var files = Request.Form.Files;
                     ImagingReportModel imgReport = JsonConvert.DeserializeObject<ImagingReportModel>(reportDetails);
 
-                    ImagingReportModel dbImgReport = dbContextUpdate.ImagingReports
+                    using (TransactionScope trans = new TransactionScope())
+                    {
+
+                        try
+                        {
+                            ImagingReportModel dbImgReport = dbContextUpdate.ImagingReports
                         .Where(r => r.ImagingReportId == imgReport.ImagingReportId).FirstOrDefault<ImagingReportModel>();
 
-                    if (files.Count != 0)
-                    {
-                        //calling UploadReportFile function which returns ImagingReportModel object
-                        imgReport = UploadReportFile(imgReport, files, localFolder);
-                        dbImgReport.ImageName = imgReport.ImageName;
-                        dbImgReport.ImageFullPath = imgReport.ImageFullPath;
-                    }
-                    if (!string.IsNullOrEmpty(dbImgReport.PatientStudyId))
-                    {
-                        List<int> patStudyIdList1 = dbImgReport.PatientStudyId.Split(',').Select(int.Parse).ToList();
-                        List<PatientStudyModel> dicom1 = (from pp in dicomDbContext.PatientStudies
-                                                          where patStudyIdList1.Contains(pp.PatientStudyId)
-                                                          select pp).ToList();
+                            if (files.Count != 0)
+                            {
+                                //calling UploadReportFile function which returns ImagingReportModel object
+                                imgReport = UploadReportFile(imgReport, files, localFolder);
+                                dbImgReport.ImageName = imgReport.ImageName;
+                                dbImgReport.ImageFullPath = imgReport.ImageFullPath;
+                            }
+                            if (!string.IsNullOrEmpty(dbImgReport.PatientStudyId))
+                            {
+                                List<int> patStudyIdList1 = dbImgReport.PatientStudyId.Split(',').Select(int.Parse).ToList();
+                                List<PatientStudyModel> dicom1 = (from pp in dicomDbContext.PatientStudies
+                                                                  where patStudyIdList1.Contains(pp.PatientStudyId)
+                                                                  select pp).ToList();
 
-                        dicom1.ForEach(pat =>
-                        {
-                            pat.IsMapped = false;
-                            dicomDbContext.PatientStudies.Attach(pat);
-                            dicomDbContext.Entry(pat).Property(u => u.IsMapped).IsModified = true;
-                        });
-
-
-                        dicomDbContext.SaveChanges();
-
-                    }
-
-                    dbImgReport.ReportText = imgReport.ReportText;
-                    dbImgReport.Indication = imgReport.Indication;
-                    dbImgReport.OrderStatus = orderStatus;
-                    dbImgReport.ReportingDoctorId = imgReport.ReportingDoctorId;
-                    dbImgReport.ReportTemplateId = imgReport.ReportTemplateId;
-                    dbImgReport.ProviderName = imgReport.ProviderName;
-                    dbImgReport.PatientStudyId = imgReport.PatientStudyId;
-                    dbImgReport.ModifiedBy = currentUser.EmployeeId;
-                    dbImgReport.ModifiedOn = DateTime.Now;
-                    dbImgReport.Signatories = imgReport.Signatories;//sud:14Jan'19---corrected for edit report feature.
-                    dbContextUpdate.Entry(dbImgReport).Property(u => u.CreatedBy).IsModified = false;
-                    dbContextUpdate.Entry(dbImgReport).Property(u => u.CreatedOn).IsModified = false;
-                    dbContextUpdate.Entry(dbImgReport).State = EntityState.Modified;
-                    dbContextUpdate.SaveChanges();
-
-                    if (!string.IsNullOrEmpty(dbImgReport.PatientStudyId))
-                    {
-
-                        List<int> patStudyIdList = dbImgReport.PatientStudyId.Split(',').Select(int.Parse).ToList();
-                        List<PatientStudyModel> dicom = (from pp in dicomDbContext.PatientStudies
-                                                         where patStudyIdList.Contains(pp.PatientStudyId)
-                                                         select pp).ToList();
-
-                        dicom.ForEach(pat =>
-                        {
-                            pat.IsMapped = true;
-                            dicomDbContext.PatientStudies.Attach(pat);
-                            dicomDbContext.Entry(pat).Property(u => u.IsMapped).IsModified = true;
-                        });
+                                dicom1.ForEach(pat =>
+                                {
+                                    pat.IsMapped = false;
+                                    dicomDbContext.PatientStudies.Attach(pat);
+                                    dicomDbContext.Entry(pat).Property(u => u.IsMapped).IsModified = true;
+                                });
 
 
-                        dicomDbContext.SaveChanges();
-                    }
-                    //update OrderStatus of the corresponding requisition item in ImagingRequisition Table
-                    string putRequisitionResult = PutRequisitionItemStatus(dbImgReport.ImagingRequisitionId, orderStatus);
-                    if (putRequisitionResult == "OK")
-                    {
-                        //return to client
-                        responseData.Status = "OK";
+                                dicomDbContext.SaveChanges();
 
-                        ImagingReportModel returnImgReport = new ImagingReportModel();
-                        returnImgReport.ImagingReportId = dbImgReport.ImagingReportId;
-                        returnImgReport.ImagingRequisitionId = dbImgReport.ImagingRequisitionId;
-                        returnImgReport.ReportText = dbImgReport.ReportText;
-                        returnImgReport.OrderStatus = dbImgReport.OrderStatus;
+                            }
 
-                        if (files.Count != 0)
-                        {
-                            returnImgReport.ImageFullPath = dbImgReport.ImageFullPath;
-                            returnImgReport.ImageName = dbImgReport.ImageName;
+                            dbImgReport.ReportText = imgReport.ReportText;
+                            dbImgReport.Indication = imgReport.Indication;
+                            dbImgReport.RadiologyNo = imgReport.RadiologyNo;
+                            dbImgReport.OrderStatus = orderStatus;
+                            dbImgReport.ReportingDoctorId = imgReport.ReportingDoctorId;
+                            dbImgReport.ReportTemplateId = imgReport.ReportTemplateId;
+                            dbImgReport.ProviderName = imgReport.ProviderName;
+                            dbImgReport.PatientStudyId = imgReport.PatientStudyId;
+                            dbImgReport.ModifiedBy = currentUser.EmployeeId;
+                            dbImgReport.ModifiedOn = DateTime.Now;
+                            dbImgReport.Signatories = imgReport.Signatories;//sud:14Jan'19---corrected for edit report feature.
+                            dbContextUpdate.Entry(dbImgReport).Property(u => u.CreatedBy).IsModified = false;
+                            dbContextUpdate.Entry(dbImgReport).Property(u => u.CreatedOn).IsModified = false;
+                            dbContextUpdate.Entry(dbImgReport).State = EntityState.Modified;
+                            dbContextUpdate.SaveChanges();
+
+                            if (!string.IsNullOrEmpty(dbImgReport.PatientStudyId))
+                            {
+
+                                List<int> patStudyIdList = dbImgReport.PatientStudyId.Split(',').Select(int.Parse).ToList();
+                                List<PatientStudyModel> dicom = (from pp in dicomDbContext.PatientStudies
+                                                                 where patStudyIdList.Contains(pp.PatientStudyId)
+                                                                 select pp).ToList();
+
+                                dicom.ForEach(pat =>
+                                {
+                                    pat.IsMapped = true;
+                                    dicomDbContext.PatientStudies.Attach(pat);
+                                    dicomDbContext.Entry(pat).Property(u => u.IsMapped).IsModified = true;
+                                });
+
+
+                                dicomDbContext.SaveChanges();
+                            }
+
+
+                            //update OrderStatus of the corresponding requisition item in ImagingRequisition Table
+                            string putRequisitionResult = PutRequisitionItemStatus(dbImgReport.ImagingRequisitionId, orderStatus);
+
+                            List<SqlParameter> parametersList = new List<SqlParameter>(){
+                                                    new SqlParameter("@reqID", dbImgReport.ImagingRequisitionId),
+                                                    new SqlParameter("@status", orderStatus.ToString())
+                            };
+
+                            DataTable statusUpdated = DALFunctions.GetDataTableFromStoredProc("SP_Bill_OrderStatusUpdate_Radiology", parametersList, dbContextUpdate);
+
+                            if (putRequisitionResult == "OK")
+                            {
+                                //return to client
+                                responseData.Status = "OK";
+
+                                ImagingReportModel returnImgReport = new ImagingReportModel();
+                                returnImgReport.ImagingReportId = dbImgReport.ImagingReportId;
+                                returnImgReport.ImagingRequisitionId = dbImgReport.ImagingRequisitionId;
+                                returnImgReport.ReportText = dbImgReport.ReportText;
+                                returnImgReport.OrderStatus = dbImgReport.OrderStatus;
+
+                                if (files.Count != 0)
+                                {
+                                    returnImgReport.ImageFullPath = dbImgReport.ImageFullPath;
+                                    returnImgReport.ImageName = dbImgReport.ImageName;
+                                }
+                                responseData.Results = returnImgReport;
+                            }
+
+                            if (enableProviderEditInBillTxnItem && imgReport.ProviderIdInBilling.HasValue)
+                            {
+                                List<SqlParameter> providerUpdateInBillingParamList = new List<SqlParameter>(){
+                                                    new SqlParameter("@RequisitionId", imgReport.ImagingRequisitionId),
+                                                    new SqlParameter("@ProviderId", imgReport.ProviderIdInBilling),
+                                                    new SqlParameter("@ProviderName", imgReport.ProviderNameInBilling)
+                                                };
+
+                                DataTable providerUpdated = DALFunctions.GetDataTableFromStoredProc("SP_Update_RadiologyProvider_In_BillTransactionItem", providerUpdateInBillingParamList, dbContextUpdate);
+                            }
+
+                            trans.Complete();
                         }
-                        responseData.Results = returnImgReport;
-                    }
-                    //if update of RequisitionItem OrderStatus Fails.
-                    else
-                    {
-                        responseData.Status = "Failed";
-                        responseData.ErrorMessage = putRequisitionResult;
+                        catch (Exception ex)
+                        {
+                            responseData.Status = "Failed";
+                            responseData.ErrorMessage = ex.InnerException.Message;
+                            throw ex;
+                        }
+
                     }
                 }
 
@@ -1261,7 +1442,7 @@ namespace DanpheEMR.Controllers
                             dbContextUpdate.Entry(billItem).Property(a => a.CancelledOn).IsModified = true;
                             dbContextUpdate.Entry(billItem).Property(a => a.CancelRemarks).IsModified = true;
 
-                            billItem.BillStatus = "cancel";
+                            billItem.BillStatus = ENUM_BillingStatus.cancel;// "cancel";
                             billItem.CancelledBy = currentUser.EmployeeId;
                             billItem.CancelledOn = System.DateTime.Now;
                             billItem.CancelRemarks = inpatientRadTest.CancelRemarks;
@@ -1316,7 +1497,62 @@ namespace DanpheEMR.Controllers
                     responseData.Status = "OK";
                     responseData.Results = providerName;
                 }
+                else if (reqType == "updateRadPatScanData")
+                {
+                    string str = this.ReadPostData();
+                    RadiologyScanDoneDetail scandetail = DanpheJSONConvert.DeserializeObject<RadiologyScanDoneDetail>(str);
 
+                    bool radSettings = coreDbContext.Parameters.Where(p => p.ParameterGroupName.ToLower() == "radiology"
+                                                 && p.ParameterName == "RadHoldIPBillBeforeScan").Select(d => ((d.ParameterValue == "1" || d.ParameterValue == "true") ? true : false)).FirstOrDefault();
+
+                    using (TransactionScope trans = new TransactionScope())
+                    {
+                        try
+                        {
+                            ImagingRequisitionModel imagingRequest = (from req in dbContextUpdate.ImagingRequisitions
+                                                                      where req.ImagingRequisitionId == scandetail.ImagingRequisitionId
+                                                                      select req).FirstOrDefault();
+
+
+                            imagingRequest.IsScanned = true;
+                            imagingRequest.ScanRemarks = scandetail.Remarks;
+                            imagingRequest.ScannedBy = currentUser.EmployeeId;
+                            imagingRequest.ScannedOn = System.DateTime.Now;
+                            imagingRequest.OrderStatus = ENUM_BillingOrderStatus.Pending;
+
+
+                            dbContextUpdate.Entry(imagingRequest).Property(ent => ent.IsScanned).IsModified = true;
+                            dbContextUpdate.Entry(imagingRequest).Property(ent => ent.ScanRemarks).IsModified = true;
+                            dbContextUpdate.Entry(imagingRequest).Property(ent => ent.ScannedBy).IsModified = true;
+                            dbContextUpdate.Entry(imagingRequest).Property(ent => ent.ScannedOn).IsModified = true;
+                            dbContextUpdate.Entry(imagingRequest).Property(ent => ent.OrderStatus).IsModified = true;
+
+                            dbContextUpdate.SaveChanges();
+
+
+                            List<SqlParameter> paramList = new List<SqlParameter>(){
+                                                    new SqlParameter("@reqID", scandetail.ImagingRequisitionId),
+                                                    new SqlParameter("@status", ENUM_BillingOrderStatus.Pending)
+                                                };
+
+                            DataTable statusUpdated = DALFunctions.GetDataTableFromStoredProc("SP_Bill_OrderStatusUpdate_Radiology", paramList, dbContextUpdate);
+
+                            trans.Complete();
+
+                            responseData.Status = "OK";
+                            responseData.Results = imagingRequest;
+                        }
+                        catch (Exception ex)
+                        {
+                            responseData.ErrorMessage = "invalid request type or requisition ids";
+                            responseData.Status = "Failed";
+                            throw ex;
+
+                        }
+                    }
+
+
+                }
                 else
                 {
                     responseData.ErrorMessage = "invalid request type or requisition ids";

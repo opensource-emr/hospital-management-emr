@@ -10,14 +10,18 @@ export class SystemAdminDLService {
     };
     constructor(_http: HttpClient) {
         this.http = _http;
-    }
+  }
+  public GetSystemAdmin() {
+    return this.http.get<any>("/api/SystemAdmin?reqType=get-system-admin");
+  }
+
     //GET:
-    //This method for get all 
+    //This method for get all
     public GetDBBakupLog() {
         return this.http.get<any>("/api/SystemAdmin?reqType=getDBBakupLog");
     }
     //GET:
-    //This method for get all 
+    //This method for get all
     public GetAuditList() {
         return this.http.get<any>("/api/SystemAdmin?reqType=get-audit-list", this.options);
     }
@@ -39,8 +43,8 @@ export class SystemAdminDLService {
         return this.http.get<any>("/api/SystemAdmin?reqType=getDbActivityLogDetails" + "&FromDate=" + fromDate + "&ToDate=" + toDate + "&LogType=" + actionName);
     }
     //Get all Audit Trail details
-    public GetAuditTrailDetails(CurrentAudit: AuditTrailModel, Table_Name, UserName) {
-        return this.http.get<any>("/api/SystemAdmin?reqType=get-audit-trail-details&FromDate=" + CurrentAudit.FromDate + "&ToDate=" + CurrentAudit.ToDate + "&Table_Name=" + Table_Name + "&UserName=" + UserName, this.options);
+    public GetAuditTrailDetails(CurrentAudit: AuditTrailModel, Table_Name, UserName, ActionName) {
+        return this.http.get<any>("/api/SystemAdmin?reqType=get-audit-trail-details&FromDate=" + CurrentAudit.FromDate + "&ToDate=" + CurrentAudit.ToDate + "&Table_Name=" + Table_Name + "&UserName=" + UserName + "&ActionName=" + ActionName, this.options);
     }
 
     //POST:
@@ -63,7 +67,7 @@ export class SystemAdminDLService {
     //POST:
     //This method for export database as csv/xml files
     public PostExportDBToCSVOrXmlOrPdf(exportType: string) {
-        // sick we are making a post call and passing 
+        // sick we are making a post call and passing
         // data through query string
         return this.http.post<any>("/api/SystemAdmin?reqType=exportDBToCSVOrXMLOrPDF&ExportType=" + exportType, null);
     }

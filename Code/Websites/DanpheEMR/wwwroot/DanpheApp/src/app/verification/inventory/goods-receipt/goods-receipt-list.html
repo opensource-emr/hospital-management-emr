@@ -1,0 +1,49 @@
+<div class="wrapper">
+  <div class="row">
+    <div class="col-md-6">
+      <div class="caption lb-caption">
+        <i class="fa fa-check-square-o"></i>
+        <span class="caption-subject">GR List for Qualtity Inspection</span>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="input-group pull-right padding-15-tp">
+        <div class="icheck-inline">
+          List by Verification Status: &nbsp;
+          <label class="mt-radio mt-radio-outline">
+            <input type="radio" (change)="LoadGRListByStatus()" checked
+                   name="VerificationStatus" [(ngModel)]="VerificationStatus" value="pending" style="width:15px;height:15px" />
+            <span></span>Pending
+          </label>
+          <label class="mt-radio mt-radio-outline">
+            <input type="radio" (change)="LoadGRListByStatus()"
+                   name="VerificationStatus" [(ngModel)]="VerificationStatus" value="approved" style="width:15px;height:15px" />
+            <span></span>Approved
+          </label>
+  
+          <label class="mt-radio mt-radio-outline">
+            <input type="radio" (change)="LoadGRListByStatus()"
+                   name="VerificationStatus" [(ngModel)]="VerificationStatus" value="rejected" style="width:15px;height:15px" />
+            <span></span>Rejected
+          </label>
+  
+          <label class="mt-radio mt-radio-outline">
+            <input type="radio" (change)="LoadGRListByStatus()"
+                   name="VerificationStatus" [(ngModel)]="VerificationStatus" value="all" style="width:15px;height:15px" />
+            <span></span>All
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-12 col-sm-12">
+      <danphe-grid [grid-colDefaults]="GRGridColumn" 
+                   [grid-data]="GRGridDataFiltered"
+                   [rangeType]="dateRange"
+                   [show-CustomDate]="true"
+                   [NepaliDateInGridParams]="NepaliDateInGridSettings"
+                   (onDateChange)="onDateChange($event)"
+                   (grid-actions)="GRGridAction($event)">
+      </danphe-grid>
+    </div>
+  </div>
+</div>

@@ -1,4 +1,4 @@
-﻿import {
+import {
     NgForm,
     FormGroup,
     FormControl,
@@ -8,7 +8,7 @@
 } from '@angular/forms'
 import * as moment from 'moment/moment';
 
-export class EmployeeInfo {
+export class HlpDskEmployeeInfo {
     //public EmployeeId : number = 0;
     public EmployeeName :string = null;
     public Designation :string = null;

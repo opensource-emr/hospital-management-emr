@@ -98,7 +98,7 @@ table.single-tempate-table {
   margin-bottom: 20px;
 }
 table.single-tempate-table thead tr:first-child th:first-child {
-  padding: 0px 7px;
+  padding: 3px 7px;
   text-align: left;
   text-transform: uppercase;
   width: 280px;
@@ -225,6 +225,16 @@ table.culture-holder-table > thead > tr{ border: 1px solid #000;}
 .padding-7-hr{padding-left: 7px; padding-right: 7px;}
 .lab-header-gap{height: 100px;}
 
+.txt-prelim {
+    position: fixed;
+    display: inline-block;
+    font-size: 40px;
+    line-height: 1;
+    left: 50%;
+    top: 240px;
+    transform: translate(-50%, 125px) rotate(-45deg);
+    opacity: 0.2;
+}
 
 
 /*CSS for Manmohan LabReport Starts*/
@@ -236,10 +246,7 @@ table.culture-holder-table > thead > tr{ border: 1px solid #000;}
 .mmth table.single-tempate-table tbody tr,
 .mmth table.culture-holder-table tbody tr{ border: none !important;}*/
 
-.mmth table.single-tempate-table tbody tr
-{
-  border-color: #d6d5d6;
-}
+.mmth table.single-tempate-table tbody tr {border-color: #d6d5d6;}
 .mmth table.culture-holder-table{margin-bottom: 0;}
 .mmth table.lab-report-tbl .patient-info-box {border-color: #d6d5d6 !important;}
 .mmth table.single-tempate-table{border: 1px solid #000;}
@@ -255,12 +262,39 @@ table.culture-holder-table > thead > tr{ border: 1px solid #000;}
 .mmth.rep-containr table.patient-info-tabl tbody tr td .table-holder table.lab-report-tbl thead tr:first-child th:first-child {
     text-align: center;
 }
-tbody.culture-negative-testres tr{border: none;}
 .mmth table.lab-report-tbl thead tr th {font-size: 13px;}
 .mmth table.lab-report-tbl tbody tr th {font-size: 12px;}
 .mmth table.lab-report-tbl tbody tr td {font-size: 12px;}
-.report-print-info{position: fixed; bottom: 3px; right: 10px;font-size: 10px;}
+
 /*CSS for Manmohan LabReport Ends*/
+
+
+.rep-containr.cmh .lab-header-gap{height: 125px;}
+.cmh table.single-tempate-table tbody tr {border-color: #fff;}
+.cmh table.culture-holder-table{margin-bottom: 0;}
+.cmh table.lab-report-tbl .patient-info-box {border-color: #000 !important;}
+.cmh table.single-tempate-table{border: 1px solid #fff;}
+.cmh table.single-tempate-table > thead > tr{border-color: #fff; border-style: solid;border-width: 0px 0px 1px 0px;}
+.cmh table.single-tempate-table > tbody > tr{border-left: 1px solid #fff;border-right: 1px solid #fff;}
+.cmh table.culture-holder-table thead tr{border-right: none;border-left: none;}
+.cmh tbody.culture-negative-testres tr{border-bottom: 1px solid #fff;}
+.cmh tbody.culture-positive-testres tr{border-bottom: 1px solid #fff; }
+.cmh tbody.culture-positive-testres tr.sensitiv-rst-data:not(:last-child){border-bottom: 1px solid #fff;}
+.cmh tbody.culture-positive-testres tr.sensitiv-rst-data td:not(:last-child){border-right: 1px solid #fff;}
+.cmh.rep-containr table.patient-info-tabl tbody tr td .table-holder table.lab-report-tbl thead tr:first-child th:first-child {
+    text-align: center;
+}
+.cmh table.lab-report-tbl thead tr th {font-size: 13px;}
+.cmh table.lab-report-tbl tbody tr th {font-size: 12px;}
+.cmh table.lab-report-tbl tbody tr td {font-size: 12px; padding-top: 2px;padding-bottom: 2px;}
+.cmh .cs-result{font-style: italic;}
+.frmt2-headertxt{padding: 18px 0px 8px !important;}
+.cmh .footer-text-wrapper{text-align: center;}
+
+
+tbody.culture-negative-testres tr{border: none;}
+.report-print-info{position: fixed; bottom: 3px; right: 10px;font-size: 10px;}
+
 
 
 

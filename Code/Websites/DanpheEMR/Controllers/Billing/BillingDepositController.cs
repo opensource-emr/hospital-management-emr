@@ -14,6 +14,8 @@ using System.Xml;
 using Newtonsoft.Json;
 using DanpheEMR.Security;
 using DanpheEMR.Controllers.Billing;
+using DanpheEMR.Enums;
+
 namespace DanpheEMR.Controllers
 {
 
@@ -21,10 +23,12 @@ namespace DanpheEMR.Controllers
     {
 
         double cacheExpMinutes;//= 5;//this should come from configuration later on.
+        bool realTimeRemoteSyncEnabled = false;
         string InvoiceCode = "BL"; //get this from parameters when possible.
         public BillingDepositController(IOptions<MyConfiguration> _config) : base(_config)
         {
             cacheExpMinutes = _config.Value.CacheExpirationMinutes;
+            realTimeRemoteSyncEnabled = _config.Value.RealTimeRemoteSyncEnabled;
         }
 
 
@@ -43,7 +47,7 @@ namespace DanpheEMR.Controllers
                                        join patient in dbContext.Patient on deposit.PatientId equals patient.PatientId
                                        join fiscalYear in dbContext.BillingFiscalYears on deposit.FiscalYearId equals fiscalYear.FiscalYearId
                                        join employee in dbContext.Employee on deposit.CreatedBy equals employee.EmployeeId
-                                       where deposit.IsActive == true 
+                                       where deposit.IsActive == true
                                        // && deposit.DepositType == depositType 
                                        select new
                                        {
@@ -66,7 +70,7 @@ namespace DanpheEMR.Controllers
                                            DateOfBirth = patient.DateOfBirth,
                                            patient.PhoneNumber,
                                            BillingUser = employee.FirstName + " " + (string.IsNullOrEmpty(employee.MiddleName) ? "" : employee.MiddleName + " ") + employee.LastName,
-                                           Address=patient.Address,
+                                           Address = patient.Address,
                                            deposit.CareOf,
                                            IsDuplicatePrint = true
                                        }).OrderByDescending(d => d.CreatedOn).ToList();
@@ -118,7 +122,7 @@ namespace DanpheEMR.Controllers
             responseData.Status = "OK";//by default status would be OK, hence assigning at the top
             string ipDataString = this.ReadPostData();
             string reqType = this.ReadQueryStringData("reqType");
-        
+
             try
             {
                 RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
@@ -132,7 +136,7 @@ namespace DanpheEMR.Controllers
                     deposit.CreatedBy = currentUser.EmployeeId;
                     BillingFiscalYear fiscYear = BillingBL.GetFiscalYear(connString);
                     deposit.FiscalYearId = fiscYear.FiscalYearId;
-                    if (deposit.DepositType != "depositdeduct")
+                    if (deposit.DepositType != ENUM_BillDepositType.DepositDeduct)// "depositdeduct")
                         deposit.ReceiptNo = BillingBL.GetDepositReceiptNo(connString);
                     deposit.FiscalYear = fiscYear.FiscalYearFormatted;
                     EmployeeModel currentEmp = billingDbContext.Employee.Where(emp => emp.EmployeeId == currentUser.EmployeeId).FirstOrDefault();

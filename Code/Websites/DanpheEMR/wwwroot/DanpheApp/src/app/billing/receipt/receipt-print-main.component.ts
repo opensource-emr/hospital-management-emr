@@ -13,6 +13,7 @@ import * as moment from 'moment/moment';
 import { CoreService } from "../../core/shared/core.service";
 import { Location } from "@angular/common";
 import { VisitService } from "../../appointments/shared/visit.service";
+import { MessageboxService } from "../../shared/messagebox/messagebox.service";
 
 @Component({
   templateUrl: "./receipt-print-main.html" //"/BillingView/ReceiptPrint"
@@ -35,10 +36,13 @@ export class ReceiptPrintMainComponent implements OnInit {
   public showInpatientReceipt: boolean = false;//sud:20Au'18
   public showNormalReceipt: boolean = true;//by default this will be true. 
   public showERSticker: boolean = false;
+  public showPackageBillingSticker: boolean = false;
   public patientVisitId: number;
   public isInsuranceBilling: boolean = false;
   public IMISCode: string = "";
-
+  public billingTransactionId: number;
+  public numberofbill: { pharmacy, billing, inventory };
+  public noOfBillGenerate: number = 0;
   public _locationSubscription: any;
   constructor(
     public location: Location,
@@ -47,6 +51,7 @@ export class ReceiptPrintMainComponent implements OnInit {
     public billingBlService: BillingBLService,
     public billingService: BillingService,
     public router: Router,
+    public msgbox: MessageboxService,
     public routeFromSrv: RouteFromService,
     public httpobj: HttpClient,
     public visitService: VisitService,
@@ -60,7 +65,9 @@ export class ReceiptPrintMainComponent implements OnInit {
     //show-hide receipt navigation based on requesting page.
     this.showReceiptNavigation = (routeFromSrv.RouteFrom == "duplicate-bills");
 
-
+    if (this.billingService.globalBillingReceipt.PrintCount == 0 && this.billingService.globalBillingReceipt.ReceiptNo != 0) {
+      this.GetBillPrintParameter();
+    }
 
     this.billingReceipt = this.billingService.globalBillingReceipt;
     this.isInsuranceBilling = this.billingReceipt.IsInsuranceBilling;
@@ -82,9 +89,14 @@ export class ReceiptPrintMainComponent implements OnInit {
       //set patientID and PatientVisitID because we are passing this to <opd-sticker></opd-sticker> in recipt print view
       this.selectedVisit.PatientId = this.billingReceipt.Patient.PatientId;
       this.selectedVisit.PatientVisitId = this.billingReceipt.VisitId;
+      this.selectedVisit.QueueNo = this.billingReceipt.QueueNo;
     }
-
-    
+    if (this.billingReceipt.PackageId != null) {
+      if (this.billingReceipt.PackageId > 0) {
+        this.billingTransactionId = this.billingReceipt.BillingTransactionId;
+        this.showPackageBillingSticker = true;
+      }
+    }
 
     //this.CheckERItem();
 
@@ -205,5 +217,15 @@ export class ReceiptPrintMainComponent implements OnInit {
     this.patientVisitId = this.billingReceipt.VisitId;
   }
 
+  GetBillPrintParameter() {
+    var paramValue = this.coreService.Parameters.find(a => a.ParameterName == 'Bill Print Parameter').ParameterValue;
+    if (paramValue) {
+      this.numberofbill = JSON.parse(paramValue);
+      this.noOfBillGenerate = parseInt(this.numberofbill.billing);
+    }
+    else {
+      this.msgbox.showMessage("error", ["Please enter parameter values for BillingHeader"]);
+    }
+  }
 
 }

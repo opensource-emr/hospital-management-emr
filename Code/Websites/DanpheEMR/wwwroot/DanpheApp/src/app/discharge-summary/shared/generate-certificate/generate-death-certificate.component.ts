@@ -2,7 +2,6 @@ import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from "@angu
 import { SecurityService } from '../../../security/shared/security.service';
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 import { DischargeSummaryBLService } from '../discharge-summary.bl.service';
-import { BabyBirthDetails } from '../../../admission/shared/baby-birth-details.model';
 import { VisitService } from '../../../appointments/shared/visit.service';
 import * as moment from 'moment/moment';
 import { PatientCertificate } from '../patient-certificate.model';

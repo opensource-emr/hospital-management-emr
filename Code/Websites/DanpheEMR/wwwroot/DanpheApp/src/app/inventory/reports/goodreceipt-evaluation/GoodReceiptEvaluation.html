@@ -1,0 +1,81 @@
+
+<div>
+    <form [formGroup]="CurrentGREvaluationReport.GoodReceiptEvaluationValidator" class="form-horizontal hm-form">
+        <div class="form-body">            
+            <div class="caption lb-caption">
+                <i class="fa fa-money"></i>
+                <span class="caption-subject">Goods Receipt Evaluation Report</span>
+            </div>
+            <div class="row">
+                <div class="col-md-5 col-xs-12">
+                    <div class="form-group">
+                        <label class="control-label col-md-3">From Date<sup class="color-red"> *</sup><b class="float:right;">:</b></label>
+                        <div class="col-md-9">
+                            <danphe-date-picker [(ngModel)]="CurrentGREvaluationReport.FromDate" ngDefaultControl [CalendarTypes]="'en,np'" [ngModelOptions]="{standalone:true}">
+                            </danphe-date-picker>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-5 col-xs-12">
+                    <div class="form-group">
+                        <label class="control-label col-md-3">To Date<sup class="color-red"> *</sup><b class="float:right;">:</b></label>
+                        <div class="col-md-9">
+                            <danphe-date-picker [(ngModel)]="CurrentGREvaluationReport.ToDate" ngDefaultControl [CalendarTypes]="'en,np'" [ngModelOptions]="{standalone:true}">
+                            </danphe-date-picker>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2">                    
+                        <div class="form-group">
+                            <button class="btn blue primary-btn" type="button" (click)="ShowValuation()">
+                <i class="fa fa-search"></i>
+                Show Report
+              </button>
+                        </div>                   
+                </div>
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <div class="col-md-12">
+                            <div class="row gg-group">
+                                <label class="col-md-5">
+                  <!-- <span></span> -->
+                  <div class="row">
+                    <b class="col-md-4">Goods Receipt No :</b>
+                    <div class="col-md-8">
+                        <input type="number" [(ngModel)]="CurrentGREvaluationReport.GoodReceiptNo" [ngModelOptions]="{standalone:true}" name="name" value="false" />
+                    </div>                 
+                  </div>                  
+                </label>
+                                <label class="col-md-5">
+
+                  <!-- <span></span> -->
+                  <div class="row">
+                    <b class="col-md-4">Transaction Type :</b>
+                    <div class="col-md-8">
+                        <select [(ngModel)]="CurrentGREvaluationReport.TransactionType" [ngModelOptions]="{standalone:true}" name="name" value="true">
+                            <option selected value="">All</option>
+                            <option value="goodreceipt-items">Good Receipt Creation</option>
+                            <!-- <option value="edit-gr">Good Receipt Edited</option> -->
+                            <option value="cancel-gr-items">Good Receipt Cancelled</option>
+                            <option value="stockmanaged-items">Stock Manage</option>
+                            <option value="dispatched-items">Dispatch</option>
+                            <option value="writeoff-items">Write Off</option>
+                            <option value="returntovendor-items">Return To Vendor</option>
+                          </select>
+                    </div>                 
+                  </div>                     
+                  
+                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="" *ngIf="GREvaluationData.length>0">
+    <danphe-grid *ngIf="showGrid" [grid-colDefaults]="GREvaluationColumns" [grid-data]="GREvaluationData" [grid-exportOptions]="gridExportOptions" [grid-showExport]="true">
+
+    </danphe-grid>
+</div>

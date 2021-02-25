@@ -7,19 +7,22 @@ import { GridEmitModel } from '../../shared/danphe-grid/grid-emit.model';
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { RouteFromService } from "../../shared/routefrom.service";
 import { PhrmRackModel } from '../shared/rack/phrm-rack.model';
+import { ENUM_StockLocations } from '../../shared/shared-enums'
 
 @Component({
     templateUrl: "./phrm-rack.html",
 })
 export class PhrmRackComponent {
 
-    public rackList: any;
+    public rackList: Array<any> = [];
+    public rackListFiltered: Array<any> = [];
     public rackGridColumns: Array<any>;
     public showAddPage: boolean = false;
     public showDrugListPage: boolean = false;
     public drugList: any = [];
     public rackName: string = null;
-
+    public LocationList;
+    public selectedLocation : string = '0';
 
     public rack: PhrmRackModel;
     public selIndex: number = null;
@@ -27,25 +30,31 @@ export class PhrmRackComponent {
         public messageboxService: MessageboxService, public changeDetector: ChangeDetectorRef) {
 
         this.rackGridColumns = PHRMGridColumns.PHRMRackList;
-
+        this.GetLocationList();
     }
-
+    public GetLocationList() {
+        this.LocationList = Object.keys(ENUM_StockLocations).filter(p => isNaN(p as any));
+    }
     ngOnInit() {
       this.getRack();
     }
 
     pushToList($event) {
+        const newRack = $event.newRack
+        newRack.LocationName  = this.LocationList[newRack.LocationId - 1];
         if (this.selIndex != null) {
-            this.rackList[this.selIndex] = $event.newRack;
+            this.rackList[this.selIndex] = newRack;
+            this.rackListFiltered[this.selIndex] = newRack;
 
         }
         else {
-            this.rackList.push($event.newRack);
+            this.rackList.push(newRack);
+            this.rackListFiltered.splice(0,0,newRack);
             this.showAddPage = false;
         }
+        this.FilterRackBasedOnLocation();
         this.rackList = this.rackList.slice();
-
-
+        this.rackListFiltered = this.rackListFiltered.slice();
     }
 
     getRack() {
@@ -53,7 +62,11 @@ export class PhrmRackComponent {
             this.phrmRackService.GetRackList()
                 .subscribe(res => {
                     //if (res.Status == "OK") {
-                  this.rackList = res;
+                    this.rackList = res;
+                    this.rackList.forEach(rack => {
+                        rack.LocationName = this.LocationList[rack.LocationId - 1];
+                    });
+                  this.FilterRackBasedOnLocation();
                     //}
                     //else {
                     //    alert("Failed ! " + res.ErrorMessage);
@@ -130,5 +143,7 @@ export class PhrmRackComponent {
         this.changeDetector.detectChanges();
         this.showAddPage = true;
     }
-
+    FilterRackBasedOnLocation() {
+        this.rackListFiltered = this.rackList.filter(rack => rack.LocationId == (+this.selectedLocation) + 1)
+    }
 }

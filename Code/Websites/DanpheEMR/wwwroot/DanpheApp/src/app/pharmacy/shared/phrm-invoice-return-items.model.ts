@@ -9,23 +9,26 @@ import {
 import * as moment from 'moment/moment';
 export class PHRMInvoiceReturnItemsModel {
     public InvoiceReturnItemId: number = 0;
+    public InvoiceReturnId:number = 0;
     public InvoiceItemId: number = null;
     public InvoiceId: number = null;
     public BatchNo: string = "";
     public Quantity: number = null;
     public TotalQty: number = null;
+    public AvailableQty:number = 0;//for UI only to view avl qty after  partially return
     public MRP: number = null;
     public Price: number = null;
     public SubTotal: number = null;
     public VATPercentage: number = null;
     public DiscountPercentage: number = null;
+    public DiscountAmount:number = null;
     public TotalAmount: number = null;
     public Remark: string = "";
     public CreatedBy: number = null;
     public CreatedOn: string = "";
     public ReturnedQty: number = null;
     public CounterId: number = null;
-
+    public checked:boolean;// for checking and uncheck item row in UI
     //some more variables for show only not for mapping with server
     public ItemId: number = null;
     public ItemName: string = "";
@@ -47,7 +50,8 @@ export class PHRMInvoiceReturnItemsModel {
         var _formBuilder = new FormBuilder();
         this.InvoiceItemsReturnValidator = _formBuilder.group({
             'Quantity': ['', Validators.compose([this.positiveNumberValdiator])],
-            'Remark': ['', Validators.compose([Validators.required])],
+            'ReturnedQty':['',Validators.compose([this.positiveNumberValdiator])]
+            // 'Remark': ['', Validators.compose([Validators.required])],
         });
     }
     public IsDirty(fieldName): boolean {

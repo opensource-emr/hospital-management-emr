@@ -1,0 +1,42 @@
+<span class="col-md-12" class="caption" style="color:red; margin-top:10px;">NOTE : Only Manual voucher edit is
+  allowed</span>
+<div class="row">
+  <form [formGroup]="voucher.ValidatorVoucher" class="hm-form">
+
+    <!-- <form >                   -->
+    <div class="col-md-10 col-xs-12">
+      <div class="form-group">
+        <div class="row">
+			<div class="col-md-12">
+          <div class="row"><!-- <span class="col-md-6">Enter Voucher Number:</span> -->
+          <label class="form-control" class="control-label col-md-3">Enter Voucher Number<sup>*</sup><b>:
+              </b></label>
+          <div class="col-md-2">
+            <input type="text" name="VoucherCode" id="VoucherCode" value="" [(ngModel)]="voucher.VoucherCode"
+              formControlName="VoucherCode" class="form-control" min="1" class="form-control" style="height: 30px; text-transform: uppercase;;"  />
+            <span class="color-red font-sm"
+              [hidden]="voucher.IsValidCheck('VoucherCode','required') || !(voucher.IsDirty('VoucherCode'))">Voucher
+              Code is required</span>
+            <span class="color-red font-sm" *ngIf="voucher.IsDirty('VoucherCode')"
+              [hidden]="voucher.IsValidCheck('VoucherCode','maxlength')"> Length is not proper</span>
+          </div>
+          <div class="col-md-3">
+            <label> <b>Select Fiscal Year: </b> </label>
+            <select [(ngModel)]="fiscalYearId" [ngModelOptions]="{standalone: true}">  
+              <option *ngFor="let fs of ActiveFiscalYearList" value="{{fs.FiscalYearId}}"> {{ fs.FiscalYearName}}</option>
+          </select>
+          </div>
+          <div class="col-md-2">
+            <button value="Search Voucher Number" (click)="ViewTransactionDetails()"
+              class="form-control btn btn-success" style="height: 30px;">
+              <span class="glyphicon"></span> Show Details
+            </button>
+          </div></div>
+        </div>
+		  </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+<transaction-view *ngIf="showVoucherDetailsPage" [voucherNumber]="voucherNumber" [FiscalYearId]="fiscalYId"></transaction-view>

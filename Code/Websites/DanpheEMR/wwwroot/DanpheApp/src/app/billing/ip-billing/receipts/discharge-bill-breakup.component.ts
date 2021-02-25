@@ -1,5 +1,6 @@
-﻿import { Component, Input, OnInit } from "@angular/core";
+import { Component, Input, OnInit } from "@angular/core";
 import { DischargeBillVM } from "../shared/discharge-bill.view.models";
+import { CoreService } from "../../../core/shared/core.service";
 
 @Component({
     selector: "discharge-bill-breakup",
@@ -11,6 +12,11 @@ export class DischargeBillBreakupComponent {
     public dischargeBill: DischargeBillVM;
  
     @Input("billType")
-    public billType: string;
+  public billType: string;
+  public ShowProviderName: boolean;
+
+  constructor(public coreService: CoreService) {
+    this.ShowProviderName = this.coreService.SetShowProviderNameFlag();
+  }
 
 }

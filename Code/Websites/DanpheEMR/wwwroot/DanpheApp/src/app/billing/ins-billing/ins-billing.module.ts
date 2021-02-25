@@ -17,12 +17,13 @@ import { InsuranceBillItemRequest } from './add-new-items/insurance-bill-item-re
 import { INSPatientRegistrationComponent } from './patient-add/ins-patient-registration.component';
 import { GovInsuranceBLService } from './shared/gov-ins.bl.service';
 import { GovInsuranceDLService } from './shared/gov-ins.dl.service';
-import { InsuranceReportsMainComponent } from './reports/ins-reports-main.component';
+//import { InsuranceReportsMainComponent } from './reports/ins-reports-main.component';
 import { AuthGuardService } from '../../security/shared/auth-guard.service';
-import { INSTotalItemsBillComponent } from './reports/total-items-bill/ins-total-items-bill.component';
-import { INSIncomeSegregationComponent } from './reports/income-segregation/ins-income-segregation.component';
+//import { INSTotalItemsBillComponent } from './reports/total-items-bill/ins-total-items-bill.component';
+//import { INSIncomeSegregationComponent } from './reports/income-segregation/ins-income-segregation.component';
 import { ReportingService } from '../../reporting/shared/reporting-service';
 import { PatientSharedModule } from '../../patients/patient-shared.module';
+import { ResetPatientcontextGuard } from '../../shared/reset-patientcontext-guard';
 
 export const InsBillingRoutes =
   [
@@ -35,9 +36,11 @@ export const InsBillingRoutes =
         { path: 'InsBillingTransaction', component: INSBillingTransactionComponent },
         { path: 'InsProvisional', component: INSProvisionalBillingComponent },
         { path: 'Claims', component: InsuranceSettlementsComponent },
-        { path: 'Reports', component: InsuranceReportsMainComponent },
-        { path: 'Reports/TotalItemsBill', component: INSTotalItemsBillComponent, canActivate: [AuthGuardService] },
-        { path: 'Reports/IncomeSegregation', component: INSIncomeSegregationComponent, canActivate: [AuthGuardService] }]
+        { path: 'Reports', loadChildren: '../ins-billing/reports/ins-billing-reports.module#InsBillingReportsModule' }
+      ]
+      , canActivate: [AuthGuardService, ResetPatientcontextGuard]
+      //{ path: 'Reports/TotalItemsBill', component: INSTotalItemsBillComponent, canActivate: [AuthGuardService] },
+      //{ path: 'Reports/IncomeSegregation', component: INSIncomeSegregationComponent, canActivate: [AuthGuardService] }]
     }
   ]
 
@@ -71,9 +74,9 @@ export const InsBillingRoutes =
     InsuranceSettlementsComponent,
     InsuranceBillItemRequest,
     INSPatientRegistrationComponent,
-    InsuranceReportsMainComponent,
-    INSTotalItemsBillComponent,
-    INSIncomeSegregationComponent
+    //InsuranceReportsMainComponent,
+    //INSTotalItemsBillComponent,
+    //INSIncomeSegregationComponent
   ],
   bootstrap: []
 })

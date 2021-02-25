@@ -1,4 +1,4 @@
-﻿<div *ngIf="!showGridList">
+<div *ngIf="!showGridList">
     <button (click)="Back()" class="btn blue">Back To Discharged Patient List</button>
 </div>
 
@@ -13,7 +13,7 @@
 <div *ngIf="showAddVitals" (click)="ParentOfPopUpClicked($event)" class="cstm-popup-holder" style="padding: 55px;">
     <div id="cstmSlideFromTop" class="cstm-slidefromtop">
         <div style="width: 100%; height: auto;">
-            <vitals-add [showVitalList]="showVitalsList"  [visitIdfromADT]="visitId" [showVitalAddBox]="showAddVitals" (callback-add)="ReturnFromOrderAction($event)"></vitals-add>
+            <vitals-add [showVitalList]="showVitalsList"  [visitIdfromADT]="visitId" (callback-add)="ReturnFromOrderAction($event)"></vitals-add>
         </div>
     </div>
 </div>
@@ -27,7 +27,7 @@
     </div>
 </div>
 
-<div *ngIf="showSummaryAdd" (click)="ParentOfPopUpClicked($event)" class="cstm-popup-holder" style="padding: 55px; background: #151414a8 !important;">
+<!--<div *ngIf="showSummaryAdd" (click)="ParentOfPopUpClicked($event)" class="cstm-popup-holder" style="padding: 55px; background: #151414a8 !important;">
     <div class="cstm-slidefromtop">
         <div style="width: 100%; height: auto;background: #fff;padding: 0px 20px;">
             <discharge-summary-add [selectedDischarge]="selectedDischarge"
@@ -47,7 +47,7 @@
             <a (click)="CloseSummaryAdd()" style="background: #b51717;padding: 7px 6px 2px;position: absolute;right: 0;top: 0px; color: #fff;"><i class="fa fa-2x fa-close"></i></a>
         </div>
     </div>
-</div>
+</div>-->
 
 <div *ngIf="!showGridList">
     <er-discharge-summary [patientId]="patientId" [visitId]="visitId"></er-discharge-summary>

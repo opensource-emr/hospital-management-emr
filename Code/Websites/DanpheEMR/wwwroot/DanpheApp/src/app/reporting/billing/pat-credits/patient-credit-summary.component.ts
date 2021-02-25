@@ -6,6 +6,7 @@ import { MessageboxService } from '../../../shared/messagebox/messagebox.service
 import { CommonFunctions } from '../../../shared/common.functions';
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
 import * as moment from 'moment/moment';
+import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from '../../../shared/danphe-grid/NepaliColGridSettingsModel';
 
 @Component({
   templateUrl: "./patient-credit-summary.html"
@@ -14,6 +15,7 @@ export class RPT_BIL_PatientCreditSummaryComponent {
   public TodayDate: string = null;
   public patientName: string = "";
   public patientCreditSummary: RPT_BIL_PatientCreditSummaryModel = new RPT_BIL_PatientCreditSummaryModel();
+  public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
   patientCreditSummaryColumns: Array<any> = null;
   patientCreditSummaryData: Array<any> = new Array<any>();
   dlService: DLService = null;
@@ -26,7 +28,8 @@ export class RPT_BIL_PatientCreditSummaryComponent {
     this.TodayDate = moment().format('DD-MM-YYYY');;
     this.patientCreditSummary.fromDate = moment().format('YYYY-MM-DD');
     this.patientCreditSummary.toDate = moment().format('YYYY-MM-DD');
-    this.Load();
+    this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail("CreatedOn", false));
+    //this.Load();
   }
 
   gridExportOptions = {
@@ -41,11 +44,15 @@ export class RPT_BIL_PatientCreditSummaryComponent {
   //        res => this.Error(res));
   //}
   {
-    this.dlService.Read("/BillingReports/PatientCreditBillSummary?FromDate="
-      + this.patientCreditSummary.fromDate + "&ToDate=" + this.patientCreditSummary.toDate)
-      .map(res => res)
-      .subscribe(res => this.Success(res),
-        res => this.Error(res));
+    if (this.patientCreditSummary.fromDate != null && this.patientCreditSummary.toDate != null) {
+      this.dlService.Read("/BillingReports/PatientCreditBillSummary?FromDate="
+        + this.patientCreditSummary.fromDate + "&ToDate=" + this.patientCreditSummary.toDate)
+        .map(res => res)
+        .subscribe(res => this.Success(res),
+          res => this.Error(res));
+    } else {
+      this.msgBoxServ.showMessage("notice-message", ["dates are not proper."]);
+    }
   }
   Error(err) {
     this.msgBoxServ.showMessage("error", [err]);
@@ -78,5 +85,11 @@ export class RPT_BIL_PatientCreditSummaryComponent {
   ErrorMsg(err) {
     this.msgBoxServ.showMessage("error", ["Sorry!!! Not able export the excel file."]);
     console.log(err.ErrorMessage);
+  }
+  //Anjana:11June'20--reusable From-ToDate-In Reports..
+  OnFromToDateChange($event) {
+    this.patientCreditSummary.fromDate = $event.fromDate;
+    this.patientCreditSummary.toDate = $event.toDate;
+
   }
 }

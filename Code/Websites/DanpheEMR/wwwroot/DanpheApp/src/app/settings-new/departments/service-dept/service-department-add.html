@@ -1,0 +1,96 @@
+<div class="popup-static portlet box portlet-fullscreen custom_modal">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-4 col-md-offset-4">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption no-margin">
+            <h3> <span *ngIf="!update">Add Service Department</span> <span *ngIf="update">Update Service Department</span> </h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a> </div>
+          <form [formGroup]="CurrentServiceDepartment.ServiceDepartmentValidator" class="form-horizontal hm-form">
+            <div class="form-body">
+              <div class="form-group">
+                <label class="control-label col-md-5">Department<sup>*</sup><b>:</b></label>
+                <div class="col-md-7">
+                  <select class="form-control" [(ngModel)]="CurrentServiceDepartment.DepartmentId"
+                            formControlName="DepartmentId" (click)="filterServiceDepartment()">
+                    <option *ngFor="let dept of deptList"
+                              value="{{dept.DepartmentId}}"> {{dept.DepartmentName}} </option>
+                  </select>
+                  <span class="font-sm color-red" [hidden]="CurrentServiceDepartment.IsValidCheck('DepartmentId','required') || !(CurrentServiceDepartment.IsDirty('DepartmentId'))">Department is required</span> </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Service Department Name<sup>*</sup><b>:</b></label>
+                <div class="col-md-7">
+                  <input class="form-control" maxlength="40"
+                           [(ngModel)]="CurrentServiceDepartment.ServiceDepartmentName"
+                           formControlName="ServiceDepartmentName"
+                           type="text" id="ServiceDepartmentName" value="" placeholder="Enter Service Department Name" />
+                  <span class="color-red font-sm" [hidden]="CurrentServiceDepartment.IsValidCheck('ServiceDepartmentName','required') || !(CurrentServiceDepartment.IsDirty('ServiceDepartmentName'))">ServiceDepartment Name is required</span> <span class="color-red font-sm" *ngIf="CurrentServiceDepartment.IsDirty('ServiceDepartmentName')" [hidden]="CurrentServiceDepartment.IsValidCheck('ServiceDepartmentName','maxlength')"> Length is not proper</span> </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Short Name / Code<b>:</b></label>
+                <div class="col-md-7">
+                  <input class="form-control" maxlength="10"
+                           [(ngModel)]="CurrentServiceDepartment.ServiceDepartmentShortName"
+                           type="text" id="ServiceDepartmentShortName" value="" placeholder="Enter Service Department Short Name" [ngModelOptions]="{standalone: true}" />
+                  
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Integration Name<sup>*</sup><b>:</b></label>
+                <div class="col-md-7">
+                  <select class="form-control" [(ngModel)]="CurrentServiceDepartment.IntegrationName"
+                            formControlName="IntegrationName">
+                    <option *ngFor="let intNames of integrationNameList"
+                              value="{{intNames.IntegrationName}}"> {{intNames.IntegrationName}} </option>
+                  </select>
+                  <span class="font-sm color-red" [hidden]="CurrentServiceDepartment.IsValidCheck('IntegrationName','required') || !(CurrentServiceDepartment.IsDirty('IntegrationName'))">Integration is required</span> </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Need Parent? <b>:</b> </label>
+                <div class="col-md-7">
+                  <div class="input-group">
+                    <div class="icheck-inline">
+                      <label class="mt-checkbox mt-checkbox-outline">
+                        <input id="needParent" type="checkbox" [(ngModel)]="this.needParent" [ngModelOptions]="{standalone:true}" />
+                        <span></span> </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group" *ngIf="needParent">
+                <label class="control-label col-md-5">Parent Service Department<b>:</b></label>
+                <div class="col-md-7">
+                  <select class="form-control" [(ngModel)]="CurrentServiceDepartment.ParentServiceDepartmentId"
+                            [ngModelOptions]="{standalone: true}">
+                    <option *ngFor="let serv of tempsrvdeptList"
+                              value="{{serv.ServiceDepartmentId}}"> {{serv.ServiceDepartmentName}} </option>
+                  </select>
+                  <span class="font-sm color-red" [hidden]="CurrentServiceDepartment.IsValidCheck('DepartmentId','required') || !(CurrentServiceDepartment.IsDirty('DepartmentId'))">Department is required</span> </div>
+              </div>
+              <div class="form-group">
+                <label class="control-label col-md-5">Is Active <b>:</b> </label>
+                <div class="col-md-7">
+                  <div class="input-group">
+                    <div class="icheck-inline">
+                      <label class="mt-checkbox mt-checkbox-outline">
+                        <input id="isActive"
+                                 type="checkbox"
+                                 [(ngModel)]="CurrentServiceDepartment.IsActive"
+                                 [ngModelOptions]="{standalone: true}" />
+                        <span></span> </label>
+                    </div>
+                  </div>
+                </div>
+              </div>              
+            </div>
+			  <div class="panel-footer">
+                <input type="button" class="btn btn-primary" *ngIf="!update" (click)="AddServiceDepartment()" value="Add" />
+                <input type="button" class="btn btn-primary" *ngIf="update" (click)="Update()" value="Update" />
+              </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,4 +1,4 @@
-﻿import { Pipe, PipeTransform } from '@angular/core';
+import { Pipe, PipeTransform } from '@angular/core';
 
 import { CommonFunctions } from '../common.functions';
 const PADDING = "000000";
@@ -30,9 +30,9 @@ export class Currency {
 
         var lastThree = result[0].substring(result[0].length - 3);
         var otherNumbers = result[0].substring(0, result[0].length - 3);
-        if (otherNumbers != '')
+        if (otherNumbers != '' && otherNumbers != '-')
             lastThree = ',' + lastThree;
-        var output = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + lastThree;
+        var output = otherNumbers.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + lastThree;
         
         if (value == 0) {
             return value + fraction;

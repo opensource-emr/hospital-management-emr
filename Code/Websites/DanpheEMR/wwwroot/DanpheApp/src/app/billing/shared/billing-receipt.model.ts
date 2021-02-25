@@ -3,6 +3,7 @@ import { BillingTransactionItem } from './billing-transaction-item.model';
 import { BillingTransaction } from "./billing-transaction.model";
 import { CommonFunctions } from "../../shared/common.functions";
 import * as moment from 'moment/moment';
+import { ENUM_InvoiceType } from "../../shared/shared-enums";
 
 export class BillingReceiptModel {
   public BillingTransactionId: number = null;//added: sud-7May'18
@@ -14,8 +15,9 @@ export class BillingReceiptModel {
   public AppointmentType: string = null;
   public BillingItems: Array<BillingTransactionItem> = new Array<BillingTransactionItem>();
   public ReturnedItems: Array<BillingTransactionItem> = new Array<BillingTransactionItem>();
+  public BillingTransactionItems: any;
   public BillingDate: string = null;
-
+  public CreditNoteNumber: number = null;
   public InsTransactionDate: string = null;//sud:19Jul'19--For Insurance Invoice (Don't Change it..)
 
   public SubTotal: number = null;
@@ -38,6 +40,13 @@ export class BillingReceiptModel {
   public PrintedOn: string = null;
   public PrintedBy: number = 0;
   public IsValid: boolean = false;
+
+  public PrintReturnReceipt: boolean = false; //Rajesh:20Sept19
+
+  public IsAllReturnItem: boolean = true;//Rajesh:7Sept19
+  public PartialReturnTxnId: number = 0;//Rajesh:7Sept19
+  //public ReturnAmount:number = 0;// Rajesh: 12Sept19 for client side only
+
 
   public PaymentMode: string = null;//added: sud:4May'18
   public PaymentDetails: string = null;//added: sud:4May'18
@@ -73,6 +82,9 @@ export class BillingReceiptModel {
   public ConsultingDrName: string = null;
 
   public OPDReferredByDrName: string = null;//sud:12Aug'19--this will be used for OPD, above will be used for other receipts.
+  
+  public QueueNo: number = 0;//pratik:6march'20-- to show Queue no. in recipt.
+  public IpNumber: number = null;//pratik:21May'20-- for Inpatient partial billing
 
 
   public static GetReceiptForTransaction(billingTxn: BillingTransaction): BillingReceiptModel {
@@ -91,6 +103,7 @@ export class BillingReceiptModel {
     retReceipt.BillingDate = billingTxn.CreatedOn;//sud: needs revision.
     retReceipt.BillingItems = billingTxn.BillingTransactionItems;
     retReceipt.Remarks = billingTxn.Remarks;
+    retReceipt.CreditNoteNumber = billingTxn.CreditNoteNumber;
     retReceipt.PaymentMode = billingTxn.PaymentMode;//added: sud:4May'18
     retReceipt.BillStatus = billingTxn.BillStatus;//added: sud:4May'18
     retReceipt.PaymentDetails = billingTxn.PaymentDetails;//added: sud:4May'18
@@ -149,10 +162,9 @@ export class BillingReceiptModel {
     //Removed Return Information since we're showing watermark: RETURNED instead of return amount etc:
     //sud: 13May'18
     txnItems.forEach(itm => {
-      let curItm = Object.create(itm);
       retReceipt.TaxableAmount += itm.TaxableAmount;
-      if (curItm.Quantity != 0) {
-        retReceipt.BillingItems.push(curItm);
+      if (itm.Quantity != 0) {
+        retReceipt.BillingItems.push(itm);
       }
     });
 
@@ -167,6 +179,46 @@ export class BillingReceiptModel {
     retReceipt.TaxableAmount = CommonFunctions.parseAmount(retReceipt.TaxableAmount);
 
     return retReceipt;
+  }
+
+
+  public static GetNewINVReceiptFromTxnItems(txnItems: Array<BillingTransactionItem>): BillingTransaction {
+
+    let NewINVReceipt: BillingTransaction = new BillingTransaction();
+    let totalAmount_BILL: number = 0;
+    let subTotal_BILL: number = 0;
+    let discountAmt_BILL: number = 0;
+    let taxTotal_BILL: number = 0;
+    let returnTotalAmount_BILL: number = 0;
+    let returnSubTotal_BILL: number = 0;
+    let returnDiscountAmt_BILL: number = 0;
+    let returnTax_BILL: number = 0;
+
+
+    for (var i = 0; i < txnItems.length; i++) {
+      let curRow = txnItems[i];
+      totalAmount_BILL += curRow.TotalAmount;
+      taxTotal_BILL += curRow.Tax;
+      discountAmt_BILL += curRow.DiscountAmount;
+      subTotal_BILL += curRow.SubTotal;
+    }
+    NewINVReceipt.TaxableAmount = 0;
+
+    txnItems.forEach(itm => {
+      NewINVReceipt.TaxableAmount += itm.TaxableAmount;
+
+    });
+
+    NewINVReceipt.TaxTotal = CommonFunctions.parseAmount(taxTotal_BILL);
+    NewINVReceipt.TotalAmount = CommonFunctions.parseAmount(totalAmount_BILL);
+    NewINVReceipt.SubTotal = CommonFunctions.parseAmount(subTotal_BILL);
+    NewINVReceipt.DiscountAmount = CommonFunctions.parseAmount(discountAmt_BILL);
+    NewINVReceipt.DiscountPercent = CommonFunctions.parseAmount((discountAmt_BILL / subTotal_BILL) * 100);
+
+    NewINVReceipt.Tender = CommonFunctions.parseAmount(totalAmount_BILL + returnTotalAmount_BILL);
+    NewINVReceipt.TaxableAmount = CommonFunctions.parseAmount(NewINVReceipt.TaxableAmount);
+
+    return NewINVReceipt;
   }
 
   public static GetReceiptForDeposit(billingTransaction: BillingTransaction): BillingReceiptModel {
@@ -217,7 +269,13 @@ export class BillingReceiptModel {
         dupReceipt.DepositReturnAmount = receipt.Transaction.DepositReturnAmount;
         dupReceipt.DepositBalance = CommonFunctions.parseAmount(receipt.Transaction.DepositBalance);
 
-        dupReceipt.ReceiptType = receipt.Transaction.TransactionType.toLowerCase() == "inpatient" ? "ip-receipt" : "op-receipt";
+        //dupReceipt.ReceiptType = receipt.Transaction.TransactionType.toLowerCase() == "inpatient" ? "ip-receipt" : "op-receipt";
+        if (receipt.Transaction.TransactionType.toLowerCase() == "inpatient" && receipt.Transaction.InvoiceType != ENUM_InvoiceType.inpatientPartial) {
+          dupReceipt.ReceiptType = 'ip-receipt';
+        }
+        else {
+          dupReceipt.ReceiptType = 'op-receipt';
+        }
       }
       else {
         dupReceipt = BillingReceiptModel.GetReceiptForDeposit(receipt.Transaction);
@@ -245,6 +303,8 @@ export class BillingReceiptModel {
       dupReceipt.OrganizationId = receipt.Transaction.OrganizationId;
       dupReceipt.OrganizationName = receipt.Transaction.OrganizationName;
       dupReceipt.InsTransactionDate = receipt.Transaction.InsTransactionDate; // sud:20Jul'19--For Insurance Transaction Date.
+      dupReceipt.PartialReturnTxnId = receipt.Transaction.PartialReturnTxnId;// added Rajesh:9Aug19
+      dupReceipt.CreditNoteNumber = receipt.Transaction.CreditNoteNumber;// added Shankar:15Nov19
 
 
 
@@ -263,6 +323,94 @@ export class BillingReceiptModel {
     return dupReceipt;
   }
 
+
+  public static MapReceiptForNotReturnBill(receipt): BillingReceiptModel {
+
+    let dupReceipt: BillingReceiptModel = null;
+    dupReceipt = BillingReceiptModel.GetReceiptFromTxnItems(receipt.BillingTransactionItems);
+    dupReceipt.DepositReturnAmount = receipt.DepositReturnAmount;
+    dupReceipt.DepositBalance = CommonFunctions.parseAmount(receipt.DepositBalance);
+
+    // dupReceipt.ReceiptType = receipt.TransactionType.toLowerCase() == "inpatient" ? "ip-receipt" : "op-receipt";
+
+    dupReceipt.ReceiptNo = receipt.InvoiceNo;
+    dupReceipt.BillingTransactionId = receipt.BillingTransactionId;
+    dupReceipt.Patient = receipt.Patient;
+    dupReceipt.IsValid = true;
+    dupReceipt.BillingDate = moment(receipt.CreatedOn).format("YYYY-MM-DD HH:mm:ss");
+    dupReceipt.BillingUser = receipt.UserName;
+    dupReceipt.Tender = CommonFunctions.parseAmount(receipt.Tender);
+    dupReceipt.PrintCount = receipt.PrintCount;
+    dupReceipt.Change = CommonFunctions.parseAmount(receipt.Change);
+    dupReceipt.PaymentMode = receipt.PaymentMode;
+    dupReceipt.BillStatus = receipt.BillStatus;
+    dupReceipt.PaymentDetails = receipt.PaymentDetails;
+    dupReceipt.CurrentFinYear = receipt.FiscalYear;
+    dupReceipt.InvoiceNo = receipt.InvoiceNo;
+    dupReceipt.InvoiceCode = receipt.InvoiceCode;
+    dupReceipt.TaxId = receipt.TaxId;
+    dupReceipt.CreditNoteNumber = receipt.CreditNoteNumber;
+    dupReceipt.VisitId = receipt.PatientVisitId;
+    dupReceipt.IsInsuranceBilling = receipt.IsInsuranceBilling;
+    dupReceipt.OrganizationId = receipt.OrganizationId;
+    dupReceipt.OrganizationName = receipt.OrganizationName;
+    dupReceipt.InsTransactionDate = receipt.InsTransactionDate;
+    dupReceipt.PartialReturnTxnId = receipt.PartialReturnTxnId;
+    dupReceipt.IsReturned = false;
+
+    // if (receipt.ReturnStatus) {
+    //   dupReceipt.IsReturned = true;
+    // }
+
+    if (receipt.PackageId || receipt.PackageName) {
+      dupReceipt.PackageId = receipt.PackageId;
+      dupReceipt.PackageName = receipt.PackageName;
+    }
+
+    return dupReceipt;
+  }
+  public static MapReceiptForReturnBill(receipt): BillingReceiptModel {
+
+    let dupReceipt: BillingReceiptModel = null;
+    dupReceipt = BillingReceiptModel.GetReceiptFromTxnItems(receipt.ReturnedItems);
+    dupReceipt.DepositReturnAmount = receipt.DepositReturnAmount;
+    dupReceipt.DepositBalance = CommonFunctions.parseAmount(receipt.DepositBalance);
+
+    // dupReceipt.ReceiptType = receipt.TransactionType.toLowerCase() == "inpatient" ? "ip-receipt" : "op-receipt";
+
+    dupReceipt.ReceiptNo = receipt.RefInvoiceNum;
+    dupReceipt.BillingTransactionId = receipt.BillingTransactionId;
+    dupReceipt.Patient = receipt.Patient;
+    dupReceipt.IsValid = true;
+    dupReceipt.Remarks = receipt.Remarks;
+    dupReceipt.BillingDate = moment(receipt.CreatedOn).format("YYYY-MM-DD HH:mm:ss");
+    dupReceipt.BillingUser = receipt.UserName;
+    dupReceipt.Tender = CommonFunctions.parseAmount(receipt.Tender);
+    dupReceipt.PrintCount = receipt.PrintCount;
+    dupReceipt.Change = CommonFunctions.parseAmount(receipt.Change);
+    dupReceipt.PaymentMode = receipt.PaymentMode;
+    dupReceipt.BillStatus = receipt.BillStatus;
+    dupReceipt.PaymentDetails = receipt.PaymentDetails;
+    dupReceipt.CurrentFinYear = receipt.FiscalYear;
+    dupReceipt.InvoiceNo = receipt.RefInvoiceNum;
+    dupReceipt.InvoiceCode = receipt.InvoiceCode;
+    dupReceipt.TaxId = receipt.TaxId;
+    dupReceipt.VisitId = receipt.PatientVisitId;
+    dupReceipt.IsInsuranceBilling = receipt.IsInsuranceBilling;
+    dupReceipt.OrganizationId = receipt.OrganizationId;
+    dupReceipt.OrganizationName = receipt.OrganizationName;
+    dupReceipt.InsTransactionDate = receipt.InsTransactionDate;
+    dupReceipt.PartialReturnTxnId = receipt.PartialReturnTxnId;
+    dupReceipt.IsReturned = true;
+    dupReceipt.CreditNoteNumber = receipt.CreditNoteNumber;
+
+    if (receipt.PackageId || receipt.PackageName) {
+      dupReceipt.PackageId = receipt.PackageId;
+      dupReceipt.PackageName = receipt.PackageName;
+    }
+
+    return dupReceipt;
+  }
   public static GetProvisionalReceiptForDuplicate(receipt, currentData) {
 
     let dupReceipt: BillingReceiptModel = null;
@@ -283,6 +431,44 @@ export class BillingReceiptModel {
     }
     return dupReceipt;
   }
+
+
+  //Rajesh:8Sept19
+  public static GetReceiptForGenerateNewReceipt(receipt): BillingTransaction {
+
+    let NewGenReceipt: BillingTransaction = null;
+
+    NewGenReceipt = new BillingTransaction();
+    NewGenReceipt.DepositReturnAmount = receipt.Transaction.DepositReturnAmount;
+    NewGenReceipt.DepositBalance = CommonFunctions.parseAmount(receipt.Transaction.DepositBalance);
+
+    // NewGenReceipt.TransactionType = receipt.Transaction.TransactionType.toLowerCase() == "inpatient" ? "ip-receipt" : "op-receipt";
+    NewGenReceipt.TransactionType = receipt.Transaction.TransactionType;
+    NewGenReceipt.InvoiceNo = receipt.Transaction.InvoiceNo;
+    NewGenReceipt.Patient = receipt.Transaction.Patient;
+    NewGenReceipt.Remarks = receipt.Transaction.Remarks;//check for remarks in case of return. 
+    NewGenReceipt.CreatedOn = moment(receipt.Transaction.CreatedOn).format("YYYY-MM-DD HH:mm:ss");
+    NewGenReceipt.BillingUserName = receipt.Transaction.UserName;
+    NewGenReceipt.Tender = CommonFunctions.parseAmount(receipt.Transaction.Tender);
+    NewGenReceipt.PrintCount = receipt.Transaction.PrintCount;
+    NewGenReceipt.Change = CommonFunctions.parseAmount(receipt.Transaction.Change);
+    NewGenReceipt.PaymentMode = receipt.Transaction.PaymentMode;
+    NewGenReceipt.BillStatus = receipt.Transaction.BillStatus;
+    NewGenReceipt.PaymentDetails = receipt.Transaction.PaymentDetails;
+    NewGenReceipt.FiscalYear = receipt.Transaction.FiscalYear;
+    NewGenReceipt.InvoiceNo = receipt.Transaction.InvoiceNo;
+    NewGenReceipt.InvoiceCode = receipt.Transaction.InvoiceCode;
+    NewGenReceipt.TaxId = receipt.Transaction.TaxId;
+    NewGenReceipt.PatientVisitId = receipt.Transaction.PatientVisitId;
+    NewGenReceipt.PatientId = receipt.Patient.PatientId;
+    NewGenReceipt.IsInsuranceBilling = receipt.Transaction.IsInsuranceBilling;
+    NewGenReceipt.OrganizationId = receipt.Transaction.OrganizationId;
+    NewGenReceipt.OrganizationName = receipt.Transaction.OrganizationName;
+    NewGenReceipt.InsTransactionDate = receipt.Transaction.InsTransactionDate;
+
+    return NewGenReceipt;
+  }
+
 
   //start: sud:20Aug'18-- for Inpatient-Discharge-Bill
 

@@ -14,6 +14,7 @@ namespace DanpheEMR.ServerModel
         public int ConsumptionId { get; set; }
 
         public int WardId { get; set; }
+        public int StoreId { get; set; }
 
         public int? InvoiceId { get; set; }
 
@@ -42,8 +43,11 @@ namespace DanpheEMR.ServerModel
         public int CreatedBy { get; set; }
 
         public DateTime? CreatedOn { get; set; }
-        
+        public DateTime? ModifiedOn { get; set; }
+        public  int? ModifiedBy { get; set; }
         [NotMapped]
         public int CounterId { get; set; }
+        [NotMapped]
+        public int StockId { get; set; }
     }
 }

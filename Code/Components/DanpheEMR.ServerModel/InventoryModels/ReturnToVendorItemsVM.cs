@@ -16,10 +16,13 @@ namespace DanpheEMR.ServerModel
             public int StockId { get; set; }
             public int GRId { get; set; }
             public int GoodsReceiptId { get; set; }
+            
+
         }
         public int ItemId { get; set; }
         public string ItemName { get; set; }
         public decimal? VAT { get; set; }
+        public string FiscalYearFormatted { get; set; }
         public List<BatchDetail> BatchDetails { get; set; }
     }
 }

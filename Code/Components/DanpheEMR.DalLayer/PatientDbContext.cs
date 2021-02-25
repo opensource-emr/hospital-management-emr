@@ -4,12 +4,14 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Audit.EntityFramework;
 using DanpheEMR.ServerModel;
 
 namespace DanpheEMR.DalLayer
 {
     //public class PatientDbContext : CommonDbContext
-    public class PatientDbContext : DbContext
+    [AuditDbContext(Mode = AuditOptionMode.OptIn)]
+    public class PatientDbContext : AuditDbContext
     {
         public DbSet<PatientModel> Patients { get; set; }
         public DbSet<MembershipTypeModel> MembershipTypes { get; set; }
@@ -20,17 +22,26 @@ namespace DanpheEMR.DalLayer
         public DbSet<CountrySubDivisionModel> CountrySubdivisions { get; set; }//sud:14May'18
         public DbSet<CountryModel> Countries { get; set; }//sud:14May'18
 
+        public DbSet<DepartmentModel> Department { get; set; }
+
         public DbSet<AdmissionModel> Admissions { get; set; }//sud:3June'18
         public DbSet<HealthCardInfoModel> PATHealthCard { get; set; }
         public DbSet<NeighbourhoodCardModel> PATNeighbourhoodCard { get; set; }
         public DbSet<EmployeeModel> Employee { get; set; }
         public DbSet<InsuranceProviderModel> InsuranceProviders { get; set; } //Yubraj:22nd Feb 2019
         public DbSet<InsuranceModel> Insurances { get; set; } //Yubraj:22nd Feb 2019
+        public DbSet<ADTBedReservation> BedReservation { get; set; }
+        public DbSet<CfgParameterModel> CFGParameters { get; set; }
+        public DbSet<EmergencyPatientModel> EmergencyPatient { get; set; }
+
+        public DbSet<PatientBedInfo> PatientBedInfos { get; set; }
+        public DbSet<WardModel> Wards { get; set; }
+        public DbSet<BedModel> Beds { get; set; }
         public PatientDbContext(string conn) : base(conn)
         {
             this.Configuration.LazyLoadingEnabled = true;
             this.Configuration.ProxyCreationEnabled = false;
-
+            this.DbContext.Database.CommandTimeout = 180;
         }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
@@ -162,7 +173,15 @@ namespace DanpheEMR.DalLayer
 
             modelBuilder.Entity<InsuranceProviderModel>().ToTable("INS_CFG_InsuranceProviders");
             modelBuilder.Entity<EmployeeModel>().ToTable("EMP_Employee");
+            modelBuilder.Entity<DepartmentModel>().ToTable("MST_Department");
             modelBuilder.Entity<NeighbourhoodCardModel>().ToTable("PAT_NeighbourhoodCardDetail");
+            modelBuilder.Entity<ADTBedReservation>().ToTable("ADT_BedReservation");
+            modelBuilder.Entity<CfgParameterModel>().ToTable("CORE_CFG_Parameters");
+            modelBuilder.Entity<EmergencyPatientModel>().ToTable("ER_Patient");
+            modelBuilder.Entity<PatientBedInfo>().ToTable("ADT_TXN_PatientBedInfo");
+            modelBuilder.Entity<WardModel>().ToTable("ADT_MST_Ward");
+
+            modelBuilder.Entity<BedModel>().ToTable("ADT_Bed");
         }
     }
 }

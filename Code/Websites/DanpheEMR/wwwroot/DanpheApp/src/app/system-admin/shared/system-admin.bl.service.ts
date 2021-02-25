@@ -13,6 +13,9 @@ export class SystemAdminBLService {
         public securityService: SecurityService) {
     }
 
+  public GetSystemAdmin() {
+    return this.systemAdminDLService.GetSystemAdmin().map(res => res);
+  }
 
     //GET:
     //Method for get all database backup log
@@ -48,8 +51,8 @@ export class SystemAdminBLService {
             .map(res => res);
     }
     //GET:
-    public GetAuditTrailDetails(CurrentAudit, Table_Name, UserName) {
-        return this.systemAdminDLService.GetAuditTrailDetails(CurrentAudit, Table_Name, UserName)
+    public GetAuditTrailDetails(CurrentAudit, Table_Name, UserName, ActionName = '') {
+        return this.systemAdminDLService.GetAuditTrailDetails(CurrentAudit, Table_Name, UserName, ActionName)
             .map((responseData) => {
                 return responseData;
             });

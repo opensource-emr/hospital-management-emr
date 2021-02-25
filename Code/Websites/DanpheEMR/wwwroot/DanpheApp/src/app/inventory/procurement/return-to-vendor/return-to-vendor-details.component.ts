@@ -26,6 +26,7 @@ export class ReturnToVendorDetailsComponent {
     public VATTotal: number = 0;
     public AllTotalAmount: number = 0;
     public PurchaseReturnNumber: string = "PI000";
+    msgBoxServ: any;
 
     constructor(
         public inventoryBLService: InventoryBLService,
@@ -33,11 +34,9 @@ export class ReturnToVendorDetailsComponent {
         public inventoryService: InventoryService,
         public routeFrom: RouteFromService,
         public router: Router,
-        public coreservice: CoreService) {
-
+        public coreService: CoreService) {
         this.LoadReturnItems(this.inventoryService.CreatedOn, this.inventoryService.VendorId);   
-        this.header = JSON.parse(this.coreservice.Parameters[1].ParameterValue);
-
+        this.GetInventoryBillingHeaderParameter();
     }
 
     LoadReturnItems(CreatedOn: string, VendorId: number) {
@@ -83,8 +82,19 @@ export class ReturnToVendorDetailsComponent {
         var printContents = document.getElementById("printpage").innerHTML;
         popupWinindow = window.open('', '_blank', 'width=600,height=700,scrollbars=no,menubar=no,toolbar=no,location=no,status=no,titlebar=no');
         popupWinindow.document.open();
-        popupWinindow.document.write('<html><head><link rel="stylesheet" type="text/css" href="../../themes/theme-default/ReceiptList.css" /></head><style>.printStyle {border: dotted 1px;margin: 10px 100px;}.print-border-top {border-top: dotted 1px;}.print-border-bottom {border-bottom: dotted 1px;}.print-border {border: dotted 1px;}.center-style {text-align: center;}.border-up-down {border-top: dotted 1px;border-bottom: dotted 1px;}</style><body onload="window.print()">' + printContents + '</html>');
+      popupWinindow.document.write('<html><head><style>.img-responsive{ position: relative;left: -65px;top: 10px;}.qr-code{position:relative;left: 93px;top: 5px;}</style><link rel="stylesheet" type="text/css" href="../../themes/theme-default/ReceiptList.css" /></head><style>.printStyle {border: dotted 1px;margin: 10px 100px;}.print-border-top {border-top: dotted 1px;}.print-border-bottom {border-bottom: dotted 1px;}.print-border {border: dotted 1px;}.center-style {text-align: center;}.border-up-down {border-top: dotted 1px;border-bottom: dotted 1px;}</style><body onload="window.print()">' + printContents + '</html>');
         popupWinindow.document.close();
     }
+
+  public headerDetail: { hospitalName, address, email, PANno, tel, DDA };
+
+  //Get Pharmacy Billing Header Parameter from Core Service (Database) assign to local variable
+  GetInventoryBillingHeaderParameter() {
+    var paramValue = this.coreService.Parameters.find(a => a.ParameterName == 'Inventory BillingHeader').ParameterValue;
+    if (paramValue)
+      this.headerDetail = JSON.parse(paramValue);
+    else
+      this.msgBoxServ.showMessage("error", ["Please enter parameter values for BillingHeader"]);
+  }
 
 }

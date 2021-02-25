@@ -22,4 +22,5 @@ export class ImagingItemRequisition {
   public DiagnosisId: number = 0;
 
   public HasInsurance: boolean = false;//sud:21Jul'19--For Govt Insurance.
+  public WardName: string = null;
 }

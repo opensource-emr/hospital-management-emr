@@ -1,4 +1,4 @@
-﻿
+
 <style>
     .notification-bg-unread {
         /*background-color: #eaedf2 !important;*/
@@ -55,7 +55,7 @@
 </style>
 <!--<img src="../../../themes/theme-default/images/indicator1.gif"/>-->
 <ul class="nav navbar-nav pull-right">
-    <li class="dropdown dropdown-extended dropdown-notification" id="header_notification_bar" (click)="NotificationOpen()">
+    <li class="dropdown dropdown-extended dropdown-notification active-notification" id="header_notification_bar" (click)="NotificationOpen()">
         <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown" data-close-others="true">
             <i class="icon-bell" style="color: #fdefef;font-size: 20px;"></i>
             <span *ngIf="unReadNotfCount>0" class="badge badge-default"  [ngClass]="{'blink': dropdownOpened==false?true : false}">{{unReadNotfCount}} </span>

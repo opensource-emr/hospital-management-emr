@@ -10,7 +10,6 @@ import { SecurityService } from '../../../security/shared/security.service';
 import { BillingService } from '../../shared/billing.service';
 
 import { BillingTransactionItem } from "../../shared/billing-transaction-item.model";
-import { BillingItem } from '../../shared/billing-item.model';
 import { BillingBLService } from '../../shared/billing.bl.service';
 
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
@@ -27,7 +26,8 @@ import { PatientBillingContextVM } from '../../shared/patient-billing-context-vm
 import { BillingReceiptModel } from '../../shared/billing-receipt.model';
 import { CurrentVisitContextVM } from '../../../appointments/shared/current-visit-context.model';
 import { BillingPackage } from '../../shared/billing-package.model';
-import { CreditOrganization } from '../../../settings/shared/creditOrganization.model';
+import { CreditOrganization } from '../../../settings-new/shared/creditOrganization.model';
+import { ENUM_BillingStatus, ENUM_BillPaymentMode, ENUM_VisitType, ENUM_PriceCategory } from '../../../shared/shared-enums';
 
 @Component({
   templateUrl: "./ins-billing-transaction.html" //"/BillingView/BillingTransaction"
@@ -194,7 +194,7 @@ export class INSBillingTransactionComponent {
     billTxnItem.Quantity = 1;
     //newReq.BillStatus = "unpaid";--commented sud: 4May'18
     ////by default item will be in provisional status
-    billTxnItem.BillStatus = "provisional";
+    billTxnItem.BillStatus = ENUM_BillingStatus.provisional;// "provisional";
 
     //we don't need validation on RequestedBy field, we're adding this value from other part of code..
     billTxnItem.UpdateValidator("off", "RequestedBy", "required");//sud:5Mar'19
@@ -322,50 +322,54 @@ export class INSBillingTransactionComponent {
   }
 
   public GetBillingItems() {
-    if (this.billingService.BillingFlow == "insurance" || this.billingService.BillingFlow == "insurance-package") {
-      this.GetInsurancePackages();
-      //get insurance items
-      this.BillingBLService.GetInsuranceBillingItems()
-        .subscribe(res => {
-          if (res.Status == 'OK') {
-            if (res.Results.length) {
-              this.GetDoctorsList();
-              let itemList = res.Results;
 
-              if (this.billingService.BillingFlow == "insurance-package") {
-                itemList = itemList.filter(a => a.IsInsurancePackage != true);
-              }
-              this.CallBackGetBillingItems(itemList);
-              this.GetDistinctServiceDepartments(itemList);
-              this.isItemLoaded = true;
-              this.FilterBillItems(0);
-            }
-            else {
-              this.msgBoxServ.showMessage('Failed', ["unable to get items for searchbox.. check logs for more details."]);
-              console.log(res.ErrorMessage);
-            }
-          }
-        },
-          err => {
-            console.log(err.ErrorMessage);
-
-          });
-    }
-    //get all items
-    else {
-      this.BillingBLService.GetBillItemList()
-        .subscribe(res => {
-          if (res.Status == 'OK' && res.Results.length) {
-            this.CallBackGetBillingItems(res.Results);
+    this.GetInsurancePackages();
+    //get insurance items
+    this.BillingBLService.GetInsuranceBillingItems()
+      .subscribe(res => {
+        if (res.Status == 'OK') {
+          if (res.Results.length) {
             this.GetDoctorsList();
+            let itemList = res.Results;
+
+            if (this.billingService.BillingFlow == "insurance-package") {
+              itemList = itemList.filter(a => a.IsInsurancePackage != true);
+            }
+            this.CallBackGetBillingItems(itemList);
+            this.GetDistinctServiceDepartments(itemList);
+            this.isItemLoaded = true;
             this.FilterBillItems(0);
           }
           else {
-            this.msgBoxServ.showMessage('Failed', ["Unable to Billing Items.Check log for more detail."]);
+            this.msgBoxServ.showMessage('Failed', ["unable to get items for searchbox.. check logs for more details."]);
             console.log(res.ErrorMessage);
           }
+        }
+      },
+        err => {
+          console.log(err.ErrorMessage);
+
         });
-    }
+
+
+    //if (this.billingService.BillingFlow == "insurance" || this.billingService.BillingFlow == "insurance-package") {
+      
+    //}
+    ////get all items
+    //else {
+    //  this.BillingBLService.GetBillItemList()
+    //    .subscribe(res => {
+    //      if (res.Status == 'OK' && res.Results.length) {
+    //        this.CallBackGetBillingItems(res.Results);
+    //        this.GetDoctorsList();
+    //        this.FilterBillItems(0);
+    //      }
+    //      else {
+    //        this.msgBoxServ.showMessage('Failed', ["Unable to Billing Items.Check log for more detail."]);
+    //        console.log(res.ErrorMessage);
+    //      }
+    //    });
+    //}
   }
 
   public CallBackGetBillingItems(result) {
@@ -429,7 +433,7 @@ export class INSBillingTransactionComponent {
       }
       for (let i = 0; i < this.model.BillingTransactionItems.length; i++) {
         let billItem = this.model.BillingTransactionItems[i];
-        billItem.BillStatus = "provisional";
+        billItem.BillStatus = ENUM_BillingStatus.provisional;// "provisional";
         //billItem.Quantity = 1; //change by yub--23rd Aug '18
         billItem.EnableControl("ItemName", false);
         billItem.EnableControl("ServiceDepartmentId", false);
@@ -545,7 +549,7 @@ export class INSBillingTransactionComponent {
     if (billingFlow == "provisional") {
       if (this.model.BillingTransactionItems) {
         this.model.BillingTransactionItems.forEach(txnItm => {
-          txnItm.BillStatus = "provisional";
+          txnItm.BillStatus = ENUM_BillingStatus.provisional;// "provisional";
         });
       }
     }
@@ -889,7 +893,7 @@ export class INSBillingTransactionComponent {
           erItem.RequisitionId = erItem.PatientVisitId;
           items[0] = erItem;
           otherItems.forEach(item => {
-            item.VisitType = "emergency";
+            item.VisitType = ENUM_VisitType.emergency;// "emergency";
             item.PatientVisitId = erItem.PatientVisitId;
           });
           this.routeFromService.RouteFrom = "ER-Sticker";
@@ -913,10 +917,10 @@ export class INSBillingTransactionComponent {
   }
 
   CheckAndSubmitInsuranceItems() {
-    this.model.PaymentMode = "credit";
-    this.model.BillStatus = "unpaid";
+    this.model.PaymentMode = ENUM_BillPaymentMode.credit;// "credit";
+    this.model.BillStatus = ENUM_BillingStatus.unpaid;// "unpaid";
     this.model.BillingTransactionItems.forEach(item => {
-      item.BillStatus = "unpaid";
+      item.BillStatus = ENUM_BillingStatus.unpaid;// "unpaid";
     });
     this.model.PaymentDetails = "InsuranceName: " + this.billingService.Insurance.InsuranceProviderName
       + "/" + "InsuranceNumber:" + this.billingService.Insurance.InsuranceNumber;
@@ -1628,7 +1632,7 @@ export class INSBillingTransactionComponent {
       this.model.Tender = 0;//tender is zero and is disabled in when credit
       if (this.model.BillingTransactionItems) {
         this.model.BillingTransactionItems.forEach(txnItm => {
-          txnItm.BillStatus = "unpaid";
+          txnItm.BillStatus = ENUM_BillingStatus.unpaid;// "unpaid";
           txnItm.PaidDate = null;
         });
       }
@@ -1636,12 +1640,12 @@ export class INSBillingTransactionComponent {
     else {
       this.model.Tender = this.model.Tender ? this.model.Tender : this.model.TotalAmount;
       this.model.PaidAmount = this.model.Tender - this.model.Change;
-      this.model.BillStatus = "paid";
+      this.model.BillStatus = ENUM_BillingStatus.paid;// "paid";
       this.model.PaidDate = moment().format("YYYY-MM-DD HH:mm:ss");//default paiddate.
       this.model.PaidCounterId = this.securityService.getLoggedInCounter().CounterId;//sud:29May'18
       if (this.model.BillingTransactionItems) {
         this.model.BillingTransactionItems.forEach(txnItm => {
-          txnItm.BillStatus = "paid";
+          txnItm.BillStatus = ENUM_BillingStatus.paid;// "paid";
           txnItm.PaidDate = moment().format("YYYY-MM-DD HH:mm:ss");
         });
       }
@@ -1741,7 +1745,7 @@ export class INSBillingTransactionComponent {
           let currBillItem = this.itemList.find(billItem => billItem.ItemId == txnItm.ItemId && billItem.ServiceDepartmentId == txnItm.ServiceDepartmentId);
           if (currBillItem) {
             txnItm.Price = currBillItem.EHSPrice;
-            txnItm.PriceCategory = "EHS";
+            txnItm.PriceCategory = ENUM_PriceCategory.EHS;// "EHS";
           }
         });
       }
@@ -1760,12 +1764,12 @@ export class INSBillingTransactionComponent {
           let currBillItem = this.itemList.find(billItem => billItem.ItemId == txnItm.ItemId && billItem.ServiceDepartmentId == txnItm.ServiceDepartmentId);
           if (currBillItem) {
             txnItm.Price = currBillItem.ForeignerPrice;
-            txnItm.PriceCategory = "Foreigner";
+            txnItm.PriceCategory = ENUM_PriceCategory.Foreigner;//"Foreigner";
           }
         });
       }
     }
-    else if (this.priceCategory == "SAARCCitizen") {//default is: 'Normal'
+    else if (this.priceCategory == ENUM_PriceCategory.SAARCCitizen ) {//"SAARCCitizen"; default is: 'Normal'
       //this.priceCategoryShortName = "(S)";
       //alert("Normal selected");
       if (this.itemList != null && this.itemList.length > 0) {
@@ -1779,7 +1783,7 @@ export class INSBillingTransactionComponent {
           let currBillItem = this.itemList.find(billItem => billItem.ItemId == txnItm.ItemId && billItem.ServiceDepartmentId == txnItm.ServiceDepartmentId);
           if (currBillItem) {
             txnItm.Price = currBillItem.SAARCCitizenPrice;
-            txnItm.PriceCategory = "SAARCCitizen";
+            txnItm.PriceCategory = ENUM_PriceCategory.SAARCCitizen;// "SAARCCitizen";
           }
         });
       }
@@ -1798,7 +1802,7 @@ export class INSBillingTransactionComponent {
           let currBillItem = this.itemList.find(billItem => billItem.ItemId == txnItm.ItemId && billItem.ServiceDepartmentId == txnItm.ServiceDepartmentId);
           if (currBillItem) {
             txnItm.Price = currBillItem.NormalPrice;
-            txnItm.PriceCategory = "Normal";
+            txnItm.PriceCategory = ENUM_PriceCategory.Normal;// "Normal";
           }
         });
       }

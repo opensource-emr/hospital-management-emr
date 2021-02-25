@@ -140,4 +140,11 @@ export class RPT_BIL_DocDeptItemComponent {
     public CallBackDepts() {
         this.callback.emit();
     }
+
+    //sud:10Aug'20--For Date Format in AD/BS
+    public isDateFormatBS: boolean = true;
+    ChangeDateFormat() {
+        this.isDateFormatBS = !this.isDateFormatBS;
+    }
+
 }

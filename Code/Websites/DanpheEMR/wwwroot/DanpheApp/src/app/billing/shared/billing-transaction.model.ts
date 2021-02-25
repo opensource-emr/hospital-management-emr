@@ -19,6 +19,7 @@ export class BillingTransaction {
   public CounterId: number = 0;
   public PaidDate: string = null;
   public TransactionType: string = null;
+  public InvoiceType: string = null;// pratik:29April 2020-- needed for partial payment invoice in ipbilling
   public TotalQuantity: number = 0;
   public SubTotal: number = 0;
   public DiscountPercent: number = 0;
@@ -40,6 +41,7 @@ export class BillingTransaction {
   public PrintedOn: string = null;
   public PrintedBy: number = 0;
   public CreditBalance: number = 0;
+  public CreditNoteNumber: number = 0;
   public ReturnedAmount: number = 0;
   public BillingTransactionItems: Array<BillingTransactionItem> = new Array<BillingTransactionItem>();
   public PaymentMode: string = "cash";
@@ -71,10 +73,12 @@ export class BillingTransaction {
   public OrganizationId: number = null;//Yubraj --22nd April '19
   public OrganizationName: string = null;
   public ExchangeRate: number = 0; // Sanjit:5-17-19
-  public singleReceiptBool:boolean=false;
+  public singleReceiptBool: boolean = false;
   public BillingUserName: string = null; //Yubraj 28th June '19
 
   public InsTransactionDate: string = null;//sud:19Jul'19--For MNK Insurance Transaction Date..
+  public AdjustmentTotalAmount: number = 0;
+  public ReturnedItems: any;
 
   constructor() {
     var _formBuilder = new FormBuilder();

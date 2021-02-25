@@ -1,0 +1,138 @@
+﻿<style>
+/*This class for background border red */
+.bg-on {
+	font-weight: bold;
+	border: solid 1px red;
+}
+/*This class for */
+.bg-off {
+	font-weight: bold;
+}
+
+    /*.table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+        padding: 1px !important; 
+    }*/
+	.total-table td {
+    padding-bottom: 5px !important;
+}
+</style>
+<div class="row">
+  <div class="col-md-12">
+    <div class="caption lb-caption"> 
+      <!-- <i class="glyphicon glyphicon-asterisk font-red-sunglo"></i> -->
+      <h3><span class="caption-subject">Breakage Item(s)</span></h3>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    <div class="">
+      <table class="table table-striped table-hover inv_table table-bordered">
+        <thead>
+          <tr>
+            <th></th>
+            <th sortable-header col="itemnames"><b>Item Name</b></th>
+            <th sortable-header col="quantity"><b>Avl Qty</b></th>
+            <th><b>Batch </b></th>
+            <th><b>Exp Date</b></th>
+            <th></th>
+            <th sortable-header col="quantity"><b>Qty</b></th>
+            <th><b>MRP</b></th>
+            <th><b>Sub Total</b></th>
+            <th><b>Discount Amt</b></th>
+            <th><b>VAT %</b></th>
+            <th><b>Total Amount </b></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of curtWriteOffModel.phrmWriteOffItem; let i = index">
+            <td><a (click)="DeleteRow(i)"><i class="btn btn-danger fa fa-times"></i></a></td>
+            <td><form [formGroup]="row.WriteOffItemValidator">
+                <input danphe-auto-complete class="form-control"
+                                       [(ngModel)]="row.SelectedItem"
+                                       [source]="stockDetailsList"
+                                       [list-formatter]="myItemListFormatter"
+                                       placeholder="--Select Medicine--"
+                                       display-property-name="ItemName"
+                                       value-property-name=null
+                                       onClick="this.select();"
+                                       (valueChanged)="onChangeItem($event,i)"
+                                       max-num-list="10"
+                                       (focusout)="CheckProperSelectedItem(row.SelectedItem,i)"
+                                       formControlName="ItemId"
+                                       min-chars="0"
+                                       style="width:200px;" />
+                <div style="color:red" *ngIf="row.IsDirty('ItemId')" [hidden]="row.IsValidCheck('ItemId','required')"> Item is required</div>
+              </form></td>
+            <td><input style="width:60px;" class="form-control" [(ngModel)]="row.AvailableQuantity" disabled min="1" [ngModelOptions]="{standalone: true}" name="totalAvailablequantity" type="number" value=""></td>
+            <td><b>{{row.BatchNo}}</b></td>
+            <td><label style="width:100px ; margin-left:3px;" min="0" type="date" value="">{{row.ExpiryDate | date}}</label></td>
+            <td><a (click)="AddRowRequest()"> <i class="fa fa-plus btn btn-sm btn-success"></i> </a></td>
+            <td><form [formGroup]="row.WriteOffItemValidator">
+                <input style="width:70px;" class="form-control" min="0" [(ngModel)]="row.WriteOffQuantity" (ngModelChange)="CalculationForPHRMWriteOffItem(row,i)"
+                                       [ngClass]="row.Quantity > row.AvailableQuantity  ? 'bg-on' : 'bg-off'"
+                                       formControlName="WriteOffQuantity" name="WriteOffQuantity" type="number">
+                <span class="color-red font-sm" *ngIf="row.AvailableQuantity<row.WriteOffQuantity"> Qty Should be less then available Qty</span> <span class="color-red font-sm" *ngIf="row.IsDirty('WriteOffQuantity')" [hidden]="row.IsValidCheck('WriteOffQuantity','invalidNumber')">quantity required</span>
+              </form></td>
+            <td><input style="width:60px;" [(ngModel)]="row.ItemPrice" class="form-control" disabled name="price" type="number"></td>
+            <td><input style="width:60px;" [(ngModel)]="row.SubTotal" class="form-control" disabled name="SubTotal" type="number"></td>
+            <td><input style="width:60px;" [(ngModel)]="row.DiscountedAmount" class="form-control" disabled name="price" type="number"></td>
+            <td><input style="width:60px;" [(ngModel)]="row.VATPercentage" disabled class="form-control" max="100" name="vatpercent" type="number"></td>
+            <td><input style="width:100px;" [(ngModel)]="row.TotalAmount" disabled class="form-control" name="total" type="number"></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="mt20 t-wrap">
+        <table class="col-sm-offset-8 col-sm-4 total-table">
+          <tr>
+            <td>Select Breakage Date:<sup>*</sup></td>
+            <td><form [formGroup]="curtWriteOffModel.WriteOffValidator">
+                <input [(ngModel)]="curtWriteOffModel.WriteOffDate" formControlName="WriteOffDate" style="width:200px" class="form-control" name="WriteOffDate" type="date" />
+                <span class="color-red font-sm" *ngIf="curtWriteOffModel.IsDirty('WriteOffDate')" [hidden]="curtWriteOffModel.IsValidCheck('WriteOffDate','wrongDate')"> Enter Valid Date</span>
+              </form>
+			  </td>
+            <!--            <td></td>--> 
+          </tr>
+          <tr>
+            <td>Remark:<sup>*</sup></td>
+            <td><form [formGroup]="curtWriteOffModel.WriteOffValidator">
+                <textarea [(ngModel)]="curtWriteOffModel.WriteOffRemark" formControlName="WriteOffRemark" style="width:200px" class="form-control" name="WriteOffRemark" type="text" ></textarea>
+                <div style="color:red" *ngIf="curtWriteOffModel.IsDirty('WriteOffRemark')" [hidden]="curtWriteOffModel.IsValidCheck('WriteOffRemark','required')">remark is required</div>             
+              </form></td>
+            <!--            <td></td>--> 
+          </tr>
+          <tr>
+            <td> SubTotal: </td>
+            <td><input class="form-control" [(ngModel)]="curtWriteOffModel.SubTotal" disabled id="subtotal" name="subtotal" type="number"></td>
+            <!--            <td class="col-sm-offset-4 col-sm-5"></td>--> 
+          </tr>
+          <tr>
+            <td> DiscountedAmount: </td>
+            <td><input class="form-control" [(ngModel)]="curtWriteOffModel.DiscountAmount" disabled id="subtotal" name="subtotal" type="number"></td>
+            <!--            <td class="col-sm-offset-4 col-sm-5"></td>--> 
+          </tr>
+          <tr>
+            <td>VAT Amount:</td>
+            <td><input disabled class="form-control" [(ngModel)]="curtWriteOffModel.VATAmount" name="VATAmount" type="number"></td>
+            <!--            <td class="col-sm-offset-8 col-sm-2"></td>--> 
+          </tr>
+          <tr>
+            <td>Total Amount: </td>
+            <td><input disabled class="form-control" [(ngModel)]="curtWriteOffModel.TotalAmount" name="TotalAmount" type="number"></td>
+<!--            <td class="col-sm-offset-8 col-sm-2"></td>-->
+          </tr>
+          <tr class="dot">
+            <td colspan="3" class="text-capitalize">In Words : <b>{{curtWriteOffModel.TotalAmount | NumberInWords}} </b>Only. <br />
+              <br /></td>
+          </tr>
+          <tr></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-offset-8 col-sm-4 text-right">
+    <input type="button" class="btn btn-success" value="Request" (click)="PostWriteOffItems()" [disabled]="loading" />
+    <span></span>
+    <input type="button" class="btn btn-danger" (click)="Cancel()" value="Cancel">
+    <span></span> </div>
+</div>

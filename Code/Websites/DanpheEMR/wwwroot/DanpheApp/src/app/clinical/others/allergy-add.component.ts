@@ -1,4 +1,4 @@
-﻿import { Input, Output, EventEmitter, Component, ChangeDetectorRef } from "@angular/core";
+import { Input, Output, EventEmitter, Component, ChangeDetectorRef } from "@angular/core";
 import { PatientService } from "../../patients/shared/patient.service";
 import { CallbackService } from '../../shared/callback.service';
 import { IOAllergyVitalsBLService } from '../shared/io-allergy-vitals.bl.service';

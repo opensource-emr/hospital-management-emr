@@ -269,10 +269,10 @@ namespace DanpheEMR.Utilities
 
                 int colcount = 1;
                 //this is header of the report..
-                worksheet.Cells["C" + (EndRow - 2) + ":G" + (EndRow - 2)].Value = header;
-                worksheet.Cells["C" + (EndRow - 2) + ":G" + (EndRow - 2)].Merge = true;
-                worksheet.Cells["C" + (EndRow - 2) + ":G" + (EndRow - 2)].Style.Font.Color.SetColor(System.Drawing.Color.Green);
-                worksheet.Cells["C" + (EndRow - 2) + ":G" + (EndRow - 2)].Style.Font.Bold = true;
+                worksheet.Cells["B" + (EndRow - 2) + ":H" + (EndRow - 2)].Value = header;
+                worksheet.Cells["B" + (EndRow - 2) + ":H" + (EndRow - 2)].Merge = true;
+                worksheet.Cells["B" + (EndRow - 2) + ":H" + (EndRow - 2)].Style.Font.Color.SetColor(System.Drawing.Color.Green);
+                worksheet.Cells["B" + (EndRow - 2) + ":H" + (EndRow - 2)].Style.Font.Bold = true;
 
                 //this is use to freeze the rows ..for now it will freeze the uppper three rows 
                 //till the column has the value

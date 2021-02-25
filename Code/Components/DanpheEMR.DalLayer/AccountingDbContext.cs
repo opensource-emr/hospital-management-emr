@@ -9,6 +9,8 @@ using DanpheEMR.ServerModel.InventoryModels;
 using System.Data;
 using System.Data.SqlClient;
 using DanpheEMR.Security;
+using DanpheEMR.ServerModel.IncentiveModels;
+using DanpheEMR.ServerModel.AccountingModels;
 
 namespace DanpheEMR.DalLayer
 {
@@ -25,12 +27,10 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<ChartOfAccountModel>().ToTable("ACC_MST_ChartOfAccounts");
             modelBuilder.Entity<VoucherModel>().ToTable("ACC_MST_Vouchers");
             modelBuilder.Entity<VoucherHeadModel>().ToTable("ACC_MST_VoucherHead");
-            modelBuilder.Entity<AccountingReportModel>().ToTable("ACC_MST_AccountingReports");
+            //modelBuilder.Entity<AccountingReportModel>().ToTable("ACC_MST_AccountingReports");
             modelBuilder.Entity<LedgerGroupCategoryModel>().ToTable("ACC_MST_LedgerGroupCategory");
             modelBuilder.Entity<LedgerGroupModel>().ToTable("ACC_MST_LedgerGroup");
             modelBuilder.Entity<LedgerModel>().ToTable("ACC_Ledger");
-            modelBuilder.Entity<ItemModel>().ToTable("ACC_MST_Items");
-            modelBuilder.Entity<VoucherLedgerGroupMapModel>().ToTable("ACC_MAP_VoucherLedgerGroupMaps");
             modelBuilder.Entity<TransactionModel>().ToTable("ACC_Transactions");
             modelBuilder.Entity<TransactionItemModel>().ToTable("ACC_TransactionItems");
             modelBuilder.Entity<TransactionItemDetailModel>().ToTable("ACC_TransactionItemDetail");
@@ -44,7 +44,7 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<SyncBillingAccountingModel>().ToTable("BIL_SYNC_BillingAccounting");
             modelBuilder.Entity<MapTransactionItemCostCenterItemModel>().ToTable("ACC_Map_TxnItemCostCenterItem");
             modelBuilder.Entity<LedgerBalanceHistoryModel>().ToTable("ACC_LedgerBalanceHistory");
-            modelBuilder.Entity<AccountingInvoiceDataModel>().ToTable("ACC_InvoiceData");
+            //modelBuilder.Entity<AccountingInvoiceDataModel>().ToTable("ACC_InvoiceData");
             modelBuilder.Entity<PatientModel>().ToTable("PAT_Patient");
             modelBuilder.Entity<PHRMSupplierModel>().ToTable("PHRM_MST_Supplier");
             modelBuilder.Entity<LedgerMappingModel>().ToTable("ACC_Ledger_Mapping");
@@ -56,17 +56,28 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<ItemMasterModel>().ToTable("INV_MST_Item");
             modelBuilder.Entity<HospitalModel>().ToTable("ACC_MST_Hospital");
             modelBuilder.Entity<HospitalTransferRuleMappingModel>().ToTable("ACC_MST_Hospital_TransferRules_Mapping");
-
+            modelBuilder.Entity<ReverseTransactionModel>().ToTable("ACC_ReverseTransaction");
+            modelBuilder.Entity<AccountingBillLedgerMappingModel>().ToTable("ACC_Bill_LedgerMapping");
+            modelBuilder.Entity<AccountingCodeDetailsModel>().ToTable("ACC_MST_CodeDetails");
+            modelBuilder.Entity<CreditOrganizationModel>().ToTable("BIL_MST_Credit_Organization");
+            modelBuilder.Entity<PaymentInfoModel>().ToTable("INCTV_TXN_PaymentInfo");
+            modelBuilder.Entity<IncentiveFractionItemModel>().ToTable("INCTV_TXN_IncentiveFractionItem");
+            modelBuilder.Entity<AccSectionModel>().ToTable("ACC_MST_SectionList");
+            modelBuilder.Entity<ItemSubCategoryMasterModel>().ToTable("INV_MST_ItemSubCategory");
+            modelBuilder.Entity<DepartmentModel>().ToTable("MST_Department");
+            modelBuilder.Entity<FiscalYearLogModel>().ToTable("ACC_FiscalYear_Log");
+            modelBuilder.Entity<EditVoucherLogModel>().ToTable("ACC_Log_EditVoucher");
+            modelBuilder.Entity<PrimaryGroupModel>().ToTable("ACC_MST_PrimaryGroup");
+            modelBuilder.Entity<AccountingTransactionHistoryModel>().ToTable("ACC_Transaction_History");
         }
         public DbSet<ChartOfAccountModel> ChartOfAccounts { get; set; }
         public DbSet<VoucherModel> Vouchers { get; set; }
         public DbSet<VoucherHeadModel> VoucherHeads { get; set; }
-        public DbSet<AccountingReportModel> AccountingReports { get; set; }
+        // public DbSet<AccountingReportModel> AccountingReports { get; set; }
         public DbSet<LedgerGroupCategoryModel> LedgerGroupsCategory { get; set; }
         public DbSet<LedgerGroupModel> LedgerGroups { get; set; }
         public DbSet<LedgerModel> Ledgers { get; set; }
-        public DbSet<ItemModel> Items { get; set; }
-        public DbSet<VoucherLedgerGroupMapModel> VoucherLedgerGroupMaps { get; set; }
+
         public DbSet<TransactionModel> Transactions { get; set; }
         public DbSet<TransactionItemModel> TransactionItems { get; set; }
         public DbSet<TransactionItemDetailModel> TransactionItemDetails { get; set; }
@@ -80,7 +91,7 @@ namespace DanpheEMR.DalLayer
         public DbSet<SyncBillingAccountingModel> SyncBillingAccounting { get; set; }
         public DbSet<MapTransactionItemCostCenterItemModel> MapTxnItemCostCenterItem { get; set; }
         public DbSet<LedgerBalanceHistoryModel> LedgerBalanceHistory { get; set; }
-        public DbSet<AccountingInvoiceDataModel> AccountingInvoiceData { get; set; }
+        //public DbSet<AccountingInvoiceDataModel> AccountingInvoiceData { get; set; }
         public DbSet<PatientModel> PatientModel { get; set; }
         public DbSet<PHRMSupplierModel> PHRMSupplier { get; set; }
         public DbSet<LedgerMappingModel> LedgerMappings { get; set; }
@@ -91,40 +102,22 @@ namespace DanpheEMR.DalLayer
         public DbSet<ItemMasterModel> InventoryItems { get; set; }
         public DbSet<HospitalModel> Hospitals { get; set; }
         public DbSet<HospitalTransferRuleMappingModel> HospitalTransferRuleMappings { get; set; }
+        public DbSet<ReverseTransactionModel> ReverseTransaction { get; set; }
+        public DbSet<AccountingBillLedgerMappingModel> AccountBuillLedgerMapping { get; set; }
+        public DbSet<AccountingCodeDetailsModel> ACCCodeDetails { get; set; }
 
-        #region Trail Balance Report        
-        public DataTable trailBalanceReport(DateTime FromDate, DateTime ToDate)
-        {
-            List<SqlParameter> spParam = new List<SqlParameter>();
-            spParam.Add(new SqlParameter("@FromDate", FromDate));
-            spParam.Add(new SqlParameter("@ToDate", ToDate));
-            DataTable trailBalance = DALFunctions.GetDataTableFromStoredProc("SP_Report_ACC_TrailBalance", spParam, this);
-            return trailBalance;
-        }
-        #endregion
+        public DbSet<CreditOrganizationModel> BillCreditOrganizations { get; set; }
 
-        //#region Profit Loss Report        
-        //public DataSet profitLossReport()
-        //{
-        //    DataSet profitLoss = DALFunctions.GetDatasetFromStoredProc("SP_Report_ACC_ProfitLossStatement", null, this);
-        //    return profitLoss;
-        //}
-        //#endregion
+        public DbSet<PaymentInfoModel> PaymentInfo { get; set; }
+        public DbSet<IncentiveFractionItemModel> IncentiveFractionItems { get; set; }
+        public DbSet<AccSectionModel> Section { get; set; }
+        public DbSet<ItemSubCategoryMasterModel> ItemSubCategoryMaster { get; set; }
+        public DbSet<DepartmentModel> Departments { get; set; }
+        public DbSet<FiscalYearLogModel> FiscalYearLog { get; set; }
+        public DbSet<EditVoucherLogModel> EditVoucherLog { get; set; }
+        public DbSet<AccountingTransactionHistoryModel> AccountingTransactionHistory { get; set; }
+        public DbSet<PrimaryGroupModel> PrimaryGroup { get; set; }
 
-        #region Get Billing TxnItems for transfer to accounting group by CreatedOn and ServiceDept wise
-        public DataTable BilTxnItemsGroupByDeptWise()
-        {
-            try
-            {
-                DataTable bilTxnItemsDS = DALFunctions.GetDataTableFromStoredProc("SP_ACC_GetBilTxnItemsServDeptWise", this);
-                return bilTxnItemsDS;
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-        #endregion
 
         #region Get inventory Goods Receipt for transfer to accounting group by Date Wise
         public DataTable INVGoodsReceiptData()
@@ -141,13 +134,22 @@ namespace DanpheEMR.DalLayer
         }
         #endregion
 
-        #region Update pharmacy invoice, writeoff, returnto supplier, etc after transfered to accounting 
+        #region Update pharmacy invoice, writeoff, returnto supplier, etc after transfered to accounting and undo transaction from accounting
         //using stored procedure we are updatintg       
-        public void UpdateIsTransferToACC(string referenceIds, string transactionType)
+        public void UpdateIsTransferToACC(string referenceIds, string transactionType,List<AccountingReferenceTypeViewModel> referenceIdList)//,string ReferenceIdsOne
         {
+            var refIdOneStr = "";
+            if (referenceIdList.Count > 0)
+            {
+                var matchedRefList= referenceIdList.Find(r => r.Type == transactionType);
+                refIdOneStr = (matchedRefList != null) ? matchedRefList.ReferenceIdsOne : null;                
+            }
+                                
             List<SqlParameter> paramList = new List<SqlParameter>() {
                 new SqlParameter("@ReferenceIds", referenceIds),
-                 new SqlParameter("@TransactionType", transactionType)
+                 new SqlParameter("@TransactionType", transactionType),
+                  new SqlParameter("@IsReverseTransaction", false),
+                  new SqlParameter("@ReferenceIdsOne", refIdOneStr),
             };
 
             foreach (SqlParameter parameter in paramList)
@@ -159,6 +161,34 @@ namespace DanpheEMR.DalLayer
                 }
             }
             ExecuteStoreProc("SP_UpdateIsTransferToACC", paramList, this);
+        }
+        public bool UndoTxnUpdateIsTransferToACC(string referenceIds, string transactionType, int currHospitalId, bool IsReverseTransaction , string txnDate , List<AccountingReferenceTypeViewModel> referenceIdList)
+        { 
+            var refIdOneStr = "";
+            if (referenceIdList.Count > 0)
+            {
+                var matchedRefList = referenceIdList.Find(r => r.Type == transactionType);
+                refIdOneStr = (matchedRefList != null) ? matchedRefList.ReferenceIds : null;
+            }
+
+            //IsReverseTransaction = false
+            List<SqlParameter> paramList = new List<SqlParameter>() {
+                new SqlParameter("@ReferenceIds", referenceIds),
+                 new SqlParameter("@TransactionType", transactionType),
+                   new SqlParameter("@IsReverseTransaction", IsReverseTransaction),
+                   new SqlParameter("@TransactionDate",txnDate),
+                   new SqlParameter("@ReferenceIdsOne", refIdOneStr),
+            };
+
+            foreach (SqlParameter parameter in paramList)
+            {
+                if (parameter.Value == null)
+                {
+                    parameter.Value = "";
+
+                }
+            }
+            return ExecuteStoreProc("SP_UpdateIsTransferToACC", paramList, this);
         }
         public static bool ExecuteStoreProc(string storedProcName, List<SqlParameter> ipParams, DbContext dbContext)
         {
@@ -202,41 +232,68 @@ namespace DanpheEMR.DalLayer
             return true;
 
         }
-        #endregion
+        #endregion  Update pharmacy invoice, writeoff, returnto supplier, etc after transfered to accounting and undo transaction from accounting
+
         #region Get Billing TxnItems datewise for transfer to accounting 
-        public DataTable BilTxnItemsDateWise(DateTime FromDate, DateTime ToDate)
+        public DataTable BilTxnItemsDateWise(DateTime SelectedDate, int currHospitalId)
         {
             List<SqlParameter> spParam = new List<SqlParameter>();
-            spParam.Add(new SqlParameter("@FromDate", FromDate));
-            spParam.Add(new SqlParameter("@ToDate", ToDate));
-            DataTable BillingTxn = DALFunctions.GetDataTableFromStoredProc("SP_ACC_GetBillingTransactions", spParam, this);
+            spParam.Add(new SqlParameter("@TransactionDate", SelectedDate.Date));
+            spParam.Add(new SqlParameter("@HospitalId", currHospitalId));
+
+            DataTable BillingTxn = DALFunctions.GetDataTableFromStoredProc("SP_ACC_Bill_GetBillingDataForAccTransfer", spParam, this);
             return BillingTxn;
         }
-        //public DataSet BilTxnItemsDateWise(DateTime FromDate, DateTime ToDate)
-        //{
-        //    //  AccountingDbContext accountingDBContext = new AccountingDbContext(connString);
-        //    List<SqlParameter> paramList = new List<SqlParameter>()
-        //        {
-        //            new SqlParameter("@FromDate", FromDate),
-        //            new SqlParameter("@ToDate", ToDate)
-        //        };
-        //    DataSet txn = DALFunctions.GetDatasetFromStoredProc("SP_ACC_GetBillingTransactions", paramList, this);
-        //    return txn;
-        //}
+
         #endregion
 
-        #region Get phrm TxnItems datewise for transfer to accounting 
-        public DataSet InvTxnsDateWise(DateTime FromDate, DateTime ToDate)
+        #region Get incetives TxnItems datewise for transfer to accounting 
+        public DataSet InvTxnsDateWise(DateTime SelectedDate, int currHospitalId)
         {
-            //  AccountingDbContext accountingDBContext = new AccountingDbContext(connString);
             List<SqlParameter> paramList = new List<SqlParameter>()
                 {
-                    new SqlParameter("@FromDate", FromDate),
-                    new SqlParameter("@ToDate", ToDate)
+                    new SqlParameter("@TransactionDate", SelectedDate.Date),
+                    new SqlParameter("@HospitalId", currHospitalId)
                 };
             DataSet txn = DALFunctions.GetDatasetFromStoredProc("SP_ACC_GetInventoryTransactions", paramList, this);
             return txn;
         }
+        #endregion
+
+        #region Daily Transaction Report Details        
+        public DataSet DailyTransactionReportDetails(string VoucherNumber, int currHospitalId)
+        {
+            List<SqlParameter> spParam = new List<SqlParameter>();
+            spParam.Add(new SqlParameter("@VoucherNumber", VoucherNumber));
+            spParam.Add(new SqlParameter("@HospitalId", currHospitalId));
+
+            DataSet dailytxnDetails = DALFunctions.GetDatasetFromStoredProc("SP_ACC_DailyTransactionReportDetails", spParam, this);
+            return dailytxnDetails;
+        }
+        #endregion
+
+        #region Reopen fiscal year action will Open fiscal year (IsClosed=false)
+        /// <summary>
+        /// Update IsClosed Status for fiscalYear
+        /// add log into fiscalYear log table as reopened 
+        /// update ACC_Ledger table Opening balance        
+        /// </summary>
+        /// <param name="FiscalYearId"></param>
+        /// <param name="EmployeeId"></param>
+        /// <param name="currHospitalId"></param>
+        /// <returns></returns>
+        public DataTable ReOpenFiscalYear(int FiscalYearId,int EmployeeId, int currHospitalId, string Remark)
+        {
+            List<SqlParameter> spParam = new List<SqlParameter>();         
+            spParam.Add(new SqlParameter("@FiscalYearId", FiscalYearId));
+            spParam.Add(new SqlParameter("@EmployeeId", EmployeeId));
+            spParam.Add(new SqlParameter("@HospitalId", currHospitalId));
+            spParam.Add(new SqlParameter("@Remark", Remark));
+
+            DataTable reopenedFiscalYear = DALFunctions.GetDataTableFromStoredProc("SP_ACC_ReopenFiscalYear", spParam, this);
+            return reopenedFiscalYear;
+        }
+
         #endregion
     }
 }

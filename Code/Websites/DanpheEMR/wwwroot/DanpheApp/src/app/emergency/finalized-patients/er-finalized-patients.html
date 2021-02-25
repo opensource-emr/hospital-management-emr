@@ -1,4 +1,4 @@
-﻿<style>
+<style>
 </style>
 
 <!--<div class="row">
@@ -13,23 +13,11 @@
 </router-outlet>-->
 
 <div class="row">
-    <ul class="nav nav-tabs">
-        <li>
-            <a routerLink="lama-patients" [routerLinkActive]="'a-tab-active'">LAMA</a>
-        </li>
-        <li>
-            <a routerLink="admitted-patients" [routerLinkActive]="'a-tab-active'">Admitted</a>
-        </li>
-        <li>
-            <a routerLink="transferred-patients" [routerLinkActive]="'a-tab-active'">Transferred</a>
-        </li>
-        <li>
-            <a routerLink="discharged-patients" [routerLinkActive]="'a-tab-active'">Discharged</a>
-        </li>
-        <li>
-            <a routerLink="death-patients" [routerLinkActive]="'a-tab-active'">Death</a>
-        </li>
-    </ul>
+  <ul class="nav nav-tabs" *ngIf="validRoutes != undefined">
+    <li *ngFor="let route of validRoutes">
+      <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'a-tab-active'">{{route.DisplayName}}<i class="{{route.Css}}"></i></a>
+    </li>
+  </ul>
 </div>
 <router-outlet>
 

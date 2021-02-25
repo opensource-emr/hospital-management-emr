@@ -1,18 +1,9 @@
 ﻿<base href="/">
-    <ul class="nav nav-tabs">
-        <li>
-            <a routerLink="Summary" [routerLinkActive]="'a-tab-active'">Summary</a>          
-        </li>
-        <li>
-            <a routerLink="LaboratoryServices" [routerLinkActive]="'a-tab-active'">Laboratory Services</a>  
-        </li>
-        <li>
-            <a routerLink="InpatientOutcome" [routerLinkActive]="'a-tab-active'">Inpatient Outcome</a>
-        </li>
-    </ul>
+<div class="sub-navtab">
+  <ul class="nav nav-tabs">
+    <li> <a routerLink="Summary" [routerLinkActive]="'a-tab-active'">Summary</a> </li>
+    <li> <a routerLink="LaboratoryServices" [routerLinkActive]="'a-tab-active'">Laboratory Services</a> </li>
+    <li> <a routerLink="InpatientOutcome" [routerLinkActive]="'a-tab-active'">Inpatient Outcome</a> </li>
+  </ul>
+</div>
 <router-outlet></router-outlet>
-
-
-
-
-

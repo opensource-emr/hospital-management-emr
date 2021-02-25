@@ -1,0 +1,12 @@
+<div class="wrapper">
+  <div>
+    <div>
+      <button class="btn blue btn-sm" (click)="OpenUploadBox()"> <i class="fa fa-plus"></i> New Photo</button>
+      <button *ngIf="patientFile.FileBase64String" class="btn blue btn-sm" (click)="EditPhoto()"> <i class="fa fa-pencil"></i> Edit</button>
+      <br />
+    </div>
+    <br />
+    <img *ngIf="!patientFile.FileBase64String" alt="Avatar" height="200" width="200" src="/themes/theme-default/images/NO_Image.png"> <img *ngIf="patientFile.FileBase64String" [src]="'data:image/jpeg;base64,'+patientFile.FileBase64String" style="width:300px;height:300px;" /> </div>
+  <br />
+  <danphe-photo-cropper *ngIf="openPhotoCropper" [ipImage]="currImageBase64" [action-type]="actionType" (onCropSuccess)="OnCropSuccess($event)" (onCropperClose)="OnCropperClosed($event)"></danphe-photo-cropper>
+</div>

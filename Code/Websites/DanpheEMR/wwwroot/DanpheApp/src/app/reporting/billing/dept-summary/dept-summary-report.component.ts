@@ -24,7 +24,7 @@ export class RPT_BIL_DepartmentSummaryComponent {
     public summary = {
         tot_SubTotal: 0, tot_Discount: 0, tot_Refund: 0, tot_Provisional: 0,
         tot_Cancel: 0, tot_Credit: 0, tot_NetTotal: 0, tot_SalesTotal: 0, tot_CashCollection: 0,
-        tot_Quantity: 0, tot_TotalAmount: 0, tot_CreditReceived: 0, tot_DepositReceived: 0, tot_DepositRefund: 0
+      tot_Quantity: 0, tot_TotalAmount: 0, tot_CreditReceived: 0, tot_DepositReceived: 0, tot_DepositRefund: 0, tot_SettledDiscountAmt:0
     };
     
   public currentModel: RPT_BIL_DepartmentSummaryReportModel = new RPT_BIL_DepartmentSummaryReportModel();
@@ -48,8 +48,8 @@ export class RPT_BIL_DepartmentSummaryComponent {
         for (var i in this.currentModel.BillDeptSummaryValidator.controls) {
             this.currentModel.BillDeptSummaryValidator.controls[i].markAsDirty();
             this.currentModel.BillDeptSummaryValidator.controls[i].updateValueAndValidity();
-        }
-        if (this.currentModel.IsValidCheck(undefined, undefined)) {
+      }
+      if (this.currentModel.fromDate != null && this.currentModel.toDate != null) {
             //assigning selectedmodel values with currentmodel values
             this.selectedModel.fromDate = this.currentModel.fromDate;
             this.selectedModel.toDate = this.currentModel.toDate;
@@ -84,10 +84,11 @@ export class RPT_BIL_DepartmentSummaryComponent {
                                 this.summary.tot_DepositReceived = CommonFunctions.parseAmount(data.Summary[0].AdvanceReceived);
                               this.summary.tot_DepositRefund = CommonFunctions.parseAmount(data.Summary[0].AdvanceSettled);
                               this.summary.tot_CreditReceived = CommonFunctions.parseAmount(data.Summary[0].CreditReceivedAmount);
+                              this.summary.tot_SettledDiscountAmt = CommonFunctions.parseAmount(data.Summary[0].SettledDiscountAmount);
 
                                 this.summary.tot_SalesTotal = CommonFunctions.parseAmount(this.summary.tot_NetTotal);
                                 //this.summary.tot_CashCollection = CommonFunctions.parseAmount(this.summary.tot_NetTotal + data.Summary[0].AdvanceReceived - data.Summary[0].AdvanceSettled - this.summary.tot_Credit);
-                                this.summary.tot_CashCollection = CommonFunctions.parseAmount(this.summary.tot_NetTotal + data.Summary[0].AdvanceReceived - data.Summary[0].AdvanceSettled - this.summary.tot_Credit + this.summary.tot_CreditReceived);
+                              this.summary.tot_CashCollection = CommonFunctions.parseAmount(this.summary.tot_NetTotal + data.Summary[0].AdvanceReceived - data.Summary[0].AdvanceSettled - this.summary.tot_Credit + this.summary.tot_CreditReceived - this.summary.tot_SettledDiscountAmt);
 
                                 this.showAllDeptSummary = true;
                             }
@@ -144,7 +145,8 @@ export class RPT_BIL_DepartmentSummaryComponent {
             .map(res => res)
             .subscribe(res => {
                 if (res.Status == "OK") {
-                    this.servDeptsList = res.Results;
+                  this.servDeptsList = res.Results;
+                  CommonFunctions.SortArrayOfObjects(this.servDeptsList, "ServiceDepartmentName");//this sorts the servDeptsList by ServiceDepartmentName.
                 }
                 else
                     this.msgBoxServ.showMessage('notice-message', ["Failed to load Service departments"]);
@@ -214,5 +216,11 @@ export class RPT_BIL_DepartmentSummaryComponent {
         documentContent += '<body onload="window.print()">' + HeaderContent + printContents + '</body></html>'
         popupWinindow.document.write(documentContent);
         popupWinindow.document.close();
-    }
+  }
+
+  //Anjana:11June'20--reusable From-ToDate-In Reports..
+  OnFromToDateChange($event) {
+    this.currentModel.fromDate = $event.fromDate;
+    this.currentModel.toDate =$event.toDate;
+  }
 }

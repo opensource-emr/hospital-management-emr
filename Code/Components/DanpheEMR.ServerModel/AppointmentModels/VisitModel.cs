@@ -30,10 +30,10 @@ namespace DanpheEMR.ServerModel
         public string AppointmentType { get; set; }
         public int? ParentVisitId { get; set; }
         public bool? IsVisitContinued { get; set; }
-
         public DateTime? CreatedOn { get; set; }
         public int? CreatedBy { get; set; }
         public bool? IsActive { get; set; }
+        public bool? IsTriaged { get; set; }
         public DateTime? ModifiedOn { get; set; }
         public int? ModifiedBy { get; set; }
         public string Remarks { get; set; }
@@ -48,13 +48,12 @@ namespace DanpheEMR.ServerModel
         public int? CurrentCounterId { get; set; }
 
         public int? DepartmentId { get; set; }//sud:19June2019-For DepartmentLevel Appointment.
-
+        public DepartmentModel Department { get; set; }
         [NotMapped]
         public string DepartmentName { get; set; }//Yubaraj:21Jun'19--Needed to show Deptname in List visit page.
 
         public virtual PatientModel Patient { get; set; }
         public virtual AdmissionModel Admission { get; set; }
-
         //Clinical
         public List<VitalsModel> Vitals { get; set; }
         public List<InputOutputModel> InputOutput { get; set; }
@@ -63,5 +62,8 @@ namespace DanpheEMR.ServerModel
         //Radiology
         public List<ImagingRequisitionModel> ImagingRequisitions { get; set; }
         public List<ImagingReportModel> ImagingReports { get; set; }
+
+        public int? QueueNo { get; set; }
+
     }
 }

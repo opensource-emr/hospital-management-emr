@@ -1,0 +1,82 @@
+<div class="popup-static portlet box portlet-fullscreen custom_modal">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption no-margin">
+            <h3><span>Partial Clearance</span></h3>
+            <a class="btn btn-danger btn-round" style="margin:0px 10px 0 0;font-style: initial;padding: 0 !important;text-align: center !important;display: block;" (click)="ClosePartialPaymentPopUp($event)">X</a> </div>
+          <div class="form-body">
+            <div class="row">
+              <div class="col-md-12" *ngIf="patientDetails">
+                <div class="tbl-primary">
+                  <div class="row">
+                    <div class="col-md-12 text-left">
+                      <h1 class="header" style="color: #1bbc9b;"><i class="fa fa-user"></i>{{patientDetails.PatientName || patientDetails.ShortName}}</h1>
+                      <p class="text-muted"><span><i class="fa fa-male"></i>{{patientDetails.DateOfBirth | DanpheDateTime:'age'}} &nbsp;|&nbsp; {{patientDetails.Gender}}</span> &nbsp;|&nbsp; <i class="fa fa-phone"></i> {{patientDetails.PhoneNumber}}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-12">
+                <p style="text-align: left;"> <span style="color:red">*</span>Select Items from the list for Partial Clearance</p>
+              </div>
+              <div class="col-md-12  pat-hdr" style="max-height:300px;overflow-y:scroll;padding:10px">
+                <table class="table doc-tbl custom_table table-bordered padLess_table" style="width:100%;" border="0" *ngIf="patAllItems && patAllItems.length>0">
+                  <thead style="background-color: #d0d9d0;">
+                    <tr>
+                      <th align="right" width="30"> 
+						  <label class="mt-checkbox mt-checkbox-outline"><input type="checkbox" name="selectAllItem" [(ngModel)]="isAllItemsSelected" (ngModelChange)="OnChangeSelectAll()" />
+						  <span></span>
+						  </label>
+                      </th>
+                      <th align="center"> SNo. </th>
+                      <th> ItemName </th>
+                      <th style="width: 100px;"> Quantity </th>
+                      <th> Price </th>
+                      <th style="width:100px;text-align:center;"> Sub Total </th>
+                      <th *ngIf="!IsInsurance"> Discount % </th>
+                      <th> Total Amount </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let itm of patAllItems;let i=index;">
+                      <td>
+						  <label class="mt-checkbox mt-checkbox-outline">
+							  <input type="checkbox" name="selectItems" [(ngModel)]="itm.IsSelected" (ngModelChange)="OnChangeItemSelect()" />
+							  <span></span>
+						  </label>
+						</td>
+                      <td> {{i+1}} </td>
+                      <td align="left"> {{itm.ItemName}}
+                        <div *ngIf="itm.ProviderId"> <span style="font-size: 12px;font-weight: bold;"> ({{itm.ProviderName}}) </span> </div></td>
+                      <td><div>
+                          <input type="number" style="width:75px;float:left;" [(ngModel)]="itm.Quantity" disabled class="form-control" />
+                        </div></td>
+                      <td><div>
+                          <input type="number" style="width:100px;float:left;" [(ngModel)]="itm.Price" disabled class="form-control" />
+                        </div></td>
+                      <td> {{itm.SubTotal}} </td>
+                      <td *ngIf="!IsInsurance"><div>
+                          <input [attr.disabled]="true" type="number" class="form-control" style="width:75px;float:left;" [(ngModel)]="itm.DiscountPercent" disabled />
+                        </div></td>
+                      <td> {{itm.TotalAmount}} </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="col-md-12">
+                
+              </div>
+            </div>
+          </div>
+			<div class="panel-footer">
+				
+                  <input type="button" class="btn btn-sm blue" value="Proceed" [disabled]="loading" (click)="ProceedPartialPayment()" />
+               
+			</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

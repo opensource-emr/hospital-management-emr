@@ -35,14 +35,14 @@ export class WriteOffItems {
     public SubTotal: number = 0;
     public BatchNoList: Array<{ BatchNo: string, AvailableQuantity: number }> = new Array<{ BatchNo: string, AvailableQuantity: number }>();
     public WriteOffItemValidator: FormGroup = null;
-
+    public Code:string=null;
 
     constructor() {
 
         var _formBuilder = new FormBuilder();
         this.WriteOffItemValidator = _formBuilder.group({
             'ItemId': ['', Validators.compose([Validators.required])],
-            'WriteOffDate': ['', Validators.compose([Validators.required, this.dateValidator])],
+            'WriteOffDate': ['', Validators.compose([Validators.required])],
             'WriteOffQuantity': ['', Validators.compose([Validators.required])],
             'BatchNo': ['', Validators.compose([Validators.required])],
             'Remark': ['', Validators.required]
@@ -65,7 +65,7 @@ export class WriteOffItems {
             return !(this.WriteOffItemValidator.hasError(validator, fieldName));
     }
 
-    dateValidator(control: FormControl): { [key: string]: boolean } {
+    /*dateValidator(control: FormControl): { [key: string]: boolean } {
         //get current date, month and time
         var currDate = moment().format('YYYY-MM-DD');
        
@@ -77,7 +77,7 @@ export class WriteOffItems {
 
         else
             return { 'wrongDate': true };
-    }
+    }*/
 
   
    

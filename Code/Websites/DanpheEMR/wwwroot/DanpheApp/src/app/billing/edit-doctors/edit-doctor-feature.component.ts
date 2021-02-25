@@ -15,6 +15,7 @@ import GridColumnSettings from '../../shared/danphe-grid/grid-column-settings.co
 import { GridEmitModel } from "../../shared/danphe-grid/grid-emit.model";
 import { APIsByType } from "../../shared/search.service";
 import { CoreService } from "../../core/shared/core.service";
+import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from "../../shared/danphe-grid/NepaliColGridSettingsModel";
 
 @Component({
   templateUrl: "./edit-doctor.html"
@@ -28,9 +29,10 @@ export class EditDoctorFeatureComponent {
 
   //start: for angular-grid
   editDoctorGridColumns: Array<any> = null;
+  public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
 
   //use to show pop up
-  showEditDoctorPage: boolean = null;
+  showEditDoctorPage: boolean = false;
 
 
   enableDateFilter: boolean = false;//default false, load this from parameter.
@@ -39,23 +41,36 @@ export class EditDoctorFeatureComponent {
   //this mostly for counter part
   public billTxn: BillingTransaction = new BillingTransaction();
   public patGirdDataApi: string = "";
-  constructor(public billingBLService: BillingBLService,
+  searchText: string = '';
+  public enableServerSideSearch: boolean = false;
+  constructor(public billingBLService: BillingBLService, public msgBoxServ: MessageboxService,
     public changeDetector: ChangeDetectorRef, public messageService: MessageboxService,
-    public securityService: SecurityService, public router: Router, public coreService:CoreService) {
-
-    this.enableDateFilter = this.GetEnableDateParam(); 
+    public securityService: SecurityService, public router: Router, public coreService: CoreService) {
+    this.GetProviderList();
+    this.enableDateFilter = this.GetEnableDateParam();
 
     //for grid
     this.editDoctorGridColumns = GridColumnSettings.EditDoctorItemList;
+    this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('Date', true));
+
     //giving default to the to and from date 
     //this.currentEditDocotorModel.ToDate = moment().format('YYYY-MM-DD');
     //this.currentEditDocotorModel.FromDate = moment().add(-1, 'days').format('YYYY-MM-DD');
     this.patGirdDataApi = APIsByType.BillingEditDoctor;
-
+    this.getParamter();
     if (!this.enableDateFilter) {
-      this.LoadTxnItem();
+      this.LoadTxnItem("");
     }
-    
+
+  }
+  getParamter() {
+    let parameterData = this.coreService.Parameters.find(p => p.ParameterGroupName == "Common" && p.ParameterName == "ServerSideSearchComponent").ParameterValue;
+    var data = JSON.parse(parameterData);
+    this.enableServerSideSearch = data["BillingEditDoctor"];
+  }
+  serverSearchTxt(searchTxt) {
+    this.searchText = searchTxt;
+    this.LoadTxnItem(this.searchText)
   }
 
 
@@ -64,7 +79,7 @@ export class EditDoctorFeatureComponent {
 
     //getting emergency name from the parameterized data
     let dateParam = this.coreService.Parameters.find(p => p.ParameterGroupName.toLowerCase() == "billing" && p.ParameterName == "EnableDateFilterInEditDoctor");
-    if (dateParam && dateParam.ParameterValue && dateParam.ParameterValue.toLowerCase()=="true") {
+    if (dateParam && dateParam.ParameterValue && dateParam.ParameterValue.toLowerCase() == "true") {
       retVal = true;
     }
     return retVal;
@@ -97,14 +112,14 @@ export class EditDoctorFeatureComponent {
       }
     }
 
-    
+
 
   }
 
   //getting the transactionitem details
-  LoadTxnItem() {
+  LoadTxnItem(searchTxt) {
 
-    this.billingBLService.GetTxnItemsForEditDoctor()
+    this.billingBLService.GetTxnItemsForEditDoctor(searchTxt)
       .subscribe(res => {
         if (res.Status == "OK") {
           this.Callback(res.Results);
@@ -145,6 +160,16 @@ export class EditDoctorFeatureComponent {
         editDoctorModel.BillingTransactionItemId = res[i].BillingTransactionItemId;
         editDoctorModel.BillingTransactionId = res[i].BillingTransactionId;
         editDoctorModel.ReceiptNo = res[i].ReceiptNo;
+        editDoctorModel.DoctorMandatory = res[i].DoctorMandatory;
+        if (this.doctorList && res[i].ReferredById) {
+          var docObj = this.doctorList.find(a => a.EmployeeId == res[i].ReferredById);
+          if (docObj) {
+            editDoctorModel.ReferredByName = docObj.EmployeeName;
+            editDoctorModel.ReferredById = docObj.EmployeeId;
+          }
+
+        }
+        editDoctorModel.BillStatus = res[i].BillStatus;
         this.editDoctorModels.push(editDoctorModel);
 
       }
@@ -165,7 +190,7 @@ export class EditDoctorFeatureComponent {
       default:
         break;
     }
-    
+
   }
 
   //this function getting the data from pop up model as event
@@ -177,9 +202,10 @@ export class EditDoctorFeatureComponent {
       this.SearchItemByDate(null);
     }
     else {
-      this.LoadTxnItem();
+      this.LoadTxnItem("");
     }
 
+    this.showEditDoctorPage = false;
   }
   //this function is called from the grid 
   //and in this function data is passed to the popup model(edit-component)
@@ -194,6 +220,35 @@ export class EditDoctorFeatureComponent {
     this.showEditDoctorPage = true;
     this.changeDetector.detectChanges();
 
+  }
+
+  public doctorList: any;
+  //load doctor  
+  GetProviderList(): void {
+    this.billingBLService.GetAllReferrerList()
+      .subscribe(res => this.CallBackGenerateDoctor(res));
+  }
+
+  ////this is a success callback of GenerateDoctorList function.
+  CallBackGenerateDoctor(res) {
+    //"EmployeeId": 112,
+    //  "EmployeeName": "Dr. Badri Paudel"
+    //EmployeeId
+    //"FullName": "Dr. Badri Paudel",
+    if (res.Status == "OK") {
+      this.doctorList = [];
+      //format return list into Key:Value form, since it searches also by the property name of json.
+      if (res && res.Results) {
+        res.Results.forEach(a => {
+          //referral list has different property names than what's used in this page, so changing accordingly.
+          this.doctorList.push({ EmployeeId: a.EmployeeId, EmployeeName: a.FullName });
+        });
+      }
+    }
+    else {
+      this.msgBoxServ.showMessage("error", ["Not able to get Doctor list"]);
+      console.log(res.ErrorMessage)
+    }
   }
 
 }

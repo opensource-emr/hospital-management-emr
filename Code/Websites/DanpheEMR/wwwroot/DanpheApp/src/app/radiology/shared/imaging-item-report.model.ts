@@ -34,15 +34,25 @@ export class ImagingItemReport {
 
   public ReportingDoctorNamesFromSignatories: string = null;
   public FooterText: string = null;
-  public HasInsurance: boolean = null; 
+  public HasInsurance: boolean = null;
+  public WardName: string = null;
+  public IsActive: boolean = true;
+  public IsScanned: boolean = true;
+  public ScannedBy: number = null;
+  public ScannedOn: string = null;
+
+  public ProviderIdInBilling: string = null;
+  public ProviderNameInBilling: string = null;
 
 }
+
 export class ImagingReportViewModel {
   public PatientId: number = null;//sud:14Jan'19--for Edit Report
   public PatientCode: string = null;//sud:16Jul'19--needed for edit report.
   public ReportTemplateId: number = null;
   public TemplateName: string = "Not Set";//default value for template.
 
+  public PatientNameLocal: string = null;
 
   public ImagingReportId: number = null;
   public ImagingItemName: string = null;
@@ -59,8 +69,20 @@ export class ImagingReportViewModel {
   public Address: string = null;
   public PatientStudyId: string = "";
   public Indication: string = null;
+  public RadiologyNo: string = null;
+
+  public ProviderName: string = null;
+  public ProviderId: number = null;
 
   public SignatoryImageBase64: string = null;
   public FooterText: string = null;
   public currentLoggedInUserSignature: string = null;
+}
+
+export class RadiologyScanDoneDetail {
+  public ImagingRequisitionId: number = 0;  
+  public ScannedOn: string = "";
+  public Remarks: string = "";
+  public PatientCode: string = "";
+  public ShortName: string = "";
 }

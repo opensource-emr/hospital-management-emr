@@ -26,7 +26,7 @@ import { templateJitUrl } from "@angular/compiler";
 import { Patient } from "../../patients/shared/patient.model";
 
 @Component({
-    templateUrl: "../../view/pharmacy-view/Sale/PHRMDispatch.html",// "/PharmacyView/Dispatch",
+    templateUrl: "./phrm-dispatch.html",
     encapsulation: ViewEncapsulation.None
 })
 export class PHRMDispatchComponent {
@@ -53,7 +53,7 @@ export class PHRMDispatchComponent {
             this.currentCounterName = this.securityService.getPHRMLoggedInCounter().CounterName;
 
             if (this.currentCounterId < 1) {
-                this.callBackService.CallbackRoute = '/Pharmacy/Sale/New'
+                this.callBackService.CallbackRoute = '/Pharmacy/Sale/Dispatch'
                 this.router.navigate(['/Pharmacy/ActivateCounter']);
             }
             else {
@@ -222,9 +222,7 @@ export class PHRMDispatchComponent {
                         }
                         else {
                             //get default value of item from generic Id in this case first one
-
                             currItmA = this.ItemTypeListWithItems.find(itm => itm.GenericId == tempSaleItem.GenericId);
-                            // currItmA = currItmA[0]
                         }
                         let currItm = currItmA;
                         tempSaleItem.ItemTypeId = currItm != null ? currItm.ItemTypeId : 0;
@@ -234,6 +232,7 @@ export class PHRMDispatchComponent {
                         tempSaleItem.PrescriptionItemId = currItm.PrescriptionItemId;
                         tempSaleItem.GenericName = currItm.GenericName;
                         tempSaleItem.CounterId = this.currentCounterId;
+                        tempSaleItem.StockId = currItm.StockId;
 
                         this.currSaleItems.push(tempSaleItem);
                         this.OnPresciptionItemChange(currItm, this.currSaleItems.length - 1, tempSaleItem.Quantity);
@@ -428,6 +427,7 @@ export class PHRMDispatchComponent {
                 //this.currSaleItems[index].SelectedGRItems = $event;
                 this.currSaleItems[index].selectedItem = Object.assign(this.currSaleItems[index].selectedItem, $event);
                 this.currSaleItems[index].selectedItem.SellingPrice = $event.MRP;
+                this.currSaleItems[index].StockId = $event.StockId;
                 this.currSaleItems[index].ItemTypeId = $event.ItemTypeId;
                 this.currSaleItems[index].TotalQty = $event.AvailableQuantity;
                 this.currSaleItems[index].BatchNo = $event.BatchNo;

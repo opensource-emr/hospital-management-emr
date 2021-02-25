@@ -1,4 +1,4 @@
-﻿import {
+import {
     NgForm,
     FormGroup,
     FormControl,
@@ -12,7 +12,9 @@ export class PHRMReportsModel {
     public FromDate: string = null;
     public ToDate: string = null;
     public Status: string = null;
-
+   
+    public CounterId: string = "";
+    public CreatedBy: string = "";
    /// public CompanyValidator: FormGroup = null;
 
     constructor() {

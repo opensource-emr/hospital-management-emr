@@ -19,6 +19,6 @@ namespace DanpheEMR.ServerModel
         public string Remarks { get; set; }
         [NotMapped]
         public virtual List<MappingDetailModel> MappingDetail { get; set; }
-
+        public int? CustomVoucherId { get; set; }
     }
 }

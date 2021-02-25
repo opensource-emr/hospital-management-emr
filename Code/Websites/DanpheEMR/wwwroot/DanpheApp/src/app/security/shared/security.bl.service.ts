@@ -63,7 +63,14 @@ export class SecurityBLService {
     //    return this.http.put<any>("/api/Security?reqType=loggedInCounter", this.options);
     //}
 
-
+    public GetAccountingHopitalInfo() {
+        return this.securityDlService.GetAccHospitalInfo()
+            .map(res => { return res })
+    }
+    public GetINVHospitalInfo() {
+        return this.securityDlService.GetINVHospitalInfo()
+            .map(res => { return res })
+    }    
 
 
 }

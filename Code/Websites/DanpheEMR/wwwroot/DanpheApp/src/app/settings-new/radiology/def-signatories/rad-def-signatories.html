@@ -1,0 +1,21 @@
+<div class="row">
+  <div class="col-md-12">
+    <div>
+		<div class="signature-title"><h4>Default Signatories for Radiology:</h4></div>      
+      <div class="signature-div" *ngFor="let doct of allRadSignatoryEmpList; let i= index;">
+        <label class="mt-checkbox mt-checkbox-outline" for="{{doct.LongSignature}}">
+          {{doct.FullName}}
+			<input id="{{doct.LongSignature}}" class="zoomcheckbox pull-left" [(ngModel)]="doct.IsSelected" name="doct.LongSignature" width="100" type="checkbox" />
+			<span></span>
+        </label>
+        
+      </div>
+    </div>
+    
+  </div>
+  <div class="col-md-12">
+    <div style="text-align: center;">
+      <button class="btn btn-blue blue" (click)="Update()">Update Default Signatories</button>
+    </div>
+  </div>
+</div>

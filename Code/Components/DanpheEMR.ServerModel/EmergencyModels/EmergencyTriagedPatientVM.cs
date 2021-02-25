@@ -19,6 +19,7 @@ namespace DanpheEMR.ServerModel.EmergencyModels
         public string LastName { get; set; }
         public string Gender { get; set; }
         public string Age { get; set; }
+        public string AgeSex { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public string ContactNo { get; set; }
         public string Address { get; set; }
@@ -26,7 +27,8 @@ namespace DanpheEMR.ServerModel.EmergencyModels
         public string ReferredTo { get; set; }
         public string Case { get; set; }
         public string ConditionOnArrival { get; set; }
-        public string ModeOfArrival { get; set; }
+        public int? ModeOfArrival { get; set; }
+        public string ModeOfArrivalName { get; set; }
         public string CareOfPerson { get; set; }
         public string ERStatus { get; set; }
         public string TriageCode { get; set; }

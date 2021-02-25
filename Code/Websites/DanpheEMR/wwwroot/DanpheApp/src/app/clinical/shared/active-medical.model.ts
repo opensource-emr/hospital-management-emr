@@ -24,13 +24,14 @@ export class ActiveMedical {
     public CreatedOn: string = null;
     public ModifiedOn: string = null;
     public ActiveMedicalValidator: FormGroup = null;
+    public PrincipleProblem: boolean = false;
 
     constructor() {
         var _formBuilder = new FormBuilder();
         this.ActiveMedicalValidator = _formBuilder.group({
             'ICD10Code': ['', Validators.compose([Validators.required])],
             'OnSetDate': ['', Validators.compose([Validators.required, this.dateValidator])],
-            //'Note': ['', Validators.compose([Validators.required,Validators.maxLength(200)])],
+            'Note': ['', Validators.compose([Validators.required, Validators.maxLength(200)])],
         });
     }
     dateValidator(control: FormControl): { [key: string]: boolean } {
@@ -51,10 +52,19 @@ export class ActiveMedical {
             return this.ActiveMedicalValidator.controls[fieldName].dirty;
     }
 
-    public IsValid():boolean{if(this.ActiveMedicalValidator.valid){return true;}else{return false;}} public IsValidCheck(fieldName, validator): boolean {
+    public IsValid(): boolean { if (this.ActiveMedicalValidator.valid) { return true; } else { return false; } } public IsValidCheck(fieldName, validator): boolean {
         if (fieldName == undefined)
             return this.ActiveMedicalValidator.valid;
         else
             return !(this.ActiveMedicalValidator.hasError(validator, fieldName));
+    }
+
+    public OffNoteValidator(formControlName: string) {
+        let validator = null;
+        validator = Validators.compose([Validators.required]);
+        validator = Validators.compose([]);
+        this.ActiveMedicalValidator.controls[formControlName].validator = validator;
+        this.ActiveMedicalValidator.controls[formControlName].updateValueAndValidity();
+
     }
 }

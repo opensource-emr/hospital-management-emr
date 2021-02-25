@@ -1,6 +1,7 @@
 import { Component, Input, Output, Injector, Inject, EventEmitter } from "@angular/core";
 import { BillingReceiptModel } from "../shared/billing-receipt.model";
 import { CommonFunctions } from "../../shared/common.functions";
+import { CoreService } from "../../core/shared/core.service";
 
 @Component({
   selector: 'ip-bill-item-request-slip',
@@ -14,8 +15,11 @@ export class IPBillingRequestSlipComponent {
   CloseBillRequestSlip() {
     this.emitIpBillReq.emit();
   }
-  constructor() {
 
+  public provSlipFooterParam = { ShowFooter: false, EnglishText: "!! This is not Final Invoice !!", NepaliText: "!! जानकारीको लागि मात्र !!", VerticalAlign: true };
+
+  constructor(public coreService: CoreService) {
+    this.provSlipFooterParam = this.coreService.LoadFooterNoteSettingsFromParameter();
   }
 
   ngOnInit() {
@@ -33,6 +37,6 @@ export class IPBillingRequestSlipComponent {
     popupWinindow.document.write('<html><head><link rel="stylesheet" type="text/css" href="../../themes/theme-default/DanpheStyle.css" /></head><body onload="window.print()">' + printContents + '</body></html>');
 
     popupWinindow.document.close();
-
+    this.CloseBillRequestSlip();
   }
 }

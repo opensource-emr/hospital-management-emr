@@ -1,0 +1,56 @@
+<div class="col-md-12" style="padding:0px!important;">
+
+  <div class="col-md-12" style="font-size:larger; margin-bottom:20px !important; padding: 0px !important;">
+    <div class="col-md-4" style="padding-left:0px !important;">
+      <h5><strong>{{currentPatInfo.ShortName}} ({{currentPatInfo.Age}} / {{currentPatInfo.Gender}})</strong></h5>
+    </div>
+    <div class="col-md-4">
+      <h5><strong> Doctor Name: {{currentPatInfo.ProviderName}}</strong> </h5>
+    </div>
+  </div>
+
+  <div class="col-md-12" style="padding:0px!important;">
+    <div class="row">
+      <!--Start: Vitals and add vital selector -->
+      <div class="col-md-8">
+        <vitals-list [returnVitalsList]="true" (vitalsEmitter)="GetAllVitals($event)"></vitals-list>
+      </div>
+      <!--End: Vitals and add vital selector -->
+
+      <div class=" col-md-4">
+        <h3 style="margin-bottom: 0;">Chief Complaint:</h3>
+        <div *ngFor="let complaint of chiefComplaints; let i=index;" class="single-complaint flex-container">
+          <textarea style="flex-basis: 80%;" class="flex-container" [(ngModel)]="complaint.Value"></textarea>
+          <button *ngIf="chiefComplaints.length > 1" style="height: 29px;" (click)="removeComplaint(i)" class="btn btn-danger"><i class="fa fa-close"></i></button>
+        </div>
+        <div>
+          <button (click)="AddNewComplaintRow()" class="btn blue">Add New Complaint</button>
+        </div>
+
+        <div class="margin-top-30">
+          <h4 style="margin-bottom: 0;">Comments:</h4>
+          <div class="flex-container">
+            <textarea style="flex-basis: 75%;" [(ngModel)]="comments.Value"></textarea>
+          </div>          
+        </div>        
+      </div>
+
+    </div>
+    <div class="row">
+      <div class="col-md-10">
+        <!--for allergies list-->
+        <allergy-list [returnAllergyList] ="true" (allergyEmitter)="GetAllAllergy($event)"></allergy-list>
+      </div>
+    </div>
+
+    <div class="panel-footer text-right" style="margin-top:30px !important;">
+      <button [disabled]="loading" class="btn primary-btn" *ngIf="!isEdit" (click)="loading=true;triage()">
+        Add Triage
+      </button>
+      <button [disabled]="loading" class="btn primary-btn" *ngIf="isEdit" (click)="loading=true;triage()">
+        Update Triage
+      </button>
+      <button class="btn danger-btn" (click)="discard()">Discard</button>
+    </div>
+  </div>
+</div>

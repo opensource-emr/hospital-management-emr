@@ -61,12 +61,15 @@ import { isEmpty } from 'rxjs/operator/isEmpty';
 import { Patient } from '../../patients/shared/patient.model';
 import { DanpheHTTPResponse } from '../../shared/common-models';
 import { Subscription } from 'rxjs';
+import { ENUM_VisitType, ENUM_OrderStatus } from '../../shared/shared-enums';
+import { CoreService } from '../../core/shared/core.service';
 
 @Component({
   selector: "visit-main",
   templateUrl: "./visit-main.html"
 })
 export class VisitMainComponent {
+
   public quickVisit: QuickVisitVM = new QuickVisitVM();
   public showExstingPatientListPage: boolean = false;
   public matchedPatientList: any;
@@ -88,6 +91,7 @@ export class VisitMainComponent {
   public DepartmentLevelAppointment: boolean;
   public doctorChangedSubscription: Subscription;
   public MembershipTypeValid: boolean;
+  public CreditOrganizationMandatory: boolean = false;
 
   constructor(public patientService: PatientService,
     public securityService: SecurityService,
@@ -100,10 +104,12 @@ export class VisitMainComponent {
     public appointmentService: AppointmentService,
     public billingBLService: BillingBLService,
     public visitService: VisitService,
-    public changeDetRef: ChangeDetectorRef) {
+    public changeDetRef: ChangeDetectorRef,
+    public coreService: CoreService) {
     this.CheckAndSetCounter();
     this.Initialize();
-
+    
+    this.CreditOrganizationMandatory = this.coreService.LoadCreditOrganizationMandatory();
     this.doctorChangedSubscription = visitService.ObserveBillChanged.subscribe(
       newBill => {
         if (newBill.ChangeType == "Doctor") {
@@ -145,15 +151,24 @@ export class VisitMainComponent {
 
     this.quickVisit.Visit = this.visitService.CreateNewGlobal();//sud:26June'19--We'll be working with global visit object here after.
 
+    if (this.routeFromService && this.routeFromService.RouteFrom && this.routeFromService.RouteFrom == "billing-qr-scan") {
+
+      this.AssignPatInfoFromApptServiceToPatService();
+      this.routeFromService.RouteFrom = "";
+    }
+
+
     this.quickVisit.Patient = this.patientService.getGlobal();
+
 
     this.quickVisit.Patient.PatientId =
       this.quickVisit.Visit.PatientId =
       this.quickVisit.BillingTransaction.PatientId =
       this.patientService.getGlobal().PatientId;
+
     this.quickVisit.Visit.AppointmentType = this.visitService.appointmentType;
 
-    this.quickVisit.Visit.VisitType = "outpatient";
+    this.quickVisit.Visit.VisitType = ENUM_VisitType.outpatient;// "outpatient";
     this.quickVisit.BillingTransaction.IsInsuranceBilling = this.billingService.isInsuranceBilling;
 
     //sud:13Jul'19--get patient's today's visit (not Returned) and check for DuplicateVisit in client side itself.
@@ -161,11 +176,38 @@ export class VisitMainComponent {
 
   }
 
+  //this was done for Billing-QR-Scan -> New Appointment. we may be able to re-use this if required/feasible.
+  AssignPatInfoFromApptServiceToPatService() {
+    let ipData: Patient = this.appointmentService.GlobalAppointmentPatient;
+    var globalPat = this.patientService.getGlobal();
+    //mapping to prefill in Appointment Form
+    globalPat.PatientId = ipData.PatientId;
+
+    //this.LoadMembershipTypePatient(globalPat.PatientId);
+
+    globalPat.PatientCode = ipData.PatientCode;
+    globalPat.FirstName = ipData.FirstName;
+    globalPat.LastName = ipData.LastName;
+    globalPat.MiddleName = ipData.MiddleName;
+    globalPat.PhoneNumber = ipData.PhoneNumber;
+    globalPat.Gender = ipData.Gender;
+    globalPat.ShortName = ipData.ShortName;
+    globalPat.DateOfBirth = ipData.DateOfBirth;
+    globalPat.Age = ipData.Age;
+    globalPat.Address = ipData.Address;
+    globalPat.CountrySubDivisionName = ipData.CountrySubDivisionName;
+    globalPat.CountryId = ipData.CountryId;
+    globalPat.CountrySubDivisionId = ipData.CountrySubDivisionId;
+    globalPat.MembershipTypeId = ipData.MembershipTypeId;
+    globalPat.PANNumber = ipData.PANNumber;
+    globalPat.Admissions = ipData.Admissions;
+  }
+
   //sud:13Jul'19--get patient's today's visit (not Returned) and check for DuplicateVisit in client side itself.
   LoadPatientsTodaysVisitListIntoService(patientId: number) {
 
     this.visitService.PatientTodaysVisitList = [];
-
+    var followup: boolean = true;
     this.visitBLService.GetPatientVisits_Today(patientId)
       .subscribe((res: DanpheHTTPResponse) => {
         if (res.Status == "OK") {
@@ -190,6 +232,19 @@ export class VisitMainComponent {
     let valSummary = this.CheckValidations();
 
     if (valSummary.isValid) {
+      //check if middlename exists or not to append to Shortname 
+      var midName = this.quickVisit.Patient.MiddleName;
+      if (midName) {
+        midName = this.quickVisit.Patient.MiddleName.trim() + " ";
+      } else {
+        midName = "";
+      }
+      //removing extra spaces typed by the users
+      this.quickVisit.Patient.FirstName = this.quickVisit.Patient.FirstName.trim();
+      this.quickVisit.Patient.MiddleName = this.quickVisit.Patient.MiddleName ? this.quickVisit.Patient.MiddleName.trim() : null;
+      this.quickVisit.Patient.LastName = this.quickVisit.Patient.LastName.trim();
+      this.quickVisit.Patient.ShortName = this.quickVisit.Patient.FirstName + " " + midName + this.quickVisit.Patient.LastName;
+
       this.loading = false;
       if (!this.loading) {
         this.loading = true;
@@ -209,7 +264,7 @@ export class VisitMainComponent {
 
   public submitVisitDetails() {
     if (!this.quickVisit.Patient.PatientId) {
-      this.visitBLService.GetExistedMatchingPatientList(this.quickVisit.Patient.FirstName, this.quickVisit.Patient.LastName, this.quickVisit.Patient.PhoneNumber)
+      this.visitBLService.GetExistedMatchingPatientList(this.quickVisit.Patient.FirstName, this.quickVisit.Patient.LastName, this.quickVisit.Patient.PhoneNumber, this.quickVisit.Patient.Age, this.quickVisit.Patient.Gender)
         .subscribe(res => {
           if (res.Status == "OK" && res.Results.length) {
             this.matchedPatientList = res.Results;
@@ -285,6 +340,9 @@ export class VisitMainComponent {
       if (this.quickVisit.BillingTransaction.Remarks == null) {
         validationSummary.isValid = false;
         validationSummary.message.push("Remarks is Mandatory for Credit Payment Mode.");
+      }else if(this.CreditOrganizationMandatory && this.quickVisit.BillingTransaction.OrganizationId == 0) {
+        validationSummary.isValid = false;
+        validationSummary.message.push("Credit Orgainzation is mandatory for Credit Payment mode")
       }
     }
     //if (!val) {
@@ -318,6 +376,29 @@ export class VisitMainComponent {
       validationSummary.message.push("Select Membership Type from the list.");
     }
 
+    if (this.quickVisit.BillingTransaction.Change < 0) {
+      validationSummary.isValid = false;
+      validationSummary.message.push("Change/Return cannot be less than zero");
+    }
+
+    //this.quickVisit.BillingTransaction.BillingTransactionItems.reduce((acc, obj) => {
+    //  var existItem = acc.find(item => item.ItemId === obj.ItemId && item.ItemName === obj.ItemName);
+    //  if (existItem) {
+    //    validationSummary.isValid = false;
+    //    validationSummary.message.push("Dublicate Additional bill Item");
+    //  }
+    //});
+
+    //this.quickVisit.BillingTransaction.BillingTransactionItems.forEach(a => {
+    //  var aa = this.quickVisit.BillingTransaction.BillingTransactionItems.find(b => b.ItemId === a.ItemId && b.ItemName === a.ItemName)
+    //  console.log(aa);
+    //});
+
+    //if (this.quickVisit.BillingTransaction.BillingTransactionItems) {
+    //  validationSummary.isValid = false;
+    //  validationSummary.message.push("Dublicate Additional bill Item");
+    //}
+
     return validationSummary;
   }
   //handles appointment type differently.
@@ -349,7 +430,7 @@ export class VisitMainComponent {
     this.quickVisit.BillingTransaction.NonTaxableAmount = 0;
     this.quickVisit.BillingTransaction.SubTotal = 0;
     this.quickVisit.BillingTransaction.TotalAmount = 0;
-    this.quickVisit.BillingTransaction.Tender = 0;
+    //this.quickVisit.BillingTransaction.Tender = 0;
     this.quickVisit.BillingTransaction.TotalQuantity = 0;
     //sud:22Jul'19--If there's any item in previous visit (transfer case) we've to remove the OPD and add current OPD price in it..
 
@@ -426,7 +507,8 @@ export class VisitMainComponent {
     this.quickVisit.BillingTransaction.DiscountAmount = CommonFunctions.parseAmount(this.discountAmount);
     this.quickVisit.BillingTransaction.TaxableAmount = CommonFunctions.parseAmount(this.taxableAmount);
     this.quickVisit.BillingTransaction.TaxTotal = CommonFunctions.parseAmount(this.taxTotal);
-    this.quickVisit.BillingTransaction.Tender = CommonFunctions.parseAmount(this.totalAmount);
+    //this.quickVisit.BillingTransaction.Tender = CommonFunctions.parseAmount(this.totalAmount);
+    this.quickVisit.BillingTransaction.Tender = CommonFunctions.parseAmount(this.quickVisit.BillingTransaction.Tender);
     this.quickVisit.BillingTransaction.NonTaxableAmount = CommonFunctions.parseAmount(this.nonTaxableAmount);
     this.quickVisit.BillingTransaction.DiscountPercent = CommonFunctions.parseAmount(this.discountPercent);
   }
@@ -452,6 +534,10 @@ export class VisitMainComponent {
   CreateVisit() {
     this.ConcatinateAgeAndUnit();
     this.AssignInsuranceBillingRemarksToVisit();//need to check here.. sud: 13Jul'19
+    this.quickVisit.BillingTransaction.BillingTransactionItems.forEach(a => {
+      a.OrderStatus = ENUM_OrderStatus.Active;
+    });
+    
     this.visitBLService.PostVisitToDB(this.quickVisit)
       .subscribe(
         (res: DanpheHTTPResponse) => {
@@ -484,11 +570,13 @@ export class VisitMainComponent {
    */
   CallBackCreateVisit(res) {
     if (res.Status == "OK" && res.Results) {
+
       let bilTxn = res.Results.BillingTransaction;
       let opdReceipt = BillingReceiptModel.GetReceiptForTransaction(bilTxn);
       opdReceipt.IsValid = true;
       opdReceipt.Patient = res.Results.Patient;
       opdReceipt.VisitId = res.Results.Visit.PatientVisitId;
+      opdReceipt.QueueNo = res.Results.Visit.QueueNo;
       opdReceipt.Remarks = res.Results.BillingTransaction.Remarks;
       opdReceipt.CurrentFinYear = res.Results.BillingTransaction.FiscalYear;//this comes from server side. 
       //opdReceipt.BillingUser = this.securityService.GetLoggedInUser().UserName;
@@ -516,9 +604,11 @@ export class VisitMainComponent {
   }
   UpdateAppointmentStatus() {
     let appointment = this.appointmentService.getGlobal();
+    let providerId = this.quickVisit.Visit.ProviderId;
+    let providerName = this.quickVisit.Visit.ProviderName;
     if (appointment.AppointmentId) {
       try {
-        this.visitBLService.UpdateAppointmentStatus(appointment.AppointmentId, "checkedin")
+        this.visitBLService.UpdateAppointmentStatus(appointment.AppointmentId, "checkedin", providerId, providerName)
           .subscribe(res => {
             if (res.Status == "OK") {
               console.log("appointment status of apptId:" + appointment.AppointmentId + " updated successfully. ");
@@ -535,6 +625,7 @@ export class VisitMainComponent {
       }
     }
   }
+ 
   //End: Post Visit
 
 

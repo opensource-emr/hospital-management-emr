@@ -38,11 +38,13 @@ export class ImagingDLService {
     
     //imaging-report.component 
     //get requisition items using reportOrderStatus and billingStatus
-    public GetImagingReqsAndReportsByStatus(reqOrderStatus: string, reportOrderStatus: string, billingStatus: string) {
+    public GetImagingReqsAndReportsByStatus(reqOrderStatus: string, reportOrderStatus: string, typeList: string, fromDate:string, toDate:string) {
         return this.http.get<any>('/api/radiology?reqType=getRequisitionsList'
             + '&reqOrderStatus=' + reqOrderStatus
             + '&reportOrderStatus=' + reportOrderStatus
-            + '&billingStatus=' + billingStatus, this.options);
+          + '&typeList=' + typeList + "&fromDate=" + fromDate + "&toDate=" + toDate, this.options);
+
+      //fromDate, DateTime? toDate
     }
 
     //get requisition items using reportOrderStatus and billingStatus
@@ -67,9 +69,9 @@ export class ImagingDLService {
 
     //imaging-result.component
     //get list of reports of selected patient using orderStatus
-    public GetAllImagingReports(reportOrderStatus: string, frmDate: string, toDate: string) {
+    public GetAllImagingReports(reportOrderStatus: string, frmDate: string, toDate: string, typeStr: string) {
         return this.http.get<any>('/api/radiology?&reqType=allImagingReports'
-            + '&reportOrderStatus=' + reportOrderStatus + "&fromDate=" + frmDate + "&toDate=" + toDate, this.options);
+          + '&reportOrderStatus=' + reportOrderStatus + "&fromDate=" + frmDate + "&toDate=" + toDate + "&typeList=" + typeStr, this.options);
     }
 
     //imaging-report by requisitionId
@@ -214,7 +216,7 @@ export class ImagingDLService {
         return this.http.get<any>("/api/Billing?reqType=department-items&departmentName=radiology", this.options)
     }
     public CancelRadRequest(data: string) {
-        return this.http.put<any>("/api/Radiology?reqType=cancelInpatientRadRequest", data, this.options);
+        return this.http.put<any>("/api/Billing?reqType=cancelInpatientItemFromWard", data, this.options);
     }
     public CancelInpatientCurrentLabTest(data) {
         return this.http.put<any>('/api/Lab?reqType=cancelInpatientLabTest', data, this.options);
@@ -230,4 +232,13 @@ export class ImagingDLService {
     }
 
     //end: sud-5Feb'18--For Ward Billing--
+
+  public PutScannedDetails(reqId: number) {
+    try {
+      return this.http
+        .put<any>('/api/Radiology?reqType=updateRadPatScanData', reqId, this.options);
+    } catch (exception) {
+      throw exception;
+    }
+  }
 }

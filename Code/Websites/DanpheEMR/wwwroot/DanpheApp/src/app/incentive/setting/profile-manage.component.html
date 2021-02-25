@@ -1,0 +1,172 @@
+<button class="btn btn-primary" (click)="AddProfile()">
+  <i class="fa fa-plus"></i>
+  Add New Profile
+</button>
+<div class="row">
+  <div class="col-md-12 col-xs-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="profileGridColumns" [grid-data]="profileList"
+                 (grid-actions)="ProfileGridActions($event)" [show-print-button]="showPrintBtnOnGrid">
+    </danphe-grid>
+  </div>
+</div>
+
+<profile-item-map *ngIf="showEditItemsPercentPage"
+                  [profileId]="selectedProfile.ProfileId"
+                  [profileList]="profileList"
+                  [all-BillitmList]="allBillitmList"
+                  [categoryList]="categoryList"
+                  (callback-add)="callBackItemMapping($event)">
+</profile-item-map>
+
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="showProfileRenamePage">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-6 col-md-offset-3">
+        <form [formGroup]="currentProfile.ProfileValidator" class="form-horizontal hm-form">
+          <div class="form-body">
+            <div class="col-md-12">
+              <!-- <div class="col-md-3 hidden-xs hidden-sm" style="margin-right: 24px;">
+              </div> -->
+              <div class="modelbox-div clearfix">
+                <div class="caption lb-caption">
+                  <h3>
+                    <span>Update Profile Name</span>
+                  </h3>
+                  <a class="btn btn-danger" (click)="Close()" title="Cancel"><i class="fa fa-times"></i></a>
+                </div>
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label class="control-label col-md-4">
+                      Profile Name<sup class="color-red"> *</sup><b>:</b>
+                    </label>
+                    <div class="col-md-8">
+                      <input class="form-control" type="text" maxlength="50" [(ngModel)]="currentProfile.ProfileName"
+                             formControlName="ProfileName" value="" placeholder="Enter Profile Name" onClick="this.select();" />
+                      <span class="color-red font-sm"
+                            [hidden]="currentProfile.IsValidCheck('ProfileName','required') || !(currentProfile.IsDirty('ProfileName'))">
+                        Profile
+                        Name is required
+                      </span>
+                      <!-- <span class="color-red font-sm" *ngIf="currentProfile.IsDirty('ProfileName')" [hidden]="currentProfile.IsValidCheck('ProfileName','maxlength')"> Length is not proper</span> -->
+                    </div>
+                  </div>
+                  <!--<div class="form-group">
+                    <label class="control-label col-md-4">
+                      Price Category<sup class="color-red"> *</sup><b>:</b>
+                    </label>
+                    <div class="col-md-8">
+                      <select class="form-control" [(ngModel)]="currentProfile.PriceCategoryId"
+                              (ngModelChange)="onSelCategoryChanged()" formControlName="PriceCategoryId">
+                        <option *ngFor="let cat of categoryList" value="{{cat.PriceCategoryId}}">
+                          {{cat.PriceCategoryName}}
+                        </option>
+                      </select>
+                      <span class="color-red font-sm"
+                            [hidden]="currentProfile.IsValidCheck('PriceCategoryId','required') || !(currentProfile.IsDirty('PriceCategoryId'))">
+                        Kindly
+                        select Category
+                      </span>
+                    </div>
+                  </div>-->
+                  <!--<div class="form-group">
+                    <label class="control-label col-md-4">
+                      TDS Percentage<sup class="color-red"> *</sup><b>:</b>
+                    </label>
+                    <div class="col-md-8">
+                      <input class="form-control" type="number" maxlength="100" [(ngModel)]="currentProfile.TDSPercentage"
+                             (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                             formControlName="TDSPercentage" value="" placeholder="Enter TDS Percentage" onClick="this.select();" />
+                      <span class="color-red font-sm"
+                            [hidden]="currentProfile.IsValidCheck('TDSPercentage','required') || !(currentProfile.IsDirty('TDSPercentage'))">
+                        Enter the TDS percentage!!
+                      </span>
+                    </div>
+                  </div>-->
+                  <!--<div class="form-group" *ngIf="!update">
+                    <label class="control-label col-md-4">Attach Profile Item Mapping<b>:</b> </label>
+                    <div class="col-md-8">
+                      <div class="input-group">
+                        <div class="icheck-inline">
+                          <label class="mt-checkbox mt-checkbox-outline">
+                            <input id="isActive" type="checkbox" [(ngModel)]="showProfleDD"
+                                   [ngModelOptions]="{standalone: true}" />
+                            <span></span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>-->
+                  <!--<div class="form-group" *ngIf="showProfleDD && !update">
+                    <label class="control-label col-md-4">Select Profile<b>:</b> </label>
+                    <div class="col-md-8">
+                      <input danphe-auto-complete class="form-control" [ngModelOptions]="{standalone: true}"
+                             [(ngModel)]="selProfileForAttach" [list-formatter]="profileListFormatter" [source]="profileList"
+                             placeholder="Enter Profile Name" display-property-name="ProfileName" value-property-name=null
+                             (focusout)="profileChanged()" onClick="this.select();" max-num-list="10" />
+                      <span class="color-red font-sm" *ngIf="showErrMsg">Profile is required.</span>
+                    </div>
+                  </div>-->
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Description<b>:</b> </label>
+                    <div class="col-md-8">
+                      <!--<div class="input-group">
+                        <div class="icheck-inline">
+                          <label class="mt-checkbox mt-checkbox-outline">
+                            <input id="isActive" type="checkbox" [(ngModel)]="currentProfile.IsActive"
+                                   [ngModelOptions]="{standalone: true}" />
+                            <span></span>
+                          </label>
+                        </div>
+                      </div>-->  
+                      <textarea id="description" [(ngModel)]="currentProfile.Description"
+                                [ngModelOptions]="{standalone: true}"></textarea>
+                    </div>
+                  </div>
+                  <div class="form-actions">
+                    <!--<input type="button" class="btn primary-btn" *ngIf="!update" (click)="Add()" value="Add" />-->
+                    <input type="button" class="btn primary-btn" *ngIf="update" (click)="Update()" value="Update" />
+                  </div>
+                </div>
+                <div class="col-md-2 hidden-xs hidden-sm" style="margin-right: 24px;">
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showConfirmationBox">
+  <div class="portlet-body form">
+    <div class="col-md-6 col-md-offset-3">
+      <div class="modelbox-div">
+        <div class="modelbox-header">
+          <h4 class="margin-0-vr text-danger text-center"><strong>Confirm !!!</strong></h4>
+        </div>
+        <div class="modelbox-body">
+          <div>
+            <p>
+              Do you sure, You don't want to add item mapping from existing profile ?
+            </p>
+            <!-- <div>
+              <p *ngIf="visitType && visitType.toLowerCase()=='outpatient'">Run Number <b>{{LatestSampleCode.SampleNumber}} / {{LatestSampleCode.SampleCode}}</b> is already used for patient <b>{{sampleCodeExistingDetail.PatientName}}</b></p>
+              <p *ngIf="visitType && visitType.toLowerCase()=='inpatient'">Run Number <b>{{LatestSampleCode.SampleCode}}</b> is already used for patient <b>{{sampleCodeExistingDetail.PatientName}}</b></p>
+              <p> Please select another run number.</p>
+            </div> -->
+            <div class="modelbox-footer">
+              <div class="all-buttons text-right">
+                <button type="button" class="btn btn-sm" (click)="confirmBxAction(true)">Yes</button>
+                <button type="button" class="btn btn-sm" (click)="confirmBxAction(false)">No</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="close-modelbox">
+          <button class="btn btn-danger" (click)="showConfirmationBox=false">X</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

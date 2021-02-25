@@ -1,15 +1,15 @@
-<div class="row" *ngIf="!showReceipt">
-  <div class="col-lg-12 col-sm-12">
-    <danphe-grid [grid-colDefaults]="settlmntGridCols" [grid-data]="settlMntList" (grid-actions)="DuplicateReceiptGridActions($event)">
-    </danphe-grid>
+<div class="wrapper">
+  <div class="row" *ngIf="!showReceipt">
+    <div class="col-lg-12 col-sm-12">
+      <danphe-grid [grid-colDefaults]="settlmntGridCols"
+                 [grid-data]="settlMntList"
+                 (grid-actions)="DuplicateReceiptGridActions($event)"
+                 [NepaliDateInGridParams]="NepaliDateInGridSettings"> </danphe-grid>
+    </div>
   </div>
-</div>
-
-<div *ngIf="showReceipt">
-  <a class="btn blue" (click)="ShowGridView()">
-    <i class="fa fa-backward"></i> Back
-  </a>
-  <div *ngIf="showReceipt">
-    <settlement-receipt [settlementInfo]="settlementInfo" [showReceipt]="showReceipt"></settlement-receipt>
+  <div *ngIf="showReceipt"> <a class="btn blue" (click)="ShowGridView()"> <i class="fa fa-backward"></i> Back </a>
+    <div *ngIf="showReceipt">
+      <settlement-receipt [settlementInfo]="settlementInfo" [showReceipt]="showReceipt"></settlement-receipt>
+    </div>
   </div>
 </div>

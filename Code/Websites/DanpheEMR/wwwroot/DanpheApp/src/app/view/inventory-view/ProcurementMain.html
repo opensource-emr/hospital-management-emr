@@ -1,20 +1,24 @@
-<div class="row">
+<div class="sub-navtab">
   <ul class="nav nav-tabs" *ngIf="validRoutes != undefined">
+    
     <li *ngFor="let route of validRoutes">
       <a routerLink="{{route.RouterLink}}" [routerLinkActive]="'a-tab-active'">{{route.DisplayName}}<i class="{{route.Css}}"></i></a>
     </li>
     <li>
+   <!-- <li>
+      <a routerLink="PurchaseRequest" [routerLinkActive]="'a-tab-active'">Purchase Request</a>
+    </li>
       <a routerLink="RequestForQuotation" [routerLinkActive]="'a-tab-active'">Request For Quotation(RFQ)</a>
     </li>
     <li>
-    <a [routerLink]="'ReturnToVendorItems'" [routerLinkActive]="'a-tab-active'">Return Items</a>
+      <a routerLink="ReturnToVendorItems" [routerLinkActive]="'a-tab-active'">Return Items</a>
     </li>
     <li>
-      <a [routerLink]="'ReturnToVendorListItems'" [routerLinkActive]="'a-tab-active'">Return Items List</a>
+      <a routerLink="'ReturnToVendorListItems'" [routerLinkActive]="'a-tab-active'">Return Items List</a>
     </li>
     <li>
       <a routerLink="VendorsList" [routerLinkActive]="'a-tab-active'">Vendors List</a>
-    </li>
+    </li>-->
   </ul>
 </div>
 <router-outlet>
