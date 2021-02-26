@@ -1,0 +1,14 @@
+
+  <a feature="button" class="btn blue bordered" (click)="AddBillingPackage()"><i class="fa fa-plus"></i>Add Package</a>
+  <div >
+    <billingPackage-add [showAddPage]="showAddPage"
+                        [selectedItem]="selectedItem"
+                        (callback-add)="CallBackAdd($event)"></billingPackage-add>
+  </div>
+<div *ngIf="showGrid" class="row">
+    <div class="col-md-12 col-xs-12 col-sm-12">
+        <danphe-grid [grid-colDefaults]="billingPackageGridColumns" [grid-data]="billingPackageList" (grid-actions)="BillingPackageGridActions($event)"
+                     [show-print-button]="false">
+        </danphe-grid>
+    </div>
+</div>
