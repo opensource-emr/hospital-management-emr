@@ -4,7 +4,6 @@ node_modules/
 bin
 obj
 v16
-packages
 .vs
 package-lock.json
 $tf/
@@ -16,3 +15,4 @@ HAMS_Requirements/
 /Code/Solutions/global.json
 /Code/Websites/DanpheEMR/appsettings.json
 /Database/DanpheEMR_CompleteDB_4th_August_2019.bak
+/Code/Solutions/packages
